@@ -59,7 +59,7 @@ export const FlowFeaturesSection = ({
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Flow Engine
             </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns ideas into a clean, high-impact prompt. It transforms your input into a precise, ready-to-use command in seconds and makes your entire workflow faster and more effective. Built to work with ChatGPT, Claude, Grok, Llama, and every major model.</p>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe coding and sharpens the way you build, making your thoughts communicate better with all major AI models.</p>
             <div className="relative z-10">
               <Button size="lg" className="bg-white text-black hover:bg-neutral-200 font-semibold px-8 rounded-full" onClick={() => navigate("/flow-engine")}>
                 Start building
