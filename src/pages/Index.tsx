@@ -9,7 +9,6 @@ import promptLabLogo from "@/assets/prompt-lab-logo.jpg";
 import coolCharacter from "@/assets/cool-character-new.png";
 import { GlowingEffectDemo } from "@/components/ui/glowing-effect-demo";
 import BeymflowPremiumSection from "@/components/ui/beymflow-premium-section";
-import ChatWidget from "@/components/ChatWidget";
 import { FlowFeaturesSection } from "@/components/FlowFeaturesSection";
 import PricingCarousel from "@/components/PricingCarousel";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -277,7 +276,6 @@ const Index = () => {
             <Products />
           </div>
         </main>
-        <ChatWidget />
       </Layout>
     </>;
 };
