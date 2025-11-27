@@ -1,10 +1,18 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const quickPromptSchema = z.object({
+  userInput: z.string().trim().min(1, "Input cannot be empty").max(2000, "Input too long (max 2000 characters)"),
+  model: z.enum(['fast', 'advanced', 'premium']).optional(),
+  category: z.enum(['creativity', 'personal', 'business', 'crypto']).optional()
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,43 +23,15 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const { userInput, model, category } = body;
-    
-    if (!userInput || typeof userInput !== 'string') {
+    const validation = quickPromptSchema.safeParse(body);
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Input is required and must be a string' }),
+        JSON.stringify({ error: validation.error.errors[0].message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const trimmedInput = userInput.trim();
-    if (trimmedInput.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Input cannot be empty' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (trimmedInput.length > 2000) {
-      return new Response(
-        JSON.stringify({ error: 'Input too long (max 2000 characters)' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (model && !['fast', 'advanced', 'premium'].includes(model)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid model' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (category && !['creativity', 'personal', 'business', 'crypto'].includes(category)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid category' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { userInput, model, category } = validation.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -156,7 +136,7 @@ Return only the optimized prompt, nothing else.`;
   } catch (error) {
     console.error('Error in quick-prompt function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      JSON.stringify({ error: error.message || 'An error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

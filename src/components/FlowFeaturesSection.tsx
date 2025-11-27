@@ -36,95 +36,94 @@ export const FlowFeaturesSection = ({ className = "" }) => {
 
   return (
     <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
+      {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
       <div className="w-full mx-auto space-y-16 md:space-y-24">
-        {/* Flow Engine Section - Card with overlapping image */}
+        {/* Flow Engine Section - Text Left, Image Right */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="relative"
+          className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch"
         >
-          <div className="relative grid md:grid-cols-2 gap-8 items-center">
-            {/* Text Content - Left (Black rounded card with full height) */}
-            <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 bg-black rounded-3xl min-h-[400px] md:min-h-[500px]">
-              <span
-                className="pointer-events-none absolute -top-16 -left-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl"
-                aria-hidden="true"
-              />
+          {/* Text Content - Left (Rounded corners) */}
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full">
+            {/* Purple glow - left corner */}
+            <span
+              className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              aria-hidden="true"
+            />
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-                Flow Engine
-              </h2>
-              <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
-                The Flow Engine turns ideas into a clean, high-impact prompt. It transforms your input into a precise,
-                ready-to-use command in seconds and makes your entire workflow faster and more effective. Built to work
-                with ChatGPT, Claude, Grok, Llama, and every major model.
-              </p>
-              <div className="relative z-10">
-                <Button
-                  size="lg"
-                  className="bg-white text-black hover:bg-neutral-200 font-semibold px-8 rounded-full"
-                  onClick={() => navigate("/flow-engine")}
-                >
-                  Start building
-                </Button>
-              </div>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
+              Flow Engine
+            </h2>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
+              The Flow Engine turns ideas into a clean, high-impact prompt. It transforms your input into a precise,
+              ready-to-use command in seconds and makes your entire workflow faster and more effective. Built to work
+              with ChatGPT, Claude, Grok, Llama, and every major model.
+            </p>
+            <div className="relative z-10">
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-neutral-200 font-semibold px-8 rounded-full"
+                onClick={() => navigate("/flow-engine")}
+              >
+                Start building
+              </Button>
             </div>
+          </div>
 
-            {/* Image - Right (Overlapping the card) */}
-            <div className="relative md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[55%] h-[300px] md:h-[450px] overflow-hidden rounded-3xl shadow-2xl">
-              <img
-                src={beymflowBg}
-                alt="Flow Engine"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
+          {/* Image - Right (No rounding as requested) */}
+          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full">
+            <img
+              src={beymflowBg}
+              alt="Flow Engine"
+              className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+            />
           </div>
         </motion.div>
 
-        {/* Prompt Lab Section - Card with overlapping image (mirrored) */}
+        {/* Prompt Lab Section - Image Left, Text Right */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative"
+          className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch"
         >
-          <div className="relative grid md:grid-cols-2 gap-8 items-center">
-            {/* Image - Left (Overlapping the card - Order 2 mobile, 1 desktop) */}
-            <div 
-              className="relative md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:w-[55%] h-[300px] md:h-[450px] overflow-hidden rounded-3xl shadow-2xl order-2 md:order-1 cursor-pointer"
+          {/* Image - Left (Order 2 on mobile, 1 on desktop - No rounding) */}
+          <div
+            className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-1 cursor-pointer"
+            onClick={() => navigate("/prompt-lab-page")}
+          >
+            <img
+              src={beymflowBg}
+              alt="Prompt Lab"
+              className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+            />
+          </div>
+
+          {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-black rounded-3xl w-full h-full">
+            {/* Purple glow - right corner */}
+            <span
+              className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              aria-hidden="true"
+            />
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
+              Prompt Lab
+            </h2>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
+              Beymflow's Prompt Lab is your experimental zone. Test ideas, refine prompts, and build full workflows that
+              plug into your favorite AI tools. From rough thought to polished command, the Lab turns chaos into clean,
+              repeatable systems.
+            </p>
+            <div
+              className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
               onClick={() => navigate("/prompt-lab-page")}
             >
-              <img
-                src={beymflowBg}
-                alt="Prompt Lab"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Text Content - Right (Black rounded card - Order 1 mobile, 2 desktop) */}
-            <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 bg-black rounded-3xl min-h-[400px] md:min-h-[500px] md:ml-auto">
-              <span
-                className="pointer-events-none absolute -top-16 -right-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl"
-                aria-hidden="true"
-              />
-
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-                Prompt Lab
-              </h2>
-              <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
-                Beymflow's Prompt Lab is your experimental zone. Test ideas, refine prompts, and build full workflows that
-                plug into your favorite AI tools. From rough thought to polished command, the Lab turns chaos into clean,
-                repeatable systems.
-              </p>
-              <div
-                className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
-                onClick={() => navigate("/prompt-lab-page")}
-              >
-                Click to explore <span>→</span>
-              </div>
+              Click to explore <span>→</span>
             </div>
           </div>
         </motion.div>

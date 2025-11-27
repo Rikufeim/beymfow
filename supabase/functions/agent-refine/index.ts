@@ -1,14 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Input validation function
-function validateSpec(spec: any): boolean {
-  return spec && typeof spec === 'object' && Object.keys(spec).length > 0;
-}
+// Input validation schema
+const agentRefineSchema = z.object({
+  spec: z.record(z.any()).refine(
+    (val) => Object.keys(val).length > 0,
+    "Specification cannot be empty"
+  )
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,14 +25,15 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    if (!body.spec || !validateSpec(body.spec)) {
+    const validation = agentRefineSchema.safeParse(body);
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: "Specification cannot be empty" }),
+        JSON.stringify({ error: validation.error.errors[0].message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { spec } = body;
+    const { spec } = validation.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -109,7 +114,7 @@ Generate the optimized prompt now.`;
   } catch (error) {
     console.error("Error in agent-refine:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

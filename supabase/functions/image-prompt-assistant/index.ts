@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const imageAssistantSchema = z.object({
+  message: z.string().trim().min(1, "Message cannot be empty").max(2000, "Message too long"),
+  currentPrompt: z.string().max(3000, "Current prompt too long").optional(),
+  conversationHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(5000)
+  })).max(50, "Conversation history too long")
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,43 +25,18 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const { message, currentPrompt, conversationHistory = [] } = body;
-    
-    if (!message || typeof message !== 'string') {
+    const validation = imageAssistantSchema.safeParse(body);
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Message is required and must be a string' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: validation.error.errors[0].message }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
     }
     
-    const trimmedMessage = message.trim();
-    if (trimmedMessage.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Message cannot be empty' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (trimmedMessage.length > 2000) {
-      return new Response(
-        JSON.stringify({ error: 'Message too long (max 2000 characters)' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (currentPrompt && (typeof currentPrompt !== 'string' || currentPrompt.length > 3000)) {
-      return new Response(
-        JSON.stringify({ error: 'Current prompt too long (max 3000 characters)' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    if (!Array.isArray(conversationHistory) || conversationHistory.length > 50) {
-      return new Response(
-        JSON.stringify({ error: 'Conversation history too long (max 50 messages)' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { message, currentPrompt, conversationHistory } = validation.data;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

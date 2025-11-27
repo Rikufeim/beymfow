@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,11 @@ const corsHeaders = {
 
 // Server-side cost definitions
 const ANIMATION_COST = 5;
+
+// Input validation schema
+const videoPromptSchema = z.object({
+  prompt: z.string().trim().min(1, "Prompt cannot be empty").max(2000, "Prompt too long (max 2000 characters)")
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,30 +25,15 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     
     // Validate input
-    const { prompt } = body;
-    
-    if (!prompt || typeof prompt !== 'string') {
+    const validation = videoPromptSchema.safeParse(body);
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Prompt is required and must be a string' }),
+        JSON.stringify({ error: validation.error.errors[0].message }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
     
-    const trimmedPrompt = prompt.trim();
-    
-    if (trimmedPrompt.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Prompt cannot be empty' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-    
-    if (trimmedPrompt.length > 2000) {
-      return new Response(
-        JSON.stringify({ error: 'Prompt too long (max 2000 characters)' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
+    const { prompt } = validation.data;
     const cost = ANIMATION_COST;
     
     console.log('Animation generation request:', { hasAuth: !!authHeader });
