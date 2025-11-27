@@ -149,7 +149,7 @@ const Auth = () => {
               </p>
             </div>
   
-            <Card className="bg-black backdrop-blur-sm border-2 border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.3)] p-8">
+            <Card className="bg-black backdrop-blur-sm border-2 border-gray-700 p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
@@ -317,7 +317,7 @@ const Auth = () => {
   
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
-                By continuing, you agree to Multiply's Terms of Service
+                By continuing, you agree to Beymflow's Terms of Service
               </p>
             </div>
           </motion.div>
