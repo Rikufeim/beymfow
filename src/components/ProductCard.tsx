@@ -2,7 +2,6 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 interface ProductCardProps {
   title: string;
@@ -69,60 +68,40 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   if (isExternal) {
     return (
-      <motion.div
-        whileHover={{ 
-          scale: 0.96, 
-          y: -8,
-          transition: { duration: 0.3, ease: "easeOut" }
-        }}
-        whileTap={{ scale: 0.94 }}
+      <div
         className="w-full max-w-xl"
-        style={{ willChange: "transform, opacity" }}
       >
         <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          <motion.div
-            whileHover={{ scale: 1 }}
-            whileTap={{ scale: 1 }}
+          <div
             className="h-full w-full"
             style={{
-              willChange: "transform",
               transform: "translateZ(0)",
               backfaceVisibility: "hidden"
             }}
           >
             {cardContent}
-          </motion.div>
+          </div>
         </a>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      whileHover={{ 
-        scale: 0.96, 
-        y: -8,
-        transition: { duration: 0.3, ease: "easeOut" }
-      }}
-      whileTap={{ scale: 0.94 }}
+    <div
       className="w-full max-w-xl"
-      style={{ willChange: "transform, opacity" }}
     >
       <Link to={link} className="block w-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-        <motion.div
-          whileHover={{ scale: 1 }}
-          whileTap={{ scale: 1 }}
+        <div
           className="h-full w-full"
           style={{
-            willChange: "transform",
             transform: "translateZ(0)",
             backfaceVisibility: "hidden"
           }}
         >
           {cardContent}
-        </motion.div>
+        </div>
       </Link>
-    </motion.div>
+    </div>
   );
 };
 
