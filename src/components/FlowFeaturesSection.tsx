@@ -48,7 +48,7 @@ export const FlowFeaturesSection = ({ className = "" }) => {
           {/* Text Content - Left (Black rounded card) */}
           <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 bg-black rounded-3xl md:mr-[-10%]">
             <span
-              className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              className="pointer-events-none absolute -top-16 -left-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl"
               aria-hidden="true"
             />
 
@@ -104,7 +104,7 @@ export const FlowFeaturesSection = ({ className = "" }) => {
           {/* Text Content - Right (Black rounded card - Order 1 mobile, 2 desktop) */}
           <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 bg-black rounded-3xl md:ml-[-10%]">
             <span
-              className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              className="pointer-events-none absolute -top-16 -right-16 h-64 w-64 rounded-full bg-purple-500/30 blur-3xl"
               aria-hidden="true"
             />
 

@@ -63,7 +63,7 @@ serve(async (req) => {
       limit: 10,
     });
 
-    const hasPaidSession = sessions.data.some(session => 
+    const hasPaidSession = sessions.data.some((session: any) => 
       session.payment_status === 'paid' && 
       session.status === 'complete'
     );

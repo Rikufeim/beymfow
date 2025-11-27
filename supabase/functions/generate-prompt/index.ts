@@ -2,20 +2,11 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Input validation schema
-const promptRequestSchema = z.object({
-  category: z.enum(['creativity', 'personal', 'business', 'crypto'], {
-    errorMap: () => ({ message: "Invalid category. Must be one of: creativity, personal, business, crypto" })
-  }),
-  cost: z.number().int().min(1).max(10).optional().default(1)
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,15 +17,22 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const validation = promptRequestSchema.safeParse(body);
-    if (!validation.success) {
+    const { category, cost = 1 } = body;
+    
+    const validCategories = ['creativity', 'personal', 'business', 'crypto'];
+    if (!category || !validCategories.includes(category)) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: 'Invalid category. Must be one of: creativity, personal, business, crypto' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { category, cost } = validation.data;
+    if (typeof cost !== 'number' || cost < 1 || cost > 10 || !Number.isInteger(cost)) {
+      return new Response(
+        JSON.stringify({ error: 'Cost must be an integer between 1 and 10' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -104,7 +102,7 @@ serve(async (req) => {
         console.log('Subscription check:', { 
           hasActiveSubscription, 
           subscriptionCount: subscriptions.data.length,
-          subscriptions: subscriptions.data.map(s => ({ id: s.id, status: s.status }))
+          subscriptions: subscriptions.data.map((s: any) => ({ id: s.id, status: s.status }))
         });
       } else {
         console.log('No Stripe customer found for:', user.email);

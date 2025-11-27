@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,12 +8,6 @@ const corsHeaders = {
 
 // Server-side cost definitions
 const GENERATION_COST = 2;
-
-// Input validation schema
-const imagePromptSchema = z.object({
-  prompt: z.string().trim().min(1, "Prompt cannot be empty").max(2000, "Prompt too long (max 2000 characters)"),
-  multiplyStyle: z.boolean().optional()
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,10 +18,11 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const validation = imagePromptSchema.safeParse(body);
-    if (!validation.success) {
+    const { prompt, multiplyStyle = false } = body;
+    
+    if (!prompt || typeof prompt !== 'string') {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: 'Prompt is required and must be a string' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -36,7 +30,27 @@ serve(async (req) => {
       );
     }
     
-    const { prompt, multiplyStyle = false } = validation.data;
+    const trimmedPrompt = prompt.trim();
+    
+    if (trimmedPrompt.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt cannot be empty' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
+    if (trimmedPrompt.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt too long (max 2000 characters)' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
     const cost = GENERATION_COST;
 
     // Check authentication (optional for guest users)
@@ -121,7 +135,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating image with prompt:', prompt, 'Multiply Style:', multiplyStyle);
+    console.log('Generating image with prompt:', trimmedPrompt, 'Multiply Style:', multiplyStyle);
 
     // Precision-focused realism enhancement - prioritize exact prompt matching
     const precisionInstruction = `CRITICAL: Follow the prompt EXACTLY as described. Match all specified details precisely: object type, color, shape, material, lighting conditions, environment, composition, and perspective. Do not add creative interpretations or elements not mentioned in the prompt.`;
@@ -129,8 +143,8 @@ serve(async (req) => {
     const realismEnhancement = `Render with: Photorealistic quality, ultra high detail 8K resolution, physically accurate lighting and shadows, realistic material properties and textures, natural color accuracy, precise focus and depth of field, authentic reflections and refractions, lifelike surface details, professional photography standards, accurate scale and proportions, natural imperfections where appropriate`;
     
     const finalPrompt = multiplyStyle 
-      ? `${precisionInstruction} ${prompt}. ${realismEnhancement}. Additional style: Dark atmospheric theme with deep blacks and rich purples, dramatic lighting, high contrast, mysterious elegant mood.`
-      : `${precisionInstruction} ${prompt}. ${realismEnhancement}.`;
+      ? `${precisionInstruction} ${trimmedPrompt}. ${realismEnhancement}. Additional style: Dark atmospheric theme with deep blacks and rich purples, dramatic lighting, high contrast, mysterious elegant mood.`
+      : `${precisionInstruction} ${trimmedPrompt}. ${realismEnhancement}.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

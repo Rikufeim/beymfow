@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,20 +8,6 @@ const corsHeaders = {
 
 // Server-side cost definitions
 const IMAGE_ANALYSIS_COST = 2;
-
-// Input validation schema with 5MB limit
-const imageAnalysisSchema = z.object({
-  image: z.string()
-    .min(1, "Image data is required")
-    .refine(
-      (val) => val.startsWith('data:image/'),
-      "Must be a valid image data URL"
-    )
-    .refine(
-      (val) => val.length < 5 * 1024 * 1024, // 5MB in base64
-      "Image too large (max 5MB)"
-    )
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -33,18 +18,32 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const validation = imageAnalysisSchema.safeParse(body);
-    if (!validation.success) {
+    const { image } = body;
+    
+    if (!image || typeof image !== 'string') {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: 'Image data is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!image.startsWith('data:image/')) {
+      return new Response(
+        JSON.stringify({ error: 'Must be a valid image data URL' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (image.length >= 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: 'Image too large (max 5MB)' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
-    
-    const { image } = validation.data;
+
     const cost = IMAGE_ANALYSIS_COST;
 
     // Check authentication
