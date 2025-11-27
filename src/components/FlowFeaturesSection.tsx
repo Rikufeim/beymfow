@@ -100,7 +100,7 @@ export const FlowFeaturesSection = ({
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Prompt Lab
             </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools. From rough thought to polished command, the Lab turns chaos into clean, repeatable systems.</p>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools. </p>
             <div className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/prompt-lab-page")}>
               Click to explore <span>→</span>
             </div>
