@@ -38,7 +38,7 @@ export const GeneratedPromptDisplay = ({
       return;
     }
     if (selectedModel === "premium" && usageInfo?.subscriptionTier !== "premium") {
-      toast.error("Premium model requires Multiply Premium subscription");
+      toast.error("Premium model requires Beymflow Premium subscription");
       navigate("/premium");
       return;
     }

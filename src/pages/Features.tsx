@@ -27,7 +27,7 @@ const Features = () => {
           <ul className="space-y-2 mt-4">
             <li>• Create unique prompts from scratch or adapt frameworks.</li>
             <li>• Adjust logic, tone, and creativity for your purpose.</li>
-            <li>• Save and prepare prompts for optimization in Multiply+.</li>
+            <li>• Save and prepare prompts for optimization in Beymflow+.</li>
           </ul>
           
           <p className="mt-4 font-medium">The Lab is where raw intelligence takes form.</p>
@@ -36,20 +36,20 @@ const Features = () => {
       color: "green"
     },
     {
-      question: "OPTIMIZE (MULTIPLY PREMIUM)",
+      question: "OPTIMIZE (BEYMFLOW PREMIUM)",
       answer: (
         <div className="space-y-4">
           <p className="text-lg font-semibold">Turn prompts into power.</p>
-          <p>Multiply Premium is the intelligence layer of the system — a space where prompts evolve beyond words. It combines AI optimization, adaptive learning, and real-time refinement to build systems that think with you.</p>
+          <p>Beymflow Premium is the intelligence layer of the system — a space where prompts evolve beyond words. It combines AI optimization, adaptive learning, and real-time refinement to build systems that think with you.</p>
           
           <ul className="space-y-2 mt-4">
             <li>• Access advanced optimization and structural feedback.</li>
             <li>• Use adaptive frameworks that learn your tone, goals, and logic.</li>
-            <li>• Automate iterative improvements with Multiply's feedback loop.</li>
+            <li>• Automate iterative improvements with Beymflow's feedback loop.</li>
             <li>• Unlock deeper layers of precision, context, and creative output.</li>
           </ul>
           
-          <p className="mt-4 font-medium">Multiply Premium doesn't just enhance prompts — it engineers intelligence.</p>
+          <p className="mt-4 font-medium">Beymflow Premium doesn't just enhance prompts — it engineers intelligence.</p>
           <p>This is where your work stops being static and becomes alive.</p>
         </div>
       ),
@@ -60,7 +60,7 @@ const Features = () => {
       answer: (
         <div className="space-y-4">
           <p className="text-lg font-semibold">From idea to execution.</p>
-          <p>Integration connects Multiply's intelligence to real-world environments. Deploy prompts into design systems, business workflows, or creative pipelines — without friction.</p>
+          <p>Integration connects Beymflow's intelligence to real-world environments. Deploy prompts into design systems, business workflows, or creative pipelines — without friction.</p>
           
           <ul className="space-y-2 mt-4">
             <li>• Export or connect outputs directly to your tools and platforms.</li>

@@ -486,7 +486,7 @@ export default function Multiagentpage() {
               output += "  📊 Results analysis\n";
               output += "  🎉 Celebrate!\n\n";
             } else {
-              output += "📅 DAY " + i + " - Scale & Multiply\n";
+              output += "📅 DAY " + i + " - Scale & Expand\n";
               output += "  📈 2x successful tactics\n";
               output += "  🤖 Automate tasks\n\n";
             }

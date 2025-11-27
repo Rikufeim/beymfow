@@ -35,8 +35,8 @@ const Footer = () => {
             </p>
             <div className="flex gap-3 pt-2">
               {[
-                { Icon: Instagram, label: "Instagram", url: "https://www.instagram.com/multiply.daily/" },
-                { Icon: Twitter, label: "Twitter", url: "https://x.com/multiplynow1?s=21" },
+                { Icon: Instagram, label: "Instagram", url: "https://www.instagram.com/beymflow/" },
+                { Icon: Twitter, label: "Twitter", url: "https://x.com/beymflow" },
               ].map(({ Icon, label, url }) => (
                 <a
                   key={label}

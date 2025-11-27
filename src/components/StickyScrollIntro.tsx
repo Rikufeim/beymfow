@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, lazy, Suspense } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import heroElegantBg from '@/assets/hero-elegant-bg-hq.jpg';
-import MultiplyChat from "./MultiplyChat";
+import BeymflowChat from "./BeymflowChat";
 
 // Lazy load 3D components for better performance
 const Canvas = lazy(() => import("@react-three/fiber").then(module => ({ default: module.Canvas })));
@@ -160,7 +160,7 @@ const StickyScrollIntro = () => {
           </motion.div>
         )}
 
-        {/* Multiply Chat - only appears with 3D */}
+        {/* Beymflow Chat - only appears with 3D */}
         {show3D && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -168,7 +168,7 @@ const StickyScrollIntro = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="absolute bottom-0 left-0 right-0 z-20"
           >
-            <MultiplyChat />
+            <BeymflowChat />
           </motion.div>
         )}
       </div>

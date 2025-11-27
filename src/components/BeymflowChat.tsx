@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Paperclip, Zap, ChevronDown, User, Mic } from "lucide-react";
+import { Paperclip, Zap, ChevronDown, Mic } from "lucide-react";
 
-const MultiplyChat = () => {
+const BeymflowChat = () => {
   const [inputValue, setInputValue] = useState("");
 
   const quickActions = [
@@ -20,9 +20,9 @@ const MultiplyChat = () => {
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-            <span className="text-black font-black text-lg">M</span>
+            <span className="text-black font-black text-lg">B</span>
           </div>
-          <span className="text-white text-2xl font-bold">Multiply</span>
+          <span className="text-white text-2xl font-bold">Beymflow</span>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ const MultiplyChat = () => {
         {/* Footer */}
         <div className="border-t border-white/5 px-4 py-3">
           <p className="text-xs text-white/40 text-center">
-            By messaging Multiply, you agree to our{" "}
+            By messaging Beymflow, you agree to our{" "}
             <span className="text-white/60 hover:text-white cursor-pointer">Terms</span> and{" "}
             <span className="text-white/60 hover:text-white cursor-pointer">Privacy Policy</span>.
           </p>
@@ -91,4 +91,4 @@ const MultiplyChat = () => {
   );
 };
 
-export default MultiplyChat;
+export default BeymflowChat;

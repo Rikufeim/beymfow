@@ -1,4 +1,4 @@
-const MultiplyFeatureCards = () => {
+const BeymflowFeatureCards = () => {
   const features = [
     {
       title: "Prompt Lab",
@@ -10,7 +10,7 @@ const MultiplyFeatureCards = () => {
       icon: "✨",
     },
     {
-      title: "Optimize (Multiply Premium)",
+      title: "Optimize (Beymflow Premium)",
       borderColor: "border-purple-500",
       glowColor: "shadow-[0_0_40px_rgba(168,85,247,0.8),0_0_80px_rgba(168,85,247,0.4)]",
       hoverGlow: "hover:shadow-[0_0_50px_rgba(168,85,247,1),0_0_100px_rgba(168,85,247,0.5)]",
@@ -33,7 +33,7 @@ const MultiplyFeatureCards = () => {
     <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <div key={feature.title} className="flex flex-col gap-3">
               {/* Small title above card */}
               <h3 className="text-sm font-medium text-white/70 pl-2">
@@ -77,4 +77,4 @@ const MultiplyFeatureCards = () => {
   );
 };
 
-export default MultiplyFeatureCards;
+export default BeymflowFeatureCards;

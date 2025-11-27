@@ -181,13 +181,13 @@ const PromptGenerator = () => {
         <AlertDialogContent className="bg-black border-2 border-white/20">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-bold text-white text-center">
-              ✨ Become a Multiply Subscriber
+              ✨ Become a Beymflow Subscriber
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground text-center text-lg">
               {!user ? (
                 <>You've used your 1 free generation. Sign in to get 5 free credits, or subscribe for unlimited generations at €9.90/month</>
               ) : (
-                <>You've used your 5 free credits. Subscribe to Multiply for unlimited generations at only €9.90/month</>
+                <>You've used your 5 free credits. Subscribe to Beymflow for unlimited generations at only €9.90/month</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -286,7 +286,7 @@ const PromptGenerator = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg mb-4"
               >
-                <span className="text-white font-semibold text-sm">✨ Multiply Subscriber</span>
+                <span className="text-white font-semibold text-sm">✨ Beymflow Subscriber</span>
               </motion.div>
             )}
             

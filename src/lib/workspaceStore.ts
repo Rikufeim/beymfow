@@ -23,7 +23,7 @@ async function tryServerSave(p: PromptLabProject) {
   } catch { return null; }
 }
 
-const LS_KEY = "multiply.promptlab.projects";
+const LS_KEY = "beymflow.promptlab.projects";
 
 function loadAllLocal(): PromptLabProject[] {
   try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]") || []; } catch { return []; }

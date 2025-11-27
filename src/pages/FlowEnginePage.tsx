@@ -439,8 +439,7 @@ OUTPUT FORMAT:
       <div
         className="fixed inset-0 z-0 opacity-30"
         style={{
-          backgroundImage:
-            'url("https://raw.githubusercontent.com/multiply-dev/multiply-dark-web-forge/main/public/lovable-uploads/IMG_0468.JPEG")',
+          backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")',
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
