@@ -93,13 +93,13 @@ export const FlowFeaturesSection = ({ className = "" }) => {
         >
           {/* Image - Left (Order 2 on mobile, 1 on desktop - No rounding) */}
           <div
-            className="relative min-h-[300px] md:min-h-[400px] order-2 md:order-1 overflow-hidden w-full h-full cursor-pointer"
+            className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-1 cursor-pointer"
             onClick={() => navigate("/prompt-lab-page")}
           >
             <img
               src={beymflowBg}
               alt="Prompt Lab"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105 rounded-3xl"
+              className="absolute inset-0 w-full h-full object-cover rounded-3xl"
             />
           </div>
 
