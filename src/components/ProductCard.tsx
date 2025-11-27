@@ -26,18 +26,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isExternal = false
 }) => {
   const cardContent = (
-    <Card className="relative bg-black border-primary/30 p-0 transition-all duration-500 shadow-lg backdrop-blur-sm hover:shadow-xl hover:shadow-white/5 h-full flex flex-col overflow-hidden min-h-[350px] will-change-transform"
+    <Card className="relative bg-black border-primary/30 p-0 transition-all duration-500 shadow-lg backdrop-blur-sm hover:shadow-xl hover:shadow-white/5 h-full flex flex-col overflow-hidden rounded-lg min-h-[350px] will-change-transform"
       style={{
         backgroundImage: `url(${imageUrl})`,
         backgroundPosition: 'center center',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
-        transform: "translateZ(0)"
+        transform: "translateZ(0)",
+        borderRadius: 'var(--radius)'
       }}
     >
       <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-black/40 via-black/70 to-black pointer-events-none z-10 will-change-[background-color]"
         style={{
-          transform: "translateZ(0)"
+          transform: "translateZ(0)",
+          borderRadius: 'var(--radius)'
         }}
         aria-hidden="true"
       />
