@@ -1,0 +1,133 @@
+import { Button } from "@/components/ui/button";
+import { Sparkles, Copy, Check, X } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+interface GeneratedPromptDisplayProps {
+  prompt: string;
+  selectedModel: "fast" | "advanced" | "premium";
+  selectedCategory: "all" | "creativity" | "personal" | "business" | "crypto";
+  onPromptUpdate: (newPrompt: string) => void;
+  onClear: () => void;
+}
+
+export const GeneratedPromptDisplay = ({
+  prompt,
+  selectedModel,
+  selectedCategory,
+  onPromptUpdate,
+  onClear,
+}: GeneratedPromptDisplayProps) => {
+  const { user, usageInfo } = useAuth();
+  const navigate = useNavigate();
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleEnhancePrompt = async () => {
+    if (!prompt.trim()) {
+      toast.error("Please generate a prompt first");
+      return;
+    }
+
+    if ((selectedModel === "advanced" || selectedModel === "premium") && !user) {
+      toast.error("Please sign in to use Advanced or Premium models");
+      navigate("/auth");
+      return;
+    }
+    if (selectedModel === "premium" && usageInfo?.subscriptionTier !== "premium") {
+      toast.error("Premium model requires Multiply Premium subscription");
+      navigate("/premium");
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("quick-prompt", {
+        body: {
+          userInput: prompt,
+          model: selectedModel,
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+          isEnhancement: true,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      if (data?.prompt) {
+        onPromptUpdate(data.prompt);
+        toast.success("Prompt enhanced!");
+      } else {
+        toast.error("No enhanced prompt received. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error enhancing prompt:", error);
+      toast.error("Failed to enhance prompt.");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    toast.success("Copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!prompt) return null;
+
+  return (
+    <div className="mt-8 animate-fade-in">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-base sm:text-lg font-bold text-white">Your prompt:</h4>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEnhancePrompt}
+            disabled={isEnhancing}
+            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white disabled:opacity-50"
+          >
+            {isEnhancing ? (
+              <div className="w-3 h-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+            ) : (
+              <Sparkles className="w-3 h-3" />
+            )}
+            Enhance
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyToClipboard}
+            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white"
+          >
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            {copied ? "Copied" : "Copy"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClear}
+            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white"
+          >
+            <X className="w-3 h-3" />
+            Delete
+          </Button>
+        </div>
+      </div>
+      <div className="p-4 rounded-xl bg-black border border-white/10">
+        <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/90 text-left">
+          {prompt}
+        </p>
+      </div>
+    </div>
+  );
+};
