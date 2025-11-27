@@ -36,19 +36,17 @@ export const FlowFeaturesSection = ({ className = "" }) => {
 
   return (
     <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
-      {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
       <div className="w-full mx-auto space-y-16 md:space-y-24">
-        {/* Flow Engine Section - Text Left, Image Right */}
+        {/* Flow Engine Section - Text Left, Image Right with overlap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch"
+          className="relative grid md:grid-cols-2 gap-0 items-stretch"
         >
-          {/* Text Content - Left (Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full">
-            {/* Purple glow - left corner */}
+          {/* Text Content - Left (Black rounded card) */}
+          <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 bg-black rounded-3xl md:mr-[-10%]">
             <span
               className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
               aria-hidden="true"
@@ -73,39 +71,38 @@ export const FlowFeaturesSection = ({ className = "" }) => {
             </div>
           </div>
 
-          {/* Image - Right (No rounding as requested) */}
-          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full">
+          {/* Image - Right (Overlapping gradient card) */}
+          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden rounded-3xl mt-8 md:mt-0">
             <img
               src={beymflowBg}
               alt="Flow Engine"
-              className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </div>
         </motion.div>
 
-        {/* Prompt Lab Section - Image Left, Text Right */}
+        {/* Prompt Lab Section - Image Left, Text Right with overlap */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch"
+          className="relative grid md:grid-cols-2 gap-0 items-stretch"
         >
-          {/* Image - Left (Order 2 on mobile, 1 on desktop - No rounding) */}
+          {/* Image - Left (Overlapping gradient card - Order 2 mobile, 1 desktop) */}
           <div
-            className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-1 cursor-pointer"
+            className="relative min-h-[300px] md:min-h-[400px] overflow-hidden rounded-3xl order-2 md:order-1 mt-8 md:mt-0 cursor-pointer"
             onClick={() => navigate("/prompt-lab-page")}
           >
             <img
               src={beymflowBg}
               alt="Prompt Lab"
-              className="absolute inset-0 w-full h-full object-cover rounded-3xl"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </div>
 
-          {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-black rounded-3xl w-full h-full">
-            {/* Purple glow - right corner */}
+          {/* Text Content - Right (Black rounded card - Order 1 mobile, 2 desktop) */}
+          <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 bg-black rounded-3xl md:ml-[-10%]">
             <span
               className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
               aria-hidden="true"

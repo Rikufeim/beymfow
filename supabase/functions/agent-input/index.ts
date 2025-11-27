@@ -1,20 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Input validation schema
-const agentInputSchema = z.object({
-  userGoal: z.string().trim().min(1, "Goal cannot be empty").max(2000, "Goal too long"),
-  context: z.string().max(5000, "Context too long").optional(),
-  categories: z.array(z.string()).max(10, "Too many categories").optional(),
-  mode: z.string().max(50, "Mode too long").optional(),
-  timeframeDays: z.number().int().min(1).max(365).optional(),
-  expertTone: z.string().max(100, "Expert tone too long").optional()
-});
+// Input validation function
+function validateInput(body: any) {
+  const errors: string[] = [];
+  
+  if (!body.userGoal || typeof body.userGoal !== 'string') {
+    errors.push("Goal is required");
+  } else if (body.userGoal.trim().length === 0) {
+    errors.push("Goal cannot be empty");
+  } else if (body.userGoal.length > 2000) {
+    errors.push("Goal too long");
+  }
+  
+  if (body.context && typeof body.context === 'string' && body.context.length > 5000) {
+    errors.push("Context too long");
+  }
+  
+  if (body.categories && (!Array.isArray(body.categories) || body.categories.length > 10)) {
+    errors.push("Invalid categories");
+  }
+  
+  if (body.timeframeDays && (!Number.isInteger(body.timeframeDays) || body.timeframeDays < 1 || body.timeframeDays > 365)) {
+    errors.push("Invalid timeframe");
+  }
+  
+  return errors;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,15 +43,15 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const validation = agentInputSchema.safeParse(body);
-    if (!validation.success) {
+    const validationErrors = validateInput(body);
+    if (validationErrors.length > 0) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: validationErrors[0] }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { userGoal, context, categories, mode, timeframeDays, expertTone } = validation.data;
+    const { userGoal, context, categories, mode, timeframeDays, expertTone } = body;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
