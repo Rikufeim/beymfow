@@ -1,26 +1,20 @@
 "use client";
 
 import { QuickPromptGenerator } from "./QuickPromptGenerator";
-
 export default function Hero() {
-  return (
-    <section
-      id="hero"
-      // MUUTOS:
-      // 1. "justify-center" vaihdettu -> "justify-start"
-      // 2. "pt-32" pitää sisällön irti navigaatiopalkista (voit kokeilla myös pt-36 tai pt-40)
-      className="relative mx-auto w-full pt-32 px-6 text-center md:px-8 
+  return <section id="hero"
+  // MUUTOS:
+  // 1. "justify-center" vaihdettu -> "justify-start"
+  // 2. "pt-32" pitää sisällön irti navigaatiopalkista (voit kokeilla myös pt-36 tai pt-40)
+  className="relative mx-auto w-full pt-32 px-6 text-center md:px-8 
       min-h-screen overflow-hidden 
-      bg-black flex flex-col items-center justify-start"
-    >
+      bg-black flex flex-col items-center justify-start">
       {/* --- TAUSTAEFEKTIT --- */}
 
       {/* Gradient Background */}
-      <div
-        className="absolute inset-0 -z-10 w-full h-full
+      <div className="absolute inset-0 -z-10 w-full h-full
         bg-gradient-to-br from-purple-900/30 via-black to-teal-900/30
-        blur-3xl opacity-60"
-      />
+        blur-3xl opacity-60" />
 
       {/* Yläosan "Spotlight" -valo */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-purple-500/10 blur-[100px] rounded-full -z-10" />
@@ -28,52 +22,38 @@ export default function Hero() {
       {/* --- SISÄLTÖ --- */}
 
       {/* Otsikko */}
-      <h1
-        className="animate-fade-in mx-auto max-w-6xl
+      <h1 className="animate-fade-in mx-auto max-w-6xl
         py-2 text-5xl font-bold leading-tight tracking-tighter 
-        opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
-        style={{
-          animationDelay: "0.1s",
-          animationFillMode: "forwards",
-        }}
-      >
+        opacity-0 sm:text-6xl md:text-7xl lg:text-8xl" style={{
+      animationDelay: "0.1s",
+      animationFillMode: "forwards"
+    }}>
         <span className="block text-white mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
           Make powerful prompts
         </span>
-        <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">
-          with pure flow.
-        </span>
+        <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">with pure flow</span>
       </h1>
 
       {/* Teksti */}
-      <p
-        className="animate-fade-in mx-auto mt-6 max-w-2xl text-balance 
+      <p className="animate-fade-in mx-auto mt-6 max-w-2xl text-balance 
         text-lg tracking-tight text-gray-400 
-        opacity-0 md:text-xl mb-12"
-        style={{
-          animationDelay: "0.2s",
-          animationFillMode: "forwards",
-        }}
-      >
+        opacity-0 md:text-xl mb-12" style={{
+      animationDelay: "0.2s",
+      animationFillMode: "forwards"
+    }}>
         Let your ideas move clean.
       </p>
 
       {/* PROMPT GENERATOR */}
-      <div
-        className="w-full max-w-4xl mx-auto relative z-20 animate-fade-in opacity-0"
-        style={{
-          animationDelay: "0.3s",
-          animationFillMode: "forwards",
-        }}
-      >
+      <div className="w-full max-w-4xl mx-auto relative z-20 animate-fade-in opacity-0" style={{
+      animationDelay: "0.3s",
+      animationFillMode: "forwards"
+    }}>
         <QuickPromptGenerator />
       </div>
 
       {/* Bottom Fade / Glow effect */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 
-        bg-gradient-to-t from-black to-transparent pointer-events-none"
-      />
-    </section>
-  );
+      <div className="absolute bottom-0 left-0 right-0 h-32 
+        bg-gradient-to-t from-black to-transparent pointer-events-none" />
+    </section>;
 }
