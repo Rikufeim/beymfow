@@ -25,8 +25,8 @@ const FeatureShowcaseCards = () => {
       color: "green",
     },
     {
-      title: "Optimize (Multiply Premium)",
-      description: "Optimize with Multiply Premium.",
+      title: "Optimize (Beymflow Premium)",
+      description: "Optimize with Beymflow Premium.",
       icon: Sparkles,
       visual: (
         <div className="relative w-full h-full flex items-center justify-center">
@@ -154,7 +154,7 @@ const FeatureShowcaseCards = () => {
             Generate ideas in the Lab.
           </p>
           <p className="text-sm sm:text-base md:text-lg text-white/70 mb-1">
-            Optimize with Multiply Premium.
+            Optimize with Beymflow Premium.
           </p>
           <p className="text-sm sm:text-base md:text-lg text-white/70 mb-1">
             Integrate into real workflows.

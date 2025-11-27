@@ -21,7 +21,7 @@ const ImageGenerator = () => {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [showAIChat, setShowAIChat] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [multiplyStyle, setMultiplyStyle] = useState(false);
+  const [beymflowStyle, setBeymflowStyle] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const { session, usageInfo, refreshUsage } = useAuth();
@@ -83,7 +83,7 @@ const ImageGenerator = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: prompt.trim(), cost: IMAGE_GENERATION_COST, multiplyStyle },
+        body: { prompt: prompt.trim(), cost: IMAGE_GENERATION_COST, beymflowStyle },
         headers: session ? {
           Authorization: `Bearer ${session.access_token}`
         } : undefined
@@ -160,7 +160,7 @@ const ImageGenerator = () => {
             <div className="text-left pl-8 md:pl-16 lg:pl-24 mb-12">
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight chrome-text mb-8">
                 <div>
-                  {["Multiply", "AI"].map((word, index) => (
+                  {["Beymflow", "AI"].map((word, index) => (
                     <span
                       key={index}
                       className="inline-block transition-all duration-200 ease-out hover:translate-y-2 hover:scale-105 cursor-pointer mr-4"

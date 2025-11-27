@@ -95,8 +95,8 @@
   @apply text-white;
 }
 
-/* Multiply Ticker Styles */
-.multiply-scroll-strip {
+/* Beymflow Ticker Styles */
+.beymflow-scroll-strip {
   width: 100%;
   overflow: hidden;
   background-color: #000;
@@ -105,7 +105,7 @@
   padding: 10px 0;
 }
 
-.multiply-scroll-track {
+.beymflow-scroll-track {
   display: inline-block;
   white-space: nowrap;
   animation: scrollLoop 40s linear infinite;
@@ -115,7 +115,7 @@
   letter-spacing: 1px;
 }
 
-.multiply-scroll-strip:hover .multiply-scroll-track {
+.beymflow-scroll-strip:hover .beymflow-scroll-track {
   animation-play-state: paused;
 }
 

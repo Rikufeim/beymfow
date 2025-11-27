@@ -64,7 +64,7 @@ const Header = () => {
             >
               <DropdownMenuItem asChild>
                 <a
-                  href="https://github.com/multiplynow"
+                  href="https://github.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
@@ -74,7 +74,7 @@ const Header = () => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://x.com/multiplynow1?s=21"
+                  href="https://x.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
@@ -84,7 +84,7 @@ const Header = () => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://www.youtube.com/@MultiplyDaily"
+                  href="https://www.youtube.com/@Beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
@@ -94,7 +94,7 @@ const Header = () => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href="https://www.instagram.com/multiply.daily/"
+                  href="https://www.instagram.com/beymflow/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
@@ -176,7 +176,7 @@ const Header = () => {
                     {isCommunityOpen && (
                       <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
                         <a
-                          href="https://github.com/multiplynow"
+                          href="https://github.com/beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
@@ -184,7 +184,7 @@ const Header = () => {
                           <Github className="h-5 w-5" /> <span>GitHub</span>
                         </a>
                         <a
-                          href="https://x.com/multiplynow1?s=21"
+                          href="https://x.com/beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
@@ -192,7 +192,7 @@ const Header = () => {
                           <Twitter className="h-5 w-5" /> <span>X</span>
                         </a>
                         <a
-                          href="https://www.youtube.com/@MultiplyDaily"
+                          href="https://www.youtube.com/@Beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
@@ -200,7 +200,7 @@ const Header = () => {
                           <Youtube className="h-5 w-5" /> <span>YouTube</span>
                         </a>
                         <a
-                          href="https://www.instagram.com/multiply.daily/"
+                          href="https://www.instagram.com/beymflow/"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"

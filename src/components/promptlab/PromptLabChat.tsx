@@ -273,7 +273,7 @@ export default function PromptLabChat() {
                 mode === "premium" ? "bg-white/10 border-white/20" : "bg-white/5 hover:bg-white/10 border-white/10"
               }`}
             >
-              <Crown className="h-4 w-4" /> Multiply Premium
+              <Crown className="h-4 w-4" /> Beymflow Premium
             </button>
             <button
               onClick={() => setOptionsOpen((previous) => !previous)}
