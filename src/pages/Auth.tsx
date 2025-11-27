@@ -131,7 +131,7 @@ const Auth = () => {
     <StarsBackground>
       <div className="min-h-screen text-white flex flex-col">
         <Header />
-        <div className="flex-1 flex items-center justify-center px-4 py-12 pt-32 pb-32">
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
           <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
