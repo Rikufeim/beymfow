@@ -1,20 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Input validation schema
-const messagesSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(['system', 'user', 'assistant']),
-      content: z.string().max(5000, "Message content too long (max 5000 characters)")
-    })
-  ).min(1, "Messages array cannot be empty").max(50, "Too many messages (max 50)")
-});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -25,15 +14,36 @@ serve(async (req) => {
     const body = await req.json();
     
     // Validate input
-    const validation = messagesSchema.safeParse(body);
-    if (!validation.success) {
+    const { messages } = body;
+    
+    if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: 'Messages array is required and cannot be empty' }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    const { messages } = validation.data;
+    if (messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: 'Too many messages (max 50)' }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    for (const msg of messages) {
+      if (!msg.role || !['system', 'user', 'assistant'].includes(msg.role)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid message role' }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!msg.content || typeof msg.content !== 'string' || msg.content.length > 5000) {
+        return new Response(
+          JSON.stringify({ error: 'Message content too long (max 5000 characters)' }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
