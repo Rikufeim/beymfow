@@ -493,9 +493,8 @@ Your goal is to provide a comprehensive solution that solves this specific probl
   // --- RENDER ---
   return (
     <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-100">
-      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/prompt-lab-bg.png")', backgroundSize: "cover", backgroundPosition: "center" }} />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" />
 
       {/* CSS INJECTION FOR SCROLLBARS & SLIDERS */}
       <style>{`

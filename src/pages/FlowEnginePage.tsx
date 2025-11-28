@@ -435,10 +435,9 @@ OUTPUT FORMAT:
   return (
     // <PremiumGate> POISTETTU TÄSTÄ
     <div className="h-screen bg-black text-white relative flex flex-col font-sans overflow-hidden">
-      {/* --- BACKGROUND (same as PromptLabPage) --- */}
-      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-black to-cyan-500/20" />
+      {/* --- BACKGROUND (turquoise gradient) --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/flow-engine-bg.png")', backgroundSize: "cover", backgroundPosition: "center" }} />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" />
       {/* ------------------------ */}
 
       <AnimatePresence mode="wait">
