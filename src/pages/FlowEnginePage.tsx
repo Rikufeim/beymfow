@@ -483,7 +483,7 @@ OUTPUT FORMAT:
                   <button
                     key={chip}
                     onClick={() => handleSuggestion(chip)}
-                    className="px-4 py-2 rounded-full bg-black border border-white/10 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer font-sans"
+                    className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer font-sans"
                   >
                     {chip}
                   </button>
@@ -495,7 +495,7 @@ OUTPUT FORMAT:
               <div className="max-w-3xl mx-auto">
                 <form onSubmit={handleSubmit} className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex items-center bg-black border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
+                  <div className="relative flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
                     <input
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
@@ -507,7 +507,7 @@ OUTPUT FORMAT:
                     <button
                       type="submit"
                       disabled={!prompt.trim() || isLoading}
-                      className="p-2.5 rounded-full bg-white text-black hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className="p-2.5 rounded-full bg-white/90 backdrop-blur-md text-black hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                       {isLoading ? (
                         <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
@@ -656,7 +656,7 @@ OUTPUT FORMAT:
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 bg-[#161618] overflow-hidden flex flex-col relative">
+                    <div className="flex-1 bg-white/5 backdrop-blur-md overflow-hidden flex flex-col relative">
                       {widget.type === "prompt" && (
                         <div className="p-4 overflow-y-auto h-full custom-scrollbar">
                           <pre className="font-mono text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
