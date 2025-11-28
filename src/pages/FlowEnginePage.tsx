@@ -474,7 +474,7 @@ OUTPUT FORMAT:
             </button>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-              {/* UPDATED: Transparent text with animated gradient colors - no dark areas */}
+              {/* UPDATED: Transparent text with animated gradient colors - turquoise-blue-purple only */}
               {/* BUG FIX: Added pb-2 to prevent descender clipping on 'g' */}
               <motion.h1
                 animate={{ backgroundPosition: ["0% center", "-200% center"] }}
@@ -482,7 +482,7 @@ OUTPUT FORMAT:
                 className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-[length:200%_auto] pb-2"
                 style={{
                   fontFamily: '"SF Pro Display", Inter, "Helvetica Neue", "Arial Nova", Arial, sans-serif',
-                  backgroundImage: "linear-gradient(to right, #f59e0b 0%, #a855f7 25%, #06b6d4 50%, #10b981 75%, #f59e0b 100%)",
+                  backgroundImage: "linear-gradient(to right, #06b6d4 0%, #3b82f6 33%, #a855f7 66%, #06b6d4 100%)",
                 }}
               >
                 What are we building?
