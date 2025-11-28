@@ -435,10 +435,6 @@ OUTPUT FORMAT:
   return (
     // <PremiumGate> POISTETTU TÄSTÄ
     <div className="h-screen bg-black text-white relative flex flex-col font-sans overflow-hidden">
-      {/* --- BACKGROUND (turquoise gradient) --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/flow-engine-bg-turquoise.png")', backgroundSize: "cover", backgroundPosition: "center" }} />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" />
-      {/* ------------------------ */}
 
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
@@ -491,10 +487,9 @@ OUTPUT FORMAT:
               </div>
             </motion.div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-cyan-500/30 via-transparent to-transparent z-20">
+            <div className="fixed bottom-0 left-0 right-0 p-6 z-20">
               <div className="max-w-3xl mx-auto">
                 <form onSubmit={handleSubmit} className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
                   <div className="relative flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
                     <input
                       value={prompt}
@@ -765,7 +760,6 @@ OUTPUT FORMAT:
             {/* Bottom Input */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4 z-30">
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
                 <div className="relative flex items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-2 py-2 shadow-2xl">
                   <input
                     value={prompt}

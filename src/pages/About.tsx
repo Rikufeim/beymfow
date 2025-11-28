@@ -78,20 +78,6 @@ const About = () => {
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-cyan-500/30 selection:text-cyan-100">
-      {/* Kiinteä taustakuva */}
-      <div
-        className="fixed inset-0 z-0 opacity-30"
-        style={{
-          backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
-
-      {/* Tummennus taustan päälle */}
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
 
       <div className="relative z-10">
         {/* Hero Section */}
