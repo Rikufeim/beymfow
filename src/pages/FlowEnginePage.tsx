@@ -434,7 +434,7 @@ OUTPUT FORMAT:
   // --- RENDER ---
   return (
     // <PremiumGate> POISTETTU TÄSTÄ
-    <div className="h-screen bg-[#131314] text-white relative flex flex-col font-sans overflow-hidden">
+    <div className="h-screen bg-black text-white relative flex flex-col font-sans overflow-hidden">
       {/* --- BACKGROUND (same as PromptLabPage) --- */}
       <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
@@ -528,7 +528,7 @@ OUTPUT FORMAT:
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 relative w-full h-screen flex flex-col"
+            className="flex-1 relative w-full h-full flex flex-col bg-black"
           >
             {/* Background Pattern (Stays relative, but now sits on top of fixed background) */}
             <div
