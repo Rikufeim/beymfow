@@ -478,11 +478,11 @@ OUTPUT FORMAT:
               {/* BUG FIX: Added pb-2 to prevent descender clipping on 'g' */}
               <motion.h1
                 animate={{ backgroundPosition: ["0% center", "-200% center"] }}
-                transition={{ backgroundPosition: { duration: 2.5, ease: "linear", repeat: Infinity } }}
+                transition={{ backgroundPosition: { duration: 8, ease: "linear", repeat: Infinity } }}
                 className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-[length:200%_auto] pb-2"
                 style={{
                   fontFamily: '"SF Pro Display", Inter, "Helvetica Neue", "Arial Nova", Arial, sans-serif',
-                  backgroundImage: "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
+                  backgroundImage: "linear-gradient(to right, #f5f5f7 0%, #f5f5f7 20%, #a855f7 50%, #06b6d4 80%, #f5f5f7 100%)",
                 }}
               >
                 What are we building?
