@@ -491,7 +491,7 @@ OUTPUT FORMAT:
               </div>
             </motion.div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-cyan-500/30 via-black to-transparent z-20">
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-cyan-500/30 via-transparent to-transparent z-20">
               <div className="max-w-3xl mx-auto">
                 <form onSubmit={handleSubmit} className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
