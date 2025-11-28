@@ -9,17 +9,6 @@ export default function Hero() {
   className="relative mx-auto w-full pt-32 px-6 text-center md:px-8 
       min-h-screen overflow-hidden 
       bg-black flex flex-col items-center justify-start">
-      {/* --- TAUSTAEFEKTIT --- */}
-
-      {/* Gradient Background */}
-      <div className="absolute inset-0 -z-10 w-full h-full
-        bg-gradient-to-br from-purple-900/30 via-black to-teal-900/30
-        blur-3xl opacity-60" />
-
-      {/* Yläosan "Spotlight" -valo */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-purple-500/10 blur-[100px] rounded-full -z-10" />
-
-      {/* --- SISÄLTÖ --- */}
 
       {/* Otsikko */}
       <h1 className="animate-fade-in mx-auto max-w-6xl

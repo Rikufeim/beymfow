@@ -79,21 +79,6 @@ const Premium = () => {
     <Layout>
       {/* Main Container with Better Spacing and Relative positioning */}
       <div className="relative min-h-screen bg-black text-white flex flex-col justify-center items-center px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24 md:py-32">
-        {/* --- BACKGROUND LAYERS START --- */}
-        {/* Kiinteä taustakuva */}
-        <div
-          className="fixed inset-0 z-0 opacity-30"
-          style={{
-            backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        {/* Tummennus taustan päälle */}
-        <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
-        {/* --- BACKGROUND LAYERS END --- */}
 
         {/* Content Wrapper (z-10 to sit on top of background) */}
         <div className="relative z-10 max-w-6xl w-full text-center">
