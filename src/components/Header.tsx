@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, Github, Youtube, Instagram, Menu, Twitter } from "lucide-react";
 import { useState } from "react";
@@ -17,11 +16,8 @@ const Header = () => {
   const isAuthPage = location.pathname === "/auth";
 
   return (
-    <motion.header
+    <header
       className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black/20 backdrop-blur-sm transition-all duration-500"
-      initial={isHomePage ? { y: -100 } : { y: 0 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
@@ -218,7 +214,7 @@ const Header = () => {
 
         {/* Desktop Sign In/Out Button */}
         {!isAuthPage && (
-          <motion.div className="hidden md:block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+          <div className="hidden md:block">
             {user ? (
               <Button
                 variant="outline"
@@ -238,10 +234,10 @@ const Header = () => {
                 </Button>
               </Link>
             )}
-          </motion.div>
+          </div>
         )}
       </div>
-    </motion.header>
+    </header>
   );
 };
 
