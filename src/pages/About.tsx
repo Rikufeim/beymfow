@@ -123,9 +123,8 @@ const About = () => {
             <h2 className="text-4xl font-bold mb-8 text-white">Ready to find your flow?</h2>
             <button
               onClick={() => navigate("/")}
-              className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+              className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white bg-white/5 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 transition-all duration-200 group-hover:scale-105 opacity-100" />
               <span className="relative flex items-center gap-2">
                 Launch Beymflow
                 <svg

@@ -185,7 +185,7 @@ export const QuickPromptGenerator = () => {
           <div className="pb-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex-shrink-0 px-2 py-1 rounded-full border border-white/20 text-white/70 hover:border-white/30 hover:text-white transition-all duration-300 h-8 w-8 flex items-center justify-center">
+                <button className="flex-shrink-0 px-2 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center">
                   <Plus className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -241,7 +241,7 @@ export const QuickPromptGenerator = () => {
             <button
               onClick={handleGenerate}
               disabled={isLoading || !input.trim()}
-              className="flex-shrink-0 px-2 py-1 rounded-full border border-white/20 text-white/70 hover:border-white/30 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center"
+              className="flex-shrink-0 px-2 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center"
             >
               {isLoading ? (
                 <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -257,7 +257,7 @@ export const QuickPromptGenerator = () => {
         <Button
           variant="outline"
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-transparent transition-all duration-300 ${selectedModel === "fast" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white"}`}
+          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "fast" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}
           onClick={() => setSelectedModel("fast")}
         >
           <Zap className="w-3 h-3 mr-1.5" />
@@ -266,7 +266,7 @@ export const QuickPromptGenerator = () => {
         <Button
           variant="outline"
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-transparent transition-all duration-300 ${selectedModel === "advanced" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white"}`}
+          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "advanced" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}
           onClick={() => setSelectedModel("advanced")}
         >
           <Settings className="w-3 h-3 mr-1.5" />
@@ -275,7 +275,7 @@ export const QuickPromptGenerator = () => {
         <Button
           variant="outline"
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-transparent transition-all duration-300 ${selectedModel === "premium" ? "border-yellow-500/60 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]" : "border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400"}`}
+          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "premium" ? "border-yellow-500/60 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]" : "border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400 hover:bg-white/10"}`}
           onClick={() => setSelectedModel("premium")}
         >
           <Crown className="w-3 h-3 mr-1.5" />
