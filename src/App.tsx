@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
@@ -53,7 +52,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   
   return (
-    <Routes location={location} key={location.pathname}>
+    <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/features" element={<Features />} />
         <Route path="/premium" element={<Premium />} />
