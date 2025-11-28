@@ -458,7 +458,7 @@ OUTPUT FORMAT:
                   navigate("/"); // Navigate to home page
                 }
               }}
-              className="absolute top-6 left-6 p-2 rounded-full bg-black border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 font-sans"
+              className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 font-sans"
             >
               <Home size={20} />
               <span className="text-sm font-medium pr-1">Home</span>
