@@ -3,7 +3,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, Github, Youtube, Instagram, Menu, Twitter } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -108,32 +108,29 @@ const Header = () => {
         {/* Mobiili Menu Nappi */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
+            <button className="md:hidden text-white hover:bg-white/10 p-2 rounded-lg">
               <Menu className="h-6 w-6" />
-            </Button>
+            </button>
           </SheetTrigger>
 
           {/* Mobiili Menu Sisältö */}
           <SheetContent side="right" className="bg-black/95 backdrop-blur-xl border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
               {user ? (
-                <Button
-                  variant="outline"
+                <GlassButton
                   onClick={signOut}
-                  className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
+                  contentClassName="flex items-center justify-center gap-2 w-full"
+                  className="w-full"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
+                  <LogOut className="h-4 w-4" />
                   Sign Out
-                </Button>
+                </GlassButton>
               ) : (
                 !isAuthPage && (
                   <Link to="/auth" className="w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
-                    >
+                    <GlassButton contentClassName="w-full text-center" className="w-full">
                       Start Creating
-                    </Button>
+                    </GlassButton>
                   </Link>
                 )
               )}
@@ -216,22 +213,18 @@ const Header = () => {
         {!isAuthPage && (
           <div className="hidden md:block">
             {user ? (
-              <Button
-                variant="outline"
+              <GlassButton
                 onClick={signOut}
-                className="bg-black text-white border-white/10 hover:bg-white/10 rounded-full px-6"
+                contentClassName="flex items-center gap-2"
               >
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-4 w-4" />
                 Sign Out
-              </Button>
+              </GlassButton>
             ) : (
               <Link to="/auth">
-                <Button
-                  variant="outline"
-                  className="text-white border-white/10 px-6 shadow-md bg-black hover:bg-white/10 rounded-md"
-                >
+                <GlassButton>
                   Start Creating
-                </Button>
+                </GlassButton>
               </Link>
             )}
           </div>

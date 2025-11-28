@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, Copy, Check, X } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,12 +89,11 @@ export const GeneratedPromptDisplay = ({
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-base sm:text-lg font-bold text-white">Your prompt:</h4>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
+          <GlassButton
             size="sm"
             onClick={handleEnhancePrompt}
             disabled={isEnhancing}
-            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white disabled:opacity-50"
+            contentClassName="flex items-center gap-2"
           >
             {isEnhancing ? (
               <div className="w-3 h-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
@@ -102,25 +101,23 @@ export const GeneratedPromptDisplay = ({
               <Sparkles className="w-3 h-3" />
             )}
             Enhance
-          </Button>
-          <Button
-            variant="outline"
+          </GlassButton>
+          <GlassButton
             size="sm"
             onClick={copyToClipboard}
-            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white"
+            contentClassName="flex items-center gap-2"
           >
             {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
             {copied ? "Copied" : "Copy"}
-          </Button>
-          <Button
-            variant="outline"
+          </GlassButton>
+          <GlassButton
             size="sm"
             onClick={onClear}
-            className="gap-2 text-xs sm:text-sm rounded-full bg-transparent border-white/20 text-white/70 hover:border-white/30 hover:text-white"
+            contentClassName="flex items-center gap-2"
           >
             <X className="w-3 h-3" />
             Delete
-          </Button>
+          </GlassButton>
         </div>
       </div>
       <div className="p-4 rounded-xl bg-black border border-white/10">

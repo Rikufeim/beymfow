@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, Crown, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,14 +86,12 @@ const CreditsDisplay = () => {
             ) : (
               <Sparkles className="h-4 w-4 text-white" />
             )}
-            <Button
+            <button
               onClick={() => setIsMinimized(false)}
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 hover:bg-white/10"
+              className="h-6 w-6 p-0 hover:bg-white/10 rounded-lg flex items-center justify-center"
             >
               <ChevronDown className="h-3 w-3 text-white" />
-            </Button>
+            </button>
           </div>
         ) : (
           <div className="p-2 md:p-3">
@@ -108,14 +106,12 @@ const CreditsDisplay = () => {
                   {isPremium ? "Premium" : `${usageInfo.creditsRemaining} credits`}
                 </div>
               </div>
-              <Button
+              <button
                 onClick={() => setIsMinimized(true)}
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 hover:bg-white/10"
+                className="h-6 w-6 p-0 hover:bg-white/10 rounded-lg flex items-center justify-center"
               >
                 <ChevronUp className="h-3 w-3 text-white" />
-              </Button>
+              </button>
             </div>
             
             <div className="flex items-center gap-2">
@@ -124,19 +120,18 @@ const CreditsDisplay = () => {
                   <div className="text-[10px] md:text-xs text-gray-300 flex-1">
                     Unlimited
                   </div>
-                  <Button
+                  <GlassButton
                     onClick={handleManageSubscription}
                     disabled={isPortalLoading}
                     size="sm"
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10 h-7 px-2 text-xs shrink-0"
+                    contentClassName="flex items-center justify-center"
                   >
                     {isPortalLoading ? (
                       <RefreshCw className="h-3 w-3 animate-spin" />
                     ) : (
                       "Manage"
                     )}
-                  </Button>
+                  </GlassButton>
                 </>
               ) : (
                 <>
@@ -144,18 +139,19 @@ const CreditsDisplay = () => {
                     {usageInfo.creditsUsed} / 100 used
                   </div>
                   {usageInfo.creditsRemaining < 20 && (
-                    <Button
+                    <GlassButton
                       onClick={handleSubscribe}
                       disabled={isCheckingOut}
                       size="sm"
-                      className="bg-purple-600 hover:bg-purple-700 text-white h-7 px-2 text-xs shrink-0"
+                      contentClassName="flex items-center justify-center"
+                      className="bg-purple-600/20"
                     >
                       {isCheckingOut ? (
                         <RefreshCw className="h-3 w-3 animate-spin" />
                       ) : (
                         "Upgrade"
                       )}
-                    </Button>
+                    </GlassButton>
                   )}
                 </>
               )}
