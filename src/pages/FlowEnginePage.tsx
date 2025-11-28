@@ -474,15 +474,25 @@ OUTPUT FORMAT:
             </button>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-              {/* UPDATED: Title matches Prompt Lab logotype styling with color animation */}
+              {/* UPDATED: Title with color animation - solid white gradient */}
               {/* BUG FIX: Added pb-2 to prevent descender clipping on 'g' */}
               <motion.h1
-                animate={{ backgroundPosition: ["0% center", "-200% center"] }}
-                transition={{ backgroundPosition: { duration: 8, ease: "linear", repeat: Infinity } }}
-                className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-[length:200%_auto] pb-2"
+                animate={{ 
+                  backgroundImage: [
+                    "linear-gradient(90deg, #ffffff 0%, #ffffff 50%, #a855f7 100%)",
+                    "linear-gradient(90deg, #a855f7 0%, #06b6d4 50%, #ffffff 100%)",
+                    "linear-gradient(90deg, #06b6d4 0%, #ffffff 50%, #a855f7 100%)",
+                    "linear-gradient(90deg, #ffffff 0%, #ffffff 50%, #a855f7 100%)",
+                  ]
+                }}
+                transition={{ duration: 8, ease: "linear", repeat: Infinity }}
+                className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] pb-2"
                 style={{
                   fontFamily: '"SF Pro Display", Inter, "Helvetica Neue", "Arial Nova", Arial, sans-serif',
-                  backgroundImage: "linear-gradient(to right, #f5f5f7 0%, #f5f5f7 20%, #a855f7 50%, #06b6d4 80%, #f5f5f7 100%)",
+                  backgroundImage: "linear-gradient(90deg, #ffffff 0%, #ffffff 50%, #a855f7 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
                 }}
               >
                 What are we building?
