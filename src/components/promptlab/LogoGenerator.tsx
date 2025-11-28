@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, X, Loader2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -90,23 +90,24 @@ export const LogoGenerator = ({ toolColor: _toolColor }: LogoGeneratorProps) => 
               maxLength={1000}
             />
           </div>
-          <Button
+          <GlassButton
             onClick={handleGenerate}
             disabled={isLoading || !input.trim()}
-            className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all duration-300"
+            contentClassName="flex items-center gap-2 w-full justify-center"
+            className="w-full"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Generating Logo...
               </>
             ) : (
               <>
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 Generate Logo
               </>
             )}
-          </Button>
+          </GlassButton>
         </div>
       )}
 
@@ -121,24 +122,24 @@ export const LogoGenerator = ({ toolColor: _toolColor }: LogoGeneratorProps) => 
           </div>
 
           <div className="space-y-2">
-            <Button
-              variant="outline"
+            <GlassButton
               size="sm"
               onClick={clearResult}
-              className="w-full bg-white/5 hover:bg-white/10 border-white/20 text-white/80 hover:text-white"
+              contentClassName="flex items-center gap-2 w-full justify-center"
+              className="w-full"
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-4 h-4" />
               Clear
-            </Button>
-            <Button
-              variant="outline"
+            </GlassButton>
+            <GlassButton
               size="sm"
               onClick={handleDownload}
-              className="w-full bg-white/5 hover:bg-white/10 border-white/20 text-white/80 hover:text-white"
+              contentClassName="flex items-center gap-2 w-full justify-center"
+              className="w-full"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4" />
               Download
-            </Button>
+            </GlassButton>
           </div>
         </div>
       )}

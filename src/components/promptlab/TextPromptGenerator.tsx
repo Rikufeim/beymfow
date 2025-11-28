@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Send, Copy, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -122,11 +122,10 @@ export const TextPromptGenerator = ({
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-base sm:text-lg font-bold text-white">Enhanced Prompt:</h4>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
+              <GlassButton
                 size="sm"
                 onClick={copyToClipboard}
-                className="gap-2 text-xs sm:text-sm rounded-full border-white/20 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/30 hover:text-white"
+                contentClassName="flex items-center gap-2"
               >
                 {copied ? (
                   <>
@@ -139,16 +138,15 @@ export const TextPromptGenerator = ({
                     Copy
                   </>
                 )}
-              </Button>
-              <Button
-                variant="outline"
+              </GlassButton>
+              <GlassButton
                 size="sm"
                 onClick={clearPrompt}
-                className="gap-2 text-xs sm:text-sm rounded-full border-white/20 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/30 hover:text-white"
+                contentClassName="flex items-center gap-2"
               >
                 <X className="w-3 h-3 sm:w-4 sm:h-4" />
                 Delete
-              </Button>
+              </GlassButton>
             </div>
           </div>
           <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/80">

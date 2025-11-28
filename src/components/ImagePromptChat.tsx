@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,14 +139,12 @@ ${currentPrompt ? `\n📝 **Your current prompt:**\n"${currentPrompt}"\n\nHow wo
             </div>
           </div>
           {onClose && (
-            <Button
+            <button
               onClick={onClose}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
+              className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-lg flex items-center justify-center"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           )}
         </div>
 
@@ -223,14 +221,14 @@ ${currentPrompt ? `\n📝 **Your current prompt:**\n"${currentPrompt}"\n\nHow wo
               className="flex-1 bg-background"
               disabled={isLoading}
             />
-            <Button
+            <GlassButton
               onClick={sendMessage}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
-              className="shrink-0 bg-purple-600 hover:bg-purple-700"
+              className="bg-purple-600/20"
             >
               <Send className="h-4 w-4" />
-            </Button>
+            </GlassButton>
           </div>
         </div>
       </Card>
