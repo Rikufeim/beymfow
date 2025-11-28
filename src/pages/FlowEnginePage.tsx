@@ -446,7 +446,7 @@ OUTPUT FORMAT:
         }}
       />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-purple-900/40 to-purple-900" />
       {/* ------------------------ */}
 
       <AnimatePresence mode="wait">
