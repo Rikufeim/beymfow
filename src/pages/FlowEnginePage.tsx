@@ -436,7 +436,7 @@ OUTPUT FORMAT:
     // <PremiumGate> POISTETTU TÄSTÄ
     <div className="h-screen bg-black text-white relative flex flex-col font-sans overflow-hidden">
       {/* --- BACKGROUND (turquoise gradient) --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/flow-engine-bg.png")', backgroundSize: "cover", backgroundPosition: "center" }} />
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/flow-engine-bg-turquoise.png")', backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/40" />
       {/* ------------------------ */}
 
