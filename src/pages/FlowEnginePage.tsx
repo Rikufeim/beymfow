@@ -438,7 +438,7 @@ OUTPUT FORMAT:
       {/* --- BACKGROUND (same as PromptLabPage) --- */}
       <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-black to-cyan-500/20" />
       {/* ------------------------ */}
 
       <AnimatePresence mode="wait">
@@ -459,7 +459,7 @@ OUTPUT FORMAT:
                   navigate("/"); // Navigate to home page
                 }
               }}
-              className="absolute top-6 left-6 p-2 rounded-full bg-white/5 border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 font-sans"
+              className="absolute top-6 left-6 p-2 rounded-full bg-black border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 font-sans"
             >
               <Home size={20} />
               <span className="text-sm font-medium pr-1">Home</span>
@@ -484,8 +484,7 @@ OUTPUT FORMAT:
                   <button
                     key={chip}
                     onClick={() => handleSuggestion(chip)}
-                    // UPDATED: Font-sans explicitly
-                    className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-neutral-300 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer font-sans"
+                    className="px-4 py-2 rounded-full bg-black border border-white/10 text-sm text-white hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer font-sans"
                   >
                     {chip}
                   </button>
@@ -493,11 +492,11 @@ OUTPUT FORMAT:
               </div>
             </motion.div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-purple-900/60 via-purple-900/20 to-transparent z-20">
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-cyan-500/30 via-black to-transparent z-20">
               <div className="max-w-3xl mx-auto">
                 <form onSubmit={handleSubmit} className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-                  <div className="relative flex items-center bg-[#1E1E20] border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center bg-black border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
                     <input
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
@@ -543,7 +542,7 @@ OUTPUT FORMAT:
             <div className="absolute top-4 left-4 z-30">
               <button
                 onClick={() => setViewMode("landing")}
-                className="h-10 px-4 rounded-lg bg-[#1E1E20] border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <ArrowLeft size={18} />
                 <span className="text-sm font-medium">Back</span>
@@ -554,14 +553,14 @@ OUTPUT FORMAT:
             <div className="absolute top-4 right-4 flex gap-2 z-30">
               <button
                 onClick={createAIAgent}
-                className="h-10 px-4 rounded-lg bg-[#1E1E20] border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <Bot size={18} />
                 <span className="text-sm">AI Agent</span>
               </button>
               <button
                 onClick={() => setShowCategories(!showCategories)}
-                className={`h-10 w-10 rounded-lg border border-white/10 flex items-center justify-center transition-all shadow-lg cursor-pointer ${showCategories ? "bg-white text-black" : "bg-[#1E1E20] text-neutral-300 hover:bg-white/5"}`}
+                className={`h-10 w-10 rounded-lg border border-white/10 flex items-center justify-center transition-all shadow-lg cursor-pointer ${showCategories ? "bg-white text-black" : "bg-black text-neutral-300 hover:bg-white/5"}`}
               >
                 <Plus
                   size={20}
@@ -587,7 +586,7 @@ OUTPUT FORMAT:
                 return (
                   <div
                     key={widget.id}
-                    className="absolute bg-[#1E1E20] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden hover:border-white/20 transition-colors font-sans"
+                    className="absolute bg-black border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden hover:border-white/20 transition-colors font-sans"
                     style={{
                       left: widget.x,
                       top: widget.y,
