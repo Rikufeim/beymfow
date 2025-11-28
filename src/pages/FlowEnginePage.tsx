@@ -484,7 +484,7 @@ OUTPUT FORMAT:
                   <button
                     key={chip}
                     onClick={() => handleSuggestion(chip)}
-                    className="px-4 py-2 rounded-full bg-black border border-white/10 text-sm text-white hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer font-sans"
+                    className="px-4 py-2 rounded-full bg-black border border-white/10 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer font-sans"
                   >
                     {chip}
                   </button>
@@ -542,7 +542,7 @@ OUTPUT FORMAT:
             <div className="absolute top-4 left-4 z-30">
               <button
                 onClick={() => setViewMode("landing")}
-                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <ArrowLeft size={18} />
                 <span className="text-sm font-medium">Back</span>
@@ -553,14 +553,14 @@ OUTPUT FORMAT:
             <div className="absolute top-4 right-4 flex gap-2 z-30">
               <button
                 onClick={createAIAgent}
-                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/5 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                className="h-10 px-4 rounded-lg bg-black border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <Bot size={18} />
                 <span className="text-sm">AI Agent</span>
               </button>
               <button
                 onClick={() => setShowCategories(!showCategories)}
-                className={`h-10 w-10 rounded-lg border border-white/10 flex items-center justify-center transition-all shadow-lg cursor-pointer ${showCategories ? "bg-white text-black" : "bg-black text-neutral-300 hover:bg-white/5"}`}
+                className={`h-10 w-10 rounded-lg border border-white/10 flex items-center justify-center transition-all shadow-lg cursor-pointer ${showCategories ? "bg-white text-black" : "bg-black text-neutral-300 hover:bg-white/10"}`}
               >
                 <Plus
                   size={20}
@@ -597,9 +597,9 @@ OUTPUT FORMAT:
                     onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                   >
                     {/* Header */}
-                    <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02] flex items-center justify-between cursor-move select-none">
+                    <div className="px-4 py-3 border-b border-white/5 bg-black flex items-center justify-between cursor-move select-none">
                       <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-md bg-white/5 ${accentColor}`}>
+                        <div className={`p-1.5 rounded-md bg-white/10 ${accentColor}`}>
                           <Icon size={16} />
                         </div>
                         <div className="flex flex-col">
@@ -697,10 +697,10 @@ OUTPUT FORMAT:
                               </div>
                             ))}
                           </div>
-                          <div className="p-3 border-t border-white/5 bg-[#1E1E20]">
+                          <div className="p-3 border-t border-white/5 bg-black">
                             <div className="relative">
                               <input
-                                className="w-full bg-[#131314] border border-white/10 rounded-md py-2 pl-3 pr-10 text-sm text-white focus:border-white/30 focus:outline-none font-sans"
+                                className="w-full bg-black border border-white/10 rounded-md py-2 pl-3 pr-10 text-sm text-white focus:border-white/30 focus:outline-none font-sans"
                                 placeholder="Ask AI..."
                                 value={widget.input}
                                 onChange={(e) => updateWidget(widget.id, "input", e.target.value)}
@@ -738,16 +738,16 @@ OUTPUT FORMAT:
                   initial={{ x: 300, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 300, opacity: 0 }}
-                  className="absolute top-16 right-4 w-72 bg-[#1E1E20] border border-white/10 rounded-xl shadow-2xl p-2 z-30 overflow-y-auto custom-scrollbar max-h-[80vh]"
+                  className="absolute top-16 right-4 w-72 bg-black border border-white/10 rounded-xl shadow-2xl p-2 z-30 overflow-y-auto custom-scrollbar max-h-[80vh]"
                 >
                   <div className="space-y-1">
                     {categories.map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => handleCategoryDrop(cat)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-lg group transition-colors text-left cursor-pointer border border-transparent hover:border-white/5"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-white/10 rounded-lg group transition-colors text-left cursor-pointer border border-transparent hover:border-white/5"
                       >
-                        <div className={`p-1.5 rounded bg-[#131314] ${cat.color} border border-white/5`}>
+                        <div className={`p-1.5 rounded bg-black ${cat.color} border border-white/5`}>
                           <cat.icon size={16} />
                         </div>
                         <div>
@@ -766,8 +766,8 @@ OUTPUT FORMAT:
             {/* Bottom Input */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4 z-30">
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-                <div className="relative flex items-center bg-[#1E1E20]/90 backdrop-blur-md border border-white/10 rounded-full px-2 py-2 shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+                <div className="relative flex items-center bg-black backdrop-blur-md border border-white/10 rounded-full px-2 py-2 shadow-2xl">
                   <input
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
