@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Send, Wand2, Loader2 } from "lucide-react";
 import { usePromptLab } from "@/contexts/PromptLabContext";

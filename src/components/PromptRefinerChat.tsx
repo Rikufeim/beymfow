@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,14 +125,12 @@ const PromptRefinerChat = ({ selectedPrompt, onClose, onPromptUpdate }: PromptRe
             </div>
           </div>
           {onClose && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-white/10"
+              className="h-8 w-8 p-0 hover:bg-white/10 rounded-lg flex items-center justify-center"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           )}
         </div>
 
@@ -208,14 +206,13 @@ const PromptRefinerChat = ({ selectedPrompt, onClose, onPromptUpdate }: PromptRe
               className="flex-1 bg-background"
               disabled={isLoading}
             />
-            <Button
+            <GlassButton
               onClick={sendMessage}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
-              className="shrink-0"
             >
               <Send className="h-4 w-4" />
-            </Button>
+            </GlassButton>
           </div>
         </div>
       </Card>

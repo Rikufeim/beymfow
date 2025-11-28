@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 import { usePromptLab } from "@/contexts/PromptLabContext";
@@ -124,9 +124,9 @@ export const AssistantChatPanel = () => {
         <div className="bg-white/5 rounded-2xl border border-white/10 p-3">
           <Input value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} placeholder="Ask the assistant to accomplish a task" className="bg-transparent border-none text-white placeholder:text-white/40 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 mb-2" />
           <div className="flex justify-end">
-            <Button onClick={handleSend} disabled={isLoading || !inputValue.trim()} size="icon" className="bg-white hover:bg-white/90 text-black rounded-full w-8 h-8 disabled:opacity-50">
+            <GlassButton onClick={handleSend} disabled={isLoading || !inputValue.trim()} size="icon">
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </Button>
+            </GlassButton>
           </div>
         </div>
       </div>
