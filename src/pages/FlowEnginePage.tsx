@@ -528,7 +528,7 @@ OUTPUT FORMAT:
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 relative w-full h-full flex flex-col bg-black"
+            className="flex-1 relative w-full h-full flex flex-col"
           >
             {/* Background Pattern (Stays relative, but now sits on top of fixed background) */}
             <div
