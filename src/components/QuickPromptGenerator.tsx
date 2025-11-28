@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassButton } from "@/components/ui/glass-button";
 import { Zap, Settings, Send, Plus, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -190,19 +190,6 @@ export const QuickPromptGenerator = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-black/60 backdrop-blur-md border-white/10 z-50 w-48">
-                <DropdownMenuItem
-                  onClick={() => toast.info("Feature coming soon")}
-                  className="text-white cursor-pointer hover:bg-white/10"
-                >
-                  Attach file
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => toast.info("Prompt Library feature coming soon")}
-                  className="text-white cursor-pointer hover:bg-white/10"
-                >
-                  Open Prompt Library
-                </DropdownMenuItem>
-                <div className="border-t border-white/10 my-2" />
                 <div className="px-2 py-2">
                   <p className="text-xs font-semibold text-white/50 mb-2 px-2">CATEGORIES</p>
                   <div className="space-y-1">
@@ -254,33 +241,33 @@ export const QuickPromptGenerator = () => {
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-        <Button
-          variant="outline"
+        <GlassButton
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "fast" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}
           onClick={() => setSelectedModel("fast")}
+          contentClassName="flex items-center gap-1.5"
+          className={selectedModel === "fast" ? "ring-2 ring-white/40" : ""}
         >
-          <Zap className="w-3 h-3 mr-1.5" />
+          <Zap className="w-3 h-3" />
           Fast Model
-        </Button>
-        <Button
-          variant="outline"
+        </GlassButton>
+        <GlassButton
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "advanced" ? "border-white/40 text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]" : "border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}
           onClick={() => setSelectedModel("advanced")}
+          contentClassName="flex items-center gap-1.5"
+          className={selectedModel === "advanced" ? "ring-2 ring-white/40" : ""}
         >
-          <Settings className="w-3 h-3 mr-1.5" />
+          <Settings className="w-3 h-3" />
           Advanced Model
-        </Button>
-        <Button
-          variant="outline"
+        </GlassButton>
+        <GlassButton
           size="sm"
-          className={`rounded-full px-4 py-2 text-xs sm:text-sm bg-white/5 backdrop-blur-md transition-all duration-300 ${selectedModel === "premium" ? "border-yellow-500/60 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.4)]" : "border-yellow-500/30 text-yellow-400/70 hover:border-yellow-500/50 hover:text-yellow-400 hover:bg-white/10"}`}
           onClick={() => setSelectedModel("premium")}
+          contentClassName="flex items-center gap-1.5"
+          className={selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}
         >
-          <Crown className="w-3 h-3 mr-1.5" />
+          <Crown className="w-3 h-3" />
           Beymflow Premium
-        </Button>
+        </GlassButton>
       </div>
 
       <GeneratedPromptDisplay
