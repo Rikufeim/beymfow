@@ -434,7 +434,7 @@ OUTPUT FORMAT:
   // --- RENDER ---
   return (
     // <PremiumGate> POISTETTU TÄSTÄ
-    <div className="min-h-screen bg-[#131314] text-white relative flex flex-col font-sans overflow-hidden">
+    <div className="h-screen bg-[#131314] text-white relative flex flex-col font-sans overflow-hidden">
       {/* --- BACKGROUND (same as PromptLabPage) --- */}
       <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
@@ -571,7 +571,7 @@ OUTPUT FORMAT:
             </div>
 
             {/* Canvas */}
-            <div ref={canvasRef} className="flex-1 relative overflow-hidden z-0">
+            <div ref={canvasRef} className="flex-1 relative overflow-hidden z-0 min-h-screen">
               {widgets.map((widget) => {
                 let Icon = Sparkles;
                 let accentColor = "text-neutral-400";
