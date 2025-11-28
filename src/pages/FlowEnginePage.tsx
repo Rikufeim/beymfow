@@ -435,18 +435,10 @@ OUTPUT FORMAT:
   return (
     // <PremiumGate> POISTETTU TÄSTÄ
     <div className="min-h-screen bg-[#131314] text-white relative flex flex-col font-sans overflow-hidden">
-      {/* --- ADDED BACKGROUND --- */}
-      <div
-        className="fixed inset-0 z-0 opacity-30"
-        style={{
-          backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
+      {/* --- BACKGROUND (same as PromptLabPage) --- */}
+      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'url("/lovable-uploads/IMG_0468.JPEG")', backgroundSize: "cover", backgroundPosition: "center" }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-black/60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-purple-900/40 to-purple-900" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black via-transparent to-purple-900/20" />
       {/* ------------------------ */}
 
       <AnimatePresence mode="wait">
