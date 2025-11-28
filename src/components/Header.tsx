@@ -120,7 +120,7 @@ const Header = () => {
                 <Button
                   variant="outline"
                   onClick={signOut}
-                  className="w-full bg-black/80 text-white border-white/20 hover:bg-black/90 hover:border-white/30 rounded-full"
+                  className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
@@ -130,7 +130,7 @@ const Header = () => {
                   <Link to="/auth" className="w-full">
                     <Button
                       variant="outline"
-                      className="w-full bg-black/80 text-white border-white/20 hover:bg-black/90 hover:border-white/30 rounded-full"
+                      className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
                     >
                       Start Creating
                     </Button>
@@ -219,7 +219,7 @@ const Header = () => {
               <Button
                 variant="outline"
                 onClick={signOut}
-                className="bg-white/10 text-white border-white/10 hover:bg-white/20 rounded-full px-6"
+                className="bg-black text-white border-white/10 hover:bg-white/10 rounded-full px-6"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -228,7 +228,7 @@ const Header = () => {
               <Link to="/auth">
                 <Button
                   variant="outline"
-                  className="text-white border-white/10 px-6 shadow-md bg-neutral-950 hover:bg-neutral-800 rounded-md"
+                  className="text-white border-white/10 px-6 shadow-md bg-black hover:bg-white/10 rounded-md"
                 >
                   Start Creating
                 </Button>
