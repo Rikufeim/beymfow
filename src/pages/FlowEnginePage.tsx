@@ -474,16 +474,19 @@ OUTPUT FORMAT:
             </button>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-              {/* UPDATED: Title matches Prompt Lab logotype styling */}
+              {/* UPDATED: Title matches Prompt Lab logotype styling with color animation */}
               {/* BUG FIX: Added pb-2 to prevent descender clipping on 'g' */}
-              <h1
-                className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-gradient-to-b from-[#f5f5f7] to-[#d8dadd] pb-2"
+              <motion.h1
+                animate={{ backgroundPosition: ["0% center", "-200% center"] }}
+                transition={{ backgroundPosition: { duration: 2.5, ease: "linear", repeat: Infinity } }}
+                className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-[length:200%_auto] pb-2"
                 style={{
                   fontFamily: '"SF Pro Display", Inter, "Helvetica Neue", "Arial Nova", Arial, sans-serif',
+                  backgroundImage: "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
                 }}
               >
                 What are we building?
-              </h1>
+              </motion.h1>
               <div className="flex flex-wrap justify-center gap-3">
                 {suggestionChips.map((chip) => (
                   <button
