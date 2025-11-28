@@ -55,7 +55,7 @@ interface FlowEngineProps {
 
 // --- Constants ---
 // UPDATED: Changed suggestion chips to requested values
-const suggestionChips = ["Business", "Mindset", "Health"];
+const suggestionChips = ["Website", "App", "Game"];
 
 const categories: Category[] = [
   { id: "communication", name: "Communication Style", icon: MessageSquare, color: "text-blue-400" },
