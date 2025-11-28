@@ -30,7 +30,7 @@ const Index = () => {
   });
   return <>
       <Layout>
-        <main className="relative overflow-hidden bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
+        <main className="relative overflow-hidden bg-background min-h-screen pt-4 sm:pt-6 md:pt-8">
           <div className="relative z-10">
             {/* Hero Section */}
             <Hero />
@@ -70,7 +70,7 @@ const Index = () => {
 
 
             {/* How It Works Section */}
-            <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-[#000a00]/0">
+            <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-background/0">
               <div className="max-w-7xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -109,7 +109,7 @@ const Index = () => {
                     }
                   ].map((item, idx) => (
                     <div key={idx} className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-border bg-gradient-to-br from-card via-card/50 to-accent p-[1px]")}>
                         <GlowingEffect
                           spread={40}
                           glow
@@ -119,16 +119,16 @@ const Index = () => {
                           borderWidth={2}
                           className="opacity-70"
                         />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-card/90 dark:bg-card/95 p-5 sm:p-6 md:p-8 shadow-lg backdrop-blur">
                           <div className="flex flex-col gap-3">
-                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                            <div className="w-fit rounded-lg border border-border bg-accent p-2">
                               {item.icon}
                             </div>
                             <div className="space-y-2">
-                              <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-white">
+                              <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-foreground">
                                 {item.title}
                               </h3>
-                              <p className="text-xs sm:text-sm md:text-base leading-relaxed text-white/70">
+                              <p className="text-xs sm:text-sm md:text-base leading-relaxed text-muted-foreground">
                                 {item.description}
                               </p>
                             </div>
@@ -142,7 +142,7 @@ const Index = () => {
             </section>
 
             {/* Essential Steps Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-[#000a00]/0">
+            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-background/0">
               <div className="max-w-6xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -164,13 +164,13 @@ const Index = () => {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
-                    { number: "01", icon: <Target className="h-4 w-4 text-cyan-300" />, title: "Define Clear Objectives", description: "Start with a clear goal and specific requirements for your prompt" },
-                    { number: "02", icon: <FileText className="h-4 w-4 text-cyan-300" />, title: "Provide Context", description: "Include relevant background information and specific details" },
-                    { number: "03", icon: <Layers className="h-4 w-4 text-purple-300" />, title: "Structure Your Prompt", description: "Organize information logically with clear sections and formatting" },
-                    { number: "04", icon: <Zap className="h-4 w-4 text-purple-300" />, title: "Refine and Test", description: "Iterate and improve your prompt based on the results" }
+                    { number: "01", icon: <Target className="h-4 w-4 text-primary" />, title: "Define Clear Objectives", description: "Start with a clear goal and specific requirements for your prompt" },
+                    { number: "02", icon: <FileText className="h-4 w-4 text-primary" />, title: "Provide Context", description: "Include relevant background information and specific details" },
+                    { number: "03", icon: <Layers className="h-4 w-4 text-accent-foreground" />, title: "Structure Your Prompt", description: "Organize information logically with clear sections and formatting" },
+                    { number: "04", icon: <Zap className="h-4 w-4 text-accent-foreground" />, title: "Refine and Test", description: "Iterate and improve your prompt based on the results" }
                   ].map((item, idx) => (
                     <div key={idx} className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-border bg-gradient-to-br from-card via-card/50 to-accent p-[1px]")}>
                         <GlowingEffect
                           spread={40}
                           glow
@@ -180,19 +180,19 @@ const Index = () => {
                           borderWidth={2}
                           className="opacity-70"
                         />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-card/90 dark:bg-card/95 p-5 sm:p-6 md:p-8 shadow-lg backdrop-blur">
                           <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between">
-                              <div className="text-4xl font-bold text-gray-400">{item.number}</div>
-                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                              <div className="text-4xl font-bold text-muted-foreground">{item.number}</div>
+                              <div className="w-fit rounded-lg border border-border bg-accent p-2">
                                 {item.icon}
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white">
+                              <h3 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
                                 {item.title}
                               </h3>
-                              <p className="text-xs md:text-sm leading-relaxed text-white/70">
+                              <p className="text-xs md:text-sm leading-relaxed text-muted-foreground">
                                 {item.description}
                               </p>
                             </div>
@@ -206,7 +206,7 @@ const Index = () => {
             </section>
 
             {/* Why Choose Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-[#000a00]/0">
+            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-background/0">
               <div className="max-w-6xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -229,9 +229,9 @@ const Index = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                   {[
-                    { icon: <Zap className="h-4 w-4 text-blue-400" />, title: "Instant Enhancement", description: "Get immediate improvements to your prompts using advanced AI techniques." },
-                    { icon: <Lightbulb className="h-4 w-4 text-purple-400" />, title: "Smart Analysis", description: "Our system uses sophisticated analysis techniques to understand your prompt context and provide optimal suggestions." },
-                    { icon: <CheckCircle className="h-4 w-4 text-pink-400" />, title: "Precision Results", description: "Get accurate and relevant responses from AI with our enhanced prompts." }
+                    { icon: <Zap className="h-4 w-4 text-primary" />, title: "Instant Enhancement", description: "Get immediate improvements to your prompts using advanced AI techniques." },
+                    { icon: <Lightbulb className="h-4 w-4 text-accent-foreground" />, title: "Smart Analysis", description: "Our system uses sophisticated analysis techniques to understand your prompt context and provide optimal suggestions." },
+                    { icon: <CheckCircle className="h-4 w-4 text-primary" />, title: "Precision Results", description: "Get accurate and relevant responses from AI with our enhanced prompts." }
                   ].map((item, idx) => (
                     <motion.div 
                       key={idx}
@@ -241,7 +241,7 @@ const Index = () => {
                       transition={{ duration: 0.6, delay: idx * 0.1 }}
                       className="min-h-[11rem]"
                     >
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-border bg-gradient-to-br from-card via-card/50 to-accent p-[1px]")}>
                         <GlowingEffect
                           spread={40}
                           glow
@@ -251,16 +251,16 @@ const Index = () => {
                           borderWidth={2}
                           className="opacity-70"
                         />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-card/90 dark:bg-card/95 p-5 sm:p-6 md:p-8 shadow-lg backdrop-blur">
                           <div className="flex flex-col gap-3">
-                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                            <div className="w-fit rounded-lg border border-border bg-accent p-2">
                               {item.icon}
                             </div>
                             <div className="space-y-2">
-                              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-white">
+                              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground">
                                 {item.title}
                               </h3>
-                              <p className="text-xs sm:text-sm leading-relaxed text-white/70">
+                              <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                                 {item.description}
                               </p>
                             </div>
