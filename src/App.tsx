@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
@@ -105,19 +106,21 @@ const GlobalImagePreloader = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <LanguageProvider>
-          <BrowserRouter>
-            <AuthProvider>
-              <GlobalImagePreloader />
-              <ScrollToTop />
-              <AnimatedRoutes />
-              <Toaster />
-              <Sonner />
-            </AuthProvider>
-          </BrowserRouter>
-        </LanguageProvider>
-      </TooltipProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <TooltipProvider>
+          <LanguageProvider>
+            <BrowserRouter>
+              <AuthProvider>
+                <GlobalImagePreloader />
+                <ScrollToTop />
+                <AnimatedRoutes />
+                <Toaster />
+                <Sonner />
+              </AuthProvider>
+            </BrowserRouter>
+          </LanguageProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
