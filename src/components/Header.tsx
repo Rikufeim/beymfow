@@ -1,23 +1,29 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Github, Youtube, Instagram, Menu, Twitter } from "lucide-react";
+import { LogOut, Github, Youtube, Instagram, Menu, Twitter, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useTheme } from "next-themes";
 
 const Header = () => {
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [isCommunityOpen, setIsCommunityOpen] = useState(false);
   const isHomePage = location.pathname === "/";
   const isAuthPage = location.pathname === "/auth";
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <header
-      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black/20 backdrop-blur-sm transition-all duration-500"
+      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black/20 dark:bg-black/20 backdrop-blur-sm transition-all duration-500"
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
@@ -114,13 +120,32 @@ const Header = () => {
           </SheetTrigger>
 
           {/* Mobiili Menu Sisältö */}
-          <SheetContent side="right" className="bg-black/95 backdrop-blur-xl border-white/10 w-[300px] z-[1000]">
+          <SheetContent side="right" className="bg-black/95 dark:bg-black/95 backdrop-blur-xl border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
+              {/* Theme Toggle in Mobile Menu */}
+              <Button
+                variant="outline"
+                onClick={toggleTheme}
+                className="w-full bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-full flex items-center justify-center gap-2"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </Button>
+
               {user ? (
                 <Button
                   variant="outline"
                   onClick={signOut}
-                  className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
+                  className="w-full bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-full"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
@@ -130,7 +155,7 @@ const Header = () => {
                   <Link to="/auth" className="w-full">
                     <Button
                       variant="outline"
-                      className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
+                      className="w-full bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-full"
                     >
                       Start Creating
                     </Button>
@@ -212,14 +237,29 @@ const Header = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Desktop Sign In/Out Button */}
+        {/* Desktop Sign In/Out Button + Theme Toggle */}
         {!isAuthPage && (
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
+
+            {/* Sign In/Out Button */}
             {user ? (
               <Button
                 variant="outline"
                 onClick={signOut}
-                className="bg-black text-white border-white/10 hover:bg-white/10 rounded-full px-6"
+                className="bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-full px-6 transition-all"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -228,7 +268,7 @@ const Header = () => {
               <Link to="/auth">
                 <Button
                   variant="outline"
-                  className="text-white border-white/10 px-6 shadow-md bg-black hover:bg-white/10 rounded-md"
+                  className="bg-white/5 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/20 rounded-full px-6 transition-all"
                 >
                   Start Creating
                 </Button>
