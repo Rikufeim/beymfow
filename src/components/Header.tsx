@@ -1,29 +1,23 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Github, Youtube, Instagram, Menu, Twitter, Sun, Moon } from "lucide-react";
+import { LogOut, Github, Youtube, Instagram, Menu, Twitter } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useTheme } from "next-themes";
 
 const Header = () => {
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [isCommunityOpen, setIsCommunityOpen] = useState(false);
   const isHomePage = location.pathname === "/";
   const isAuthPage = location.pathname === "/auth";
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
-
   return (
     <header
-      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-background/60 dark:bg-background/60 backdrop-blur-sm transition-all duration-500 border-b border-border/50"
+      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black/20 backdrop-blur-sm transition-all duration-500"
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
@@ -33,9 +27,9 @@ const Header = () => {
             alt="Beymflow Logo"
             className="h-[50px] sm:h-[60px] object-contain"
           />
-          <span className="relative text-lg sm:text-xl font-semibold tracking-[0.35em] text-foreground uppercase hidden sm:block">
+          <span className="relative text-lg sm:text-xl font-semibold tracking-[0.35em] text-white uppercase hidden sm:block">
             Beymflow
-            <span className="absolute -top-2 -right-8 text-[10px] tracking-normal text-muted-foreground lowercase font-normal">
+            <span className="absolute -top-2 -right-8 text-[10px] tracking-normal text-white/60 lowercase font-normal">
               beta
             </span>
           </span>
@@ -46,22 +40,22 @@ const Header = () => {
       {isHomePage && (
         <nav className="hidden md:flex items-center justify-center gap-8 flex-1 font-medium">
           {/* 1. Pricing */}
-          <Link to="/premium" className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm">
+          <Link to="/premium" className="text-gray-300 hover:text-white transition-colors duration-300 text-sm">
             Pricing
           </Link>
 
           {/* 2. About Us */}
-          <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm">
+          <Link to="/about" className="text-gray-300 hover:text-white transition-colors duration-300 text-sm">
             About Us
           </Link>
 
           {/* 3. Community Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
+            <DropdownMenuTrigger className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
               Community
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-card/95 backdrop-blur-xl border border-border rounded-xl p-2 min-w-[180px] z-[1000]"
+              className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-2 min-w-[180px] z-[1000]"
               align="center"
             >
               <DropdownMenuItem asChild>
@@ -69,7 +63,7 @@ const Header = () => {
                   href="https://github.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
                 >
                   <Github className="h-4 w-4" /> <span>GitHub</span>
                 </a>
@@ -79,7 +73,7 @@ const Header = () => {
                   href="https://x.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
                 >
                   <Twitter className="h-4 w-4" /> <span>X</span>
                 </a>
@@ -89,7 +83,7 @@ const Header = () => {
                   href="https://www.youtube.com/@Beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
                 >
                   <Youtube className="h-4 w-4" /> <span>YouTube</span>
                 </a>
@@ -99,7 +93,7 @@ const Header = () => {
                   href="https://www.instagram.com/beymflow/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
                 >
                   <Instagram className="h-4 w-4" /> <span>Instagram</span>
                 </a>
@@ -114,38 +108,19 @@ const Header = () => {
         {/* Mobiili Menu Nappi */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden text-foreground hover:bg-accent">
+            <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
 
           {/* Mobiili Menu Sisältö */}
-          <SheetContent side="right" className="bg-card/95 backdrop-blur-xl border-border w-[300px] z-[1000]">
+          <SheetContent side="right" className="bg-black/95 backdrop-blur-xl border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
-              {/* Theme Toggle in Mobile Menu */}
-              <Button
-                variant="outline"
-                onClick={toggleTheme}
-                className="w-full bg-accent backdrop-blur-md text-foreground border border-border hover:bg-accent/80 hover:border-border rounded-full flex items-center justify-center gap-2"
-              >
-                {theme === "dark" ? (
-                  <>
-                    <Sun className="h-4 w-4" />
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4" />
-                    <span>Dark Mode</span>
-                  </>
-                )}
-              </Button>
-
               {user ? (
                 <Button
                   variant="outline"
                   onClick={signOut}
-                  className="w-full bg-accent backdrop-blur-md text-foreground border border-border hover:bg-accent/80 hover:border-border rounded-full"
+                  className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
@@ -155,7 +130,7 @@ const Header = () => {
                   <Link to="/auth" className="w-full">
                     <Button
                       variant="outline"
-                      className="w-full bg-accent backdrop-blur-md text-foreground border border-border hover:bg-accent/80 hover:border-border rounded-full"
+                      className="w-full bg-black text-white border-white/20 hover:bg-white/10 hover:border-white/30 rounded-full"
                     >
                       Start Creating
                     </Button>
@@ -167,13 +142,13 @@ const Header = () => {
                 <>
                   <Link
                     to="/about"
-                    className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4"
+                    className="text-white/90 hover:text-white transition-colors text-lg font-medium px-4"
                   >
                     About Us
                   </Link>
                   <Link
                     to="/premium"
-                    className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4"
+                    className="text-white/90 hover:text-white transition-colors text-lg font-medium px-4"
                   >
                     Pricing
                   </Link>
@@ -181,7 +156,7 @@ const Header = () => {
                   <div className="px-4">
                     <button
                       onClick={() => setIsCommunityOpen(!isCommunityOpen)}
-                      className="flex items-center justify-between w-full text-muted-foreground hover:text-foreground transition-colors text-lg font-medium mb-3"
+                      className="flex items-center justify-between w-full text-white/90 hover:text-white transition-colors text-lg font-medium mb-3"
                     >
                       Community
                       <svg
@@ -195,12 +170,12 @@ const Header = () => {
                       </svg>
                     </button>
                     {isCommunityOpen && (
-                      <div className="flex flex-col gap-3 pl-2 border-l border-border ml-1">
+                      <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
                         <a
                           href="https://github.com/beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors p-2"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
                         >
                           <Github className="h-5 w-5" /> <span>GitHub</span>
                         </a>
@@ -208,7 +183,7 @@ const Header = () => {
                           href="https://x.com/beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors p-2"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
                         >
                           <Twitter className="h-5 w-5" /> <span>X</span>
                         </a>
@@ -216,7 +191,7 @@ const Header = () => {
                           href="https://www.youtube.com/@Beymflow"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors p-2"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
                         >
                           <Youtube className="h-5 w-5" /> <span>YouTube</span>
                         </a>
@@ -224,7 +199,7 @@ const Header = () => {
                           href="https://www.instagram.com/beymflow/"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors p-2"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
                         >
                           <Instagram className="h-5 w-5" /> <span>Instagram</span>
                         </a>
@@ -237,29 +212,14 @@ const Header = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Desktop Sign In/Out Button + Theme Toggle */}
+        {/* Desktop Sign In/Out Button */}
         {!isAuthPage && (
-          <div className="hidden md:flex items-center gap-3">
-            {/* Theme Toggle Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full bg-accent backdrop-blur-md border border-border text-foreground hover:bg-accent/80 hover:border-border transition-all"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-
-            {/* Sign In/Out Button */}
+          <div className="hidden md:block">
             {user ? (
               <Button
                 variant="outline"
                 onClick={signOut}
-                className="bg-accent backdrop-blur-md text-foreground border border-border hover:bg-accent/80 hover:border-border rounded-full px-6 transition-all"
+                className="bg-black text-white border-white/10 hover:bg-white/10 rounded-full px-6"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -268,7 +228,7 @@ const Header = () => {
               <Link to="/auth">
                 <Button
                   variant="outline"
-                  className="bg-accent backdrop-blur-md text-foreground border border-border hover:bg-accent/80 hover:border-border rounded-full px-6 transition-all"
+                  className="text-white border-white/10 px-6 shadow-md bg-black hover:bg-white/10 rounded-md"
                 >
                   Start Creating
                 </Button>

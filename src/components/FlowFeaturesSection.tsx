@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import beymflowBg from "@/assets/beymflow-background.png";
 
+// Määritellään yksinkertainen Button-komponentti tässä tiedostossa,
+// koska emme voi tuoda sitä ulkoisesta tiedostosta esikatselussa.
+// Projektissasi voit käyttää: import { Button } from "@/components/ui/button";
 const Button = ({
   className = "",
   size = "default",
@@ -20,18 +23,20 @@ const Button = ({
       {children}
     </button>;
 };
-
 export const FlowFeaturesSection = ({
   className = ""
 }) => {
+  // Hookin käyttö turvallisesti (jos Router ei ole saatavilla esikatselussa, tämä voi vaatia providerin)
+  // Tässä oletetaan, että ympäristössä on Router tai tämä jätetään huomiotta virheen sattuessa.
   let navigate;
   try {
     navigate = useNavigate();
   } catch (e) {
+    // Fallback jos Router context puuttuu esikatselusta
     navigate = path => console.log(`Navigating to ${path}`);
   }
-  
   return <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
+      {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
       <div className="w-full mx-auto space-y-16 md:space-y-24">
         {/* Flow Engine Section - Text Left, Image Right */}
         <motion.div initial={{
@@ -47,16 +52,16 @@ export const FlowFeaturesSection = ({
         duration: 0.6
       }} className="grid md:grid-cols-2 gap-6 lg:gap-8 items-stretch">
           {/* Text Content - Left (Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 relative overflow-hidden bg-card dark:bg-card/90 rounded-3xl w-full h-full border border-border">
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full">
             {/* Purple glow - left corner */}
-            <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-accent-foreground/20 dark:bg-accent-foreground/25 blur-3xl" aria-hidden="true" />
+            <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 lg:mb-6 relative z-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Flow Engine
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe coding and sharpens the way you build, and it works with all major AI models.</p>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe coding and sharpens the way you build, and it works with all major AI models.</p>
             <div className="relative z-10">
-              <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 font-semibold px-8 rounded-full" onClick={() => navigate("/flow-engine")}>
+              <Button size="lg" className="bg-white text-black hover:bg-neutral-200 font-semibold px-8 rounded-full" onClick={() => navigate("/flow-engine")}>
                 Start building
               </Button>
             </div>
@@ -88,15 +93,15 @@ export const FlowFeaturesSection = ({
           </div>
 
           {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-card dark:bg-card/90 rounded-3xl w-full h-full border border-border">
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-black rounded-3xl w-full h-full">
             {/* Purple glow - right corner */}
-            <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-accent-foreground/20 dark:bg-accent-foreground/25 blur-3xl" aria-hidden="true" />
+            <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 lg:mb-6 relative z-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Prompt Lab
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 lg:mb-8 max-w-lg relative z-10">Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools. </p>
-            <div className="text-sm text-accent-foreground hover:text-primary font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/prompt-lab-page")}>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools. </p>
+            <div className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/prompt-lab-page")}>
               Click to explore <span>→</span>
             </div>
           </div>

@@ -3,9 +3,12 @@
 import { QuickPromptGenerator } from "./QuickPromptGenerator";
 export default function Hero() {
   return <section id="hero"
+  // MUUTOS:
+  // 1. "justify-center" vaihdettu -> "justify-start"
+  // 2. "pt-32" pitää sisällön irti navigaatiopalkista (voit kokeilla myös pt-36 tai pt-40)
   className="relative mx-auto w-full pt-32 px-6 text-center md:px-8 
       min-h-screen overflow-hidden 
-      bg-background flex flex-col items-center justify-start">
+      bg-black flex flex-col items-center justify-start">
 
       {/* Otsikko */}
       <h1 className="animate-fade-in mx-auto max-w-6xl
@@ -14,15 +17,15 @@ export default function Hero() {
       animationDelay: "0.1s",
       animationFillMode: "forwards"
     }}>
-        <span className="block text-foreground mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
+        <span className="block text-white mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
           Make powerful prompts
         </span>
-        <span className="block bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">with pure flow</span>
+        <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">with pure flow</span>
       </h1>
 
       {/* Teksti */}
       <p className="animate-fade-in mx-auto mt-6 max-w-2xl text-balance 
-        text-lg tracking-tight text-muted-foreground 
+        text-lg tracking-tight text-gray-400 
         opacity-0 md:text-xl mb-12" style={{
       animationDelay: "0.2s",
       animationFillMode: "forwards"
@@ -40,6 +43,6 @@ export default function Hero() {
 
       {/* Bottom Fade / Glow effect */}
       <div className="absolute bottom-0 left-0 right-0 h-32 
-        bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        bg-gradient-to-t from-black to-transparent pointer-events-none" />
     </section>;
 }
