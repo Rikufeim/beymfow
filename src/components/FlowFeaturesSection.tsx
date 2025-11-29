@@ -19,10 +19,13 @@ const Button = ({
     lg: "h-11 rounded-md px-8",
     icon: "h-10 w-10"
   };
-  return <button className={`${baseStyles} ${sizeStyles[size] || sizeStyles.default} ${className}`} {...props}>
+  return (
+    <button className={`${baseStyles} ${sizeStyles[size] || sizeStyles.default} ${className}`} {...props}>
       {children}
-    </button>;
+    </button>
+  );
 };
+
 export const FlowFeaturesSection = ({
   className = ""
 }) => {
@@ -35,75 +38,88 @@ export const FlowFeaturesSection = ({
     // Fallback jos Router context puuttuu esikatselusta
     navigate = path => console.log(`Navigating to ${path}`);
   }
-  return <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
+
+  const sharedCardClasses = "grid md:grid-cols-2 items-stretch gap-6 md:gap-8";
+  const sharedTextClasses = "flex flex-col justify-center gap-6 p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full z-10";
+  const sharedImageClasses = "relative min-h-[320px] md:min-h-[420px] overflow-hidden w-full h-full rounded-3xl cursor-pointer";
+
+  return (
+    <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
       {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
       <div className="w-full mx-auto space-y-16 md:space-y-24">
         {/* Flow Engine Section - Image Right, Text Left (mirrored from Prompt Lab) */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true,
-        amount: 0.2
-      }} transition={{
-        duration: 0.6
-      }} className="grid md:grid-cols-[1fr_1.2fr] gap-0 items-stretch">
-          {/* Text Content - Left (Order 1 on mobile, 1 on desktop - Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-1 relative overflow-hidden bg-black rounded-3xl w-full h-full md:mr-[-8%] z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6 }}
+          className={sharedCardClasses}
+        >
+          {/* Text Content - Left */}
+          <div className={`${sharedTextClasses} order-1 md:order-1`}>
             {/* Purple glow - right corner */}
-            <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
+            <span
+              className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              aria-hidden="true"
+            />
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Flow Engine
             </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe coding and sharpens the way you build, and it works with all major AI models.</p>
-            <div className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/flow-engine")}>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
+              The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe
+              coding and sharpens the way you build, and it works with all major AI models.
+            </p>
+            <div
+              className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
+              onClick={() => navigate("/flow-engine")}
+            >
               Click to explore <span>→</span>
             </div>
           </div>
 
-          {/* Image - Right (Order 2 on mobile, 2 on desktop) */}
-          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-2 cursor-pointer" onClick={() => navigate("/flow-engine")}>
-            <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-3xl" />
+          {/* Image - Right */}
+          <div className={`${sharedImageClasses} order-2 md:order-2`} onClick={() => navigate("/flow-engine")}>
+            <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover" />
           </div>
         </motion.div>
 
         {/* Prompt Lab Section - Image Left, Text Right */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} whileInView={{
-        opacity: 1,
-        y: 0
-      }} viewport={{
-        once: true,
-        amount: 0.2
-      }} transition={{
-        duration: 0.6,
-        delay: 0.2
-      }} className="grid md:grid-cols-[1.2fr_1fr] gap-0 items-stretch">
-          {/* Image - Left (Order 2 on mobile, 1 on desktop) */}
-          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-1 cursor-pointer" onClick={() => navigate("/prompt-lab-page")}>
-            <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-3xl" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className={sharedCardClasses}
+        >
+          {/* Image - Left */}
+          <div className={`${sharedImageClasses} order-2 md:order-1`} onClick={() => navigate("/prompt-lab-page")}>
+            <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover" />
           </div>
 
-          {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-black rounded-3xl w-full h-full md:ml-[-8%] z-10">
+          {/* Text Content - Right */}
+          <div className={`${sharedTextClasses} order-1 md:order-2`}>
             {/* Purple glow - left corner */}
-            <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
+            <span
+              className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
+              aria-hidden="true"
+            />
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Prompt Lab
             </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools. </p>
-            <div className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/prompt-lab-page")}>
+            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
+              Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools.
+            </p>
+            <div
+              className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
+              onClick={() => navigate("/prompt-lab-page")}
+            >
               Click to explore <span>→</span>
             </div>
           </div>
         </motion.div>
       </div>
-    </section>;
+    </section>
+  );
 };
