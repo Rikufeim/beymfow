@@ -67,7 +67,7 @@ export const FlowFeaturesSection = ({
 
           {/* Image - Right (Order 2 on mobile, 2 on desktop) */}
           <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-2 cursor-pointer" onClick={() => navigate("/flow-engine")}>
-            <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-3xl" />
+            <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-3xl md:rounded-l-none md:rounded-r-3xl" />
           </div>
         </motion.div>
 
@@ -85,9 +85,9 @@ export const FlowFeaturesSection = ({
         duration: 0.6,
         delay: 0.2
       }} className="grid md:grid-cols-[1.2fr_1fr] gap-0 items-stretch">
-          {/* Image - Left (Order 2 on mobile, 1 on desktop - No rounding) */}
+          {/* Image - Left (Order 2 on mobile, 1 on desktop) */}
           <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full order-2 md:order-1 cursor-pointer" onClick={() => navigate("/prompt-lab-page")}>
-            <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-3xl" />
+            <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-3xl md:rounded-r-none md:rounded-l-3xl" />
           </div>
 
           {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
