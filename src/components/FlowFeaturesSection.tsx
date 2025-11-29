@@ -38,7 +38,7 @@ export const FlowFeaturesSection = ({
   return <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
       {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
       <div className="w-full mx-auto space-y-16 md:space-y-24">
-        {/* Flow Engine Section - Text Left, Image Right */}
+        {/* Flow Engine Section - Image Right, Text Left (mirrored from Prompt Lab) */}
         <motion.div initial={{
         opacity: 0,
         y: 20
