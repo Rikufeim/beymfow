@@ -52,7 +52,7 @@ export const FlowFeaturesSection = ({
         duration: 0.6
       }} className="grid md:grid-cols-[1fr_1.2fr] gap-0 items-stretch">
           {/* Text Content - Left (Order 1 on mobile, 1 on desktop - Rounded corners) */}
-          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-1 relative overflow-hidden bg-black rounded-3xl w-full h-full md:mr-[-10%] z-10">
+          <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-1 relative overflow-hidden bg-black rounded-3xl w-full h-full md:mr-[-8%] z-10">
             {/* Purple glow - right corner */}
             <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
 
