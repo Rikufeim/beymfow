@@ -60,15 +60,13 @@ export const FlowFeaturesSection = ({
               Flow Engine
             </h2>
             <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe coding and sharpens the way you build, and it works with all major AI models.</p>
-            <div className="relative z-10">
-              <Button size="lg" className="bg-white text-black hover:bg-neutral-200 font-semibold px-8 rounded-full" onClick={() => navigate("/flow-engine")}>
-                Start building
-              </Button>
+            <div className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2" onClick={() => navigate("/flow-engine")}>
+              Click to explore <span>→</span>
             </div>
           </div>
 
           {/* Image - Right (No rounding as requested) */}
-          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full">
+          <div className="relative min-h-[300px] md:min-h-[400px] overflow-hidden w-full h-full cursor-pointer" onClick={() => navigate("/flow-engine")}>
             <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-3xl" />
           </div>
         </motion.div>
