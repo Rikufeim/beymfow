@@ -53,8 +53,8 @@ export const FlowFeaturesSection = ({
       }} className="grid md:grid-cols-[1fr_1.2fr] gap-0 items-stretch">
           {/* Text Content - Left (Rounded corners) */}
           <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full md:mr-[-8%] z-10">
-            {/* Purple glow - left corner */}
-            <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
+            {/* Purple glow - right corner */}
+            <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Flow Engine
@@ -92,8 +92,8 @@ export const FlowFeaturesSection = ({
 
           {/* Text Content - Right (Order 1 on mobile, 2 on desktop - Rounded corners) */}
           <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16 order-1 md:order-2 relative overflow-hidden bg-black rounded-3xl w-full h-full md:ml-[-8%] z-10">
-            {/* Purple glow - right corner */}
-            <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
+            {/* Purple glow - left corner */}
+            <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl" aria-hidden="true" />
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
               Prompt Lab
