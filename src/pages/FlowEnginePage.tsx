@@ -314,6 +314,155 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // --- Shared State for Node Data Flow ---
+
+  const [sharedState, setSharedState] = useState<{
+    ideaSummary?: string;
+
+    cleanSummary?: string;
+
+    pageStructure?: string;
+
+    designSystem?: string;
+
+    seoPlan?: string;
+
+    finalPrompt?: string;
+  }>({});
+
+  // --- Content Generation Functions ---
+
+  const generateIdeaSummary = (userInput: string): string => {
+    if (!userInput.trim()) return "";
+
+    const systemPrompt = `You take the user's short description or URL and convert it into a full business summary used to build a website. If the user gives incomplete information, intelligently infer missing details. Your output MUST include: industry, business_type, services, target_audience, location, tone_style, goal. Always return both JSON and a human-readable explanation.`;
+
+    // Simulate AI processing (in real app, this would call an API)
+
+    const json = {
+      industry: userInput.includes("tech")
+        ? "Technology"
+        : userInput.includes("restaurant")
+          ? "Food & Beverage"
+          : "General Business",
+
+      business_type: "Service Provider",
+
+      services: "Web development, consulting, digital solutions",
+
+      target_audience: "Small to medium businesses",
+
+      location: "Global",
+
+      tone_style: "Professional, friendly, modern",
+
+      goal: "Generate leads and establish online presence",
+    };
+
+    return `${systemPrompt}\n\nINPUT: ${userInput}\n\nOUTPUT:\n\nJSON:\n${JSON.stringify(json, null, 2)}\n\nHuman-readable Summary:\nBased on your input "${userInput}", I've identified this as a ${json.industry} business targeting ${json.target_audience}. The website should have a ${json.tone_style} tone and focus on ${json.goal}.`;
+  };
+
+  const generateCleanSummary = (ideaSummary: string): string => {
+    if (!ideaSummary) return "";
+
+    const systemPrompt = `Using the raw ideaSummary, create a clear structured summary. Do NOT change meanings. Output: clean summary + JSON structure for downstream nodes.`;
+
+    return `${systemPrompt}\n\nINPUT:\n${ideaSummary}\n\nOUTPUT:\n\nStructured Summary:\n${ideaSummary}\n\nThis summary has been cleaned and structured for use in downstream processing nodes. All key information has been preserved and organized for website planning.`;
+  };
+
+  const generatePageStructure = (cleanSummary: string): string => {
+    if (!cleanSummary) return "";
+
+    const systemPrompt = `Using cleanSummary, generate a full landing page structure: ordered sections, titles, bullets, CTA placements, image placements. Return JSON + human-readable structure.`;
+
+    const structure = {
+      sections: [
+        { order: 1, title: "Hero Section", cta: "Get Started", image: "hero-image.jpg" },
+
+        { order: 2, title: "Services Overview", cta: "Learn More", image: "services-image.jpg" },
+
+        { order: 3, title: "About Us", cta: null, image: "about-image.jpg" },
+
+        { order: 4, title: "Case Studies", cta: "View Portfolio", image: "cases-image.jpg" },
+
+        { order: 5, title: "Pricing", cta: "Choose Plan", image: null },
+
+        { order: 6, title: "Contact", cta: "Send Message", image: null },
+
+        { order: 7, title: "FAQ", cta: null, image: null },
+      ],
+    };
+
+    return `${systemPrompt}\n\nINPUT:\n${cleanSummary}\n\nOUTPUT:\n\nJSON Structure:\n${JSON.stringify(structure, null, 2)}\n\nHuman-readable Structure:\nThe landing page will consist of 7 main sections: Hero, Services, About, Cases, Pricing, Contact, and FAQ. Each section includes strategic CTA placements and image recommendations.`;
+  };
+
+  const generateDesignSystem = (cleanSummary: string, pageStructure: string): string => {
+    if (!cleanSummary || !pageStructure) return "";
+
+    const systemPrompt = `Create a full design system for the website. Include: primary_color, secondary_color, background_color, heading_font, body_font, button_style, animation_style, layout_style, image_direction. Return JSON + readable text.`;
+
+    const designSystem = {
+      primary_color: "#3b82f6",
+
+      secondary_color: "#8b5cf6",
+
+      background_color: "#0a0a0a",
+
+      heading_font: "Inter, sans-serif",
+
+      body_font: "Inter, sans-serif",
+
+      button_style: "Rounded, gradient, hover effects",
+
+      animation_style: "Smooth transitions, fade-ins",
+
+      layout_style: "Modern, clean, spacious",
+
+      image_direction: "High-quality, professional, brand-aligned",
+    };
+
+    return `${systemPrompt}\n\nINPUTS:\nSummary: ${cleanSummary.substring(0, 200)}...\nStructure: ${pageStructure.substring(0, 200)}...\n\nOUTPUT:\n\nJSON Design System:\n${JSON.stringify(designSystem, null, 2)}\n\nHuman-readable Design System:\nThe website will use a modern color palette with ${designSystem.primary_color} as primary and ${designSystem.secondary_color} as secondary. Typography uses ${designSystem.heading_font} for a clean, professional look. Buttons feature ${designSystem.button_style} with ${designSystem.animation_style}.`;
+  };
+
+  const generateSeoPlan = (designSystem: string, pageStructure: string): string => {
+    if (!designSystem || !pageStructure) return "";
+
+    const systemPrompt = `Using designSystem + pageStructure, generate an SEO plan: primary keyword, secondary keywords, meta description guidelines, tone of voice, optional schema markup. Return JSON + readable notes.`;
+
+    const seoPlan = {
+      primary_keyword: "website development services",
+
+      secondary_keywords: ["web design", "digital solutions", "online presence", "business website"],
+
+      meta_description:
+        "Professional website development services to help your business establish a strong online presence.",
+
+      tone_of_voice: "Professional, approachable, solution-focused",
+
+      schema_markup: "Organization, Service, LocalBusiness",
+    };
+
+    return `${systemPrompt}\n\nINPUTS:\nDesign System: ${designSystem.substring(0, 200)}...\nStructure: ${pageStructure.substring(0, 200)}...\n\nOUTPUT:\n\nJSON SEO Plan:\n${JSON.stringify(seoPlan, null, 2)}\n\nHuman-readable SEO Plan:\nPrimary keyword: "${seoPlan.primary_keyword}". Secondary keywords include ${seoPlan.secondary_keywords.join(", ")}. Meta descriptions should be ${seoPlan.tone_of_voice}. Schema markup recommended: ${seoPlan.schema_markup}.`;
+  };
+
+  const generateFinalPrompt = (
+    ideaSummary: string,
+
+    cleanSummary: string,
+
+    pageStructure: string,
+
+    designSystem: string,
+
+    seoPlan: string,
+  ): string => {
+    if (!ideaSummary || !cleanSummary || !pageStructure || !designSystem || !seoPlan) return "";
+
+    const systemPrompt = `Combine ALL previous nodes into a single master prompt for generating a complete landing page. Include: business summary, design system, website structure, SEO plan, CTA instructions, image direction, tone rules. Format cleanly and professionally.`;
+
+    return `${systemPrompt}\n\n═══════════════════════════════════════════════════════════\nMASTER WEBSITE GENERATION PROMPT\n═══════════════════════════════════════════════════════════\n\nBUSINESS SUMMARY:\n${cleanSummary}\n\nDESIGN SYSTEM:\n${designSystem}\n\nWEBSITE STRUCTURE:\n${pageStructure}\n\nSEO PLAN:\n${seoPlan}\n\n═══════════════════════════════════════════════════════════\n\nINSTRUCTIONS:\nGenerate a complete, professional landing page based on the above specifications. Ensure all CTAs are strategically placed, images are high-quality and brand-aligned, and the overall design follows the design system guidelines. The content should be optimized for SEO while maintaining a natural, engaging tone.`;
+  };
+
   // --- Scrollbar CSS ---
 
   useEffect(() => {
@@ -388,6 +537,154 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
         .map((w) => ({ id: w.id, integrated: w.integrated, content: w.content })),
     ),
+  ]);
+
+  // --- Auto-update Flow Nodes Based on Shared State ---
+
+  // Update IDEA INPUT node → generate ideaSummary (with debounce)
+
+  useEffect(() => {
+    const ideaInputNode = widgets.find((w) => w.id === "flow-input-idea");
+
+    if (!ideaInputNode) return;
+
+    const timer = setTimeout(() => {
+      if (ideaInputNode.content && ideaInputNode.content.trim()) {
+        const generated = generateIdeaSummary(ideaInputNode.content);
+
+        if (generated) {
+          setSharedState((prev) => ({ ...prev, ideaSummary: generated }));
+        }
+      } else {
+        setSharedState((prev) => {
+          const newState = { ...prev };
+
+          delete newState.ideaSummary;
+
+          return newState;
+        });
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(timer);
+  }, [widgets.find((w) => w.id === "flow-input-idea")?.content]);
+
+  // Update TEXT GENERATION (Summary) node when ideaSummary changes
+
+  useEffect(() => {
+    if (!sharedState.ideaSummary) return;
+
+    const summaryNode = widgets.find((w) => w.id === "flow-text-summary");
+
+    if (!summaryNode) return;
+
+    const generated = generateCleanSummary(sharedState.ideaSummary);
+
+    if (generated) {
+      setSharedState((prev) => ({ ...prev, cleanSummary: generated }));
+
+      setWidgets((prev) => prev.map((w) => (w.id === "flow-text-summary" ? { ...w, content: generated } : w)));
+    }
+  }, [sharedState.ideaSummary, widgets.find((w) => w.id === "flow-text-summary")?.id]);
+
+  // Update AI AGENT (Structure Planner) node when cleanSummary changes
+
+  useEffect(() => {
+    if (!sharedState.cleanSummary) return;
+
+    const agentNode = widgets.find((w) => w.id === "flow-agent-planner");
+
+    if (!agentNode) return;
+
+    const generated = generatePageStructure(sharedState.cleanSummary);
+
+    if (generated) {
+      setSharedState((prev) => ({ ...prev, pageStructure: generated }));
+
+      setWidgets((prev) => prev.map((w) => (w.id === "flow-agent-planner" ? { ...w, content: generated } : w)));
+    }
+  }, [sharedState.cleanSummary, widgets.find((w) => w.id === "flow-agent-planner")?.id]);
+
+  // Update SET STATE (Design System) node when cleanSummary or pageStructure changes
+
+  useEffect(() => {
+    if (!sharedState.cleanSummary || !sharedState.pageStructure) return;
+
+    const stateNode = widgets.find((w) => w.id === "flow-state-config");
+
+    if (!stateNode) return;
+
+    const generated = generateDesignSystem(sharedState.cleanSummary, sharedState.pageStructure);
+
+    if (generated) {
+      setSharedState((prev) => ({ ...prev, designSystem: generated }));
+
+      setWidgets((prev) => prev.map((w) => (w.id === "flow-state-config" ? { ...w, content: generated } : w)));
+    }
+  }, [sharedState.cleanSummary, sharedState.pageStructure, widgets.find((w) => w.id === "flow-state-config")?.id]);
+
+  // Update TOOL CALLING (SEO Generator) node when designSystem or pageStructure changes
+
+  useEffect(() => {
+    if (!sharedState.designSystem || !sharedState.pageStructure) return;
+
+    const toolNode = widgets.find((w) => w.id === "flow-tool-seo");
+
+    if (!toolNode) return;
+
+    const generated = generateSeoPlan(sharedState.designSystem, sharedState.pageStructure);
+
+    if (generated) {
+      setSharedState((prev) => ({ ...prev, seoPlan: generated }));
+
+      setWidgets((prev) => prev.map((w) => (w.id === "flow-tool-seo" ? { ...w, content: generated } : w)));
+    }
+  }, [sharedState.designSystem, sharedState.pageStructure, widgets.find((w) => w.id === "flow-tool-seo")?.id]);
+
+  // Update FINAL PROMPT node when ANY upstream node changes
+
+  useEffect(() => {
+    const finalNode = widgets.find((w) => w.id === "flow-text-final");
+
+    if (!finalNode) return;
+
+    if (
+      sharedState.ideaSummary &&
+      sharedState.cleanSummary &&
+      sharedState.pageStructure &&
+      sharedState.designSystem &&
+      sharedState.seoPlan
+    ) {
+      const generated = generateFinalPrompt(
+        sharedState.ideaSummary,
+
+        sharedState.cleanSummary,
+
+        sharedState.pageStructure,
+
+        sharedState.designSystem,
+
+        sharedState.seoPlan,
+      );
+
+      if (generated) {
+        setSharedState((prev) => ({ ...prev, finalPrompt: generated }));
+
+        setWidgets((prev) => prev.map((w) => (w.id === "flow-text-final" ? { ...w, content: generated } : w)));
+      }
+    }
+  }, [
+    sharedState.ideaSummary,
+
+    sharedState.cleanSummary,
+
+    sharedState.pageStructure,
+
+    sharedState.designSystem,
+
+    sharedState.seoPlan,
+
+    widgets.find((w) => w.id === "flow-text-final")?.id,
   ]);
 
   // --- Domain Selection Logic ---
@@ -1138,6 +1435,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                 Live Syncing
+                              </span>
+                            )}
+
+                            {widget.type.startsWith("flow-") && widget.content && widget.content.trim() && (
+                              <span className="text-[10px] text-blue-500 flex items-center gap-1 mt-0.5 font-sans">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                Auto-generated
                               </span>
                             )}
                           </div>
