@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
+
 import { AnimatePresence, motion } from "framer-motion";
+
 import { useNavigate } from "react-router-dom";
-// POISTETTU: import { PremiumGate } from "@/components/PremiumGate";
+
 import {
   ArrowRight,
   Copy,
   Sparkles,
-  Terminal,
   MessageSquare,
   Briefcase,
   Brain,
@@ -16,213 +17,338 @@ import {
   Settings,
   Plus,
   X,
-  Bot,
-  Minimize2,
   Check,
-  Send,
   ArrowLeft,
   Home,
+  Globe,
+  Smartphone,
+  Gamepad2,
+  Palette,
+  Code,
+  Layout,
+  Search,
+  Zap,
+  Shield,
+  Wifi,
+  Database,
+  Layers,
+  Ghost,
+  Swords,
+  Scroll,
+  MonitorPlay,
+  ChevronDown,
+  ChevronRight,
+  Box,
+  Wrench,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
+
 interface Category {
   id: string;
+
   name: string;
+
   icon: any;
+
   color: string;
+
+  description?: string;
 }
 
 interface Widget {
   id: string;
-  type: "prompt" | "category" | "agent";
+
+  type: "prompt" | "category";
+
   title?: string;
+
   basePrompt?: string;
+
   content?: string;
+
   placeholder?: string;
+
   category?: Category;
+
   integrated?: boolean;
-  messages?: { role: "user" | "agent"; content: string }[];
-  input?: string;
+
   x: number;
+
   y: number;
+
   width: number;
+
   height: number;
 }
 
 interface FlowEngineProps {
-  onBack?: () => void; // Parent callback to return to main app/home
+  onBack?: () => void;
 }
 
-// --- Constants ---
-// UPDATED: Changed suggestion chips to requested values
-const suggestionChips = ["Website", "App", "Game"];
+// --- Domain Configuration ---
 
-const categories: Category[] = [
-  { id: "communication", name: "Communication Style", icon: MessageSquare, color: "text-blue-400" },
-  { id: "business", name: "Business Context", icon: Briefcase, color: "text-purple-400" },
-  { id: "analysis", name: "Deep Analysis", icon: Brain, color: "text-pink-400" },
-  { id: "personal", name: "Personal Context", icon: User, color: "text-green-400" },
-  { id: "format", name: "Output Format", icon: FileText, color: "text-orange-400" },
-  { id: "goal", name: "Goal/Objective", icon: Target, color: "text-indigo-400" },
-  { id: "constraints", name: "Constraints", icon: Settings, color: "text-red-400" },
+const domainConfig: Record<string, Category[]> = {
+  Website: [
+    {
+      id: "ui_ux",
+      name: "UI/UX Design",
+      icon: Palette,
+      color: "text-neutral-300",
+      description: "Layouts, colors, typography",
+    },
+
+    {
+      id: "tech_stack",
+      name: "Tech Stack",
+      icon: Code,
+      color: "text-neutral-300",
+      description: "Frontend frameworks, backend",
+    },
+
+    {
+      id: "structure",
+      name: "Site Structure",
+      icon: Layout,
+      color: "text-neutral-300",
+      description: "Sitemap, navigation flow",
+    },
+
+    {
+      id: "seo",
+      name: "SEO & Content",
+      icon: Search,
+      color: "text-neutral-300",
+      description: "Keywords, meta tags, strategy",
+    },
+
+    {
+      id: "goal",
+      name: "Business Goal",
+      icon: Target,
+      color: "text-neutral-300",
+      description: "Conversion targets, KPIs",
+    },
+  ],
+
+  App: [
+    { id: "features", name: "Core Features", icon: Zap, color: "text-neutral-300", description: "Key functionalities" },
+
+    {
+      id: "platform",
+      name: "Platform & OS",
+      icon: Smartphone,
+      color: "text-neutral-300",
+      description: "iOS, Android, Cross-platform",
+    },
+
+    {
+      id: "security",
+      name: "Auth & Security",
+      icon: Shield,
+      color: "text-neutral-300",
+      description: "Authentication, encryption",
+    },
+
+    {
+      id: "connectivity",
+      name: "Offline/Online",
+      icon: Wifi,
+      color: "text-neutral-300",
+      description: "Sync strategies, API",
+    },
+
+    { id: "data", name: "Data Model", icon: Database, color: "text-neutral-300", description: "Schema, storage types" },
+  ],
+
+  Game: [
+    {
+      id: "mechanics",
+      name: "Game Mechanics",
+      icon: Layers,
+      color: "text-neutral-300",
+      description: "Rules, interactions, physics",
+    },
+
+    {
+      id: "art_style",
+      name: "Art & Audio",
+      icon: Ghost,
+      color: "text-neutral-300",
+      description: "Visual style, sound design",
+    },
+
+    {
+      id: "combat",
+      name: "Combat/Controls",
+      icon: Swords,
+      color: "text-neutral-300",
+      description: "Input mapping, combat systems",
+    },
+
+    {
+      id: "lore",
+      name: "Story & Lore",
+      icon: Scroll,
+      color: "text-neutral-300",
+      description: "World building, narrative",
+    },
+
+    {
+      id: "progression",
+      name: "Progression Loop",
+      icon: MonitorPlay,
+      color: "text-neutral-300",
+      description: "Leveling, rewards, loops",
+    },
+  ],
+
+  General: [
+    {
+      id: "communication",
+      name: "Tone of Voice",
+      icon: MessageSquare,
+      color: "text-neutral-300",
+      description: "Style of communication",
+    },
+
+    {
+      id: "constraints",
+      name: "Constraints",
+      icon: Settings,
+      color: "text-neutral-300",
+      description: "Technical or budget limits",
+    },
+
+    {
+      id: "analysis",
+      name: "Deep Analysis",
+      icon: Brain,
+      color: "text-neutral-300",
+      description: "Critical thinking, pros/cons",
+    },
+  ],
+};
+
+const suggestionChips = [
+  { label: "Website", icon: Globe },
+
+  { label: "App", icon: Smartphone },
+
+  { label: "Game", icon: Gamepad2 },
 ];
 
-const FlowEngineUnified: React.FC<FlowEngineProps> = ({ onBack }) => {
+const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
   // --- State ---
+
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
-  const [prompt, setPrompt] = useState("");
+
+  const [activeDomain, setActiveDomain] = useState<string>("Website");
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Workspace State
+
   const [widgets, setWidgets] = useState<Widget[]>([]);
+
   const [showCategories, setShowCategories] = useState(false);
+
   const [dragging, setDragging] = useState<{ id: string; startX: number; startY: number } | null>(null);
+
   const [resizing, setResizing] = useState<{
     id: string;
+
     startX: number;
+
     startY: number;
+
     startWidth: number;
+
     startHeight: number;
   } | null>(null);
 
+  // Canvas Pan-Zoom State
+
+  const [canvasTransform, setCanvasTransform] = useState({
+    translateX: 0,
+
+    translateY: 0,
+
+    scale: 1,
+  });
+
+  const [panning, setPanning] = useState<{
+    startX: number;
+    startY: number;
+    startTranslateX: number;
+    startTranslateY: number;
+  } | null>(null);
+
+  // Drawer State
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    domain: true,
+
+    general: true,
+  });
+
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // --- Custom Scrollbar CSS ---
+  // --- Scrollbar CSS ---
+
   useEffect(() => {
     const style = document.createElement("style");
+
     style.innerHTML = `
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: #1E1E20;
-        border-radius: 4px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 4px;
-        border: 2px solid #1E1E20;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #555;
-      }
-      .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: #333 #1E1E20;
-      }
+
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+
+      .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
     `;
+
     document.head.appendChild(style);
+
     return () => {
       document.head.removeChild(style);
     };
   }, []);
 
-  // --- Logic: Prompt Generation ---
-  const generatePromptLogic = (idea: string) => {
-    const lowerIdea = idea.toLowerCase();
-
-    // Business Logic
-    if (lowerIdea.includes("business") || lowerIdea.includes("money") || lowerIdea.includes("startup")) {
-      return `You are a strategic business consultant.
-
-CONTEXT:
-I am focusing on business development: ${idea}
-
-YOUR TASK:
-Create a comprehensive business strategy.
-
-PLEASE PROVIDE:
-1. Market Analysis & Opportunity
-2. Business Model Canvas (Value Prop, Revenue Streams)
-3. Go-to-Market Strategy
-4. Financial Projections & Key Metrics
-5. Risk Assessment
-
-OUTPUT FORMAT:
-- Professional, structured, actionable.`;
-    }
-
-    // Mindset Logic
-    if (lowerIdea.includes("mindset") || lowerIdea.includes("growth") || lowerIdea.includes("psychology")) {
-      return `You are a performance psychologist and mindset coach.
-
-CONTEXT:
-I want to improve my mindset regarding: ${idea}
-
-YOUR TASK:
-Provide a framework for mental resilience and growth.
-
-PLEASE PROVIDE:
-1. Limiting Belief Identification
-2. Cognitive Reframing Techniques
-3. Daily Habits for Mental Strength
-4. Visualization & Affirmation Strategies
-
-OUTPUT FORMAT:
-- Empathetic, motivating, practical.`;
-    }
-
-    // Health Logic
-    if (lowerIdea.includes("health") || lowerIdea.includes("fitness") || lowerIdea.includes("diet")) {
-      return `You are a holistic health expert (combining nutrition, fitness, and longevity).
-
-CONTEXT:
-My goal is related to health: ${idea}
-
-YOUR TASK:
-Create a personalized health protocol.
-
-PLEASE PROVIDE:
-1. Nutritional Guidelines
-2. Exercise Regime (Strength & Cardio)
-3. Sleep & Recovery Optimization
-4. Supplementation Strategy (Evidence-based)
-
-OUTPUT FORMAT:
-- Science-backed, clear, sustainable.`;
-    }
-
-    // Default Logic
-    return `You are an expert consultant.
-
-CONTEXT:
-I need help with: ${idea}
-
-YOUR TASK:
-Provide comprehensive, actionable guidance.
-
-PLEASE PROVIDE:
-1. Problem Understanding
-2. Solution Approach
-3. Step-by-Step Implementation
-4. Resources & Tools
-
-OUTPUT FORMAT:
-- Structured, clear, practical.`;
-  };
+  // --- Logic: Prompt Reconstruction ---
 
   const rebuildPrompt = () => {
     setWidgets((prevWidgets) => {
       const promptWidget = prevWidgets.find((w) => w.type === "prompt");
+
       if (!promptWidget) return prevWidgets;
 
       const integratedCategories = prevWidgets.filter((w) => w.type === "category" && w.integrated);
 
-      let newContent = promptWidget.basePrompt || "";
+      let newContent = `You are an expert ${activeDomain} developer and architect.\n\nCONTEXT:\nI am building a ${activeDomain}.`;
 
       if (integratedCategories.length > 0) {
         newContent += "\n\n" + "═".repeat(40);
-        newContent += "\n\nADDITIONAL CONTEXT & REFINEMENTS:\n";
+
+        newContent += "\n\nSPECIFICATIONS & REQUIREMENTS:\n";
 
         integratedCategories.forEach((category) => {
           if (category.content && category.content.trim() && category.category) {
-            newContent += `\n${category.category.name.toUpperCase()}:\n${category.content.trim()}\n`;
+            newContent += `\n[${category.category.name.toUpperCase()}]\n${category.content.trim()}\n`;
           }
         });
       }
+
+      newContent += `\n\nYOUR TASK:\nProvide a comprehensive implementation plan, file structure, and key code examples based on the specifications above.`;
 
       if (promptWidget.content === newContent) return prevWidgets;
 
@@ -234,97 +360,101 @@ OUTPUT FORMAT:
     const timer = setTimeout(() => {
       rebuildPrompt();
     }, 100);
+
     return () => clearTimeout(timer);
   }, [
+    activeDomain,
+
     JSON.stringify(
       widgets
+
         .filter((w) => w.type === "category")
-        .map((w) => ({
-          id: w.id,
-          integrated: w.integrated,
-          content: w.content,
-        })),
+
+        .map((w) => ({ id: w.id, integrated: w.integrated, content: w.content })),
     ),
   ]);
 
-  const getInitialX = () => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth - 500;
-    }
-    return 800;
-  };
+  // --- Domain Selection Logic ---
 
-  const processInitialPrompt = (text: string) => {
+  const handleDomainSelection = (domainLabel: string) => {
     setIsLoading(true);
 
-    setTimeout(() => {
-      const generatedContent = generatePromptLogic(text);
+    setActiveDomain(domainLabel);
 
-      const initialWidget: Widget = {
-        id: `prompt-${Date.now()}`,
+    setTimeout(() => {
+      const mainPromptWidget: Widget = {
+        id: `prompt-main`,
+
         type: "prompt",
-        title: "Generated Flow",
-        basePrompt: generatedContent,
-        content: generatedContent,
-        x: 100,
-        y: 100,
-        width: 600,
-        height: 500,
+
+        title: `${domainLabel} Architecture`,
+
+        content: `Initializing ${domainLabel} context...`,
+
+        x: 0,
+
+        y: 0,
+
+        width: 550,
+
+        height: 600,
       };
 
-      setWidgets([initialWidget]);
+      // Reset canvas transform when entering workspace
+
+      setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+
+      setWidgets([mainPromptWidget]);
+
       setViewMode("workspace");
+
       setIsLoading(false);
-    }, 800);
+
+      setShowCategories(true);
+    }, 600);
   };
 
-  const handleSuggestion = (text: string) => {
-    setPrompt(text);
-    processInitialPrompt(text);
-  };
+  // --- Widget Management ---
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!prompt.trim()) return;
-    processInitialPrompt(prompt);
-  };
+  const handleCategoryAdd = (category: Category) => {
+    const offset = widgets.length * 30;
 
-  const handleCategoryDrop = (category: Category) => {
+    // Calculate position relative to current canvas view
+
+    const baseX = -canvasTransform.translateX / canvasTransform.scale + 600;
+
+    const baseY = -canvasTransform.translateY / canvasTransform.scale + 100;
+
     const newWidget: Widget = {
       id: `${category.id}-${Date.now()}`,
-      type: "category",
-      category: category,
-      content: "",
-      placeholder: `Add ${category.name.toLowerCase()} details here...`,
-      integrated: false,
-      x: 150 + widgets.length * 30,
-      y: 150 + widgets.length * 30,
-      width: 400,
-      height: 250,
-    };
-    setWidgets((prev) => [...prev, newWidget]);
-    setShowCategories(false);
-  };
 
-  const createAIAgent = () => {
-    const agentWidget: Widget = {
-      id: `agent-${Date.now()}`,
-      type: "agent",
-      title: "AI Assistant",
-      messages: [],
-      input: "",
-      x: getInitialX(),
-      y: 100,
-      width: 400,
-      height: 500,
+      type: "category",
+
+      category: category,
+
+      content: "",
+
+      placeholder: `Define ${category.name}...`,
+
+      integrated: true,
+
+      x: baseX + Math.random() * 50,
+
+      y: baseY + offset,
+
+      width: 350,
+
+      height: 220,
     };
-    setWidgets((prev) => [...prev, agentWidget]);
+
+    setWidgets((prev) => [...prev, newWidget]);
   };
 
   const toggleIntegration = (widgetId: string) => {
     setWidgets((prev) =>
       prev.map((w) => {
         if (w.id !== widgetId) return w;
+
         return { ...w, integrated: !w.integrated };
       }),
     );
@@ -344,50 +474,97 @@ OUTPUT FORMAT:
     }
   };
 
-  const sendAgentMessage = (agentId: string, message: string) => {
-    const widget = widgets.find((w) => w.id === agentId);
-    if (!widget || !message.trim()) return;
+  // --- Canvas Pan-Zoom Logic ---
 
-    const updatedMessages = [...(widget.messages || []), { role: "user", content: message } as const];
-    setWidgets((prev) => prev.map((w) => (w.id === agentId ? { ...w, messages: updatedMessages, input: "" } : w)));
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Don't pan if clicking on widgets or interactive elements
 
-    setTimeout(() => {
-      let response = "";
-      const lowerMsg = message.toLowerCase();
-      if (lowerMsg.includes("help") || lowerMsg.includes("improve")) {
-        response = "I can help refine your prompt! Try adding a 'Constraints' category to set boundaries.";
-      } else {
-        response = "That's a great start. I suggest adding specific constraints to make the output more reliable.";
-      }
+    if ((e.target as HTMLElement).closest(".widget-container, button, input, textarea, .pointer-events-auto")) return;
 
-      setWidgets((prev) =>
-        prev.map((w) => {
-          if (w.id !== agentId) return w;
-          return {
-            ...w,
-            messages: [...(w.messages || []), { role: "agent", content: response }],
-          };
-        }),
-      );
-    }, 800);
+    if (e.button === 0 && !dragging && !resizing) {
+      // Left mouse button
+
+      e.preventDefault();
+
+      setPanning({
+        startX: e.clientX,
+
+        startY: e.clientY,
+
+        startTranslateX: canvasTransform.translateX,
+
+        startTranslateY: canvasTransform.translateY,
+      });
+    }
   };
 
+  const handleCanvasWheel = (e: React.WheelEvent) => {
+    if (!canvasRef.current) return;
+
+    e.preventDefault();
+
+    const rect = canvasRef.current.getBoundingClientRect();
+
+    const mouseX = e.clientX - rect.left;
+
+    const mouseY = e.clientY - rect.top;
+
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+
+    const newScale = Math.max(0.1, Math.min(3, canvasTransform.scale * zoomFactor));
+
+    // Zoom towards mouse position
+
+    const scaleChange = newScale / canvasTransform.scale;
+
+    const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
+
+    const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
+
+    setCanvasTransform({
+      translateX: newTranslateX,
+
+      translateY: newTranslateY,
+
+      scale: newScale,
+    });
+  };
+
+  // --- Drag & Resize Logic ---
+
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
-    if ((e.target as HTMLElement).closest("textarea, input, button")) {
-      if (action === "move") return;
-    }
+    if ((e.target as HTMLElement).closest("textarea, input, button")) return;
+
     e.stopPropagation();
+
     const widget = widgets.find((w) => w.id === widgetId);
+
     if (!widget) return;
 
+    // Convert widget position to screen coordinates
+
+    const screenX = widget.x * canvasTransform.scale + canvasTransform.translateX;
+
+    const screenY = widget.y * canvasTransform.scale + canvasTransform.translateY;
+
     if (action === "move") {
-      setDragging({ id: widgetId, startX: e.clientX - widget.x, startY: e.clientY - widget.y });
+      setDragging({
+        id: widgetId,
+
+        startX: e.clientX - screenX,
+
+        startY: e.clientY - screenY,
+      });
     } else if (action === "resize") {
       setResizing({
         id: widgetId,
+
         startX: e.clientX,
+
         startY: e.clientY,
+
         startWidth: widget.width,
+
         startHeight: widget.height,
       });
     }
@@ -395,403 +572,545 @@ OUTPUT FORMAT:
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (dragging) {
-        setWidgets((prev) =>
-          prev.map((w) =>
-            w.id === dragging.id ? { ...w, x: e.clientX - dragging.startX, y: e.clientY - dragging.startY } : w,
-          ),
-        );
+      if (panning) {
+        const deltaX = e.clientX - panning.startX;
+
+        const deltaY = e.clientY - panning.startY;
+
+        setCanvasTransform((prev) => ({
+          ...prev,
+
+          translateX: panning.startTranslateX + deltaX,
+
+          translateY: panning.startTranslateY + deltaY,
+        }));
+      } else if (dragging) {
+        // Convert screen coordinates to canvas coordinates
+
+        const canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
+
+        const canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
+
+        setWidgets((prev) => prev.map((w) => (w.id === dragging.id ? { ...w, x: canvasX, y: canvasY } : w)));
       } else if (resizing) {
-        const deltaX = e.clientX - resizing.startX;
-        const deltaY = e.clientY - resizing.startY;
+        const deltaX = (e.clientX - resizing.startX) / canvasTransform.scale;
+
+        const deltaY = (e.clientY - resizing.startY) / canvasTransform.scale;
+
         setWidgets((prev) =>
           prev.map((w) =>
             w.id === resizing.id
               ? {
                   ...w,
+
                   width: Math.max(300, resizing.startWidth + deltaX),
-                  height: Math.max(200, resizing.startHeight + deltaY),
+
+                  height: Math.max(150, resizing.startHeight + deltaY),
                 }
               : w,
           ),
         );
       }
     };
+
     const handleMouseUp = () => {
       setDragging(null);
+
       setResizing(null);
+
+      setPanning(null);
     };
-    if (dragging || resizing) {
+
+    if (panning || dragging || resizing) {
       window.addEventListener("mousemove", handleMouseMove);
+
       window.addEventListener("mouseup", handleMouseUp);
     }
+
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [dragging, resizing]);
+  }, [panning, dragging, resizing, canvasTransform.scale, canvasTransform.translateX, canvasTransform.translateY]);
+
+  // --- Drawer Helper Components ---
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const filterCategories = (cats: Category[]) => {
+    if (!searchQuery) return cats;
+
+    return cats.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  };
 
   // --- RENDER ---
-  return (
-    // <PremiumGate> POISTETTU TÄSTÄ
-    <div className="h-screen bg-black text-white relative flex flex-col font-sans overflow-hidden">
 
+  return (
+    <div className="h-screen bg-[#09090b] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
           // --- LANDING VIEW ---
+
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
             className="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-4xl mx-auto z-10 pb-32 text-center h-screen"
           >
-            {/* Back Button (Landing -> Home) - FIX: Navigates to home */}
             <button
               onClick={() => {
-                setPrompt(""); // Clear prompt
-                if (onBack) {
-                  onBack(); // Call parent back if available
-                } else {
-                  navigate("/"); // Navigate to home page
-                }
+                if (onBack) onBack();
+                else navigate("/");
               }}
-              className="absolute top-6 left-6 p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2 font-sans"
+              className="absolute top-6 left-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
             >
               <Home size={20} />
+
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-              {/* UPDATED: Transparent text with animated gradient colors - turquoise-blue-purple only */}
-              {/* BUG FIX: Added pb-2 to prevent descender clipping on 'g' */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
               <motion.h1
-                animate={{ backgroundPosition: ["0% center", "-200% center"] }}
-                transition={{ backgroundPosition: { duration: 8, ease: "linear", repeat: Infinity } }}
-                className="text-6xl md:text-7xl font-extrabold tracking-[-0.02em] text-transparent bg-clip-text bg-[length:200%_auto] pb-2"
+                className="text-3xl md:text-4xl font-bold tracking-tight text-white pb-6"
                 style={{
-                  fontFamily: '"SF Pro Display", Inter, "Helvetica Neue", "Arial Nova", Arial, sans-serif',
-                  backgroundImage: "linear-gradient(to right, #06b6d4 0%, #3b82f6 33%, #a855f7 66%, #06b6d4 100%)",
+                  fontFamily:
+                    '"SF Pro Display", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 }}
               >
-                What are we building?
+                What are we building today?
               </motion.h1>
-              <div className="flex flex-wrap justify-center gap-3">
-                {suggestionChips.map((chip) => (
-                  <button
-                    key={chip}
-                    onClick={() => handleSuggestion(chip)}
-                    className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-sm text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer font-sans"
-                  >
-                    {chip}
-                  </button>
-                ))}
+
+              <div className="flex flex-wrap justify-center gap-4">
+                {suggestionChips.map((chip) => {
+                  const Icon = chip.icon;
+
+                  return (
+                    <button
+                      key={chip.label}
+                      onClick={() => !isLoading && handleDomainSelection(chip.label)}
+                      disabled={isLoading}
+                      className={`
+
+                        px-8 py-4 rounded-xl bg-neutral-900 border border-neutral-800 
+
+                        text-neutral-300 hover:bg-neutral-800 hover:text-white hover:border-neutral-700 
+
+                        transition-all cursor-pointer font-sans 
+
+                        flex flex-col items-center gap-3 group min-w-[140px]
+
+                        ${isLoading ? "opacity-50 cursor-wait" : ""}
+
+                      `}
+                    >
+                      {isLoading && activeDomain === chip.label ? (
+                        <div className="w-8 h-8 border-2 border-neutral-500 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Icon className="w-8 h-8 text-neutral-500 group-hover:text-white transition-colors" />
+                      )}
+
+                      <span className="text-sm font-medium">{chip.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </motion.div>
-
-            <div className="fixed bottom-0 left-0 right-0 p-6 z-20">
-              <div className="max-w-3xl mx-auto">
-                <form onSubmit={handleSubmit} className="relative group">
-                  <div className="relative flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full px-2 py-2 shadow-2xl transition-all group-focus-within:border-white/20 group-focus-within:ring-1 group-focus-within:ring-white/10">
-                    <input
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder={isLoading ? "Designing architecture..." : "Describe the prompt you need..."}
-                      // UPDATED: Font-sans explicitly
-                      className="flex-1 bg-transparent border-none focus:outline-none text-white placeholder:text-neutral-500 px-4 py-2 min-h-[44px] font-sans"
-                      disabled={isLoading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!prompt.trim() || isLoading}
-                      className="p-2.5 rounded-full bg-white/90 backdrop-blur-md text-black hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                      {isLoading ? (
-                        <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                      ) : (
-                        <ArrowRight size={20} />
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
           </motion.main>
         ) : (
           // --- WORKSPACE VIEW ---
+
           <motion.div
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 relative w-full h-full flex flex-col"
+            className="flex-1 relative w-full h-full flex flex-col bg-[#09090b]"
           >
-            {/* Background Pattern (Stays relative, but now sits on top of fixed background) */}
-            <div
-              className="absolute inset-0 pointer-events-none opacity-20"
-              style={{
-                backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-                backgroundSize: "24px 24px",
-              }}
-            />
+            {/* Top Bar */}
 
-            {/* Back Button (Workspace -> Landing) */}
-            <div className="absolute top-4 left-4 z-30">
+            <div className="absolute top-4 left-4 right-4 flex justify-between z-30 pointer-events-none">
               <button
                 onClick={() => setViewMode("landing")}
-                className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                className="pointer-events-auto h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <ArrowLeft size={18} />
+
                 <span className="text-sm font-medium">Back</span>
               </button>
-            </div>
 
-            {/* Toolbar */}
-            <div className="absolute top-4 right-4 flex gap-2 z-30">
-              <button
-                onClick={createAIAgent}
-                className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
-              >
-                <Bot size={18} />
-                <span className="text-sm">AI Agent</span>
-              </button>
-              <button
-                onClick={() => setShowCategories(!showCategories)}
-                className={`h-10 w-10 rounded-lg border border-white/10 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-white text-black" : "bg-white/5 text-neutral-300 hover:bg-white/10"}`}
-              >
-                <Plus
-                  size={20}
-                  className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
-                />
-              </button>
+              <div className="flex items-center gap-2 pointer-events-auto">
+                <button
+                  onClick={() => setShowCategories(!showCategories)}
+                  className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+                >
+                  <Plus
+                    size={20}
+                    className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Canvas */}
-            <div ref={canvasRef} className="flex-1 relative overflow-hidden z-0 min-h-screen">
-              {widgets.map((widget) => {
-                let Icon = Sparkles;
-                let accentColor = "text-neutral-400";
 
-                if (widget.type === "category" && widget.category) {
-                  Icon = widget.category.icon;
-                  accentColor = widget.category.color;
-                } else if (widget.type === "agent") {
-                  Icon = Bot;
-                  accentColor = "text-purple-400";
-                }
+            <div
+              ref={canvasRef}
+              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              onMouseDown={handleCanvasMouseDown}
+              onWheel={handleCanvasWheel}
+            >
+              {/* Infinite Background Pattern */}
 
-                return (
-                  <div
-                    key={widget.id}
-                    className="absolute bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden hover:border-white/20 transition-colors font-sans"
-                    style={{
-                      left: widget.x,
-                      top: widget.y,
-                      width: widget.width,
-                      height: widget.height,
-                      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-                    }}
-                    onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
-                  >
-                    {/* Header */}
-                    <div className="px-4 py-3 border-b border-white/5 bg-white/5 backdrop-blur-md flex items-center justify-between cursor-move select-none">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-md bg-white/10 ${accentColor}`}>
-                          <Icon size={16} />
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans">
-                            {widget.type === "category" && widget.category ? widget.category.name : widget.title}
-                          </span>
-                          {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
-                            <span className="text-[10px] text-green-400 flex items-center gap-1 mt-0.5 font-sans">
-                              <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
-                              Live Updating
+              <div
+                className="absolute pointer-events-none opacity-20"
+                style={{
+                  backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+
+                  backgroundSize: "24px 24px",
+
+                  width: "20000px",
+
+                  height: "20000px",
+
+                  left: `${-10000 + (canvasTransform.translateX % 24)}px`,
+
+                  top: `${-10000 + (canvasTransform.translateY % 24)}px`,
+                }}
+              />
+
+              {/* Widgets Container with Transform */}
+
+              <div
+                className="absolute inset-0"
+                style={{
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+
+                  transformOrigin: "0 0",
+                }}
+              >
+                {widgets.map((widget) => {
+                  let Icon = Sparkles;
+
+                  let accentColor = "text-neutral-400";
+
+                  if (widget.type === "category" && widget.category) {
+                    Icon = widget.category.icon;
+
+                    accentColor = widget.category.color;
+                  }
+
+                  return (
+                    <div
+                      key={widget.id}
+                      className="absolute bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl flex flex-col overflow-hidden hover:border-neutral-700 transition-colors font-sans widget-container"
+                      style={{
+                        left: widget.x,
+
+                        top: widget.y,
+
+                        width: widget.width,
+
+                        height: widget.height,
+
+                        boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.5)",
+                      }}
+                      onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                    >
+                      {/* Header */}
+
+                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor}`}>
+                            <Icon size={16} />
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans">
+                              {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
+
+                            {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
+                              <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                Live Syncing
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          {widget.type === "category" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                toggleIntegration(widget.id);
+                              }}
+                              disabled={!widget.content?.trim()}
+                              className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans ${
+                                widget.integrated
+                                  ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                  : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50"
+                              }`}
+                            >
+                              {widget.integrated ? <Check size={12} /> : <Plus size={12} />}
+
+                              {widget.integrated ? "In Prompt" : "Add"}
+                            </button>
+                          )}
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              copyWidget(widget);
+                            }}
+                            className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                          >
+                            <Copy size={14} />
+                          </button>
+
+                          {widget.type !== "prompt" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                deleteWidget(widget.id);
+                              }}
+                              className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      {/* Content */}
+
+                      <div className="flex-1 bg-[#121214] overflow-hidden flex flex-col relative">
+                        {widget.type === "prompt" && (
+                          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
+                            <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                              {widget.content}
+                            </pre>
+                          </div>
+                        )}
+
                         {widget.type === "category" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleIntegration(widget.id);
-                            }}
-                            disabled={!widget.content?.trim()}
-                            className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans backdrop-blur-md ${
-                              widget.integrated
-                                ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                                : "bg-white/10 text-neutral-400 hover:bg-white/20 hover:text-white disabled:opacity-50"
-                            }`}
-                          >
-                            {widget.integrated ? <Check size={12} /> : <Plus size={12} />}
-                            {widget.integrated ? "Integrated" : "Add"}
-                          </button>
+                          <textarea
+                            className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
+                            value={widget.content}
+                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                            placeholder={widget.placeholder}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          />
                         )}
-                        {widget.type !== "agent" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyWidget(widget);
-                            }}
-                            className="p-1.5 text-neutral-500 hover:text-white hover:bg-white/10 backdrop-blur-md rounded transition-colors"
-                          >
-                            <Copy size={14} />
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteWidget(widget.id);
-                          }}
-                          className="p-1.5 text-neutral-500 hover:text-white hover:bg-white/10 backdrop-blur-md rounded transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
+                      </div>
+
+                      {/* Resize Handle */}
+
+                      <div
+                        className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity z-20 flex items-end justify-end p-1"
+                        onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
+                      >
+                        <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
                       </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-1 bg-white/5 backdrop-blur-md overflow-hidden flex flex-col relative">
-                      {widget.type === "prompt" && (
-                        <div className="p-4 overflow-y-auto h-full custom-scrollbar">
-                          <pre className="font-mono text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
-                            {widget.content}
-                          </pre>
-                        </div>
-                      )}
-
-                      {widget.type === "category" && (
-                        <textarea
-                          className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
-                          value={widget.content}
-                          onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                          placeholder={widget.placeholder}
-                          onMouseDown={(e) => e.stopPropagation()}
-                        />
-                      )}
-
-                      {widget.type === "agent" && (
-                        <>
-                          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                            {(!widget.messages || widget.messages.length === 0) && (
-                              <div className="text-center text-neutral-600 mt-10">
-                                <Bot className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                <p className="text-xs font-sans">Ask me how to improve your prompts.</p>
-                              </div>
-                            )}
-                            {widget.messages?.map((msg, i) => (
-                              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                                 <div
-                                  className={`max-w-[85%] p-3 rounded-lg text-sm font-sans ${
-                                    msg.role === "user" ? "bg-white/10 backdrop-blur-md text-white" : "bg-white/5 backdrop-blur-md text-neutral-300"
-                                  }`}
-                                >
-                                  {msg.content}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="p-3 border-t border-white/5 bg-white/5 backdrop-blur-md">
-                            <div className="relative">
-                              <input
-                                className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-md py-2 pl-3 pr-10 text-sm text-white focus:border-white/30 focus:outline-none font-sans"
-                                placeholder="Ask AI..."
-                                value={widget.input}
-                                onChange={(e) => updateWidget(widget.id, "input", e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && sendAgentMessage(widget.id, widget.input || "")}
-                                onMouseDown={(e) => e.stopPropagation()}
-                              />
-                              <button
-                                onClick={() => sendAgentMessage(widget.id, widget.input || "")}
-                                className="absolute right-1 top-1 p-1.5 text-neutral-400 hover:text-white"
-                              >
-                                <Send size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Resize Handle */}
-                    <div
-                      className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity z-20 flex items-end justify-end p-1"
-                      onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
-                    >
-                      <div className="border-r-2 border-b-2 border-neutral-500 w-2 h-2" />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Category Drawer */}
+            {/* NEW: Node Drawer (Side Menu) */}
+
             <AnimatePresence>
               {showCategories && (
                 <motion.div
-                  initial={{ x: 300, opacity: 0 }}
+                  initial={{ x: 320, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: 300, opacity: 0 }}
-                  className="absolute top-16 right-4 w-72 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-2 z-30 overflow-y-auto custom-scrollbar max-h-[80vh]"
+                  exit={{ x: 320, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
                 >
-                  <div className="space-y-1">
-                    {categories.map((cat) => (
+                  {/* Drawer Header */}
+
+                  <div className="p-4 border-b border-neutral-800 bg-[#121214]">
+                    <h3 className="text-sm font-semibold text-white mb-3">Add Nodes</h3>
+
+                    {/* Domain Switcher */}
+
+                    <div className="flex p-1 bg-neutral-900 rounded-lg mb-3">
+                      {suggestionChips.map((chip) => {
+                        const Icon = chip.icon;
+
+                        const isActive = activeDomain === chip.label;
+
+                        return (
+                          <button
+                            key={chip.label}
+                            onClick={() => setActiveDomain(chip.label)}
+                            className={`flex-1 flex items-center justify-center py-1.5 rounded-md transition-all ${
+                              isActive
+                                ? "bg-neutral-800 text-white shadow-sm"
+                                : "text-neutral-500 hover:text-neutral-300"
+                            }`}
+                            title={chip.label}
+                          >
+                            <Icon size={14} />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
+
+                      <input
+                        type="text"
+                        placeholder="Search nodes..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Drawer Content */}
+
+                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#121214]">
+                    {/* Section 1 */}
+
+                    <div className="mb-2">
                       <button
-                        key={cat.id}
-                        onClick={() => handleCategoryDrop(cat)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-white/10 backdrop-blur-md rounded-lg group transition-colors text-left cursor-pointer border border-transparent hover:border-white/5"
+                        onClick={() => toggleSection("domain")}
+                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
                       >
-                        <div className={`p-1.5 rounded bg-white/5 backdrop-blur-md ${cat.color} border border-white/5`}>
-                          <cat.icon size={16} />
+                        <div className="flex items-center gap-2">
+                          <Box size={14} className="text-neutral-500" />
+                          {activeDomain} Modules
                         </div>
-                        <div>
-                          <span className="block text-sm font-medium text-neutral-200 group-hover:text-white font-sans">
-                            {cat.name}
-                          </span>
-                          <span className="block text-[10px] text-neutral-500 font-sans">Drag to refine prompt</span>
-                        </div>
+
+                        {expandedSections.domain ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                       </button>
-                    ))}
+
+                      <AnimatePresence>
+                        {expandedSections.domain && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-2 space-y-1 mt-1">
+                              {filterCategories(domainConfig[activeDomain] || []).map((cat) => (
+                                <button
+                                  key={cat.id}
+                                  onClick={() => handleCategoryAdd(cat)}
+                                  className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                                >
+                                  <div
+                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800`}
+                                  >
+                                    <cat.icon size={14} />
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                      {cat.name}
+                                    </span>
+
+                                    {cat.description && (
+                                      <span className="block text-[10px] text-neutral-500 truncate">
+                                        {cat.description}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <Plus
+                                    size={12}
+                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Section 2 */}
+
+                    <div className="mb-2">
+                      <button
+                        onClick={() => toggleSection("general")}
+                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Wrench size={14} className="text-neutral-500" />
+                          Utilities & General
+                        </div>
+
+                        {expandedSections.general ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
+
+                      <AnimatePresence>
+                        {expandedSections.general && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-2 space-y-1 mt-1">
+                              {filterCategories(domainConfig["General"] || []).map((cat) => (
+                                <button
+                                  key={cat.id}
+                                  onClick={() => handleCategoryAdd(cat)}
+                                  className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                                >
+                                  <div
+                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800`}
+                                  >
+                                    <cat.icon size={14} />
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                      {cat.name}
+                                    </span>
+
+                                    {cat.description && (
+                                      <span className="block text-[10px] text-neutral-500 truncate">
+                                        {cat.description}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <Plus
+                                    size={12}
+                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Bottom Input */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4 z-30">
-              <div className="relative group">
-                <div className="relative flex items-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-2 py-2 shadow-2xl">
-                  <input
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleSuggestion(prompt);
-                        setPrompt("");
-                      }
-                    }}
-                    placeholder="Add another prompt logic block..."
-                    className="flex-1 bg-transparent border-none focus:outline-none text-white placeholder:text-neutral-500 px-4 py-2 font-sans"
-                  />
-                  <button
-                    onClick={() => {
-                      handleSuggestion(prompt);
-                      setPrompt("");
-                    }}
-                    disabled={!prompt.trim()}
-                    className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Sparkles size={18} />
-                  </button>
-                </div>
-              </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-    // </PremiumGate> POISTETTU TÄSTÄ
   );
+};
+
+const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
+  return <FlowEngineContent {...props} />;
 };
 
 export default FlowEngineUnified;
