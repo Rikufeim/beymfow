@@ -1252,6 +1252,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
   };
 
+  // Get handle position for a node (in canvas coordinates)
+
+  const getHandlePosition = (
+    nodeId: string,
+    handleType: "input" | "output",
+    widgets: Widget[],
+  ): { x: number; y: number } => {
+    const widget = widgets.find((w) => w.id === nodeId);
+
+    if (!widget) return { x: 0, y: 0 };
+
+    const handleY = widget.y + widget.height / 2; // Center vertically
+
+    // Handles are positioned at -4.5px from edge (half of 9px handle width)
+
+    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
+
+    return { x: handleX, y: handleY };
+  };
+
   useEffect(() => {
     let rafId: number | null = null;
 
@@ -1294,29 +1314,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             return distance < 15; // 15px threshold
           });
 
-          // Auto-connect if hovering over valid input handle
+          // Don't auto-connect here - let user release mouse to connect
 
-          if (targetWidget) {
-            const newEdge: Edge = {
-              id: `edge-${connecting.sourceId}-${targetWidget.id}-${Date.now()}`,
-
-              source: connecting.sourceId,
-
-              target: targetWidget.id,
-            };
-
-            setEdges((prev) => {
-              const exists = prev.some((e) => e.source === connecting.sourceId && e.target === targetWidget.id);
-
-              if (exists) return prev;
-
-              return [...prev, newEdge];
-            });
-
-            setConnecting(null);
-
-            setMousePosition(null);
-          }
+          // Auto-connect will happen on mouse up if still hovering
         } else if (draggingHandle) {
           // Check if dragged far enough from handle to disconnect
 
@@ -1361,10 +1361,44 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       });
     };
 
-    const handleMouseUp = () => {
-      // Cancel connecting if mouse up without connecting
+    const handleMouseUp = (e: MouseEvent) => {
+      // Complete connection if mouse up over a valid input handle
 
-      if (connecting) {
+      if (connecting && mousePosition) {
+        const canvasX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
+
+        const canvasY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
+
+        const targetWidget = widgets.find((w) => {
+          if (!w.type.startsWith("flow-") || w.id === connecting.sourceId) return false;
+
+          const handlePos = getHandlePosition(w.id, "input", widgets);
+
+          const distance = Math.sqrt(Math.pow(canvasX - handlePos.x, 2) + Math.pow(canvasY - handlePos.y, 2));
+
+          return distance < 20; // 20px threshold for connection
+        });
+
+        if (targetWidget) {
+          // Complete connection
+
+          const newEdge: Edge = {
+            id: `edge-${connecting.sourceId}-${targetWidget.id}-${Date.now()}`,
+
+            source: connecting.sourceId,
+
+            target: targetWidget.id,
+          };
+
+          setEdges((prev) => {
+            const exists = prev.some((e) => e.source === connecting.sourceId && e.target === targetWidget.id);
+
+            if (exists) return prev;
+
+            return [...prev, newEdge];
+          });
+        }
+
         setConnecting(null);
 
         setMousePosition(null);
@@ -1400,7 +1434,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [panning, dragging, resizing, canvasTransform.scale, canvasTransform.translateX, canvasTransform.translateY]);
+  }, [
+    panning,
+    dragging,
+    resizing,
+    draggingHandle,
+    connecting,
+    canvasTransform.scale,
+    canvasTransform.translateX,
+    canvasTransform.translateY,
+    widgets,
+    mousePosition,
+  ]);
 
   // --- Drawer Helper Components ---
 
@@ -1421,9 +1466,53 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     e.preventDefault();
 
-    // Prevent double-click issues
+    // Handle double-click for disconnection
 
-    if (e.detail > 1) return; // Ignore double-clicks
+    if (e.detail > 1) {
+      // Double-click to disconnect
+
+      if (handleType === "input") {
+        setEdges((prev) => {
+          const edgesToRemove = prev.filter((ed) => ed.target === nodeId);
+
+          if (edgesToRemove.length > 0) {
+            const sourceIds = edgesToRemove.map((ed) => ed.source);
+
+            setMainPromptState((prevState) => {
+              const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+
+              return {
+                sections: newSections,
+
+                combinedPrompt: buildCombinedPrompt(newSections),
+              };
+            });
+          }
+
+          return prev.filter((ed) => ed.target !== nodeId);
+        });
+      } else if (handleType === "output") {
+        setEdges((prev) => {
+          const edgesToRemove = prev.filter((ed) => ed.source === nodeId);
+
+          if (edgesToRemove.length > 0) {
+            setMainPromptState((prevState) => {
+              const newSections = prevState.sections.filter((s) => s.nodeId !== nodeId);
+
+              return {
+                sections: newSections,
+
+                combinedPrompt: buildCombinedPrompt(newSections),
+              };
+            });
+          }
+
+          return prev.filter((ed) => ed.source !== nodeId);
+        });
+      }
+
+      return;
+    }
 
     // Normal connection flow
 
@@ -1461,8 +1550,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       setConnecting(null);
 
       setMousePosition(null);
-    } else if (handleType === "input" || handleType === "output") {
-      // Start dragging handle - can be used to disconnect by dragging away
+    } else if (handleType === "input") {
+      // Start dragging input handle - can be used to disconnect by dragging away
 
       setDraggingHandle({
         nodeId,
@@ -1484,26 +1573,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
-  };
-
-  // Get handle position for a node (in canvas coordinates)
-
-  const getHandlePosition = (
-    nodeId: string,
-    handleType: "input" | "output",
-    widgets: Widget[],
-  ): { x: number; y: number } => {
-    const widget = widgets.find((w) => w.id === nodeId);
-
-    if (!widget) return { x: 0, y: 0 };
-
-    const handleY = widget.y + widget.height / 2; // Center vertically
-
-    // Handles are positioned at -4.5px from edge (half of 9px handle width)
-
-    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
-
-    return { x: handleX, y: handleY };
   };
 
   // --- RENDER ---
