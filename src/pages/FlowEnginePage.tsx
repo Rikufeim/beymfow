@@ -883,14 +883,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         const updatedOutput = nodeOutputMap[nodeId];
 
         if (updatedOutput?.generatedText) {
-          performIntegration(nodeId, updatedOutput);
+          performIntegration(nodeId, updatedOutput as { generatedText: string; jsonPayload?: any });
         }
       }, 100);
 
       return;
     }
 
-    performIntegration(nodeId, nodeOutput);
+    performIntegration(nodeId, nodeOutput as { generatedText: string; jsonPayload?: any });
   };
 
   const performIntegration = (nodeId: string, nodeOutput: { generatedText: string; jsonPayload?: any }) => {
