@@ -40,6 +40,10 @@ import {
   ChevronRight,
   Box,
   Wrench,
+  Upload,
+  Bot,
+  Save,
+  Link2,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
@@ -59,7 +63,7 @@ interface Category {
 interface Widget {
   id: string;
 
-  type: "prompt" | "category";
+  type: "prompt" | "category" | "flow-input" | "flow-text-gen" | "flow-agent" | "flow-state" | "flow-tool";
 
   title?: string;
 
@@ -73,6 +77,8 @@ interface Widget {
 
   integrated?: boolean;
 
+  subtitle?: string;
+
   x: number;
 
   y: number;
@@ -80,6 +86,14 @@ interface Widget {
   width: number;
 
   height: number;
+}
+
+interface Edge {
+  id: string;
+
+  source: string;
+
+  target: string;
 }
 
 interface FlowEngineProps {
@@ -252,6 +266,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Workspace State
 
   const [widgets, setWidgets] = useState<Widget[]>([]);
+
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   const [showCategories, setShowCategories] = useState(false);
 
@@ -472,6 +488,208 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (widget.content) {
       navigator.clipboard.writeText(widget.content);
     }
+  };
+
+  // --- Website Flow Preset ---
+
+  const createWebsiteFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
+    // Calculate starting position to avoid overlapping with existing nodes
+
+    const baseX = 700;
+
+    const baseY = 200;
+
+    const nodeWidth = 320;
+
+    const nodeHeight = 180;
+
+    const horizontalSpacing = 400;
+
+    const verticalOffset = 0;
+
+    const nodes: Widget[] = [
+      // IDEA INPUT
+
+      {
+        id: "flow-input-idea",
+
+        type: "flow-input",
+
+        title: "IDEA INPUT",
+
+        subtitle: "Paste a URL to an existing website or describe the idea for the new landing page.",
+
+        content: "",
+
+        placeholder: "Enter URL or describe your website idea...",
+
+        x: baseX,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+
+      // Text Generation: Website Summary
+
+      {
+        id: "flow-text-summary",
+
+        type: "flow-text-gen",
+
+        title: "TEXT GENERATION",
+
+        subtitle: "Summarize website / idea",
+
+        content: "",
+
+        placeholder: "Summary will be generated here...",
+
+        x: baseX + horizontalSpacing,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+
+      // AI Agent: Website Modules Planner
+
+      {
+        id: "flow-agent-planner",
+
+        type: "flow-agent",
+
+        title: "AI STUDIO AGENT",
+
+        subtitle: "Plan website modules",
+
+        content: "",
+
+        placeholder: "Planning Hero, Services, About, Cases, Pricing, Contact, FAQ...",
+
+        x: baseX + horizontalSpacing * 2,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+
+      // Set State: Save layout + config
+
+      {
+        id: "flow-state-config",
+
+        type: "flow-state",
+
+        title: "SET STATE",
+
+        subtitle: "Save layout + config",
+
+        content: "",
+
+        placeholder: "Saving website configuration...",
+
+        x: baseX + horizontalSpacing * 3,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+
+      // Tool Calling: SEO & Structure
+
+      {
+        id: "flow-tool-seo",
+
+        type: "flow-tool",
+
+        title: "TOOL CALLING",
+
+        subtitle: "Generate SEO & structure",
+
+        content: "",
+
+        placeholder: "Generating SEO metadata and site structure...",
+
+        x: baseX + horizontalSpacing * 4,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+
+      // Final Prompt: Output
+
+      {
+        id: "flow-text-final",
+
+        type: "flow-text-gen",
+
+        title: "TEXT GENERATION",
+
+        subtitle: "Output final website prompt",
+
+        content: "",
+
+        placeholder: "Final website prompt will appear here...",
+
+        x: baseX + horizontalSpacing * 5,
+
+        y: baseY,
+
+        width: nodeWidth,
+
+        height: nodeHeight,
+      },
+    ];
+
+    const edges: Edge[] = [
+      { id: "edge-1", source: "flow-input-idea", target: "flow-text-summary" },
+
+      { id: "edge-2", source: "flow-text-summary", target: "flow-agent-planner" },
+
+      { id: "edge-3", source: "flow-agent-planner", target: "flow-state-config" },
+
+      { id: "edge-4", source: "flow-state-config", target: "flow-tool-seo" },
+
+      { id: "edge-5", source: "flow-tool-seo", target: "flow-text-final" },
+    ];
+
+    return { nodes, edges };
+  };
+
+  const handleCreateWebsiteFlowPreset = () => {
+    const { nodes, edges } = createWebsiteFlowPreset();
+
+    // Merge with existing widgets, avoiding duplicate IDs
+
+    setWidgets((prev) => {
+      const existingIds = new Set(prev.map((w) => w.id));
+
+      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
+
+      return [...prev, ...newNodes];
+    });
+
+    // Merge with existing edges, avoiding duplicate IDs
+
+    setEdges((prev) => {
+      const existingIds = new Set(prev.map((e) => e.id));
+
+      const newEdges = edges.filter((e) => !existingIds.has(e.id));
+
+      return [...prev, ...newEdges];
+    });
   };
 
   // --- Canvas Pan-Zoom Logic ---
@@ -740,6 +958,19 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </button>
 
               <div className="flex items-center gap-2 pointer-events-auto">
+                {activeDomain === "Website" &&
+                  widgets.some((w) => w.type === "prompt") &&
+                  !widgets.some((w) => w.type.startsWith("flow-")) && (
+                    <button
+                      onClick={handleCreateWebsiteFlowPreset}
+                      className="h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
+                    >
+                      <Sparkles size={16} />
+
+                      <span className="text-sm font-medium">Website Flow</span>
+                    </button>
+                  )}
+
                 <button
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
@@ -779,6 +1010,55 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 }}
               />
 
+              {/* Edges Container with Transform */}
+
+              <svg
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+
+                  transformOrigin: "0 0",
+
+                  overflow: "visible",
+                }}
+              >
+                {edges.map((edge) => {
+                  const sourceWidget = widgets.find((w) => w.id === edge.source);
+
+                  const targetWidget = widgets.find((w) => w.id === edge.target);
+
+                  if (!sourceWidget || !targetWidget) return null;
+
+                  const sourceX = sourceWidget.x + sourceWidget.width / 2;
+
+                  const sourceY = sourceWidget.y + sourceWidget.height;
+
+                  const targetX = targetWidget.x + targetWidget.width / 2;
+
+                  const targetY = targetWidget.y;
+
+                  const midY = (sourceY + targetY) / 2;
+
+                  return (
+                    <g key={edge.id}>
+                      <path
+                        d={`M ${sourceX} ${sourceY} C ${sourceX} ${midY}, ${targetX} ${midY}, ${targetX} ${targetY}`}
+                        stroke="#4a5568"
+                        strokeWidth="2"
+                        fill="none"
+                        markerEnd="url(#arrowhead)"
+                      />
+                    </g>
+                  );
+                })}
+
+                <defs>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#4a5568" />
+                  </marker>
+                </defs>
+              </svg>
+
               {/* Widgets Container with Transform */}
 
               <div
@@ -798,6 +1078,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     Icon = widget.category.icon;
 
                     accentColor = widget.category.color;
+                  } else if (widget.type === "flow-input") {
+                    Icon = Upload;
+
+                    accentColor = "text-blue-400";
+                  } else if (widget.type === "flow-text-gen") {
+                    Icon = FileText;
+
+                    accentColor = "text-purple-400";
+                  } else if (widget.type === "flow-agent") {
+                    Icon = Bot;
+
+                    accentColor = "text-green-400";
+                  } else if (widget.type === "flow-state") {
+                    Icon = Save;
+
+                    accentColor = "text-amber-400";
+                  } else if (widget.type === "flow-tool") {
+                    Icon = Link2;
+
+                    accentColor = "text-cyan-400";
                   }
 
                   return (
@@ -829,6 +1129,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
+
+                            {widget.subtitle && (
+                              <span className="text-[10px] text-neutral-400 mt-0.5 font-sans">{widget.subtitle}</span>
+                            )}
 
                             {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
                               <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
@@ -871,12 +1175,31 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <Copy size={14} />
                           </button>
 
-                          {widget.type !== "prompt" && (
+                          {widget.type !== "prompt" && !widget.type.startsWith("flow-") && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
 
                                 deleteWidget(widget.id);
+                              }}
+                              className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+
+                          {widget.type.startsWith("flow-") && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                deleteWidget(widget.id);
+
+                                // Also delete connected edges
+
+                                setEdges((prev) =>
+                                  prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
+                                );
                               }}
                               className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
                             >
@@ -901,6 +1224,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           <textarea
                             className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
                             value={widget.content}
+                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                            placeholder={widget.placeholder}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          />
+                        )}
+
+                        {widget.type.startsWith("flow-") && (
+                          <textarea
+                            className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
+                            value={widget.content || ""}
                             onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                             placeholder={widget.placeholder}
                             onMouseDown={(e) => e.stopPropagation()}
