@@ -407,14 +407,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const [gridSnap, setGridSnap] = useState(true);
 
-  // Update canvas zoom range (40% - 300%)
-  useEffect(() => {
-    if (canvasTransform.scale < 0.4) {
-      setCanvasTransform((prev) => ({ ...prev, scale: 0.4 }));
-    } else if (canvasTransform.scale > 3) {
-      setCanvasTransform((prev) => ({ ...prev, scale: 3 }));
-    }
-  }, [canvasTransform.scale]);
+  // Zoom range is now handled in handleCanvasWheel (0.01 to 10)
+  // No useEffect needed - workspace always visible regardless of zoom level
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -1294,6 +1288,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Clear existing workspace and set the preset
     setWidgets(nodes);
     setEdges(edges);
+    // Center viewport on the preset (first node is at baseX=700, baseY=200)
+    // Calculate center of all nodes
+    if (nodes.length > 0) {
+      const minX = Math.min(...nodes.map((n) => n.x));
+      const maxX = Math.max(...nodes.map((n) => n.x + n.width));
+      const minY = Math.min(...nodes.map((n) => n.y));
+      const maxY = Math.max(...nodes.map((n) => n.y + n.height));
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      // Center in viewport (assuming viewport is ~1200px wide, ~800px tall)
+      const viewportWidth = 1200;
+      const viewportHeight = 800;
+      setCanvasTransform({
+        translateX: viewportWidth / 2 - centerX,
+        translateY: viewportHeight / 2 - centerY,
+        scale: 1,
+      });
+    }
   };
 
   // --- App Flow Preset ---
@@ -1396,6 +1408,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Clear existing workspace and set the preset
     setWidgets(nodes);
     setEdges(edges);
+    // Center viewport on the preset
+    if (nodes.length > 0) {
+      const minX = Math.min(...nodes.map((n) => n.x));
+      const maxX = Math.max(...nodes.map((n) => n.x + n.width));
+      const minY = Math.min(...nodes.map((n) => n.y));
+      const maxY = Math.max(...nodes.map((n) => n.y + n.height));
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const viewportWidth = 1200;
+      const viewportHeight = 800;
+      setCanvasTransform({
+        translateX: viewportWidth / 2 - centerX,
+        translateY: viewportHeight / 2 - centerY,
+        scale: 1,
+      });
+    }
   };
 
   // --- Game Flow Preset ---
@@ -1498,6 +1526,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Clear existing workspace and set the preset
     setWidgets(nodes);
     setEdges(edges);
+    // Center viewport on the preset
+    if (nodes.length > 0) {
+      const minX = Math.min(...nodes.map((n) => n.x));
+      const maxX = Math.max(...nodes.map((n) => n.x + n.width));
+      const minY = Math.min(...nodes.map((n) => n.y));
+      const maxY = Math.max(...nodes.map((n) => n.y + n.height));
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const viewportWidth = 1200;
+      const viewportHeight = 800;
+      setCanvasTransform({
+        translateX: viewportWidth / 2 - centerX,
+        translateY: viewportHeight / 2 - centerY,
+        scale: 1,
+      });
+    }
   };
 
   // --- Canvas Pan-Zoom Logic ---
