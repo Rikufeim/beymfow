@@ -645,15 +645,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     style.innerHTML = `
 
-      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
 
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(55, 65, 81, 0.3); border-radius: 2px; }
 
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(75, 85, 99, 0.5); }
 
-      .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
+      .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(55, 65, 81, 0.3) transparent; }
+      
+      /* Hide scrollbars on main canvas */
+      .canvas-container {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+      .canvas-container::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
 
       
 
@@ -1288,6 +1299,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCanvasWheel = (e: React.WheelEvent) => {
     if (!canvasRef.current) return;
 
+    // Don't zoom if scrolling inside a widget
+    if ((e.target as HTMLElement).closest(".widget-container, .custom-scrollbar")) return;
+
     e.preventDefault();
 
     const rect = canvasRef.current.getBoundingClientRect();
@@ -1296,25 +1310,38 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const mouseY = e.clientY - rect.top;
 
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    // Handle scroll with Shift key for horizontal panning
+    if (e.shiftKey) {
+      setCanvasTransform((prev) => ({
+        ...prev,
+        translateX: prev.translateX - e.deltaY,
+      }));
+      return;
+    }
 
-    const newScale = Math.max(0.1, Math.min(3, canvasTransform.scale * zoomFactor));
+    // Handle Ctrl/Cmd + scroll for zoom
+    if (e.ctrlKey || e.metaKey) {
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const newScale = Math.max(0.4, Math.min(3, canvasTransform.scale * zoomFactor));
 
-    // Zoom towards mouse position
+      // Zoom towards mouse position
+      const scaleChange = newScale / canvasTransform.scale;
+      const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
+      const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
 
-    const scaleChange = newScale / canvasTransform.scale;
+      setCanvasTransform({
+        translateX: newTranslateX,
+        translateY: newTranslateY,
+        scale: newScale,
+      });
+      return;
+    }
 
-    const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
-
-    const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
-
-    setCanvasTransform({
-      translateX: newTranslateX,
-
-      translateY: newTranslateY,
-
-      scale: newScale,
-    });
+    // Normal scroll = pan vertically
+    setCanvasTransform((prev) => ({
+      ...prev,
+      translateY: prev.translateY - e.deltaY,
+    }));
   };
 
   // --- Drag & Resize Logic ---
@@ -1718,18 +1745,35 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
                 {widget.previewSummary ? (
                   <div className="space-y-4">
-                    {widget.previewSummary.split("\n\n").map((section, idx) => {
-                      const lines = section.split("\n");
-                      const title = lines[0]?.replace(/\*\*/g, "") || "";
-                      const description = lines.slice(1).join("\n");
+                    {/* Show the original prompt first - prominently */}
+                    <div className="bg-indigo-900/20 border-2 border-indigo-800/50 rounded-lg p-4 mb-4">
+                      <h4 className="text-sm font-semibold text-indigo-300 mb-3 flex items-center gap-2">
+                        <FileText size={16} />
+                        Your Prompt
+                      </h4>
+                      <pre className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed font-mono bg-neutral-900/70 p-3 rounded border border-neutral-800/50 max-h-48 overflow-y-auto custom-scrollbar">
+                        {widget.promptText || "No prompt text"}
+                      </pre>
+                    </div>
 
-                      return (
-                        <div key={idx} className="bg-neutral-900/50 border border-neutral-800 rounded-lg p-3">
-                          <h4 className="text-sm font-semibold text-white mb-1.5">{title}</h4>
-                          <p className="text-xs text-neutral-400 leading-relaxed">{description}</p>
-                        </div>
-                      );
-                    })}
+                    {/* Then show the explanation */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2">
+                        Explanation
+                      </h4>
+                      {widget.previewSummary.split("\n\n").map((section, idx) => {
+                        const lines = section.split("\n");
+                        const title = lines[0]?.replace(/\*\*/g, "") || "";
+                        const description = lines.slice(1).join("\n");
+
+                        return (
+                          <div key={idx} className="bg-neutral-900/50 border border-neutral-800 rounded-lg p-3">
+                            <h5 className="text-sm font-semibold text-white mb-1.5">{title}</h5>
+                            <p className="text-xs text-neutral-400 leading-relaxed">{description}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-sm text-neutral-500 text-center py-8">
@@ -2015,10 +2059,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-auto z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              className="flex-1 relative overflow-hidden z-0 cursor-grab active:cursor-grabbing canvas-container"
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
+              style={{ overflow: "hidden" }}
             >
               {/* Infinite Background Pattern */}
 
