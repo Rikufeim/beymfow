@@ -1299,8 +1299,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCanvasWheel = (e: React.WheelEvent) => {
     if (!canvasRef.current) return;
 
-    // Don't zoom if scrolling inside a widget
-    if ((e.target as HTMLElement).closest(".widget-container, .custom-scrollbar")) return;
+    // Don't zoom if scrolling inside a widget or textarea
+    if ((e.target as HTMLElement).closest(".widget-container, .custom-scrollbar, textarea, input")) return;
 
     e.preventDefault();
 
@@ -1314,34 +1314,34 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (e.shiftKey) {
       setCanvasTransform((prev) => ({
         ...prev,
-        translateX: prev.translateX - e.deltaY,
+        translateX: prev.translateX - e.deltaY * 0.5,
       }));
       return;
     }
 
-    // Handle Ctrl/Cmd + scroll for zoom
-    if (e.ctrlKey || e.metaKey) {
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      const newScale = Math.max(0.4, Math.min(3, canvasTransform.scale * zoomFactor));
-
-      // Zoom towards mouse position
-      const scaleChange = newScale / canvasTransform.scale;
-      const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
-      const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
-
-      setCanvasTransform({
-        translateX: newTranslateX,
-        translateY: newTranslateY,
-        scale: newScale,
-      });
+    // Handle Alt/Option + scroll for vertical panning
+    if (e.altKey) {
+      setCanvasTransform((prev) => ({
+        ...prev,
+        translateY: prev.translateY - e.deltaY * 0.5,
+      }));
       return;
     }
 
-    // Normal scroll = pan vertically
-    setCanvasTransform((prev) => ({
-      ...prev,
-      translateY: prev.translateY - e.deltaY,
-    }));
+    // Normal scroll = zoom in/out (like Figma/Flowise)
+    const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
+    const newScale = Math.max(0.1, Math.min(5, canvasTransform.scale * zoomFactor));
+
+    // Zoom towards mouse position
+    const scaleChange = newScale / canvasTransform.scale;
+    const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
+    const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
+
+    setCanvasTransform({
+      translateX: newTranslateX,
+      translateY: newTranslateY,
+      scale: newScale,
+    });
   };
 
   // --- Drag & Resize Logic ---
