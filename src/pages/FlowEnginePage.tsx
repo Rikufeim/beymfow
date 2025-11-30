@@ -1291,26 +1291,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleCreateWebsiteFlowPreset = () => {
     const { nodes, edges } = createWebsiteFlowPreset();
-
-    // Merge with existing widgets, avoiding duplicate IDs
-
-    setWidgets((prev) => {
-      const existingIds = new Set(prev.map((w) => w.id));
-
-      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
-
-      return [...prev, ...newNodes];
-    });
-
-    // Merge with existing edges, avoiding duplicate IDs
-
-    setEdges((prev) => {
-      const existingIds = new Set(prev.map((e) => e.id));
-
-      const newEdges = edges.filter((e) => !existingIds.has(e.id));
-
-      return [...prev, ...newEdges];
-    });
+    // Clear existing workspace and set the preset
+    setWidgets(nodes);
+    setEdges(edges);
   };
 
   // --- App Flow Preset ---
@@ -1410,16 +1393,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleCreateAppFlowPreset = () => {
     const { nodes, edges } = createAppFlowPreset();
-    setWidgets((prev) => {
-      const existingIds = new Set(prev.map((w) => w.id));
-      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
-      return [...prev, ...newNodes];
-    });
-    setEdges((prev) => {
-      const existingIds = new Set(prev.map((e) => e.id));
-      const newEdges = edges.filter((e) => !existingIds.has(e.id));
-      return [...prev, ...newEdges];
-    });
+    // Clear existing workspace and set the preset
+    setWidgets(nodes);
+    setEdges(edges);
   };
 
   // --- Game Flow Preset ---
@@ -1519,16 +1495,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleCreateGameFlowPreset = () => {
     const { nodes, edges } = createGameFlowPreset();
-    setWidgets((prev) => {
-      const existingIds = new Set(prev.map((w) => w.id));
-      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
-      return [...prev, ...newNodes];
-    });
-    setEdges((prev) => {
-      const existingIds = new Set(prev.map((e) => e.id));
-      const newEdges = edges.filter((e) => !existingIds.has(e.id));
-      return [...prev, ...newEdges];
-    });
+    // Clear existing workspace and set the preset
+    setWidgets(nodes);
+    setEdges(edges);
   };
 
   // --- Canvas Pan-Zoom Logic ---
@@ -2316,22 +2285,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onClick={handleCanvasClick}
               style={{ overflow: "hidden" }}
             >
-              {/* Infinite Background Pattern */}
-
+              {/* Infinite Background Pattern - Now zooms with canvas */}
               <div
                 className="absolute pointer-events-none opacity-20"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-
                   backgroundSize: "24px 24px",
-
                   width: "20000px",
-
                   height: "20000px",
-
-                  left: `${-10000 + (canvasTransform.translateX % 24)}px`,
-
-                  top: `${-10000 + (canvasTransform.translateY % 24)}px`,
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  left: `${-10000}px`,
+                  top: `${-10000}px`,
                 }}
               />
 
