@@ -589,17 +589,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       .flow-handle {
 
-        width: 10px;
+        width: 9px;
 
-        height: 10px;
+        height: 9px;
 
         border-radius: 9999px;
 
-        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: rgba(255, 255, 255, 0.85);
 
-        background: rgba(15, 23, 42, 1);
+        border: 1px solid rgba(15, 23, 42, 0.8);
 
-        transition: all 0.2s;
+        z-index: 1000;
+
+        pointer-events: auto !important;
+
+        cursor: crosshair;
+
+        transition: all 0.15s;
 
       }
 
@@ -607,9 +613,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       .flow-handle:hover {
 
-        border-color: rgba(148, 163, 184, 0.8);
+        background: rgba(255, 255, 255, 1);
 
-        transform: scale(1.2);
+        border-color: rgba(148, 163, 184, 1);
+
+        transform: scale(1.3);
+
+        box-shadow: 0 0 4px rgba(148, 163, 184, 0.5);
 
       }
 
@@ -617,7 +627,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       .flow-handle-source {
 
-        background: rgba(34, 197, 94, 0.1);
+        background: rgba(255, 255, 255, 0.85);
 
       }
 
@@ -625,7 +635,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       .flow-handle-target {
 
-        background: rgba(59, 130, 246, 0.1);
+        background: rgba(255, 255, 255, 0.85);
 
       }
 
@@ -1240,49 +1250,54 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (panning) {
-        const deltaX = e.clientX - panning.startX;
+      // Use requestAnimationFrame for smoother updates
 
-        const deltaY = e.clientY - panning.startY;
+      if (rafId) cancelAnimationFrame(rafId);
 
-        setCanvasTransform((prev) => ({
-          ...prev,
+      rafId = requestAnimationFrame(() => {
+        if (panning) {
+          const deltaX = e.clientX - panning.startX;
 
-          translateX: panning.startTranslateX + deltaX,
+          const deltaY = e.clientY - panning.startY;
 
-          translateY: panning.startTranslateY + deltaY,
-        }));
-      } else if (connecting || reconnectingEdge) {
-        // Update connection line position (visual feedback only)
-        // The actual connection happens on handle mouse down
-      } else if (dragging) {
-        // Convert screen coordinates to canvas coordinates
+          setCanvasTransform((prev) => ({
+            ...prev,
 
-        const canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
+            translateX: panning.startTranslateX + deltaX,
 
-        const canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
+            translateY: panning.startTranslateY + deltaY,
+          }));
+        } else if (dragging) {
+          // Convert screen coordinates to canvas coordinates
 
-        setWidgets((prev) => prev.map((w) => (w.id === dragging.id ? { ...w, x: canvasX, y: canvasY } : w)));
-      } else if (resizing) {
-        const deltaX = (e.clientX - resizing.startX) / canvasTransform.scale;
+          const canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
 
-        const deltaY = (e.clientY - resizing.startY) / canvasTransform.scale;
+          const canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
 
-        setWidgets((prev) =>
-          prev.map((w) =>
-            w.id === resizing.id
-              ? {
-                  ...w,
+          setWidgets((prev) => prev.map((w) => (w.id === dragging.id ? { ...w, x: canvasX, y: canvasY } : w)));
+        } else if (resizing) {
+          const deltaX = (e.clientX - resizing.startX) / canvasTransform.scale;
 
-                  width: Math.max(300, resizing.startWidth + deltaX),
+          const deltaY = (e.clientY - resizing.startY) / canvasTransform.scale;
 
-                  height: Math.max(150, resizing.startHeight + deltaY),
-                }
-              : w,
-          ),
-        );
-      }
+          setWidgets((prev) =>
+            prev.map((w) =>
+              w.id === resizing.id
+                ? {
+                    ...w,
+
+                    width: Math.max(300, resizing.startWidth + deltaX),
+
+                    height: Math.max(150, resizing.startHeight + deltaY),
+                  }
+                : w,
+            ),
+          );
+        }
+      });
     };
 
     const handleMouseUp = () => {
@@ -1305,6 +1320,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       window.removeEventListener("mousemove", handleMouseMove);
 
       window.removeEventListener("mouseup", handleMouseUp);
+
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [panning, dragging, resizing, canvasTransform.scale, canvasTransform.translateX, canvasTransform.translateY]);
 
@@ -1324,6 +1341,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleHandleMouseDown = (e: React.MouseEvent, nodeId: string, handleType: "input" | "output") => {
     e.stopPropagation();
+
+    e.preventDefault();
 
     // If reconnecting an edge
 
@@ -1377,30 +1396,62 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    // Cancel connection/reconnection if clicking on canvas
+    // Cancel connection/reconnection if clicking on canvas (but not on handles or widgets)
 
-    if (connecting && !(e.target as HTMLElement).closest(".flow-handle, .widget-container")) {
+    const target = e.target as HTMLElement;
+
+    if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
 
-    if (reconnectingEdge && !(e.target as HTMLElement).closest(".flow-handle, .widget-container, .edge-reconnect")) {
+    if (reconnectingEdge && !target.closest(".flow-handle, .widget-container, .edge-reconnect")) {
       setReconnectingEdge(null);
     }
   };
 
+  // Keyboard delete for edges
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && hoveredEdge) {
+        e.preventDefault();
+
+        const edge = edges.find((ed) => ed.id === hoveredEdge);
+
+        if (edge) {
+          setEdges((prev) => prev.filter((e) => e.id !== hoveredEdge));
+
+          setMainPromptState((prev) => {
+            const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
+
+            return {
+              sections: newSections,
+
+              combinedPrompt: buildCombinedPrompt(newSections),
+            };
+          });
+        }
+
+        setHoveredEdge(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [hoveredEdge, edges]);
+
   const handleEdgeClick = (edgeId: string, e: React.MouseEvent) => {
     e.stopPropagation();
 
+    // Double click or Shift+click to delete immediately
+
     if (e.detail === 2 || e.shiftKey) {
-      // Double click or Shift+click to delete
-
-      setEdges((prev) => prev.filter((e) => e.id !== edgeId));
-
-      // Also remove from main prompt if integrated
-
       const edge = edges.find((ed) => ed.id === edgeId);
 
       if (edge) {
+        setEdges((prev) => prev.filter((e) => e.id !== edgeId));
+
         setMainPromptState((prev) => {
           const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
 
@@ -1414,7 +1465,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
   };
 
-  // Get handle position for a node
+  // Get handle position for a node (in canvas coordinates)
 
   const getHandlePosition = (
     nodeId: string,
@@ -1427,7 +1478,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const handleY = widget.y + widget.height / 2; // Center vertically
 
-    const handleX = handleType === "input" ? widget.x : widget.x + widget.width;
+    // Handles are positioned at -4.5px from edge (half of 9px handle width)
+
+    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
     return { x: handleX, y: handleY };
   };
@@ -1589,8 +1642,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   transformOrigin: "0 0",
 
                   overflow: "visible",
-
-                  pointerEvents: "none",
                 }}
               >
                 {/* Active connection line (while dragging) */}
@@ -1599,15 +1650,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   (() => {
                     const sourcePos = getHandlePosition(connecting.sourceId, "output", widgets);
 
+                    const sourceWidget = widgets.find((w) => w.id === connecting.sourceId);
+
+                    if (!sourceWidget) return null;
+
+                    // Get mouse position relative to canvas
+
+                    const mouseX = sourcePos.x + 150;
+
+                    const mouseY = sourcePos.y;
+
                     return (
                       <g style={{ pointerEvents: "none" }}>
-                        <line
-                          x1={sourcePos.x}
-                          y1={sourcePos.y}
-                          x2={sourcePos.x + 100}
-                          y2={sourcePos.y}
-                          stroke="rgba(148, 163, 184, 0.6)"
-                          strokeWidth="1.5"
+                        <path
+                          d={`M ${sourcePos.x} ${sourcePos.y} Q ${sourcePos.x + 75} ${sourcePos.y}, ${mouseX} ${mouseY}`}
+                          stroke="rgba(148, 163, 184, 0.8)"
+                          strokeWidth="2"
+                          fill="none"
                           strokeDasharray="4 4"
                         />
                       </g>
@@ -1671,15 +1730,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       style={{ pointerEvents: "all", cursor: "pointer" }}
                       onMouseEnter={() => setHoveredEdge(edge.id)}
                       onMouseLeave={() => setHoveredEdge(null)}
-                      onClick={(e) => handleEdgeClick(edge.id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        handleEdgeClick(edge.id, e);
+                      }}
                     >
                       {/* Invisible wider path for easier clicking */}
 
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
                         stroke="transparent"
-                        strokeWidth="20"
+                        strokeWidth="15"
                         fill="none"
+                        style={{ pointerEvents: "all", cursor: "pointer" }}
                       />
 
                       {/* Visible edge line */}
@@ -1689,6 +1753,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         stroke={isHovered ? "rgba(148, 163, 184, 1)" : "rgba(148, 163, 184, 0.6)"}
                         strokeWidth={isHovered ? "2" : "1.5"}
                         fill="none"
+                        style={{ pointerEvents: "none" }}
                       />
 
                       {/* Reconnection handles and delete button on hover */}
@@ -1822,7 +1887,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   return (
                     <div
                       key={widget.id}
-                      className="absolute bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl flex flex-col overflow-hidden hover:border-neutral-700 transition-colors font-sans widget-container"
+                      className="absolute bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
                       style={{
                         left: widget.x,
 
@@ -1833,28 +1898,62 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         height: widget.height,
 
                         boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.5)",
+
+                        overflow: "visible",
                       }}
-                      onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                      onMouseDown={(e) => {
+                        // Don't start dragging if clicking on handle
+
+                        if (!(e.target as HTMLElement).closest(".flow-handle")) {
+                          handleMouseDown(e, widget.id, "move");
+                        }
+                      }}
                     >
-                      {/* Input Handle (Left) */}
+                      {/* Input Handle (Left) - Inside card, visible */}
 
                       {widget.type.startsWith("flow-") && (
                         <div
-                          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0f172a] border border-neutral-600 hover:border-neutral-400 cursor-crosshair z-10 flow-handle flow-handle-target transition-colors"
-                          onMouseDown={(e) => handleHandleMouseDown(e, widget.id, "input")}
-                          style={{ pointerEvents: "auto" }}
-                          title="Input connection point"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
+                          style={{
+                            left: "-4.5px",
+
+                            pointerEvents: "auto",
+
+                            zIndex: 1000,
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+
+                            e.preventDefault();
+
+                            handleHandleMouseDown(e, widget.id, "input");
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          title="Input connection point - drag to connect"
                         />
                       )}
 
-                      {/* Output Handle (Right) */}
+                      {/* Output Handle (Right) - Inside card, visible */}
 
                       {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
                         <div
-                          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0f172a] border border-neutral-600 hover:border-neutral-400 cursor-crosshair z-10 flow-handle flow-handle-source transition-colors"
-                          onMouseDown={(e) => handleHandleMouseDown(e, widget.id, "output")}
-                          style={{ pointerEvents: "auto" }}
-                          title="Output connection point"
+                          className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                          style={{
+                            right: "-4.5px",
+
+                            pointerEvents: "auto",
+
+                            zIndex: 1000,
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+
+                            e.preventDefault();
+
+                            handleHandleMouseDown(e, widget.id, "output");
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          title="Output connection point - drag to connect"
                         />
                       )}
 
@@ -2042,7 +2141,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                       {/* Content */}
 
-                      <div className="flex-1 bg-[#121214] overflow-hidden flex flex-col relative">
+                      <div className="flex-1 bg-[#121214] flex flex-col relative" style={{ overflow: "visible" }}>
                         {widget.type === "prompt" && (
                           <div className="p-4 overflow-y-auto h-full custom-scrollbar">
                             <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
