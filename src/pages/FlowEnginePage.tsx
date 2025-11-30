@@ -1334,13 +1334,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
 
     // Normal scroll = zoom in/out (like Figma/Flowise)
-    const zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
-    const newScale = Math.max(0.1, Math.min(5, canvasTransform.scale * zoomFactor));
+    // Smooth zoom with proper calculation
+    const zoomSpeed = 0.1;
+    const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-    // Zoom towards mouse position
-    const scaleChange = newScale / canvasTransform.scale;
-    const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
-    const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
+    // Calculate new scale - allow unlimited zoom (0.01 = 1% to 10 = 1000%)
+    const newScale = Math.max(0.01, Math.min(10, canvasTransform.scale * zoomFactor));
+
+    // Calculate the point under mouse in canvas coordinates (before zoom)
+    const canvasX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
+    const canvasY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
+
+    // Calculate new translate to keep the point under mouse fixed
+    const newTranslateX = mouseX - canvasX * newScale;
+    const newTranslateY = mouseY - canvasY * newScale;
 
     setCanvasTransform({
       translateX: newTranslateX,
