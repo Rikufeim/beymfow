@@ -302,6 +302,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     startTranslateY: number;
   } | null>(null);
 
+  // Connection State
+
+  const [connecting, setConnecting] = useState<{ sourceId: string; sourceHandle: "output" } | null>(null);
+
+  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
+
+  const [reconnectingEdge, setReconnectingEdge] = useState<{ edgeId: string; endType: "source" | "target" } | null>(
+    null,
+  );
+
   // Drawer State
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -574,6 +584,50 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
 
       .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
+
+      
+
+      .flow-handle {
+
+        width: 10px;
+
+        height: 10px;
+
+        border-radius: 9999px;
+
+        border: 1px solid rgba(148, 163, 184, 0.4);
+
+        background: rgba(15, 23, 42, 1);
+
+        transition: all 0.2s;
+
+      }
+
+      
+
+      .flow-handle:hover {
+
+        border-color: rgba(148, 163, 184, 0.8);
+
+        transform: scale(1.2);
+
+      }
+
+      
+
+      .flow-handle-source {
+
+        background: rgba(34, 197, 94, 0.1);
+
+      }
+
+      
+
+      .flow-handle-target {
+
+        background: rgba(59, 130, 246, 0.1);
+
+      }
 
     `;
 
@@ -1199,6 +1253,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
           translateY: panning.startTranslateY + deltaY,
         }));
+      } else if (connecting || reconnectingEdge) {
+        // Update connection line position (visual feedback only)
+        // The actual connection happens on handle mouse down
       } else if (dragging) {
         // Convert screen coordinates to canvas coordinates
 
@@ -1234,6 +1291,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       setResizing(null);
 
       setPanning(null);
+
+      // Don't cancel connecting/reconnecting on mouse up - let it complete on handle click
     };
 
     if (panning || dragging || resizing) {
@@ -1259,6 +1318,118 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (!searchQuery) return cats;
 
     return cats.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  };
+
+  // --- Connection Handlers ---
+
+  const handleHandleMouseDown = (e: React.MouseEvent, nodeId: string, handleType: "input" | "output") => {
+    e.stopPropagation();
+
+    // If reconnecting an edge
+
+    if (reconnectingEdge) {
+      const edge = edges.find((ed) => ed.id === reconnectingEdge.edgeId);
+
+      if (edge) {
+        if (reconnectingEdge.endType === "source" && handleType === "output") {
+          // Reconnect source
+
+          setEdges((prev) => prev.map((ed) => (ed.id === reconnectingEdge.edgeId ? { ...ed, source: nodeId } : ed)));
+        } else if (reconnectingEdge.endType === "target" && handleType === "input") {
+          // Reconnect target
+
+          setEdges((prev) => prev.map((ed) => (ed.id === reconnectingEdge.edgeId ? { ...ed, target: nodeId } : ed)));
+        }
+      }
+
+      setReconnectingEdge(null);
+
+      return;
+    }
+
+    // Normal connection flow
+
+    if (handleType === "output") {
+      setConnecting({ sourceId: nodeId, sourceHandle: "output" });
+    } else if (handleType === "input" && connecting) {
+      // Complete connection
+
+      const newEdge: Edge = {
+        id: `edge-${connecting.sourceId}-${nodeId}-${Date.now()}`,
+
+        source: connecting.sourceId,
+
+        target: nodeId,
+      };
+
+      setEdges((prev) => {
+        // Check if edge already exists
+
+        const exists = prev.some((e) => e.source === connecting.sourceId && e.target === nodeId);
+
+        if (exists) return prev;
+
+        return [...prev, newEdge];
+      });
+
+      setConnecting(null);
+    }
+  };
+
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    // Cancel connection/reconnection if clicking on canvas
+
+    if (connecting && !(e.target as HTMLElement).closest(".flow-handle, .widget-container")) {
+      setConnecting(null);
+    }
+
+    if (reconnectingEdge && !(e.target as HTMLElement).closest(".flow-handle, .widget-container, .edge-reconnect")) {
+      setReconnectingEdge(null);
+    }
+  };
+
+  const handleEdgeClick = (edgeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (e.detail === 2 || e.shiftKey) {
+      // Double click or Shift+click to delete
+
+      setEdges((prev) => prev.filter((e) => e.id !== edgeId));
+
+      // Also remove from main prompt if integrated
+
+      const edge = edges.find((ed) => ed.id === edgeId);
+
+      if (edge) {
+        setMainPromptState((prev) => {
+          const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
+
+          return {
+            sections: newSections,
+
+            combinedPrompt: buildCombinedPrompt(newSections),
+          };
+        });
+      }
+    }
+  };
+
+  // Get handle position for a node
+
+  const getHandlePosition = (
+    nodeId: string,
+    handleType: "input" | "output",
+    widgets: Widget[],
+  ): { x: number; y: number } => {
+    const widget = widgets.find((w) => w.id === nodeId);
+
+    if (!widget) return { x: 0, y: 0 };
+
+    const handleY = widget.y + widget.height / 2; // Center vertically
+
+    const handleX = handleType === "input" ? widget.x : widget.x + widget.width;
+
+    return { x: handleX, y: handleY };
   };
 
   // --- RENDER ---
@@ -1387,6 +1558,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
+              onClick={handleCanvasClick}
             >
               {/* Infinite Background Pattern */}
 
@@ -1410,15 +1582,72 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               {/* Edges Container with Transform */}
 
               <svg
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0"
                 style={{
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
 
                   transformOrigin: "0 0",
 
                   overflow: "visible",
+
+                  pointerEvents: "none",
                 }}
               >
+                {/* Active connection line (while dragging) */}
+
+                {connecting &&
+                  (() => {
+                    const sourcePos = getHandlePosition(connecting.sourceId, "output", widgets);
+
+                    return (
+                      <g style={{ pointerEvents: "none" }}>
+                        <line
+                          x1={sourcePos.x}
+                          y1={sourcePos.y}
+                          x2={sourcePos.x + 100}
+                          y2={sourcePos.y}
+                          stroke="rgba(148, 163, 184, 0.6)"
+                          strokeWidth="1.5"
+                          strokeDasharray="4 4"
+                        />
+                      </g>
+                    );
+                  })()}
+
+                {/* Active reconnection line (while reconnecting) */}
+
+                {reconnectingEdge &&
+                  (() => {
+                    const edge = edges.find((e) => e.id === reconnectingEdge.edgeId);
+
+                    if (!edge) return null;
+
+                    const sourceWidget = widgets.find((w) => w.id === edge.source);
+
+                    const targetWidget = widgets.find((w) => w.id === edge.target);
+
+                    if (!sourceWidget || !targetWidget) return null;
+
+                    const fixedPos =
+                      reconnectingEdge.endType === "source"
+                        ? getHandlePosition(edge.target, "input", widgets)
+                        : getHandlePosition(edge.source, "output", widgets);
+
+                    return (
+                      <g style={{ pointerEvents: "none" }}>
+                        <line
+                          x1={fixedPos.x}
+                          y1={fixedPos.y}
+                          x2={fixedPos.x + (reconnectingEdge.endType === "source" ? -100 : 100)}
+                          y2={fixedPos.y}
+                          stroke="rgba(148, 163, 184, 0.6)"
+                          strokeWidth="1.5"
+                          strokeDasharray="4 4"
+                        />
+                      </g>
+                    );
+                  })()}
+
                 {edges.map((edge) => {
                   const sourceWidget = widgets.find((w) => w.id === edge.source);
 
@@ -1426,34 +1655,127 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   if (!sourceWidget || !targetWidget) return null;
 
-                  const sourceX = sourceWidget.x + sourceWidget.width / 2;
+                  // Connect handle to handle
 
-                  const sourceY = sourceWidget.y + sourceWidget.height;
+                  const sourcePos = getHandlePosition(edge.source, "output", widgets);
 
-                  const targetX = targetWidget.x + targetWidget.width / 2;
+                  const targetPos = getHandlePosition(edge.target, "input", widgets);
 
-                  const targetY = targetWidget.y;
+                  const midX = (sourcePos.x + targetPos.x) / 2;
 
-                  const midY = (sourceY + targetY) / 2;
+                  const isHovered = hoveredEdge === edge.id;
 
                   return (
-                    <g key={edge.id}>
+                    <g
+                      key={edge.id}
+                      style={{ pointerEvents: "all", cursor: "pointer" }}
+                      onMouseEnter={() => setHoveredEdge(edge.id)}
+                      onMouseLeave={() => setHoveredEdge(null)}
+                      onClick={(e) => handleEdgeClick(edge.id, e)}
+                    >
+                      {/* Invisible wider path for easier clicking */}
+
                       <path
-                        d={`M ${sourceX} ${sourceY} C ${sourceX} ${midY}, ${targetX} ${midY}, ${targetX} ${targetY}`}
-                        stroke="#4a5568"
-                        strokeWidth="2"
+                        d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
+                        stroke="transparent"
+                        strokeWidth="20"
                         fill="none"
-                        markerEnd="url(#arrowhead)"
                       />
+
+                      {/* Visible edge line */}
+
+                      <path
+                        d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
+                        stroke={isHovered ? "rgba(148, 163, 184, 1)" : "rgba(148, 163, 184, 0.6)"}
+                        strokeWidth={isHovered ? "2" : "1.5"}
+                        fill="none"
+                      />
+
+                      {/* Reconnection handles and delete button on hover */}
+
+                      {isHovered && (
+                        <>
+                          {/* Source reconnection handle */}
+
+                          <circle
+                            cx={sourcePos.x}
+                            cy={sourcePos.y}
+                            r="6"
+                            fill="rgba(34, 197, 94, 0.2)"
+                            stroke="rgba(34, 197, 94, 0.8)"
+                            strokeWidth="1.5"
+                            className="edge-reconnect"
+                            style={{ pointerEvents: "all", cursor: "grab" }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+
+                              setReconnectingEdge({ edgeId: edge.id, endType: "source" });
+                            }}
+                            title="Drag to reconnect source"
+                          />
+
+                          {/* Target reconnection handle */}
+
+                          <circle
+                            cx={targetPos.x}
+                            cy={targetPos.y}
+                            r="6"
+                            fill="rgba(59, 130, 246, 0.2)"
+                            stroke="rgba(59, 130, 246, 0.8)"
+                            strokeWidth="1.5"
+                            className="edge-reconnect"
+                            style={{ pointerEvents: "all", cursor: "grab" }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+
+                              setReconnectingEdge({ edgeId: edge.id, endType: "target" });
+                            }}
+                            title="Drag to reconnect target"
+                          />
+
+                          {/* Delete button */}
+
+                          <g transform={`translate(${midX}, ${sourcePos.y})`}>
+                            <circle
+                              r="8"
+                              fill="rgba(15, 23, 42, 0.9)"
+                              stroke="rgba(239, 68, 68, 0.8)"
+                              strokeWidth="1"
+                              style={{ pointerEvents: "all", cursor: "pointer" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                setEdges((prev) => prev.filter((e) => e.id !== edge.id));
+
+                                setMainPromptState((prev) => {
+                                  const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
+
+                                  return {
+                                    sections: newSections,
+
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }}
+                            />
+
+                            <text
+                              x="0"
+                              y="3"
+                              textAnchor="middle"
+                              fill="rgba(239, 68, 68, 1)"
+                              fontSize="10"
+                              fontWeight="bold"
+                              style={{ pointerEvents: "none" }}
+                            >
+                              ×
+                            </text>
+                          </g>
+                        </>
+                      )}
                     </g>
                   );
                 })}
-
-                <defs>
-                  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                    <polygon points="0 0, 10 3, 0 6" fill="#4a5568" />
-                  </marker>
-                </defs>
               </svg>
 
               {/* Widgets Container with Transform */}
@@ -1514,6 +1836,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       }}
                       onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                     >
+                      {/* Input Handle (Left) */}
+
+                      {widget.type.startsWith("flow-") && (
+                        <div
+                          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0f172a] border border-neutral-600 hover:border-neutral-400 cursor-crosshair z-10 flow-handle flow-handle-target transition-colors"
+                          onMouseDown={(e) => handleHandleMouseDown(e, widget.id, "input")}
+                          style={{ pointerEvents: "auto" }}
+                          title="Input connection point"
+                        />
+                      )}
+
+                      {/* Output Handle (Right) */}
+
+                      {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
+                        <div
+                          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#0f172a] border border-neutral-600 hover:border-neutral-400 cursor-crosshair z-10 flow-handle flow-handle-source transition-colors"
+                          onMouseDown={(e) => handleHandleMouseDown(e, widget.id, "output")}
+                          style={{ pointerEvents: "auto" }}
+                          title="Output connection point"
+                        />
+                      )}
+
                       {/* Header */}
 
                       <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
