@@ -1770,7 +1770,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           stroke={targetWidget ? "rgba(34, 197, 94, 0.8)" : "rgba(148, 163, 184, 0.8)"}
                           strokeWidth="2"
                           fill="none"
-                          strokeDasharray={targetWidget ? "none" : "4 4"}
                         />
 
                         {/* Highlight target handle when hovering */}
