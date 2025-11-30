@@ -44,6 +44,9 @@ import {
   Bot,
   Save,
   Link2,
+  DollarSign,
+  Menu,
+  Eye,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
@@ -58,6 +61,16 @@ interface Category {
   color: string;
 
   description?: string;
+}
+
+// Smart Block Types
+interface SmartBlock {
+  type: "dropdown" | "tag-pills" | "text-field" | "option-selector";
+  id: string;
+  label: string;
+  value?: any;
+  options?: string[];
+  placeholder?: string;
 }
 
 interface Widget {
@@ -86,6 +99,17 @@ interface Widget {
   width: number;
 
   height: number;
+
+  // Smart Blocks support
+  smartBlocks?: SmartBlock[];
+
+  // Data passing info for connections
+  dataPassing?: {
+    layout?: boolean;
+    pages?: boolean;
+    brandInfo?: boolean;
+    [key: string]: boolean | undefined;
+  };
 }
 
 interface Edge {
@@ -94,6 +118,9 @@ interface Edge {
   source: string;
 
   target: string;
+
+  // Data passing info
+  dataTypes?: string[];
 }
 
 interface FlowEngineProps {
@@ -324,6 +351,33 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     general: true,
   });
+
+  // New Feature States
+
+  const [mode, setMode] = useState<"simple" | "advanced">("simple");
+
+  const [showPreviewPanel, setShowPreviewPanel] = useState(false);
+
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+
+  const [showFinalPromptComposer, setShowFinalPromptComposer] = useState(true);
+
+  const [finalPromptExpanded, setFinalPromptExpanded] = useState(false);
+
+  const [canvasZoom, setCanvasZoom] = useState(1);
+
+  const [gridSnap, setGridSnap] = useState(true);
+
+  // Update canvas zoom range (40% - 300%)
+  useEffect(() => {
+    if (canvasTransform.scale < 0.4) {
+      setCanvasTransform((prev) => ({ ...prev, scale: 0.4 }));
+    } else if (canvasTransform.scale > 3) {
+      setCanvasTransform((prev) => ({ ...prev, scale: 3 }));
+    }
+  }, [canvasTransform.scale]);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -609,6 +663,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         cursor: crosshair;
 
         transition: all 0.15s;
+
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+
+      }
+
+      .flow-handle:hover {
+
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
 
       }
 
@@ -1334,9 +1396,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         } else if (dragging) {
           // Convert screen coordinates to canvas coordinates
 
-          const canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
+          let canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
+          let canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
 
-          const canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
+          // Grid snap (if enabled)
+          if (gridSnap) {
+            const snapSize = 20;
+            canvasX = Math.round(canvasX / snapSize) * snapSize;
+            canvasY = Math.round(canvasY / snapSize) * snapSize;
+          }
 
           setWidgets((prev) => prev.map((w) => (w.id === dragging.id ? { ...w, x: canvasX, y: canvasY } : w)));
         } else if (resizing) {
@@ -1669,6 +1737,39 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </button>
 
               <div className="flex items-center gap-2 pointer-events-auto">
+                {/* Simple/Advanced Mode Toggle */}
+                <div className="flex items-center gap-1 bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-lg p-1">
+                  <button
+                    onClick={() => setMode("simple")}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                      mode === "simple" ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    Simple
+                  </button>
+                  <button
+                    onClick={() => setMode("advanced")}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                      mode === "advanced" ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    Advanced
+                  </button>
+                </div>
+
+                {/* Preview Panel Toggle */}
+                <button
+                  onClick={() => setShowPreviewPanel(!showPreviewPanel)}
+                  className={`h-10 px-4 rounded-lg backdrop-blur-md border transition-all shadow-lg cursor-pointer font-sans flex items-center gap-2 ${
+                    showPreviewPanel
+                      ? "bg-blue-500/20 border-blue-500/50 text-blue-400"
+                      : "bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                  }`}
+                >
+                  <Eye size={16} />
+                  <span className="text-sm font-medium">Preview</span>
+                </button>
+
                 {activeDomain === "Website" &&
                   widgets.some((w) => w.type === "prompt") &&
                   !widgets.some((w) => w.type.startsWith("flow-")) && (
@@ -1801,16 +1902,54 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   const targetPos = getHandlePosition(edge.target, "input", widgets);
 
+                  const edgeDataTypes = edge.dataTypes || [];
+                  const dataTypesText =
+                    edgeDataTypes.length > 0
+                      ? edgeDataTypes.join(", ")
+                      : sourceWidget.dataPassing
+                        ? Object.keys(sourceWidget.dataPassing)
+                            .filter((k) => sourceWidget.dataPassing?.[k])
+                            .join(", ")
+                        : "data";
+
                   return (
-                    <g key={edge.id} style={{ pointerEvents: "none" }}>
+                    <g
+                      key={edge.id}
+                      style={{ pointerEvents: "stroke" }}
+                      onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                      onMouseLeave={() => setHoveredEdgeId(null)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Show data passing info
+                        if (edgeDataTypes.length > 0 || sourceWidget.dataPassing) {
+                          alert(`Passing: ${dataTypesText}`);
+                        }
+                      }}
+                      className="cursor-pointer"
+                    >
                       {/* Visible edge line - simple and clean */}
 
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
-                        stroke="rgba(148, 163, 184, 0.6)"
-                        strokeWidth="1.5"
+                        stroke={hoveredEdgeId === edge.id ? "rgba(148, 163, 184, 0.9)" : "rgba(148, 163, 184, 0.6)"}
+                        strokeWidth={hoveredEdgeId === edge.id ? "2" : "1.5"}
                         fill="none"
                       />
+
+                      {/* Tooltip on hover */}
+                      {hoveredEdgeId === edge.id && (
+                        <foreignObject
+                          x={(sourcePos.x + targetPos.x) / 2 - 60}
+                          y={(sourcePos.y + targetPos.y) / 2 - 20}
+                          width="120"
+                          height="40"
+                          style={{ pointerEvents: "none" }}
+                        >
+                          <div className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-xs text-neutral-300 font-sans shadow-lg">
+                            Passing: {dataTypesText}
+                          </div>
+                        </foreignObject>
+                      )}
                     </g>
                   );
                 })}
@@ -2186,17 +2325,145 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         )}
 
                         {widget.type.startsWith("flow-") && (
-                          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
+                          <div className="p-4 overflow-y-auto h-full custom-scrollbar flex flex-col gap-3">
+                            {/* Smart Blocks */}
+                            {widget.smartBlocks && widget.smartBlocks.length > 0 && (
+                              <div className="flex flex-col gap-2 mb-2">
+                                {widget.smartBlocks.map((block) => (
+                                  <div key={block.id} className="flex flex-col gap-1">
+                                    <label className="text-[10px] text-neutral-500 font-sans">{block.label}</label>
+                                    {block.type === "dropdown" && (
+                                      <select
+                                        className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-neutral-300 focus:outline-none focus:border-neutral-700"
+                                        value={block.value || ""}
+                                        onChange={(e) => {
+                                          const updatedBlocks = widget.smartBlocks?.map((b) =>
+                                            b.id === block.id ? { ...b, value: e.target.value } : b,
+                                          );
+                                          setWidgets((prev) =>
+                                            prev.map((w) =>
+                                              w.id === widget.id ? { ...w, smartBlocks: updatedBlocks } : w,
+                                            ),
+                                          );
+                                        }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                      >
+                                        {block.options?.map((opt) => (
+                                          <option key={opt} value={opt}>
+                                            {opt}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )}
+                                    {block.type === "tag-pills" && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {block.options?.map((opt) => {
+                                          const isSelected = Array.isArray(block.value) && block.value.includes(opt);
+                                          return (
+                                            <button
+                                              key={opt}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const current = Array.isArray(block.value) ? block.value : [];
+                                                const updated = isSelected
+                                                  ? current.filter((v) => v !== opt)
+                                                  : [...current, opt];
+                                                const updatedBlocks = widget.smartBlocks?.map((b) =>
+                                                  b.id === block.id ? { ...b, value: updated } : b,
+                                                );
+                                                setWidgets((prev) =>
+                                                  prev.map((w) =>
+                                                    w.id === widget.id ? { ...w, smartBlocks: updatedBlocks } : w,
+                                                  ),
+                                                );
+                                              }}
+                                              className={`px-2 py-0.5 rounded text-[10px] font-sans transition-colors ${
+                                                isSelected
+                                                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                  : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700"
+                                              }`}
+                                            >
+                                              {opt}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                    {block.type === "text-field" && (
+                                      <input
+                                        type="text"
+                                        className="bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-neutral-300 focus:outline-none focus:border-neutral-700"
+                                        value={block.value || ""}
+                                        onChange={(e) => {
+                                          const updatedBlocks = widget.smartBlocks?.map((b) =>
+                                            b.id === block.id ? { ...b, value: e.target.value } : b,
+                                          );
+                                          setWidgets((prev) =>
+                                            prev.map((w) =>
+                                              w.id === widget.id ? { ...w, smartBlocks: updatedBlocks } : w,
+                                            ),
+                                          );
+                                        }}
+                                        placeholder={block.placeholder}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                      />
+                                    )}
+                                    {block.type === "option-selector" && (
+                                      <div className="flex gap-1">
+                                        {block.options?.map((opt) => {
+                                          const isSelected = block.value === opt;
+                                          return (
+                                            <button
+                                              key={opt}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const updatedBlocks = widget.smartBlocks?.map((b) =>
+                                                  b.id === block.id ? { ...b, value: opt } : b,
+                                                );
+                                                setWidgets((prev) =>
+                                                  prev.map((w) =>
+                                                    w.id === widget.id ? { ...w, smartBlocks: updatedBlocks } : w,
+                                                  ),
+                                                );
+                                              }}
+                                              className={`px-2 py-1 rounded text-[10px] font-sans transition-colors ${
+                                                isSelected
+                                                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                  : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700"
+                                              }`}
+                                            >
+                                              {opt}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
                             {widget.id === "flow-input-idea" ? (
                               <textarea
-                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono"
+                                className="w-full flex-1 bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono"
                                 value={widget.content || ""}
-                                onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  updateWidget(widget.id, "content", value);
+                                  // AI suggestions based on input
+                                  if (
+                                    value.toLowerCase().includes("saas") ||
+                                    value.toLowerCase().includes("landing page")
+                                  ) {
+                                    // Could trigger suggestions UI here
+                                  }
+                                }}
                                 placeholder={widget.placeholder}
                                 onMouseDown={(e) => e.stopPropagation()}
+                                onFocus={() => setSelectedNodeId(widget.id)}
                               />
                             ) : (
-                              <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                              <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed flex-1">
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
                                   widget.placeholder ||
