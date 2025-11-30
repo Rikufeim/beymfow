@@ -76,7 +76,15 @@ interface SmartBlock {
 interface Widget {
   id: string;
 
-  type: "prompt" | "category" | "flow-input" | "flow-text-gen" | "flow-agent" | "flow-state" | "flow-tool";
+  type:
+    | "prompt"
+    | "category"
+    | "flow-input"
+    | "flow-text-gen"
+    | "flow-agent"
+    | "flow-state"
+    | "flow-tool"
+    | "prompt-inspector";
 
   title?: string;
 
@@ -110,6 +118,11 @@ interface Widget {
     brandInfo?: boolean;
     [key: string]: boolean | undefined;
   };
+
+  // Prompt Inspector specific
+  promptText?: string;
+  previewSummary?: string;
+  previewOutdated?: boolean;
 }
 
 interface Edge {
@@ -992,6 +1005,36 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setWidgets((prev) => [...prev, newWidget]);
   };
 
+  const handlePromptInspectorAdd = () => {
+    const baseX = -canvasTransform.translateX / canvasTransform.scale + 600;
+
+    const baseY = -canvasTransform.translateY / canvasTransform.scale + 100;
+
+    const newWidget: Widget = {
+      id: `prompt-inspector-${Date.now()}`,
+
+      type: "prompt-inspector",
+
+      title: "Prompt Inspector",
+
+      promptText: "",
+
+      previewSummary: undefined,
+
+      previewOutdated: false,
+
+      x: baseX,
+
+      y: baseY,
+
+      width: 500,
+
+      height: 400,
+    };
+
+    setWidgets((prev) => [...prev, newWidget]);
+  };
+
   const toggleIntegration = (widgetId: string) => {
     setWidgets((prev) =>
       prev.map((w) => {
@@ -1515,6 +1558,192 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     mousePosition,
   ]);
 
+  // --- Prompt Inspector Preview Generation ---
+  const generatePromptPreview = async (promptText: string): Promise<string> => {
+    // Simple mock implementation - in production, this would call an LLM
+    // For now, we'll create a structured breakdown
+    const sections: string[] = [];
+
+    // Try to identify sections by common patterns
+    if (promptText.includes("You are") || promptText.includes("You're")) {
+      sections.push(
+        "**Role / System Instructions**\nDefines the AI's role and behavior. This sets the context for how the AI should respond.",
+      );
+    }
+
+    if (promptText.includes("CONTEXT") || promptText.includes("Context:")) {
+      sections.push(
+        "**Context**\nProvides background information and situational details that inform the AI's understanding.",
+      );
+    }
+
+    if (promptText.includes("INPUT") || promptText.includes("Input:")) {
+      sections.push("**Input**\nSpecifies what data or information the AI should process.");
+    }
+
+    if (promptText.includes("OUTPUT") || promptText.includes("Output:") || promptText.includes("Return:")) {
+      sections.push("**Output Format**\nDefines the expected structure and format of the AI's response.");
+    }
+
+    if (promptText.includes("CONSTRAINTS") || promptText.includes("Constraints:") || promptText.includes("Do not")) {
+      sections.push("**Constraints**\nLists limitations, restrictions, or requirements that must be followed.");
+    }
+
+    if (promptText.includes("EXAMPLES") || promptText.includes("Example:")) {
+      sections.push("**Examples**\nProvides sample inputs and outputs to guide the AI's behavior.");
+    }
+
+    // If no sections found, create a general explanation
+    if (sections.length === 0) {
+      sections.push(
+        "**Prompt Overview**\nThis prompt contains instructions for the AI. Break it down into logical sections for better understanding.",
+      );
+    }
+
+    return sections.join("\n\n");
+  };
+
+  // --- Prompt Inspector Component ---
+  const PromptInspectorContent: React.FC<{ widget: Widget; onUpdate: (updates: Partial<Widget>) => void }> = ({
+    widget,
+    onUpdate,
+  }) => {
+    const [activeTab, setActiveTab] = useState<"prompt" | "preview">("prompt");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const handlePromptChange = (value: string) => {
+      onUpdate({
+        promptText: value,
+        previewOutdated: true,
+      });
+    };
+
+    const handleGeneratePreview = async () => {
+      if (!widget.promptText) return;
+
+      setIsGenerating(true);
+      try {
+        const preview = await generatePromptPreview(widget.promptText);
+        onUpdate({
+          previewSummary: preview,
+          previewOutdated: false,
+        });
+      } catch (error) {
+        console.error("Failed to generate preview:", error);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    // Keyboard shortcut: Cmd/Ctrl + Enter
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        setActiveTab("preview");
+        if (widget.promptText) {
+          handleGeneratePreview();
+        }
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        {/* Tabs */}
+        <div className="flex border-b border-neutral-800 bg-[#121214]">
+          <button
+            onClick={() => setActiveTab("prompt")}
+            className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+              activeTab === "prompt"
+                ? "text-white border-b-2 border-indigo-400 bg-neutral-900/50"
+                : "text-neutral-400 hover:text-neutral-300"
+            }`}
+          >
+            Your prompt
+          </button>
+          <button
+            onClick={() => setActiveTab("preview")}
+            className={`flex-1 px-4 py-2 text-xs font-medium transition-colors relative ${
+              activeTab === "preview"
+                ? "text-white border-b-2 border-indigo-400 bg-neutral-900/50"
+                : "text-neutral-400 hover:text-neutral-300"
+            }`}
+          >
+            Preview
+            {widget.previewOutdated && activeTab !== "preview" && (
+              <span
+                className="absolute top-1 right-2 w-1.5 h-1.5 bg-amber-500 rounded-full"
+                title="Preview is outdated"
+              />
+            )}
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "prompt" ? (
+            <textarea
+              ref={textareaRef}
+              className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
+              value={widget.promptText || ""}
+              onChange={(e) => handlePromptChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Write your prompt here... (Cmd/Ctrl + Enter to generate preview)"
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <div className="h-full flex flex-col">
+              <div className="p-3 border-b border-neutral-800 bg-neutral-900/30 flex items-center justify-between">
+                <span className="text-xs text-neutral-400">
+                  {widget.previewOutdated && "Preview is outdated – press Generate Preview to refresh."}
+                </span>
+                <button
+                  onClick={handleGeneratePreview}
+                  disabled={!widget.promptText || isGenerating}
+                  className="px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-all bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={12} />
+                      Generate Preview
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                {widget.previewSummary ? (
+                  <div className="space-y-4">
+                    {widget.previewSummary.split("\n\n").map((section, idx) => {
+                      const lines = section.split("\n");
+                      const title = lines[0]?.replace(/\*\*/g, "") || "";
+                      const description = lines.slice(1).join("\n");
+
+                      return (
+                        <div key={idx} className="bg-neutral-900/50 border border-neutral-800 rounded-lg p-3">
+                          <h4 className="text-sm font-semibold text-white mb-1.5">{title}</h4>
+                          <p className="text-xs text-neutral-400 leading-relaxed">{description}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-sm text-neutral-500 text-center py-8">
+                    Click "Generate Preview" to see an explanation of your prompt
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // --- Drawer Helper Components ---
 
   const toggleSection = (section: string) => {
@@ -1770,19 +1999,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <span className="text-sm font-medium">Preview</span>
                 </button>
 
-                {activeDomain === "Website" &&
-                  widgets.some((w) => w.type === "prompt") &&
-                  !widgets.some((w) => w.type.startsWith("flow-")) && (
-                    <button
-                      onClick={handleCreateWebsiteFlowPreset}
-                      className="h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
-                    >
-                      <Sparkles size={16} />
-
-                      <span className="text-sm font-medium">Website Flow</span>
-                    </button>
-                  )}
-
                 <button
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
@@ -1799,7 +2015,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              className="flex-1 relative overflow-auto z-0 min-h-screen cursor-grab active:cursor-grabbing"
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
@@ -1994,6 +2210,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     Icon = Link2;
 
                     accentColor = "text-cyan-400";
+                  } else if (widget.type === "prompt-inspector") {
+                    Icon = FileText;
+
+                    accentColor = "text-indigo-400";
                   }
 
                   return (
@@ -2022,8 +2242,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       }}
                     >
                       {/* Input Handle (Left) - Inside card, visible */}
-
-                      {widget.type.startsWith("flow-") && (
+                      {/* All nodes get handles for connections */}
+                      {(widget.type.startsWith("flow-") || widget.type === "category") && (
                         <div
                           className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
                           style={{
@@ -2073,53 +2293,56 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Output Handle (Right) - Inside card, visible */}
+                      {/* All nodes get output handles except final prompt */}
+                      {(widget.type.startsWith("flow-") ||
+                        widget.type === "category" ||
+                        widget.type === "prompt-inspector") &&
+                        widget.id !== "flow-text-final" && (
+                          <div
+                            className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                            style={{
+                              right: "-4.5px",
 
-                      {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
-                        <div
-                          className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
-                          style={{
-                            right: "-4.5px",
+                              pointerEvents: "auto",
 
-                            pointerEvents: "auto",
+                              zIndex: 1000,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
 
-                            zIndex: 1000,
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
+                              e.preventDefault();
 
-                            e.preventDefault();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
 
-                            handleHandleMouseDown(e, widget.id, "output");
-                          }}
-                          onDoubleClick={(e) => {
-                            e.stopPropagation();
+                              e.preventDefault();
 
-                            e.preventDefault();
+                              // Double-click to disconnect all edges from this handle
 
-                            // Double-click to disconnect all edges from this handle
+                              setEdges((prev) => {
+                                const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
-                            setEdges((prev) => {
-                              const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
+                                if (edgesToRemove.length > 0) {
+                                  setMainPromptState((prevState) => {
+                                    const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
 
-                              if (edgesToRemove.length > 0) {
-                                setMainPromptState((prevState) => {
-                                  const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
+                                    return {
+                                      sections: newSections,
 
-                                  return {
-                                    sections: newSections,
+                                      combinedPrompt: buildCombinedPrompt(newSections),
+                                    };
+                                  });
+                                }
 
-                                    combinedPrompt: buildCombinedPrompt(newSections),
-                                  };
-                                });
-                              }
-
-                              return prev.filter((ed) => ed.source !== widget.id);
-                            });
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          title="Output connection point - drag to connect"
-                        />
-                      )}
+                                return prev.filter((ed) => ed.source !== widget.id);
+                              });
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            title="Output connection point - drag to connect"
+                          />
+                        )}
 
                       {/* Header */}
 
@@ -2321,6 +2544,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                             placeholder={widget.placeholder}
                             onMouseDown={(e) => e.stopPropagation()}
+                          />
+                        )}
+
+                        {widget.type === "prompt-inspector" && (
+                          <PromptInspectorContent
+                            widget={widget}
+                            onUpdate={(updates) => {
+                              setWidgets((prev) => prev.map((w) => (w.id === widget.id ? { ...w, ...updates } : w)));
+                            }}
                           />
                         )}
 
@@ -2659,6 +2891,31 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   />
                                 </button>
                               ))}
+
+                              {/* Prompt Inspector Node */}
+                              <button
+                                onClick={handlePromptInspectorAdd}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-indigo-400 group-hover:bg-neutral-800">
+                                  <FileText size={14} />
+                                </div>
+
+                                <div className="flex-1">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    Prompt Inspector
+                                  </span>
+
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Develop and refine prompts with preview
+                                  </span>
+                                </div>
+
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                              </button>
                             </div>
                           </motion.div>
                         )}
