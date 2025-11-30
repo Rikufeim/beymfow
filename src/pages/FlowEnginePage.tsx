@@ -306,11 +306,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const [connecting, setConnecting] = useState<{ sourceId: string; sourceHandle: "output" } | null>(null);
 
-  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
-
-  const [reconnectingEdge, setReconnectingEdge] = useState<{ edgeId: string; endType: "source" | "target" } | null>(
-    null,
-  );
+  const [draggingHandle, setDraggingHandle] = useState<{
+    nodeId: string;
+    handleType: "input" | "output";
+    startX: number;
+    startY: number;
+  } | null>(null);
 
   // Drawer State
 
@@ -1270,6 +1271,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
             translateY: panning.startTranslateY + deltaY,
           }));
+        } else if (draggingHandle) {
+          // Check if dragged far enough from handle to disconnect
+
+          const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
+
+          const canvasX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
+
+          const canvasY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
+
+          const distance = Math.sqrt(Math.pow(canvasX - handlePos.x, 2) + Math.pow(canvasY - handlePos.y, 2));
+
+          // If dragged more than 50px away, disconnect (will be finalized on mouse up)
+
+          // Visual feedback: show disconnection state
         } else if (dragging) {
           // Convert screen coordinates to canvas coordinates
 
@@ -1301,16 +1316,90 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     };
 
     const handleMouseUp = () => {
+      // Check if handle was dragged away to disconnect
+
+      if (draggingHandle) {
+        const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
+
+        const canvasX = (draggingHandle.startX - canvasTransform.translateX) / canvasTransform.scale;
+
+        const canvasY = (draggingHandle.startY - canvasTransform.translateY) / canvasTransform.scale;
+
+        const endX =
+          (window.event ? (window.event as MouseEvent).clientX : draggingHandle.startX - canvasTransform.translateX) /
+          canvasTransform.scale;
+
+        const endY =
+          (window.event ? (window.event as MouseEvent).clientY : draggingHandle.startY - canvasTransform.translateY) /
+          canvasTransform.scale;
+
+        // Use a simpler approach: check if mouse moved significantly
+
+        const deltaX = Math.abs(endX - canvasX);
+
+        const deltaY = Math.abs(endY - canvasY);
+
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // If dragged more than 30px away, disconnect
+
+        if (distance > 30) {
+          if (draggingHandle.handleType === "input") {
+            // Disconnect all edges coming into this node
+
+            setEdges((prev) => {
+              const edgesToRemove = prev.filter((ed) => ed.target === draggingHandle.nodeId);
+
+              if (edgesToRemove.length > 0) {
+                const sourceIds = edgesToRemove.map((ed) => ed.source);
+
+                setMainPromptState((prevState) => {
+                  const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+
+                  return {
+                    sections: newSections,
+
+                    combinedPrompt: buildCombinedPrompt(newSections),
+                  };
+                });
+              }
+
+              return prev.filter((ed) => ed.target !== draggingHandle.nodeId);
+            });
+          } else if (draggingHandle.handleType === "output") {
+            // Disconnect all edges going out from this node
+
+            setEdges((prev) => {
+              const edgesToRemove = prev.filter((ed) => ed.source === draggingHandle.nodeId);
+
+              if (edgesToRemove.length > 0) {
+                setMainPromptState((prevState) => {
+                  const newSections = prevState.sections.filter((s) => s.nodeId !== draggingHandle.nodeId);
+
+                  return {
+                    sections: newSections,
+
+                    combinedPrompt: buildCombinedPrompt(newSections),
+                  };
+                });
+              }
+
+              return prev.filter((ed) => ed.source !== draggingHandle.nodeId);
+            });
+          }
+        }
+
+        setDraggingHandle(null);
+      }
+
       setDragging(null);
 
       setResizing(null);
 
       setPanning(null);
-
-      // Don't cancel connecting/reconnecting on mouse up - let it complete on handle click
     };
 
-    if (panning || dragging || resizing) {
+    if (panning || dragging || resizing || draggingHandle) {
       window.addEventListener("mousemove", handleMouseMove);
 
       window.addEventListener("mouseup", handleMouseUp);
@@ -1348,27 +1437,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     if (e.detail > 1) return; // Ignore double-clicks
 
-    // If reconnecting an edge
+    // Start dragging handle - can be used to disconnect by dragging away
 
-    if (reconnectingEdge) {
-      const edge = edges.find((ed) => ed.id === reconnectingEdge.edgeId);
+    setDraggingHandle({
+      nodeId,
 
-      if (edge) {
-        if (reconnectingEdge.endType === "source" && handleType === "output") {
-          // Reconnect source
+      handleType,
 
-          setEdges((prev) => prev.map((ed) => (ed.id === reconnectingEdge.edgeId ? { ...ed, source: nodeId } : ed)));
-        } else if (reconnectingEdge.endType === "target" && handleType === "input") {
-          // Reconnect target
+      startX: e.clientX,
 
-          setEdges((prev) => prev.map((ed) => (ed.id === reconnectingEdge.edgeId ? { ...ed, target: nodeId } : ed)));
-        }
-      }
-
-      setReconnectingEdge(null);
-
-      return;
-    }
+      startY: e.clientY,
+    });
 
     // Normal connection flow
 
@@ -1396,76 +1475,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       });
 
       setConnecting(null);
+
+      setDraggingHandle(null);
     }
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    // Cancel connection/reconnection if clicking on canvas (but not on handles or widgets)
+    // Cancel connection if clicking on canvas (but not on handles or widgets)
 
     const target = e.target as HTMLElement;
 
     if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
-    }
-
-    if (reconnectingEdge && !target.closest(".flow-handle, .widget-container, .edge-reconnect")) {
-      setReconnectingEdge(null);
-    }
-  };
-
-  // Keyboard delete for edges
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === "Delete" || e.key === "Backspace") && hoveredEdge) {
-        e.preventDefault();
-
-        const edge = edges.find((ed) => ed.id === hoveredEdge);
-
-        if (edge) {
-          setEdges((prev) => prev.filter((e) => e.id !== hoveredEdge));
-
-          setMainPromptState((prev) => {
-            const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
-
-            return {
-              sections: newSections,
-
-              combinedPrompt: buildCombinedPrompt(newSections),
-            };
-          });
-        }
-
-        setHoveredEdge(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [hoveredEdge, edges]);
-
-  const handleEdgeClick = (edgeId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    // Double click or Shift+click to delete immediately
-
-    if (e.detail === 2 || e.shiftKey) {
-      const edge = edges.find((ed) => ed.id === edgeId);
-
-      if (edge) {
-        setEdges((prev) => prev.filter((e) => e.id !== edgeId));
-
-        setMainPromptState((prev) => {
-          const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
-
-          return {
-            sections: newSections,
-
-            combinedPrompt: buildCombinedPrompt(newSections),
-          };
-        });
-      }
     }
   };
 
@@ -1677,40 +1698,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     );
                   })()}
 
-                {/* Active reconnection line (while reconnecting) */}
-
-                {reconnectingEdge &&
-                  (() => {
-                    const edge = edges.find((e) => e.id === reconnectingEdge.edgeId);
-
-                    if (!edge) return null;
-
-                    const sourceWidget = widgets.find((w) => w.id === edge.source);
-
-                    const targetWidget = widgets.find((w) => w.id === edge.target);
-
-                    if (!sourceWidget || !targetWidget) return null;
-
-                    const fixedPos =
-                      reconnectingEdge.endType === "source"
-                        ? getHandlePosition(edge.target, "input", widgets)
-                        : getHandlePosition(edge.source, "output", widgets);
-
-                    return (
-                      <g style={{ pointerEvents: "none" }}>
-                        <line
-                          x1={fixedPos.x}
-                          y1={fixedPos.y}
-                          x2={fixedPos.x + (reconnectingEdge.endType === "source" ? -100 : 100)}
-                          y2={fixedPos.y}
-                          stroke="rgba(148, 163, 184, 0.6)"
-                          strokeWidth="1.5"
-                          strokeDasharray="4 4"
-                        />
-                      </g>
-                    );
-                  })()}
-
                 {edges.map((edge) => {
                   const sourceWidget = widgets.find((w) => w.id === edge.source);
 
@@ -1724,124 +1711,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   const targetPos = getHandlePosition(edge.target, "input", widgets);
 
-                  const midX = (sourcePos.x + targetPos.x) / 2;
-
-                  const isHovered = hoveredEdge === edge.id;
-
                   return (
-                    <g
-                      key={edge.id}
-                      style={{ pointerEvents: "all", cursor: "pointer" }}
-                      onMouseEnter={() => setHoveredEdge(edge.id)}
-                      onMouseLeave={() => setHoveredEdge(null)}
-                      onClick={(e) => {
-                        e.stopPropagation();
-
-                        handleEdgeClick(edge.id, e);
-                      }}
-                    >
-                      {/* Invisible wider path for easier clicking */}
+                    <g key={edge.id} style={{ pointerEvents: "none" }}>
+                      {/* Visible edge line - simple and clean */}
 
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
-                        stroke="transparent"
-                        strokeWidth="15"
+                        stroke="rgba(148, 163, 184, 0.6)"
+                        strokeWidth="1.5"
                         fill="none"
-                        style={{ pointerEvents: "all", cursor: "pointer" }}
                       />
-
-                      {/* Visible edge line */}
-
-                      <path
-                        d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
-                        stroke={isHovered ? "rgba(148, 163, 184, 1)" : "rgba(148, 163, 184, 0.6)"}
-                        strokeWidth={isHovered ? "2" : "1.5"}
-                        fill="none"
-                        style={{ pointerEvents: "none" }}
-                      />
-
-                      {/* Reconnection handles and delete button on hover */}
-
-                      {isHovered && (
-                        <>
-                          {/* Source reconnection handle */}
-
-                          <circle
-                            cx={sourcePos.x}
-                            cy={sourcePos.y}
-                            r="6"
-                            fill="rgba(34, 197, 94, 0.2)"
-                            stroke="rgba(34, 197, 94, 0.8)"
-                            strokeWidth="1.5"
-                            className="edge-reconnect"
-                            style={{ pointerEvents: "all", cursor: "grab" }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-
-                              setReconnectingEdge({ edgeId: edge.id, endType: "source" });
-                            }}
-                            title="Drag to reconnect source"
-                          />
-
-                          {/* Target reconnection handle */}
-
-                          <circle
-                            cx={targetPos.x}
-                            cy={targetPos.y}
-                            r="6"
-                            fill="rgba(59, 130, 246, 0.2)"
-                            stroke="rgba(59, 130, 246, 0.8)"
-                            strokeWidth="1.5"
-                            className="edge-reconnect"
-                            style={{ pointerEvents: "all", cursor: "grab" }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-
-                              setReconnectingEdge({ edgeId: edge.id, endType: "target" });
-                            }}
-                            title="Drag to reconnect target"
-                          />
-
-                          {/* Delete button */}
-
-                          <g transform={`translate(${midX}, ${sourcePos.y})`}>
-                            <circle
-                              r="8"
-                              fill="rgba(15, 23, 42, 0.9)"
-                              stroke="rgba(239, 68, 68, 0.8)"
-                              strokeWidth="1"
-                              style={{ pointerEvents: "all", cursor: "pointer" }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-
-                                setEdges((prev) => prev.filter((e) => e.id !== edge.id));
-
-                                setMainPromptState((prev) => {
-                                  const newSections = prev.sections.filter((s) => s.nodeId !== edge.source);
-
-                                  return {
-                                    sections: newSections,
-
-                                    combinedPrompt: buildCombinedPrompt(newSections),
-                                  };
-                                });
-                              }}
-                            />
-
-                            <text
-                              x="0"
-                              y="3"
-                              textAnchor="middle"
-                              fill="rgba(239, 68, 68, 1)"
-                              fontSize="10"
-                              fontWeight="bold"
-                              style={{ pointerEvents: "none" }}
-                            >
-                              ×
-                            </text>
-                          </g>
-                        </>
-                      )}
                     </g>
                   );
                 })}
