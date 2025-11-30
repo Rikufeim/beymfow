@@ -46,7 +46,6 @@ import {
   Link2,
   DollarSign,
   Menu,
-  Eye,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
@@ -906,14 +905,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         const updatedOutput = nodeOutputMap[nodeId];
 
         if (updatedOutput?.generatedText) {
-          performIntegration(nodeId, updatedOutput as { generatedText: string; jsonPayload?: any });
+          performIntegration(nodeId, updatedOutput);
         }
       }, 100);
 
       return;
     }
 
-    performIntegration(nodeId, nodeOutput as { generatedText: string; jsonPayload?: any });
+    performIntegration(nodeId, nodeOutput);
   };
 
   const performIntegration = (nodeId: string, nodeOutput: { generatedText: string; jsonPayload?: any }) => {
@@ -1588,28 +1587,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       return;
     }
 
-    // Normal scroll = zoom in/out (like Figma/Flowise)
-    // Smooth zoom with proper calculation - prevent horizontal drift
+    // Normal scroll = zoom in/out (like Flowise)
+    // Zoom ONLY - no panning/translation on scroll
     const zoomSpeed = 0.1;
     const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
     // Calculate new scale - allow unlimited zoom (0.01 = 1% to 10 = 1000%)
     const newScale = Math.max(0.01, Math.min(10, canvasTransform.scale * zoomFactor));
 
-    // Get current canvas center point in world coordinates
-    const worldX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
-    const worldY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
-
-    // Calculate new translate to keep the world point under mouse fixed
-    // This prevents any horizontal/vertical drift during zoom
-    const newTranslateX = mouseX - worldX * newScale;
-    const newTranslateY = mouseY - worldY * newScale;
-
-    setCanvasTransform({
-      translateX: newTranslateX,
-      translateY: newTranslateY,
+    // Zoom around the viewport center (or mouse position) without changing translate
+    // This ensures the viewport stays stable - no drift left/right/up/down
+    // We keep the current translateX and translateY unchanged during zoom
+    setCanvasTransform((prev) => ({
+      translateX: prev.translateX,
+      translateY: prev.translateY,
       scale: newScale,
-    });
+    }));
   };
 
   // --- Drag & Resize Logic ---
@@ -2300,19 +2293,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     Advanced
                   </button>
                 </div>
-
-                {/* Preview Panel Toggle */}
-                <button
-                  onClick={() => setShowPreviewPanel(!showPreviewPanel)}
-                  className={`h-10 px-4 rounded-lg backdrop-blur-md border transition-all shadow-lg cursor-pointer font-sans flex items-center gap-2 ${
-                    showPreviewPanel
-                      ? "bg-blue-500/20 border-blue-500/50 text-blue-400"
-                      : "bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white"
-                  }`}
-                >
-                  <Eye size={16} />
-                  <span className="text-sm font-medium">Preview</span>
-                </button>
 
                 <button
                   onClick={() => setShowCategories(!showCategories)}
