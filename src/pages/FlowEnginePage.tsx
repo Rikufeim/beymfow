@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -281,6 +281,8 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Critical thinking, pros/cons",
     },
+
+    { id: "notes", name: "Notes", icon: FileText, color: "text-neutral-300", description: "Quick notes and reminders" },
   ],
 };
 
@@ -948,35 +950,19 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setActiveDomain(domainLabel);
 
     setTimeout(() => {
-      const mainPromptWidget: Widget = {
-        id: `prompt-main`,
-
-        type: "prompt",
-
-        title: `${domainLabel} Architecture`,
-
-        content: `Initializing ${domainLabel} context...`,
-
-        x: 0,
-
-        y: 0,
-
-        width: 550,
-
-        height: 600,
-      };
-
       // Reset canvas transform when entering workspace
 
       setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
 
-      setWidgets([mainPromptWidget]);
+      // Start with empty workspace - no default widgets
+
+      setWidgets([]);
 
       setViewMode("workspace");
 
       setIsLoading(false);
 
-      setShowCategories(true);
+      setShowCategories(false); // Drawer starts closed
     }, 600);
   };
 
@@ -990,6 +976,25 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const baseX = -canvasTransform.translateX / canvasTransform.scale + 600;
 
     const baseY = -canvasTransform.translateY / canvasTransform.scale + 100;
+
+    // Special handling for Notes node
+    if (category.id === "notes") {
+      const newWidget: Widget = {
+        id: `notes-${Date.now()}`,
+        type: "category",
+        category: category,
+        title: "Notes",
+        content: "",
+        placeholder: "Write your notes here...",
+        integrated: false,
+        x: baseX + Math.random() * 50,
+        y: baseY + offset,
+        width: 320,
+        height: 250,
+      };
+      setWidgets((prev) => [...prev, newWidget]);
+      return;
+    }
 
     const newWidget: Widget = {
       id: `${category.id}-${Date.now()}`,
@@ -1434,16 +1439,19 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
           setMousePosition({ x: canvasX, y: canvasY });
 
-          // Check if mouse is over a valid input handle
-
+          // Check if mouse is over a valid input handle (optimized - check all node types)
           const targetWidget = widgets.find((w) => {
-            if (!w.type.startsWith("flow-") || w.id === connecting.sourceId) return false;
+            if (
+              (!w.type.startsWith("flow-") && w.type !== "category" && w.type !== "prompt-inspector") ||
+              w.id === connecting.sourceId
+            )
+              return false;
 
             const handlePos = getHandlePosition(w.id, "input", widgets);
 
             const distance = Math.sqrt(Math.pow(canvasX - handlePos.x, 2) + Math.pow(canvasY - handlePos.y, 2));
 
-            return distance < 15; // 15px threshold
+            return distance < 20; // 20px threshold for easier connection
           });
 
           // Don't auto-connect here - let user release mouse to connect
@@ -2398,7 +2406,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans">
+                            <span className="text-sm font-semibold text-white leading-tight font-sans">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
 
