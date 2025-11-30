@@ -1605,8 +1605,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const zoomSpeed = 0.1;
     const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-    // Calculate new scale - allow unlimited zoom (0.01 = 1% to 10 = 1000%)
-    const newScale = Math.max(0.01, Math.min(10, canvasTransform.scale * zoomFactor));
+    // Calculate new scale with reasonable limits (0.3 = 30% to 2.0 = 200%)
+    // This prevents zooming too far out (empty black screen) or too far in
+    const newScale = Math.max(0.3, Math.min(2.0, canvasTransform.scale * zoomFactor));
 
     // Zoom around the viewport center (or mouse position) without changing translate
     // This ensures the viewport stays stable - no drift left/right/up/down
@@ -2329,18 +2330,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onClick={handleCanvasClick}
               style={{ overflow: "hidden" }}
             >
-              {/* Infinite Background Pattern - Now zooms with canvas */}
+              {/* Infinite Background Pattern - Always fills viewport */}
               <div
                 className="absolute pointer-events-none opacity-20"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
                   backgroundSize: "24px 24px",
-                  width: "20000px",
-                  height: "20000px",
+                  backgroundRepeat: "repeat",
+                  // Cover entire viewport plus extra to handle zoom/pan
+                  // Use large dimensions to ensure coverage at all zoom levels
+                  left: "-5000px",
+                  top: "-5000px",
+                  width: "10000px",
+                  height: "10000px",
+                  // Apply same transform as nodes to stay in sync
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
-                  left: `${-10000}px`,
-                  top: `${-10000}px`,
                 }}
               />
 
