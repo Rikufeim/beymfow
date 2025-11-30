@@ -283,6 +283,29 @@ const domainConfig: Record<string, Category[]> = {
     },
 
     { id: "notes", name: "Notes", icon: FileText, color: "text-neutral-300", description: "Quick notes and reminders" },
+
+    // Flow presets
+    {
+      id: "flow-website",
+      name: "Website Flow",
+      icon: Globe,
+      color: "text-neutral-300",
+      description: "Complete website workflow preset",
+    },
+    {
+      id: "flow-app",
+      name: "App Flow",
+      icon: Smartphone,
+      color: "text-neutral-300",
+      description: "Complete app workflow preset",
+    },
+    {
+      id: "flow-game",
+      name: "Game Flow",
+      icon: Gamepad2,
+      color: "text-neutral-300",
+      description: "Complete game workflow preset",
+    },
   ],
 };
 
@@ -883,14 +906,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         const updatedOutput = nodeOutputMap[nodeId];
 
         if (updatedOutput?.generatedText) {
-          performIntegration(nodeId, updatedOutput as { generatedText: string; jsonPayload?: any });
+          performIntegration(nodeId, updatedOutput);
         }
       }, 100);
 
       return;
     }
 
-    performIntegration(nodeId, nodeOutput as { generatedText: string; jsonPayload?: any });
+    performIntegration(nodeId, nodeOutput);
   };
 
   const performIntegration = (nodeId: string, nodeOutput: { generatedText: string; jsonPayload?: any }) => {
@@ -976,6 +999,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const baseX = -canvasTransform.translateX / canvasTransform.scale + 600;
 
     const baseY = -canvasTransform.translateY / canvasTransform.scale + 100;
+
+    // Special handling for Flow presets
+    if (category.id === "flow-website") {
+      handleCreateWebsiteFlowPreset();
+      return;
+    }
+    if (category.id === "flow-app") {
+      handleCreateAppFlowPreset();
+      return;
+    }
+    if (category.id === "flow-game") {
+      handleCreateGameFlowPreset();
+      return;
+    }
 
     // Special handling for Notes node
     if (category.id === "notes") {
@@ -1277,6 +1314,224 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     });
   };
 
+  // --- App Flow Preset ---
+
+  const createAppFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
+    const baseX = 700;
+    const baseY = 200;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
+
+    const nodes: Widget[] = [
+      {
+        id: "flow-app-input-idea",
+        type: "flow-input",
+        title: "IDEA INPUT",
+        subtitle: "Describe your app idea or paste a reference.",
+        content: "",
+        placeholder: "Enter app idea or reference...",
+        x: baseX,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-app-text-summary",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Summarize app concept",
+        content: "",
+        placeholder: "Summary will be generated here...",
+        x: baseX + horizontalSpacing,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-app-agent-planner",
+        type: "flow-agent",
+        title: "AI STUDIO AGENT",
+        subtitle: "Plan app features & screens",
+        content: "",
+        placeholder: "Planning features, screens, navigation...",
+        x: baseX + horizontalSpacing * 2,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-app-state-config",
+        type: "flow-state",
+        title: "SET STATE",
+        subtitle: "Save app structure + config",
+        content: "",
+        placeholder: "Saving app configuration...",
+        x: baseX + horizontalSpacing * 3,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-app-tool-ux",
+        type: "flow-tool",
+        title: "TOOL CALLING",
+        subtitle: "Generate UX & interactions",
+        content: "",
+        placeholder: "Generating UX patterns and interactions...",
+        x: baseX + horizontalSpacing * 4,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-app-text-final",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Output final app prompt",
+        content: "",
+        placeholder: "Final app prompt will appear here...",
+        x: baseX + horizontalSpacing * 5,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+    ];
+
+    const edges: Edge[] = [
+      { id: "edge-app-1", source: "flow-app-input-idea", target: "flow-app-text-summary" },
+      { id: "edge-app-2", source: "flow-app-text-summary", target: "flow-app-agent-planner" },
+      { id: "edge-app-3", source: "flow-app-agent-planner", target: "flow-app-state-config" },
+      { id: "edge-app-4", source: "flow-app-state-config", target: "flow-app-tool-ux" },
+      { id: "edge-app-5", source: "flow-app-tool-ux", target: "flow-app-text-final" },
+    ];
+
+    return { nodes, edges };
+  };
+
+  const handleCreateAppFlowPreset = () => {
+    const { nodes, edges } = createAppFlowPreset();
+    setWidgets((prev) => {
+      const existingIds = new Set(prev.map((w) => w.id));
+      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
+      return [...prev, ...newNodes];
+    });
+    setEdges((prev) => {
+      const existingIds = new Set(prev.map((e) => e.id));
+      const newEdges = edges.filter((e) => !existingIds.has(e.id));
+      return [...prev, ...newEdges];
+    });
+  };
+
+  // --- Game Flow Preset ---
+
+  const createGameFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
+    const baseX = 700;
+    const baseY = 200;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
+
+    const nodes: Widget[] = [
+      {
+        id: "flow-game-input-idea",
+        type: "flow-input",
+        title: "IDEA INPUT",
+        subtitle: "Describe your game concept or reference.",
+        content: "",
+        placeholder: "Enter game idea or reference...",
+        x: baseX,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-game-text-summary",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Summarize game concept",
+        content: "",
+        placeholder: "Summary will be generated here...",
+        x: baseX + horizontalSpacing,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-game-agent-planner",
+        type: "flow-agent",
+        title: "AI STUDIO AGENT",
+        subtitle: "Plan game mechanics & systems",
+        content: "",
+        placeholder: "Planning mechanics, progression, systems...",
+        x: baseX + horizontalSpacing * 2,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-game-state-config",
+        type: "flow-state",
+        title: "SET STATE",
+        subtitle: "Save game design + config",
+        content: "",
+        placeholder: "Saving game configuration...",
+        x: baseX + horizontalSpacing * 3,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-game-tool-design",
+        type: "flow-tool",
+        title: "TOOL CALLING",
+        subtitle: "Generate game design docs",
+        content: "",
+        placeholder: "Generating design documentation...",
+        x: baseX + horizontalSpacing * 4,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-game-text-final",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Output final game prompt",
+        content: "",
+        placeholder: "Final game prompt will appear here...",
+        x: baseX + horizontalSpacing * 5,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+    ];
+
+    const edges: Edge[] = [
+      { id: "edge-game-1", source: "flow-game-input-idea", target: "flow-game-text-summary" },
+      { id: "edge-game-2", source: "flow-game-text-summary", target: "flow-game-agent-planner" },
+      { id: "edge-game-3", source: "flow-game-agent-planner", target: "flow-game-state-config" },
+      { id: "edge-game-4", source: "flow-game-state-config", target: "flow-game-tool-design" },
+      { id: "edge-game-5", source: "flow-game-tool-design", target: "flow-game-text-final" },
+    ];
+
+    return { nodes, edges };
+  };
+
+  const handleCreateGameFlowPreset = () => {
+    const { nodes, edges } = createGameFlowPreset();
+    setWidgets((prev) => {
+      const existingIds = new Set(prev.map((w) => w.id));
+      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
+      return [...prev, ...newNodes];
+    });
+    setEdges((prev) => {
+      const existingIds = new Set(prev.map((e) => e.id));
+      const newEdges = edges.filter((e) => !existingIds.has(e.id));
+      return [...prev, ...newEdges];
+    });
+  };
+
   // --- Canvas Pan-Zoom Logic ---
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -1334,20 +1589,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
 
     // Normal scroll = zoom in/out (like Figma/Flowise)
-    // Smooth zoom with proper calculation
+    // Smooth zoom with proper calculation - prevent horizontal drift
     const zoomSpeed = 0.1;
     const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
     // Calculate new scale - allow unlimited zoom (0.01 = 1% to 10 = 1000%)
     const newScale = Math.max(0.01, Math.min(10, canvasTransform.scale * zoomFactor));
 
-    // Calculate the point under mouse in canvas coordinates (before zoom)
-    const canvasX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
-    const canvasY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
+    // Get current canvas center point in world coordinates
+    const worldX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
+    const worldY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
 
-    // Calculate new translate to keep the point under mouse fixed
-    const newTranslateX = mouseX - canvasX * newScale;
-    const newTranslateY = mouseY - canvasY * newScale;
+    // Calculate new translate to keep the world point under mouse fixed
+    // This prevents any horizontal/vertical drift during zoom
+    const newTranslateX = mouseX - worldX * newScale;
+    const newTranslateY = mouseY - worldY * newScale;
 
     setCanvasTransform({
       translateX: newTranslateX,
