@@ -1344,6 +1344,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     e.preventDefault();
 
+    // Prevent double-click issues
+
+    if (e.detail > 1) return; // Ignore double-clicks
+
     // If reconnecting an edge
 
     if (reconnectingEdge) {
@@ -1928,6 +1932,33 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                             handleHandleMouseDown(e, widget.id, "input");
                           }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+
+                            e.preventDefault();
+
+                            // Double-click to disconnect all edges from this handle
+
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
+
+                              if (edgesToRemove.length > 0) {
+                                const sourceIds = edgesToRemove.map((ed) => ed.source);
+
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+
+                                  return {
+                                    sections: newSections,
+
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
+
+                              return prev.filter((ed) => ed.target !== widget.id);
+                            });
+                          }}
                           onClick={(e) => e.stopPropagation()}
                           title="Input connection point - drag to connect"
                         />
@@ -1951,6 +1982,31 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             e.preventDefault();
 
                             handleHandleMouseDown(e, widget.id, "output");
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+
+                            e.preventDefault();
+
+                            // Double-click to disconnect all edges from this handle
+
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
+
+                              if (edgesToRemove.length > 0) {
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
+
+                                  return {
+                                    sections: newSections,
+
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
+
+                              return prev.filter((ed) => ed.source !== widget.id);
+                            });
                           }}
                           onClick={(e) => e.stopPropagation()}
                           title="Output connection point - drag to connect"
