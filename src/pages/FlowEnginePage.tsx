@@ -316,24 +316,76 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Shared State for Node Data Flow ---
 
-  const [sharedState, setSharedState] = useState<{
-    ideaSummary?: string;
+  type NodeOutputMap = {
+    [nodeId: string]: {
+      generatedText?: string;
 
-    cleanSummary?: string;
+      jsonPayload?: any;
 
-    pageStructure?: string;
+      integrated?: boolean;
+    };
+  };
 
-    designSystem?: string;
+  type MainPromptState = {
+    sections: {
+      nodeId: string;
 
-    seoPlan?: string;
+      title: string;
 
-    finalPrompt?: string;
-  }>({});
+      content: string;
+
+      order: number;
+    }[];
+
+    combinedPrompt: string;
+  };
+
+  const [nodeOutputMap, setNodeOutputMap] = useState<NodeOutputMap>({});
+
+  const [mainPromptState, setMainPromptState] = useState<MainPromptState>({
+    sections: [],
+
+    combinedPrompt: "",
+  });
+
+  // Find Main Prompt Node (the final TEXT GENERATION node)
+
+  const getMainPromptNodeId = (): string | null => {
+    const finalNode = widgets.find((w) => w.id === "flow-text-final");
+
+    return finalNode ? finalNode.id : null;
+  };
+
+  // --- Helper Functions ---
+
+  const getUpstreamNodes = (nodeId: string, nodes: Widget[], edges: Edge[]): Widget[] => {
+    const incomingEdges = edges.filter((e) => e.target === nodeId);
+
+    const upstreamNodeIds = incomingEdges.map((e) => e.source);
+
+    return nodes.filter((n) => upstreamNodeIds.includes(n.id));
+  };
+
+  const isConnectedToMain = (nodeId: string, mainNodeId: string | null, edges: Edge[]): boolean => {
+    if (!mainNodeId) return false;
+
+    // For MVP: check direct edge
+
+    return edges.some((e) => e.source === nodeId && e.target === mainNodeId);
+  };
+
+  const buildCombinedPrompt = (sections: MainPromptState["sections"]): string => {
+    if (sections.length === 0) return "";
+
+    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+
+    return sortedSections.map((section) => `### ${section.title}\n\n${section.content}\n\n`).join("");
+  };
 
   // --- Content Generation Functions ---
 
-  const generateIdeaSummary = (userInput: string): string => {
-    if (!userInput.trim()) return "";
+  const generateIdeaSummary = (userInput: string): { generatedText: string; jsonPayload: any } => {
+    if (!userInput.trim()) return { generatedText: "", jsonPayload: null };
 
     const systemPrompt = `You take the user's short description or URL and convert it into a full business summary used to build a website. If the user gives incomplete information, intelligently infer missing details. Your output MUST include: industry, business_type, services, target_audience, location, tone_style, goal. Always return both JSON and a human-readable explanation.`;
 
@@ -359,19 +411,42 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       goal: "Generate leads and establish online presence",
     };
 
-    return `${systemPrompt}\n\nINPUT: ${userInput}\n\nOUTPUT:\n\nJSON:\n${JSON.stringify(json, null, 2)}\n\nHuman-readable Summary:\nBased on your input "${userInput}", I've identified this as a ${json.industry} business targeting ${json.target_audience}. The website should have a ${json.tone_style} tone and focus on ${json.goal}.`;
+    const generatedText = `Based on your input "${userInput}", I've identified this as a ${json.industry} business targeting ${json.target_audience}. The website should have a ${json.tone_style} tone and focus on ${json.goal}.`;
+
+    return {
+      generatedText,
+
+      jsonPayload: json,
+    };
   };
 
-  const generateCleanSummary = (ideaSummary: string): string => {
-    if (!ideaSummary) return "";
+  const generateCleanSummary = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
+    const ideaNodeOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload);
+
+    if (!ideaNodeOutput?.jsonPayload) {
+      return { generatedText: "No upstream data available. Generate IDEA INPUT first.", jsonPayload: null };
+    }
 
     const systemPrompt = `Using the raw ideaSummary, create a clear structured summary. Do NOT change meanings. Output: clean summary + JSON structure for downstream nodes.`;
 
-    return `${systemPrompt}\n\nINPUT:\n${ideaSummary}\n\nOUTPUT:\n\nStructured Summary:\n${ideaSummary}\n\nThis summary has been cleaned and structured for use in downstream processing nodes. All key information has been preserved and organized for website planning.`;
+    const generatedText = `This summary has been cleaned and structured for use in downstream processing nodes. All key information has been preserved and organized for website planning.\n\nIndustry: ${ideaNodeOutput.jsonPayload.industry}\nBusiness Type: ${ideaNodeOutput.jsonPayload.business_type}\nServices: ${ideaNodeOutput.jsonPayload.services}\nTarget Audience: ${ideaNodeOutput.jsonPayload.target_audience}`;
+
+    return {
+      generatedText,
+
+      jsonPayload: ideaNodeOutput.jsonPayload,
+    };
   };
 
-  const generatePageStructure = (cleanSummary: string): string => {
-    if (!cleanSummary) return "";
+  const generatePageStructure = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
+    const summaryOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload);
+
+    if (!summaryOutput?.jsonPayload) {
+      return {
+        generatedText: "No upstream data available. Generate TEXT GENERATION (Summary) first.",
+        jsonPayload: null,
+      };
+    }
 
     const systemPrompt = `Using cleanSummary, generate a full landing page structure: ordered sections, titles, bullets, CTA placements, image placements. Return JSON + human-readable structure.`;
 
@@ -393,11 +468,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       ],
     };
 
-    return `${systemPrompt}\n\nINPUT:\n${cleanSummary}\n\nOUTPUT:\n\nJSON Structure:\n${JSON.stringify(structure, null, 2)}\n\nHuman-readable Structure:\nThe landing page will consist of 7 main sections: Hero, Services, About, Cases, Pricing, Contact, and FAQ. Each section includes strategic CTA placements and image recommendations.`;
+    const generatedText = `The landing page will consist of 7 main sections: Hero, Services, About, Cases, Pricing, Contact, and FAQ. Each section includes strategic CTA placements and image recommendations.`;
+
+    return {
+      generatedText,
+
+      jsonPayload: structure,
+    };
   };
 
-  const generateDesignSystem = (cleanSummary: string, pageStructure: string): string => {
-    if (!cleanSummary || !pageStructure) return "";
+  const generateDesignSystem = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
+    const summaryOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload);
+
+    const structureOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.sections);
+
+    if (!summaryOutput || !structureOutput) {
+      return {
+        generatedText: "No upstream data available. Generate Summary and Structure nodes first.",
+        jsonPayload: null,
+      };
+    }
 
     const systemPrompt = `Create a full design system for the website. Include: primary_color, secondary_color, background_color, heading_font, body_font, button_style, animation_style, layout_style, image_direction. Return JSON + readable text.`;
 
@@ -421,11 +511,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       image_direction: "High-quality, professional, brand-aligned",
     };
 
-    return `${systemPrompt}\n\nINPUTS:\nSummary: ${cleanSummary.substring(0, 200)}...\nStructure: ${pageStructure.substring(0, 200)}...\n\nOUTPUT:\n\nJSON Design System:\n${JSON.stringify(designSystem, null, 2)}\n\nHuman-readable Design System:\nThe website will use a modern color palette with ${designSystem.primary_color} as primary and ${designSystem.secondary_color} as secondary. Typography uses ${designSystem.heading_font} for a clean, professional look. Buttons feature ${designSystem.button_style} with ${designSystem.animation_style}.`;
+    const generatedText = `The website will use a modern color palette with ${designSystem.primary_color} as primary and ${designSystem.secondary_color} as secondary. Typography uses ${designSystem.heading_font} for a clean, professional look. Buttons feature ${designSystem.button_style} with ${designSystem.animation_style}.`;
+
+    return {
+      generatedText,
+
+      jsonPayload: designSystem,
+    };
   };
 
-  const generateSeoPlan = (designSystem: string, pageStructure: string): string => {
-    if (!designSystem || !pageStructure) return "";
+  const generateSeoPlan = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
+    const designOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.primary_color);
+
+    const structureOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.sections);
+
+    if (!designOutput || !structureOutput) {
+      return {
+        generatedText: "No upstream data available. Generate Design System and Structure nodes first.",
+        jsonPayload: null,
+      };
+    }
 
     const systemPrompt = `Using designSystem + pageStructure, generate an SEO plan: primary keyword, secondary keywords, meta description guidelines, tone of voice, optional schema markup. Return JSON + readable notes.`;
 
@@ -442,26 +547,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       schema_markup: "Organization, Service, LocalBusiness",
     };
 
-    return `${systemPrompt}\n\nINPUTS:\nDesign System: ${designSystem.substring(0, 200)}...\nStructure: ${pageStructure.substring(0, 200)}...\n\nOUTPUT:\n\nJSON SEO Plan:\n${JSON.stringify(seoPlan, null, 2)}\n\nHuman-readable SEO Plan:\nPrimary keyword: "${seoPlan.primary_keyword}". Secondary keywords include ${seoPlan.secondary_keywords.join(", ")}. Meta descriptions should be ${seoPlan.tone_of_voice}. Schema markup recommended: ${seoPlan.schema_markup}.`;
+    const generatedText = `Primary keyword: "${seoPlan.primary_keyword}". Secondary keywords include ${seoPlan.secondary_keywords.join(", ")}. Meta descriptions should be ${seoPlan.tone_of_voice}. Schema markup recommended: ${seoPlan.schema_markup}.`;
+
+    return {
+      generatedText,
+
+      jsonPayload: seoPlan,
+    };
   };
 
-  const generateFinalPrompt = (
-    ideaSummary: string,
-
-    cleanSummary: string,
-
-    pageStructure: string,
-
-    designSystem: string,
-
-    seoPlan: string,
-  ): string => {
-    if (!ideaSummary || !cleanSummary || !pageStructure || !designSystem || !seoPlan) return "";
-
-    const systemPrompt = `Combine ALL previous nodes into a single master prompt for generating a complete landing page. Include: business summary, design system, website structure, SEO plan, CTA instructions, image direction, tone rules. Format cleanly and professionally.`;
-
-    return `${systemPrompt}\n\n═══════════════════════════════════════════════════════════\nMASTER WEBSITE GENERATION PROMPT\n═══════════════════════════════════════════════════════════\n\nBUSINESS SUMMARY:\n${cleanSummary}\n\nDESIGN SYSTEM:\n${designSystem}\n\nWEBSITE STRUCTURE:\n${pageStructure}\n\nSEO PLAN:\n${seoPlan}\n\n═══════════════════════════════════════════════════════════\n\nINSTRUCTIONS:\nGenerate a complete, professional landing page based on the above specifications. Ensure all CTAs are strategically placed, images are high-quality and brand-aligned, and the overall design follows the design system guidelines. The content should be optimized for SEO while maintaining a natural, engaging tone.`;
-  };
+  // Final prompt is built from MainPromptState.combinedPrompt, not generated separately
 
   // --- Scrollbar CSS ---
 
@@ -539,153 +634,158 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     ),
   ]);
 
-  // --- Auto-update Flow Nodes Based on Shared State ---
+  // --- Manual Generation Handlers ---
 
-  // Update IDEA INPUT node → generate ideaSummary (with debounce)
+  const handleGenerateNode = (nodeId: string) => {
+    const node = widgets.find((w) => w.id === nodeId);
 
-  useEffect(() => {
-    const ideaInputNode = widgets.find((w) => w.id === "flow-input-idea");
+    if (!node) return;
 
-    if (!ideaInputNode) return;
+    let result: { generatedText: string; jsonPayload: any };
 
-    const timer = setTimeout(() => {
-      if (ideaInputNode.content && ideaInputNode.content.trim()) {
-        const generated = generateIdeaSummary(ideaInputNode.content);
+    if (nodeId === "flow-input-idea") {
+      // IDEA INPUT: uses user input directly
 
-        if (generated) {
-          setSharedState((prev) => ({ ...prev, ideaSummary: generated }));
-        }
-      } else {
-        setSharedState((prev) => {
-          const newState = { ...prev };
-
-          delete newState.ideaSummary;
-
-          return newState;
-        });
+      if (!node.content || !node.content.trim()) {
+        return; // No input to generate from
       }
-    }, 500); // Debounce 500ms
 
-    return () => clearTimeout(timer);
-  }, [widgets.find((w) => w.id === "flow-input-idea")?.content]);
+      result = generateIdeaSummary(node.content);
+    } else {
+      // Other nodes: collect upstream outputs
 
-  // Update TEXT GENERATION (Summary) node when ideaSummary changes
+      const upstreamNodes = getUpstreamNodes(nodeId, widgets, edges);
 
-  useEffect(() => {
-    if (!sharedState.ideaSummary) return;
+      const upstreamOutputs: NodeOutputMap = {};
 
-    const summaryNode = widgets.find((w) => w.id === "flow-text-summary");
+      upstreamNodes.forEach((upstreamNode) => {
+        if (nodeOutputMap[upstreamNode.id]) {
+          upstreamOutputs[upstreamNode.id] = nodeOutputMap[upstreamNode.id];
+        }
+      });
 
-    if (!summaryNode) return;
-
-    const generated = generateCleanSummary(sharedState.ideaSummary);
-
-    if (generated) {
-      setSharedState((prev) => ({ ...prev, cleanSummary: generated }));
-
-      setWidgets((prev) => prev.map((w) => (w.id === "flow-text-summary" ? { ...w, content: generated } : w)));
+      if (nodeId === "flow-text-summary") {
+        result = generateCleanSummary(upstreamOutputs);
+      } else if (nodeId === "flow-agent-planner") {
+        result = generatePageStructure(upstreamOutputs);
+      } else if (nodeId === "flow-state-config") {
+        result = generateDesignSystem(upstreamOutputs);
+      } else if (nodeId === "flow-tool-seo") {
+        result = generateSeoPlan(upstreamOutputs);
+      } else {
+        return; // Unknown node type
+      }
     }
-  }, [sharedState.ideaSummary, widgets.find((w) => w.id === "flow-text-summary")?.id]);
 
-  // Update AI AGENT (Structure Planner) node when cleanSummary changes
+    // Store result in NodeOutputMap
 
-  useEffect(() => {
-    if (!sharedState.cleanSummary) return;
+    setNodeOutputMap((prev) => ({
+      ...prev,
 
-    const agentNode = widgets.find((w) => w.id === "flow-agent-planner");
+      [nodeId]: {
+        generatedText: result.generatedText,
 
-    if (!agentNode) return;
+        jsonPayload: result.jsonPayload,
 
-    const generated = generatePageStructure(sharedState.cleanSummary);
+        integrated: prev[nodeId]?.integrated || false,
+      },
+    }));
 
-    if (generated) {
-      setSharedState((prev) => ({ ...prev, pageStructure: generated }));
+    // Update widget content to show generated text
 
-      setWidgets((prev) => prev.map((w) => (w.id === "flow-agent-planner" ? { ...w, content: generated } : w)));
+    setWidgets((prev) => prev.map((w) => (w.id === nodeId ? { ...w, content: result.generatedText } : w)));
+  };
+
+  // --- Integration Handler ---
+
+  const handleIntegrateToMainPrompt = (nodeId: string) => {
+    const mainNodeId = getMainPromptNodeId();
+
+    if (!mainNodeId) return;
+
+    // Check if connected to main prompt
+
+    if (!isConnectedToMain(nodeId, mainNodeId, edges)) {
+      // Option A: Show message (for now, just return silently)
+
+      // In a real app, you might show a toast or disable the button
+
+      return;
     }
-  }, [sharedState.cleanSummary, widgets.find((w) => w.id === "flow-agent-planner")?.id]);
 
-  // Update SET STATE (Design System) node when cleanSummary or pageStructure changes
+    // Get node output
 
-  useEffect(() => {
-    if (!sharedState.cleanSummary || !sharedState.pageStructure) return;
+    const nodeOutput = nodeOutputMap[nodeId];
 
-    const stateNode = widgets.find((w) => w.id === "flow-state-config");
+    if (!nodeOutput || !nodeOutput.generatedText) {
+      // Auto-generate if not generated yet
 
-    if (!stateNode) return;
+      handleGenerateNode(nodeId);
 
-    const generated = generateDesignSystem(sharedState.cleanSummary, sharedState.pageStructure);
+      // Wait a bit then try again (in real app, use async/await)
 
-    if (generated) {
-      setSharedState((prev) => ({ ...prev, designSystem: generated }));
+      setTimeout(() => {
+        const updatedOutput = nodeOutputMap[nodeId];
 
-      setWidgets((prev) => prev.map((w) => (w.id === "flow-state-config" ? { ...w, content: generated } : w)));
+        if (updatedOutput?.generatedText) {
+          performIntegration(nodeId, updatedOutput);
+        }
+      }, 100);
+
+      return;
     }
-  }, [sharedState.cleanSummary, sharedState.pageStructure, widgets.find((w) => w.id === "flow-state-config")?.id]);
 
-  // Update TOOL CALLING (SEO Generator) node when designSystem or pageStructure changes
+    performIntegration(nodeId, nodeOutput);
+  };
 
-  useEffect(() => {
-    if (!sharedState.designSystem || !sharedState.pageStructure) return;
+  const performIntegration = (nodeId: string, nodeOutput: { generatedText: string; jsonPayload?: any }) => {
+    const node = widgets.find((w) => w.id === nodeId);
 
-    const toolNode = widgets.find((w) => w.id === "flow-tool-seo");
+    if (!node) return;
 
-    if (!toolNode) return;
+    const title = node.title || node.subtitle || "Untitled Section";
 
-    const generated = generateSeoPlan(sharedState.designSystem, sharedState.pageStructure);
+    const order = mainPromptState.sections.length;
 
-    if (generated) {
-      setSharedState((prev) => ({ ...prev, seoPlan: generated }));
+    // Upsert section
 
-      setWidgets((prev) => prev.map((w) => (w.id === "flow-tool-seo" ? { ...w, content: generated } : w)));
-    }
-  }, [sharedState.designSystem, sharedState.pageStructure, widgets.find((w) => w.id === "flow-tool-seo")?.id]);
+    setMainPromptState((prev) => {
+      const existingIndex = prev.sections.findIndex((s) => s.nodeId === nodeId);
 
-  // Update FINAL PROMPT node when ANY upstream node changes
+      const newSections =
+        existingIndex >= 0
+          ? prev.sections.map((s, i) => (i === existingIndex ? { ...s, title, content: nodeOutput.generatedText } : s))
+          : [...prev.sections, { nodeId, title, content: nodeOutput.generatedText, order }];
+
+      const combinedPrompt = buildCombinedPrompt(newSections);
+
+      return {
+        sections: newSections,
+
+        combinedPrompt,
+      };
+    });
+
+    // Mark as integrated
+
+    setNodeOutputMap((prev) => ({
+      ...prev,
+
+      [nodeId]: { ...prev[nodeId], integrated: true },
+    }));
+  };
+
+  // Update final prompt node when mainPromptState changes
 
   useEffect(() => {
     const finalNode = widgets.find((w) => w.id === "flow-text-final");
 
     if (!finalNode) return;
 
-    if (
-      sharedState.ideaSummary &&
-      sharedState.cleanSummary &&
-      sharedState.pageStructure &&
-      sharedState.designSystem &&
-      sharedState.seoPlan
-    ) {
-      const generated = generateFinalPrompt(
-        sharedState.ideaSummary,
-
-        sharedState.cleanSummary,
-
-        sharedState.pageStructure,
-
-        sharedState.designSystem,
-
-        sharedState.seoPlan,
-      );
-
-      if (generated) {
-        setSharedState((prev) => ({ ...prev, finalPrompt: generated }));
-
-        setWidgets((prev) => prev.map((w) => (w.id === "flow-text-final" ? { ...w, content: generated } : w)));
-      }
-    }
-  }, [
-    sharedState.ideaSummary,
-
-    sharedState.cleanSummary,
-
-    sharedState.pageStructure,
-
-    sharedState.designSystem,
-
-    sharedState.seoPlan,
-
-    widgets.find((w) => w.id === "flow-text-final")?.id,
-  ]);
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === "flow-text-final" ? { ...w, content: mainPromptState.combinedPrompt } : w)),
+    );
+  }, [mainPromptState.combinedPrompt]);
 
   // --- Domain Selection Logic ---
 
@@ -1438,10 +1538,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </span>
                             )}
 
-                            {widget.type.startsWith("flow-") && widget.content && widget.content.trim() && (
+                            {widget.type.startsWith("flow-") && nodeOutputMap[widget.id]?.generatedText && (
                               <span className="text-[10px] text-blue-500 flex items-center gap-1 mt-0.5 font-sans">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                Auto-generated
+                                Generated
+                              </span>
+                            )}
+
+                            {widget.type.startsWith("flow-") && nodeOutputMap[widget.id]?.integrated && (
+                              <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
+                                <Check size={10} />
+                                Integrated
                               </span>
                             )}
                           </div>
@@ -1492,22 +1599,98 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             </button>
                           )}
 
-                          {widget.type.startsWith("flow-") && (
+                          {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  handleGenerateNode(widget.id);
+                                }}
+                                className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                                title="Generate content for this node"
+                              >
+                                <Sparkles size={12} />
+                                Generate
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  handleIntegrateToMainPrompt(widget.id);
+                                }}
+                                disabled={
+                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
+                                  !nodeOutputMap[widget.id]?.generatedText
+                                }
+                                className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans ${
+                                  nodeOutputMap[widget.id]?.integrated
+                                    ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                }`}
+                                title={
+                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges)
+                                    ? "Connect this node to Main Prompt to integrate"
+                                    : "Integrate to Main Prompt"
+                                }
+                              >
+                                {nodeOutputMap[widget.id]?.integrated ? <Check size={12} /> : <Plus size={12} />}
+
+                                {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+
+                                  deleteWidget(widget.id);
+
+                                  // Also delete connected edges and remove from state
+
+                                  setEdges((prev) =>
+                                    prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
+                                  );
+
+                                  setNodeOutputMap((prev) => {
+                                    const newMap = { ...prev };
+
+                                    delete newMap[widget.id];
+
+                                    return newMap;
+                                  });
+
+                                  setMainPromptState((prev) => ({
+                                    ...prev,
+
+                                    sections: prev.sections.filter((s) => s.nodeId !== widget.id),
+
+                                    combinedPrompt: buildCombinedPrompt(
+                                      prev.sections.filter((s) => s.nodeId !== widget.id),
+                                    ),
+                                  }));
+                                }}
+                                className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            </>
+                          )}
+
+                          {widget.id === "flow-text-final" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
 
-                                deleteWidget(widget.id);
-
-                                // Also delete connected edges
-
-                                setEdges((prev) =>
-                                  prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
-                                );
+                                if (mainPromptState.combinedPrompt) {
+                                  navigator.clipboard.writeText(mainPromptState.combinedPrompt);
+                                }
                               }}
-                              className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                              className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white"
+                              title="Copy combined prompt to clipboard"
                             >
-                              <X size={14} />
+                              <Copy size={12} />
+                              Copy Prompt
                             </button>
                           )}
                         </div>
@@ -1535,13 +1718,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         )}
 
                         {widget.type.startsWith("flow-") && (
-                          <textarea
-                            className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
-                            value={widget.content || ""}
-                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                            placeholder={widget.placeholder}
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
+                          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
+                            {widget.id === "flow-input-idea" ? (
+                              <textarea
+                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono"
+                                value={widget.content || ""}
+                                onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                                placeholder={widget.placeholder}
+                                onMouseDown={(e) => e.stopPropagation()}
+                              />
+                            ) : (
+                              <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                                {nodeOutputMap[widget.id]?.generatedText ||
+                                  widget.content ||
+                                  widget.placeholder ||
+                                  "Click 'Generate' to create content..."}
+                              </pre>
+                            )}
+                          </div>
                         )}
                       </div>
 
