@@ -1150,8 +1150,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const zoomSpeed = 0.1;
     const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-    // Calculate new scale with reasonable limits (0.3 = 30% to 2.0 = 200%)
-    const newScale = Math.max(0.3, Math.min(2.0, canvasTransform.scale * zoomFactor));
+    // Calculate new scale with reasonable limits (0.05 = 5% to 2.0 = 200%)
+    const newScale = Math.max(0.05, Math.min(2.0, canvasTransform.scale * zoomFactor));
 
     // Zoom around the viewport center (or mouse position) without changing translate
     // This ensures the viewport stays stable - no drift left/right/up/down
@@ -1505,17 +1505,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Always visible */}
+              {/* Background Grid - Always visible, fixed size */}
               <div
                 className="absolute pointer-events-none opacity-20"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
+                  backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
                   // Use inset to ensure background always covers viewport
                   inset: "-500000px",
-                  // Position background to move with canvas pan
-                  transform: `translate(${canvasTransform.translateX / canvasTransform.scale}px, ${canvasTransform.translateY / canvasTransform.scale}px)`,
+                  // Position background to move with canvas pan only (no scale)
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px)`,
                 }}
               />
 
@@ -1762,7 +1762,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans break-words">
+                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans whitespace-nowrap overflow-hidden text-ellipsis">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
 
