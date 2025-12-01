@@ -1482,22 +1482,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* KEEP CURRENT WORKING BACKGROUND GRID */}
+              {/* Background Grid - Always visible */}
               <div
                 className="absolute pointer-events-none opacity-20"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-                  backgroundSize: "24px 24px",
+                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
                   backgroundRepeat: "repeat",
-                  // Cover entire viewport plus extra to handle zoom/pan
-                  // Use large dimensions to ensure coverage at all zoom levels
-                  left: "-5000px",
-                  top: "-5000px",
-                  width: "10000px",
-                  height: "10000px",
-                  // Apply same transform as nodes to stay in sync
-                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-                  transformOrigin: "0 0",
+                  // Use inset to ensure background always covers viewport
+                  inset: "-500000px",
+                  // Position background to move with canvas pan
+                  transform: `translate(${canvasTransform.translateX / canvasTransform.scale}px, ${canvasTransform.translateY / canvasTransform.scale}px)`,
                 }}
               />
 
