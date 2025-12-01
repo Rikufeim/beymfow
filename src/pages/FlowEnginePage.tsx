@@ -258,6 +258,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     startX: number;
     startY: number;
   } | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
 
   // Drawer State
   const [searchQuery, setSearchQuery] = useState("");
@@ -546,6 +547,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         .map((w) => ({ id: w.id, integrated: w.integrated, content: w.content })),
     ),
   ]);
+
+  // Track mouse position for smooth connection line
+  useEffect(() => {
+    if (!connecting || !canvasRef.current) {
+      setMousePosition(null);
+      return;
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      // Convert mouse position to canvas coordinates
+      const canvasX = (e.clientX - rect.left - canvasTransform.translateX) / canvasTransform.scale;
+      const canvasY = (e.clientY - rect.top - canvasTransform.translateY) / canvasTransform.scale;
+      setMousePosition({ x: canvasX, y: canvasY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [connecting, canvasTransform.translateX, canvasTransform.translateY, canvasTransform.scale]);
 
   // --- Manual Generation Handlers ---
   const handleGenerateNode = (nodeId: string) => {
@@ -1507,23 +1530,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               >
                 {/* Active connection line (while dragging) */}
                 {connecting &&
+                  mousePosition &&
                   (() => {
                     const sourcePos = getHandlePosition(connecting.sourceId, "output", widgets);
                     const sourceWidget = widgets.find((w) => w.id === connecting.sourceId);
                     if (!sourceWidget) return null;
 
-                    // Get mouse position relative to canvas
-                    const mouseX = sourcePos.x + 150;
-                    const mouseY = sourcePos.y;
+                    // Use mouse position for smooth connection line
+                    const targetX = mousePosition.x;
+                    const targetY = mousePosition.y;
 
                     return (
                       <g style={{ pointerEvents: "none" }}>
                         <path
-                          d={`M ${sourcePos.x} ${sourcePos.y} Q ${sourcePos.x + 75} ${sourcePos.y}, ${mouseX} ${mouseY}`}
-                          stroke="rgba(148, 163, 184, 0.8)"
-                          strokeWidth="2"
+                          d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetX - 50} ${targetY}, ${targetX} ${targetY}`}
+                          stroke="rgba(148, 163, 184, 0.6)"
+                          strokeWidth="1.5"
                           fill="none"
-                          strokeDasharray="4 4"
                         />
                       </g>
                     );
