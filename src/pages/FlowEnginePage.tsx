@@ -1505,17 +1505,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Always visible, fixed size */}
+              {/* Background Grid - Scales smoothly with zoom */}
               <div
-                className="absolute pointer-events-none opacity-20"
+                className="absolute pointer-events-none opacity-20 transition-opacity duration-200"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-                  backgroundSize: "24px 24px",
+                  // Scale background size inversely with zoom to keep grid dots visually consistent
+                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
                   backgroundRepeat: "repeat",
                   // Use inset to ensure background always covers viewport
                   inset: "-500000px",
-                  // Position background to move with canvas pan only (no scale)
-                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px)`,
+                  // Position and scale background with canvas transform
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  willChange: "transform, background-size",
                 }}
               />
 
@@ -1757,10 +1760,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Header */}
-                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
-                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
-                          <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
-                            <Icon size={16} />
+                      <div className="px-3 py-2.5 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                          <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
+                            <Icon size={14} />
                           </div>
 
                           <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
@@ -1775,6 +1778,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
+                                maxWidth: "100%",
                               }}
                             >
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
@@ -1803,7 +1807,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 flex-shrink-0">
+                        <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
                           {widget.type === "category" && (
                             <button
                               onClick={(e) => {
@@ -1811,14 +1815,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 toggleIntegration(widget.id);
                               }}
                               disabled={!widget.content?.trim()}
-                              className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
                                 widget.integrated
                                   ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
                                   : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50"
                               }`}
                             >
-                              {widget.integrated ? <Check size={12} /> : <Plus size={12} />}
-                              {widget.integrated ? "In Prompt" : "Add"}
+                              {widget.integrated ? <Check size={10} /> : <Plus size={10} />}
+                              <span className="hidden sm:inline">{widget.integrated ? "In Prompt" : "Add"}</span>
                             </button>
                           )}
 
@@ -1827,9 +1831,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               e.stopPropagation();
                               copyWidget(widget);
                             }}
-                            className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                            className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
                           >
-                            <Copy size={14} />
+                            <Copy size={12} />
                           </button>
 
                           {widget.type !== "prompt" && !widget.type.startsWith("flow-") && (
@@ -1851,11 +1855,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   e.stopPropagation();
                                   handleGenerateNode(widget.id);
                                 }}
-                                className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                                className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
                                 title="Generate content for this node"
                               >
-                                <Sparkles size={12} />
-                                Generate
+                                <Sparkles size={10} />
+                                <span className="hidden sm:inline">Generate</span>
                               </button>
 
                               <button
@@ -1867,7 +1871,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
                                   !nodeOutputMap[widget.id]?.generatedText
                                 }
-                                className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans ${
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
                                   nodeOutputMap[widget.id]?.integrated
                                     ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
                                     : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1878,8 +1882,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                     : "Integrate to Main Prompt"
                                 }
                               >
-                                {nodeOutputMap[widget.id]?.integrated ? <Check size={12} /> : <Plus size={12} />}
-                                {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
+                                {nodeOutputMap[widget.id]?.integrated ? <Check size={10} /> : <Plus size={10} />}
+                                <span className="hidden sm:inline">
+                                  {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
+                                </span>
                               </button>
 
                               <button
@@ -1903,9 +1909,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                     ),
                                   }));
                                 }}
-                                className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                                className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
                               >
-                                <X size={14} />
+                                <X size={12} />
                               </button>
                             </>
                           )}
@@ -1918,11 +1924,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   navigator.clipboard.writeText(mainPromptState.combinedPrompt);
                                 }
                               }}
-                              className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white"
+                              className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white"
                               title="Copy combined prompt to clipboard"
                             >
-                              <Copy size={12} />
-                              Copy Prompt
+                              <Copy size={10} />
+                              <span className="hidden sm:inline">Copy Prompt</span>
                             </button>
                           )}
                         </div>
