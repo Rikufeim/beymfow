@@ -1664,7 +1664,52 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               return prev.filter((ed) => ed.target !== widget.id);
                             });
                           }}
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
+
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
+                              });
+
+                              setConnecting(null);
+                              setDraggingHandle(null);
+                            }
+                          }}
+                          onMouseUp={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active (when releasing mouse)
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
+
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
+                              });
+
+                              setConnecting(null);
+                              setDraggingHandle(null);
+                            }
+                          }}
                           title="Input connection point - drag to connect"
                         />
                       )}
@@ -1710,19 +1755,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Header */}
-                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
-                        <div className="flex items-center gap-3">
+                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none min-h-[60px]">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor}`}>
                             <Icon size={16} />
                           </div>
 
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans">
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans truncate">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
 
                             {widget.subtitle && (
-                              <span className="text-[10px] text-neutral-400 mt-0.5 font-sans">{widget.subtitle}</span>
+                              <span className="text-[10px] text-neutral-400 mt-0.5 font-sans line-clamp-2 break-words">
+                                {widget.subtitle}
+                              </span>
                             )}
 
                             {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
@@ -1748,7 +1795,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           {widget.type === "category" && (
                             <button
                               onClick={(e) => {
