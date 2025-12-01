@@ -1762,12 +1762,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans whitespace-nowrap overflow-hidden text-ellipsis">
+                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans break-words">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
 
                             {widget.subtitle && (
-                              <span className="text-[10px] text-neutral-400 mt-0.5 font-sans line-clamp-2 break-words">
+                              <span className="text-[10px] text-neutral-400 mt-0.5 font-sans break-words">
                                 {widget.subtitle}
                               </span>
                             )}
@@ -1923,8 +1923,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       {/* Content */}
                       <div className="flex-1 bg-[#121214] flex flex-col relative" style={{ overflow: "visible" }}>
                         {widget.type === "prompt" && (
-                          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
-                            <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                          <div className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar">
+                            <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed">
                               {widget.content}
                             </pre>
                           </div>
@@ -1941,17 +1941,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         )}
 
                         {widget.type.startsWith("flow-") && (
-                          <div className="p-4 overflow-y-auto h-full custom-scrollbar">
+                          <div className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar">
                             {widget.id === "flow-input-idea" ? (
                               <textarea
-                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono"
+                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
                                 value={widget.content || ""}
                                 onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                                 placeholder={widget.placeholder}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
                             ) : (
-                              <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                              <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed">
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
                                   widget.placeholder ||
