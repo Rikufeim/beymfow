@@ -1972,10 +1972,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                         {widget.type.startsWith("flow-") && (
                           <div
-                            className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
+                            className="p-3 overflow-hidden h-full flex flex-col"
                             style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
                           >
-                            {widget.id === "flow-input-idea" ? (
+                            {widget.id === "flow-input-idea" || widget.id === "flow-input-idea-game" ? (
                               <textarea
                                 className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
                                 style={{
@@ -1989,19 +1989,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
                             ) : (
-                              <pre
-                                className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "normal",
-                                }}
-                              >
+                              <div className="text-xs text-neutral-400 font-mono leading-relaxed line-clamp-3">
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
                                   widget.placeholder ||
                                   "Click 'Generate' to create content..."}
-                              </pre>
+                              </div>
                             )}
                           </div>
                         )}
