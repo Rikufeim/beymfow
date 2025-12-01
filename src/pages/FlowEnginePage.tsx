@@ -768,9 +768,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Calculate starting position to avoid overlapping with existing nodes
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 280;
-    const nodeHeight = 160;
-    const horizontalSpacing = 350;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
     const verticalOffset = 0;
 
     const nodes: Widget[] = [
@@ -885,9 +885,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createAppFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 280;
-    const nodeHeight = 160;
-    const horizontalSpacing = 350;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
 
     const nodes: Widget[] = [
       {
@@ -993,9 +993,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createGameFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 280;
-    const nodeHeight = 160;
-    const horizontalSpacing = 350;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
 
     const nodes: Widget[] = [
       {
@@ -1763,33 +1763,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <Icon size={16} />
                           </div>
 
-                          <div
-                            className="flex flex-col min-w-0 flex-1 overflow-hidden"
-                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
-                          >
+                          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
                             <span
-                              className="text-sm font-semibold text-neutral-200 leading-tight font-sans whitespace-normal break-words"
+                              className="text-sm font-semibold text-neutral-200 leading-tight font-sans"
                               style={{
                                 writingMode: "horizontal-tb",
                                 textOrientation: "mixed",
-                                letterSpacing: "normal",
+                                letterSpacing: "0",
+                                wordSpacing: "normal",
+                                display: "block",
+                                whiteSpace: "normal",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
                               }}
                             >
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
-
-                            {widget.subtitle && (
-                              <span
-                                className="text-[10px] text-neutral-400 mt-0.5 font-sans whitespace-normal break-words"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "normal",
-                                }}
-                              >
-                                {widget.subtitle}
-                              </span>
-                            )}
 
                             {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
                               <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
@@ -1951,7 +1940,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               style={{
                                 writingMode: "horizontal-tb",
                                 textOrientation: "mixed",
-                                letterSpacing: "normal",
+                                letterSpacing: "0",
+                                wordSpacing: "normal",
+                                whiteSpace: "pre-wrap",
                               }}
                             >
                               {widget.content}
@@ -1962,7 +1953,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         {widget.type === "category" && (
                           <textarea
                             className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
-                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed", letterSpacing: "normal" }}
+                            style={{
+                              writingMode: "horizontal-tb",
+                              textOrientation: "mixed",
+                              letterSpacing: "0",
+                              wordSpacing: "normal",
+                              whiteSpace: "pre-wrap",
+                            }}
                             value={widget.content}
                             onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                             placeholder={widget.placeholder}
@@ -1972,22 +1969,42 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                         {widget.type.startsWith("flow-") && (
                           <div
-                            className="p-3 overflow-auto h-full w-full custom-scrollbar"
+                            className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
+                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
                           >
-                            {widget.id === "flow-input-idea" || widget.id === "flow-input-idea-app" || widget.id === "flow-input-idea-game" ? (
+                            {widget.id === "flow-input-idea" ||
+                            widget.id === "flow-input-idea-app" ||
+                            widget.id === "flow-input-idea-game" ? (
                               <textarea
-                                className="w-full h-full bg-transparent text-xs text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-500 font-sans"
+                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
+                                style={{
+                                  writingMode: "horizontal-tb",
+                                  textOrientation: "mixed",
+                                  letterSpacing: "0",
+                                  wordSpacing: "normal",
+                                  whiteSpace: "pre-wrap",
+                                }}
                                 value={widget.content || ""}
                                 onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                                 placeholder={widget.placeholder}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
                             ) : (
-                              <div className="w-full text-xs text-neutral-400 font-sans leading-relaxed overflow-hidden">
+                              <pre
+                                className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
+                                style={{
+                                  writingMode: "horizontal-tb",
+                                  textOrientation: "mixed",
+                                  letterSpacing: "0",
+                                  wordSpacing: "normal",
+                                  whiteSpace: "pre-wrap",
+                                }}
+                              >
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
-                                  ""}
-                              </div>
+                                  widget.placeholder ||
+                                  "Click 'Generate' to create content..."}
+                              </pre>
                             )}
                           </div>
                         )}
