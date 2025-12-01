@@ -50,49 +50,31 @@ import {
 
 interface Category {
   id: string;
-
   name: string;
-
   icon: any;
-
   color: string;
-
   description?: string;
 }
 
 interface Widget {
   id: string;
-
   type: "prompt" | "category" | "flow-input" | "flow-text-gen" | "flow-agent" | "flow-state" | "flow-tool";
-
   title?: string;
-
   basePrompt?: string;
-
   content?: string;
-
   placeholder?: string;
-
   category?: Category;
-
   integrated?: boolean;
-
   subtitle?: string;
-
   x: number;
-
   y: number;
-
   width: number;
-
   height: number;
 }
 
 interface Edge {
   id: string;
-
   source: string;
-
   target: string;
 }
 
@@ -111,7 +93,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Layouts, colors, typography",
     },
-
     {
       id: "tech_stack",
       name: "Tech Stack",
@@ -119,7 +100,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Frontend frameworks, backend",
     },
-
     {
       id: "structure",
       name: "Site Structure",
@@ -127,7 +107,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Sitemap, navigation flow",
     },
-
     {
       id: "seo",
       name: "SEO & Content",
@@ -135,7 +114,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Keywords, meta tags, strategy",
     },
-
     {
       id: "goal",
       name: "Business Goal",
@@ -144,10 +122,8 @@ const domainConfig: Record<string, Category[]> = {
       description: "Conversion targets, KPIs",
     },
   ],
-
   App: [
     { id: "features", name: "Core Features", icon: Zap, color: "text-neutral-300", description: "Key functionalities" },
-
     {
       id: "platform",
       name: "Platform & OS",
@@ -155,7 +131,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "iOS, Android, Cross-platform",
     },
-
     {
       id: "security",
       name: "Auth & Security",
@@ -163,7 +138,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Authentication, encryption",
     },
-
     {
       id: "connectivity",
       name: "Offline/Online",
@@ -171,10 +145,8 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Sync strategies, API",
     },
-
     { id: "data", name: "Data Model", icon: Database, color: "text-neutral-300", description: "Schema, storage types" },
   ],
-
   Game: [
     {
       id: "mechanics",
@@ -183,7 +155,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Rules, interactions, physics",
     },
-
     {
       id: "art_style",
       name: "Art & Audio",
@@ -191,7 +162,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Visual style, sound design",
     },
-
     {
       id: "combat",
       name: "Combat/Controls",
@@ -199,7 +169,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Input mapping, combat systems",
     },
-
     {
       id: "lore",
       name: "Story & Lore",
@@ -207,7 +176,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "World building, narrative",
     },
-
     {
       id: "progression",
       name: "Progression Loop",
@@ -216,7 +184,6 @@ const domainConfig: Record<string, Category[]> = {
       description: "Leveling, rewards, loops",
     },
   ],
-
   General: [
     {
       id: "communication",
@@ -225,7 +192,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Style of communication",
     },
-
     {
       id: "constraints",
       name: "Constraints",
@@ -233,7 +199,6 @@ const domainConfig: Record<string, Category[]> = {
       color: "text-neutral-300",
       description: "Technical or budget limits",
     },
-
     {
       id: "analysis",
       name: "Deep Analysis",
@@ -246,9 +211,7 @@ const domainConfig: Record<string, Category[]> = {
 
 const suggestionChips = [
   { label: "Website", icon: Globe },
-
   { label: "App", icon: Smartphone },
-
   { label: "Game", icon: Gamepad2 },
 ];
 
@@ -256,42 +219,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
   // --- State ---
-
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
-
   const [activeDomain, setActiveDomain] = useState<string>("Website");
-
   const [isLoading, setIsLoading] = useState(false);
 
   // Workspace State
-
   const [widgets, setWidgets] = useState<Widget[]>([]);
-
   const [edges, setEdges] = useState<Edge[]>([]);
-
   const [showCategories, setShowCategories] = useState(false);
-
   const [dragging, setDragging] = useState<{ id: string; startX: number; startY: number } | null>(null);
-
   const [resizing, setResizing] = useState<{
     id: string;
-
     startX: number;
-
     startY: number;
-
     startWidth: number;
-
     startHeight: number;
   } | null>(null);
 
   // Canvas Pan-Zoom State
-
   const [canvasTransform, setCanvasTransform] = useState({
     translateX: 0,
-
     translateY: 0,
-
     scale: 1,
   });
 
@@ -303,9 +251,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   } | null>(null);
 
   // Connection State
-
   const [connecting, setConnecting] = useState<{ sourceId: string; sourceHandle: "output" } | null>(null);
-
   const [draggingHandle, setDraggingHandle] = useState<{
     nodeId: string;
     handleType: "input" | "output";
@@ -314,25 +260,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   } | null>(null);
 
   // Drawer State
-
   const [searchQuery, setSearchQuery] = useState("");
-
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     domain: true,
-
     general: true,
+    flows: false,
   });
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // --- Shared State for Node Data Flow ---
-
   type NodeOutputMap = {
     [nodeId: string]: {
       generatedText?: string;
-
       jsonPayload?: any;
-
       integrated?: boolean;
     };
   };
@@ -340,85 +281,62 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   type MainPromptState = {
     sections: {
       nodeId: string;
-
       title: string;
-
       content: string;
-
       order: number;
     }[];
-
     combinedPrompt: string;
   };
 
   const [nodeOutputMap, setNodeOutputMap] = useState<NodeOutputMap>({});
-
   const [mainPromptState, setMainPromptState] = useState<MainPromptState>({
     sections: [],
-
     combinedPrompt: "",
   });
 
   // Find Main Prompt Node (the final TEXT GENERATION node)
-
   const getMainPromptNodeId = (): string | null => {
     const finalNode = widgets.find((w) => w.id === "flow-text-final");
-
     return finalNode ? finalNode.id : null;
   };
 
   // --- Helper Functions ---
-
   const getUpstreamNodes = (nodeId: string, nodes: Widget[], edges: Edge[]): Widget[] => {
     const incomingEdges = edges.filter((e) => e.target === nodeId);
-
     const upstreamNodeIds = incomingEdges.map((e) => e.source);
-
     return nodes.filter((n) => upstreamNodeIds.includes(n.id));
   };
 
   const isConnectedToMain = (nodeId: string, mainNodeId: string | null, edges: Edge[]): boolean => {
     if (!mainNodeId) return false;
-
     // For MVP: check direct edge
-
     return edges.some((e) => e.source === nodeId && e.target === mainNodeId);
   };
 
   const buildCombinedPrompt = (sections: MainPromptState["sections"]): string => {
     if (sections.length === 0) return "";
-
     const sortedSections = [...sections].sort((a, b) => a.order - b.order);
-
     return sortedSections.map((section) => `### ${section.title}\n\n${section.content}\n\n`).join("");
   };
 
   // --- Content Generation Functions ---
-
   const generateIdeaSummary = (userInput: string): { generatedText: string; jsonPayload: any } => {
     if (!userInput.trim()) return { generatedText: "", jsonPayload: null };
 
     const systemPrompt = `You take the user's short description or URL and convert it into a full business summary used to build a website. If the user gives incomplete information, intelligently infer missing details. Your output MUST include: industry, business_type, services, target_audience, location, tone_style, goal. Always return both JSON and a human-readable explanation.`;
 
     // Simulate AI processing (in real app, this would call an API)
-
     const json = {
       industry: userInput.includes("tech")
         ? "Technology"
         : userInput.includes("restaurant")
           ? "Food & Beverage"
           : "General Business",
-
       business_type: "Service Provider",
-
       services: "Web development, consulting, digital solutions",
-
       target_audience: "Small to medium businesses",
-
       location: "Global",
-
       tone_style: "Professional, friendly, modern",
-
       goal: "Generate leads and establish online presence",
     };
 
@@ -426,7 +344,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     return {
       generatedText,
-
       jsonPayload: json,
     };
   };
@@ -444,7 +361,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     return {
       generatedText,
-
       jsonPayload: ideaNodeOutput.jsonPayload,
     };
   };
@@ -464,17 +380,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const structure = {
       sections: [
         { order: 1, title: "Hero Section", cta: "Get Started", image: "hero-image.jpg" },
-
         { order: 2, title: "Services Overview", cta: "Learn More", image: "services-image.jpg" },
-
         { order: 3, title: "About Us", cta: null, image: "about-image.jpg" },
-
         { order: 4, title: "Case Studies", cta: "View Portfolio", image: "cases-image.jpg" },
-
         { order: 5, title: "Pricing", cta: "Choose Plan", image: null },
-
         { order: 6, title: "Contact", cta: "Send Message", image: null },
-
         { order: 7, title: "FAQ", cta: null, image: null },
       ],
     };
@@ -483,14 +393,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     return {
       generatedText,
-
       jsonPayload: structure,
     };
   };
 
   const generateDesignSystem = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
     const summaryOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload);
-
     const structureOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.sections);
 
     if (!summaryOutput || !structureOutput) {
@@ -504,21 +412,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const designSystem = {
       primary_color: "#3b82f6",
-
       secondary_color: "#8b5cf6",
-
       background_color: "#0a0a0a",
-
       heading_font: "Inter, sans-serif",
-
       body_font: "Inter, sans-serif",
-
       button_style: "Rounded, gradient, hover effects",
-
       animation_style: "Smooth transitions, fade-ins",
-
       layout_style: "Modern, clean, spacious",
-
       image_direction: "High-quality, professional, brand-aligned",
     };
 
@@ -526,14 +426,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     return {
       generatedText,
-
       jsonPayload: designSystem,
     };
   };
 
   const generateSeoPlan = (upstreamOutputs: NodeOutputMap): { generatedText: string; jsonPayload: any } => {
     const designOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.primary_color);
-
     const structureOutput = Object.values(upstreamOutputs).find((output) => output.jsonPayload?.sections);
 
     if (!designOutput || !structureOutput) {
@@ -547,14 +445,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const seoPlan = {
       primary_keyword: "website development services",
-
       secondary_keywords: ["web design", "digital solutions", "online presence", "business website"],
-
       meta_description:
         "Professional website development services to help your business establish a strong online presence.",
-
       tone_of_voice: "Professional, approachable, solution-focused",
-
       schema_markup: "Organization, Service, LocalBusiness",
     };
 
@@ -562,7 +456,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     return {
       generatedText,
-
       jsonPayload: seoPlan,
     };
   };
@@ -570,91 +463,52 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Final prompt is built from MainPromptState.combinedPrompt, not generated separately
 
   // --- Scrollbar CSS ---
-
   useEffect(() => {
     const style = document.createElement("style");
-
     style.innerHTML = `
-
       .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
-
       .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
-
       
-
       .flow-handle {
-
         width: 9px;
-
         height: 9px;
-
         border-radius: 9999px;
-
         background: rgba(255, 255, 255, 0.85);
-
         border: 1px solid rgba(15, 23, 42, 0.8);
-
         z-index: 1000;
-
         pointer-events: auto !important;
-
         cursor: crosshair;
-
         transition: all 0.15s;
-
       }
-
       
-
       .flow-handle:hover {
-
         background: rgba(255, 255, 255, 1);
-
         border-color: rgba(148, 163, 184, 1);
-
         transform: scale(1.3);
-
         box-shadow: 0 0 4px rgba(148, 163, 184, 0.5);
-
       }
-
       
-
       .flow-handle-source {
-
         background: rgba(255, 255, 255, 0.85);
-
       }
-
       
-
       .flow-handle-target {
-
         background: rgba(255, 255, 255, 0.85);
-
       }
-
     `;
-
     document.head.appendChild(style);
-
     return () => {
       document.head.removeChild(style);
     };
   }, []);
 
   // --- Logic: Prompt Reconstruction ---
-
   const rebuildPrompt = () => {
     setWidgets((prevWidgets) => {
       const promptWidget = prevWidgets.find((w) => w.type === "prompt");
-
       if (!promptWidget) return prevWidgets;
 
       const integratedCategories = prevWidgets.filter((w) => w.type === "category" && w.integrated);
@@ -663,9 +517,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       if (integratedCategories.length > 0) {
         newContent += "\n\n" + "═".repeat(40);
-
         newContent += "\n\nSPECIFICATIONS & REQUIREMENTS:\n";
-
         integratedCategories.forEach((category) => {
           if (category.content && category.content.trim() && category.category) {
             newContent += `\n[${category.category.name.toUpperCase()}]\n${category.content.trim()}\n`;
@@ -685,44 +537,33 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const timer = setTimeout(() => {
       rebuildPrompt();
     }, 100);
-
     return () => clearTimeout(timer);
   }, [
     activeDomain,
-
     JSON.stringify(
       widgets
-
         .filter((w) => w.type === "category")
-
         .map((w) => ({ id: w.id, integrated: w.integrated, content: w.content })),
     ),
   ]);
 
   // --- Manual Generation Handlers ---
-
   const handleGenerateNode = (nodeId: string) => {
     const node = widgets.find((w) => w.id === nodeId);
-
     if (!node) return;
 
     let result: { generatedText: string; jsonPayload: any };
 
     if (nodeId === "flow-input-idea") {
       // IDEA INPUT: uses user input directly
-
       if (!node.content || !node.content.trim()) {
         return; // No input to generate from
       }
-
       result = generateIdeaSummary(node.content);
     } else {
       // Other nodes: collect upstream outputs
-
       const upstreamNodes = getUpstreamNodes(nodeId, widgets, edges);
-
       const upstreamOutputs: NodeOutputMap = {};
-
       upstreamNodes.forEach((upstreamNode) => {
         if (nodeOutputMap[upstreamNode.id]) {
           upstreamOutputs[upstreamNode.id] = nodeOutputMap[upstreamNode.id];
@@ -743,60 +584,43 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
 
     // Store result in NodeOutputMap
-
     setNodeOutputMap((prev) => ({
       ...prev,
-
       [nodeId]: {
         generatedText: result.generatedText,
-
         jsonPayload: result.jsonPayload,
-
         integrated: prev[nodeId]?.integrated || false,
       },
     }));
 
     // Update widget content to show generated text
-
     setWidgets((prev) => prev.map((w) => (w.id === nodeId ? { ...w, content: result.generatedText } : w)));
   };
 
   // --- Integration Handler ---
-
   const handleIntegrateToMainPrompt = (nodeId: string) => {
     const mainNodeId = getMainPromptNodeId();
-
     if (!mainNodeId) return;
 
     // Check if connected to main prompt
-
     if (!isConnectedToMain(nodeId, mainNodeId, edges)) {
       // Option A: Show message (for now, just return silently)
-
       // In a real app, you might show a toast or disable the button
-
       return;
     }
 
     // Get node output
-
     const nodeOutput = nodeOutputMap[nodeId];
-
     if (!nodeOutput || !nodeOutput.generatedText) {
       // Auto-generate if not generated yet
-
       handleGenerateNode(nodeId);
-
       // Wait a bit then try again (in real app, use async/await)
-
       setTimeout(() => {
         const updatedOutput = nodeOutputMap[nodeId];
-
         if (updatedOutput?.generatedText) {
           performIntegration(nodeId, updatedOutput as { generatedText: string; jsonPayload?: any });
         }
       }, 100);
-
       return;
     }
 
@@ -805,18 +629,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const performIntegration = (nodeId: string, nodeOutput: { generatedText: string; jsonPayload?: any }) => {
     const node = widgets.find((w) => w.id === nodeId);
-
     if (!node) return;
 
     const title = node.title || node.subtitle || "Untitled Section";
-
     const order = mainPromptState.sections.length;
 
     // Upsert section
-
     setMainPromptState((prev) => {
       const existingIndex = prev.sections.findIndex((s) => s.nodeId === nodeId);
-
       const newSections =
         existingIndex >= 0
           ? prev.sections.map((s, i) => (i === existingIndex ? { ...s, title, content: nodeOutput.generatedText } : s))
@@ -826,25 +646,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       return {
         sections: newSections,
-
         combinedPrompt,
       };
     });
 
     // Mark as integrated
-
     setNodeOutputMap((prev) => ({
       ...prev,
-
       [nodeId]: { ...prev[nodeId], integrated: true },
     }));
   };
 
   // Update final prompt node when mainPromptState changes
-
   useEffect(() => {
     const finalNode = widgets.find((w) => w.id === "flow-text-final");
-
     if (!finalNode) return;
 
     setWidgets((prev) =>
@@ -853,75 +668,49 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   }, [mainPromptState.combinedPrompt]);
 
   // --- Domain Selection Logic ---
-
   const handleDomainSelection = (domainLabel: string) => {
     setIsLoading(true);
-
     setActiveDomain(domainLabel);
 
     setTimeout(() => {
       const mainPromptWidget: Widget = {
         id: `prompt-main`,
-
         type: "prompt",
-
         title: `${domainLabel} Architecture`,
-
         content: `Initializing ${domainLabel} context...`,
-
         x: 0,
-
         y: 0,
-
         width: 550,
-
         height: 600,
       };
 
       // Reset canvas transform when entering workspace
-
       setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
-
       setWidgets([mainPromptWidget]);
-
       setViewMode("workspace");
-
       setIsLoading(false);
-
-      setShowCategories(true);
+      setShowCategories(false);
     }, 600);
   };
 
   // --- Widget Management ---
-
   const handleCategoryAdd = (category: Category) => {
     const offset = widgets.length * 30;
 
     // Calculate position relative to current canvas view
-
     const baseX = -canvasTransform.translateX / canvasTransform.scale + 600;
-
     const baseY = -canvasTransform.translateY / canvasTransform.scale + 100;
 
     const newWidget: Widget = {
       id: `${category.id}-${Date.now()}`,
-
       type: "category",
-
       category: category,
-
       content: "",
-
       placeholder: `Define ${category.name}...`,
-
       integrated: true,
-
       x: baseX + Math.random() * 50,
-
       y: baseY + offset,
-
       width: 350,
-
       height: 220,
     };
 
@@ -932,7 +721,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setWidgets((prev) =>
       prev.map((w) => {
         if (w.id !== widgetId) return w;
-
         return { ...w, integrated: !w.integrated };
       }),
     );
@@ -953,177 +741,101 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   // --- Website Flow Preset ---
-
   const createWebsiteFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
     // Calculate starting position to avoid overlapping with existing nodes
-
     const baseX = 700;
-
     const baseY = 200;
-
     const nodeWidth = 320;
-
     const nodeHeight = 180;
-
     const horizontalSpacing = 400;
-
     const verticalOffset = 0;
 
     const nodes: Widget[] = [
       // IDEA INPUT
-
       {
         id: "flow-input-idea",
-
         type: "flow-input",
-
         title: "IDEA INPUT",
-
         subtitle: "Paste a URL to an existing website or describe the idea for the new landing page.",
-
         content: "",
-
         placeholder: "Enter URL or describe your website idea...",
-
         x: baseX,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
-
       // Text Generation: Website Summary
-
       {
         id: "flow-text-summary",
-
         type: "flow-text-gen",
-
         title: "TEXT GENERATION",
-
         subtitle: "Summarize website / idea",
-
         content: "",
-
         placeholder: "Summary will be generated here...",
-
         x: baseX + horizontalSpacing,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
-
       // AI Agent: Website Modules Planner
-
       {
         id: "flow-agent-planner",
-
         type: "flow-agent",
-
         title: "AI STUDIO AGENT",
-
         subtitle: "Plan website modules",
-
         content: "",
-
         placeholder: "Planning Hero, Services, About, Cases, Pricing, Contact, FAQ...",
-
         x: baseX + horizontalSpacing * 2,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
-
       // Set State: Save layout + config
-
       {
         id: "flow-state-config",
-
         type: "flow-state",
-
         title: "SET STATE",
-
         subtitle: "Save layout + config",
-
         content: "",
-
         placeholder: "Saving website configuration...",
-
         x: baseX + horizontalSpacing * 3,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
-
       // Tool Calling: SEO & Structure
-
       {
         id: "flow-tool-seo",
-
         type: "flow-tool",
-
         title: "TOOL CALLING",
-
         subtitle: "Generate SEO & structure",
-
         content: "",
-
         placeholder: "Generating SEO metadata and site structure...",
-
         x: baseX + horizontalSpacing * 4,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
-
       // Final Prompt: Output
-
       {
         id: "flow-text-final",
-
         type: "flow-text-gen",
-
         title: "TEXT GENERATION",
-
         subtitle: "Output final website prompt",
-
         content: "",
-
         placeholder: "Final website prompt will appear here...",
-
         x: baseX + horizontalSpacing * 5,
-
         y: baseY,
-
         width: nodeWidth,
-
         height: nodeHeight,
       },
     ];
 
     const edges: Edge[] = [
       { id: "edge-1", source: "flow-input-idea", target: "flow-text-summary" },
-
       { id: "edge-2", source: "flow-text-summary", target: "flow-agent-planner" },
-
       { id: "edge-3", source: "flow-agent-planner", target: "flow-state-config" },
-
       { id: "edge-4", source: "flow-state-config", target: "flow-tool-seo" },
-
       { id: "edge-5", source: "flow-tool-seo", target: "flow-text-final" },
     ];
 
@@ -1132,119 +844,327 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleCreateWebsiteFlowPreset = () => {
     const { nodes, edges } = createWebsiteFlowPreset();
-
     // Merge with existing widgets, avoiding duplicate IDs
-
     setWidgets((prev) => {
       const existingIds = new Set(prev.map((w) => w.id));
-
       const newNodes = nodes.filter((n) => !existingIds.has(n.id));
-
       return [...prev, ...newNodes];
     });
-
     // Merge with existing edges, avoiding duplicate IDs
-
     setEdges((prev) => {
       const existingIds = new Set(prev.map((e) => e.id));
-
       const newEdges = edges.filter((e) => !existingIds.has(e.id));
+      return [...prev, ...newEdges];
+    });
+  };
 
+  // --- App Flow Preset ---
+  const createAppFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
+    const baseX = 700;
+    const baseY = 200;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
+
+    const nodes: Widget[] = [
+      {
+        id: "flow-input-idea-app",
+        type: "flow-input",
+        title: "IDEA INPUT",
+        subtitle: "Describe your app idea or paste a reference URL.",
+        content: "",
+        placeholder: "Enter URL or describe your app idea...",
+        x: baseX,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-text-summary-app",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Summarize app / idea",
+        content: "",
+        placeholder: "Summary will be generated here...",
+        x: baseX + horizontalSpacing,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-agent-planner-app",
+        type: "flow-agent",
+        title: "AI STUDIO AGENT",
+        subtitle: "Plan app features & modules",
+        content: "",
+        placeholder: "Planning features, screens, navigation...",
+        x: baseX + horizontalSpacing * 2,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-state-config-app",
+        type: "flow-state",
+        title: "SET STATE",
+        subtitle: "Save app config",
+        content: "",
+        placeholder: "Saving app configuration...",
+        x: baseX + horizontalSpacing * 3,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-tool-seo-app",
+        type: "flow-tool",
+        title: "TOOL CALLING",
+        subtitle: "Generate app structure",
+        content: "",
+        placeholder: "Generating app metadata and structure...",
+        x: baseX + horizontalSpacing * 4,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-text-final-app",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Output final app prompt",
+        content: "",
+        placeholder: "Final app prompt will appear here...",
+        x: baseX + horizontalSpacing * 5,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+    ];
+
+    const edges: Edge[] = [
+      { id: "edge-app-1", source: "flow-input-idea-app", target: "flow-text-summary-app" },
+      { id: "edge-app-2", source: "flow-text-summary-app", target: "flow-agent-planner-app" },
+      { id: "edge-app-3", source: "flow-agent-planner-app", target: "flow-state-config-app" },
+      { id: "edge-app-4", source: "flow-state-config-app", target: "flow-tool-seo-app" },
+      { id: "edge-app-5", source: "flow-tool-seo-app", target: "flow-text-final-app" },
+    ];
+
+    return { nodes, edges };
+  };
+
+  const handleCreateAppFlowPreset = () => {
+    const { nodes, edges } = createAppFlowPreset();
+    setWidgets((prev) => {
+      const existingIds = new Set(prev.map((w) => w.id));
+      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
+      return [...prev, ...newNodes];
+    });
+    setEdges((prev) => {
+      const existingIds = new Set(prev.map((e) => e.id));
+      const newEdges = edges.filter((e) => !existingIds.has(e.id));
+      return [...prev, ...newEdges];
+    });
+  };
+
+  // --- Game Flow Preset ---
+  const createGameFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
+    const baseX = 700;
+    const baseY = 200;
+    const nodeWidth = 320;
+    const nodeHeight = 180;
+    const horizontalSpacing = 400;
+
+    const nodes: Widget[] = [
+      {
+        id: "flow-input-idea-game",
+        type: "flow-input",
+        title: "IDEA INPUT",
+        subtitle: "Describe your game idea or paste a reference URL.",
+        content: "",
+        placeholder: "Enter URL or describe your game idea...",
+        x: baseX,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-text-summary-game",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Summarize game / idea",
+        content: "",
+        placeholder: "Summary will be generated here...",
+        x: baseX + horizontalSpacing,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-agent-planner-game",
+        type: "flow-agent",
+        title: "AI STUDIO AGENT",
+        subtitle: "Plan game mechanics & systems",
+        content: "",
+        placeholder: "Planning mechanics, progression, systems...",
+        x: baseX + horizontalSpacing * 2,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-state-config-game",
+        type: "flow-state",
+        title: "SET STATE",
+        subtitle: "Save game config",
+        content: "",
+        placeholder: "Saving game configuration...",
+        x: baseX + horizontalSpacing * 3,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-tool-seo-game",
+        type: "flow-tool",
+        title: "TOOL CALLING",
+        subtitle: "Generate game structure",
+        content: "",
+        placeholder: "Generating game metadata and structure...",
+        x: baseX + horizontalSpacing * 4,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+      {
+        id: "flow-text-final-game",
+        type: "flow-text-gen",
+        title: "TEXT GENERATION",
+        subtitle: "Output final game prompt",
+        content: "",
+        placeholder: "Final game prompt will appear here...",
+        x: baseX + horizontalSpacing * 5,
+        y: baseY,
+        width: nodeWidth,
+        height: nodeHeight,
+      },
+    ];
+
+    const edges: Edge[] = [
+      { id: "edge-game-1", source: "flow-input-idea-game", target: "flow-text-summary-game" },
+      { id: "edge-game-2", source: "flow-text-summary-game", target: "flow-agent-planner-game" },
+      { id: "edge-game-3", source: "flow-agent-planner-game", target: "flow-state-config-game" },
+      { id: "edge-game-4", source: "flow-state-config-game", target: "flow-tool-seo-game" },
+      { id: "edge-game-5", source: "flow-tool-seo-game", target: "flow-text-final-game" },
+    ];
+
+    return { nodes, edges };
+  };
+
+  const handleCreateGameFlowPreset = () => {
+    const { nodes, edges } = createGameFlowPreset();
+    setWidgets((prev) => {
+      const existingIds = new Set(prev.map((w) => w.id));
+      const newNodes = nodes.filter((n) => !existingIds.has(n.id));
+      return [...prev, ...newNodes];
+    });
+    setEdges((prev) => {
+      const existingIds = new Set(prev.map((e) => e.id));
+      const newEdges = edges.filter((e) => !existingIds.has(e.id));
       return [...prev, ...newEdges];
     });
   };
 
   // --- Canvas Pan-Zoom Logic ---
-
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     // Don't pan if clicking on widgets or interactive elements
-
     if ((e.target as HTMLElement).closest(".widget-container, button, input, textarea, .pointer-events-auto")) return;
 
     if (e.button === 0 && !dragging && !resizing) {
       // Left mouse button
-
       e.preventDefault();
-
       setPanning({
         startX: e.clientX,
-
         startY: e.clientY,
-
         startTranslateX: canvasTransform.translateX,
-
         startTranslateY: canvasTransform.translateY,
       });
     }
   };
 
+  // KEEP CURRENT WORKING ZOOM LOGIC
   const handleCanvasWheel = (e: React.WheelEvent) => {
     if (!canvasRef.current) return;
+
+    // Don't zoom if scrolling inside a widget or textarea
+    if ((e.target as HTMLElement).closest(".widget-container, .custom-scrollbar, textarea, input")) return;
 
     e.preventDefault();
 
     const rect = canvasRef.current.getBoundingClientRect();
-
     const mouseX = e.clientX - rect.left;
-
     const mouseY = e.clientY - rect.top;
 
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    // Handle scroll with Shift key for horizontal panning
+    if (e.shiftKey) {
+      setCanvasTransform((prev) => ({
+        ...prev,
+        translateX: prev.translateX - e.deltaY * 0.5,
+      }));
+      return;
+    }
 
-    const newScale = Math.max(0.1, Math.min(3, canvasTransform.scale * zoomFactor));
+    // Handle Alt/Option + scroll for vertical panning
+    if (e.altKey) {
+      setCanvasTransform((prev) => ({
+        ...prev,
+        translateY: prev.translateY - e.deltaY * 0.5,
+      }));
+      return;
+    }
 
-    // Zoom towards mouse position
+    // Normal scroll = zoom in/out (like Flowise)
+    // Zoom ONLY - no panning/translation on scroll
+    const zoomSpeed = 0.1;
+    const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-    const scaleChange = newScale / canvasTransform.scale;
+    // Calculate new scale with reasonable limits (0.3 = 30% to 2.0 = 200%)
+    const newScale = Math.max(0.3, Math.min(2.0, canvasTransform.scale * zoomFactor));
 
-    const newTranslateX = mouseX - (mouseX - canvasTransform.translateX) * scaleChange;
-
-    const newTranslateY = mouseY - (mouseY - canvasTransform.translateY) * scaleChange;
-
-    setCanvasTransform({
-      translateX: newTranslateX,
-
-      translateY: newTranslateY,
-
+    // Zoom around the viewport center (or mouse position) without changing translate
+    // This ensures the viewport stays stable - no drift left/right/up/down
+    // We keep the current translateX and translateY unchanged during zoom
+    setCanvasTransform((prev) => ({
+      translateX: prev.translateX,
+      translateY: prev.translateY,
       scale: newScale,
-    });
+    }));
   };
 
   // --- Drag & Resize Logic ---
-
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
     if ((e.target as HTMLElement).closest("textarea, input, button")) return;
 
     e.stopPropagation();
 
     const widget = widgets.find((w) => w.id === widgetId);
-
     if (!widget) return;
 
     // Convert widget position to screen coordinates
-
     const screenX = widget.x * canvasTransform.scale + canvasTransform.translateX;
-
     const screenY = widget.y * canvasTransform.scale + canvasTransform.translateY;
 
     if (action === "move") {
       setDragging({
         id: widgetId,
-
         startX: e.clientX - screenX,
-
         startY: e.clientY - screenY,
       });
     } else if (action === "resize") {
       setResizing({
         id: widgetId,
-
         startX: e.clientX,
-
         startY: e.clientY,
-
         startWidth: widget.width,
-
         startHeight: widget.height,
       });
     }
@@ -1255,47 +1175,37 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const handleMouseMove = (e: MouseEvent) => {
       // Use requestAnimationFrame for smoother updates
-
       if (rafId) cancelAnimationFrame(rafId);
 
       rafId = requestAnimationFrame(() => {
         if (panning) {
           const deltaX = e.clientX - panning.startX;
-
           const deltaY = e.clientY - panning.startY;
 
           setCanvasTransform((prev) => ({
             ...prev,
-
             translateX: panning.startTranslateX + deltaX,
-
             translateY: panning.startTranslateY + deltaY,
           }));
         } else if (draggingHandle) {
           // Check if dragged far enough from handle to disconnect
-
           const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
 
           const canvasX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
-
           const canvasY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
 
           const distance = Math.sqrt(Math.pow(canvasX - handlePos.x, 2) + Math.pow(canvasY - handlePos.y, 2));
 
           // If dragged more than 50px away, disconnect (will be finalized on mouse up)
-
           // Visual feedback: show disconnection state
         } else if (dragging) {
           // Convert screen coordinates to canvas coordinates
-
           const canvasX = (e.clientX - dragging.startX - canvasTransform.translateX) / canvasTransform.scale;
-
           const canvasY = (e.clientY - dragging.startY - canvasTransform.translateY) / canvasTransform.scale;
 
           setWidgets((prev) => prev.map((w) => (w.id === dragging.id ? { ...w, x: canvasX, y: canvasY } : w)));
         } else if (resizing) {
           const deltaX = (e.clientX - resizing.startX) / canvasTransform.scale;
-
           const deltaY = (e.clientY - resizing.startY) / canvasTransform.scale;
 
           setWidgets((prev) =>
@@ -1303,9 +1213,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               w.id === resizing.id
                 ? {
                     ...w,
-
                     width: Math.max(300, resizing.startWidth + deltaX),
-
                     height: Math.max(150, resizing.startHeight + deltaY),
                   }
                 : w,
@@ -1317,12 +1225,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const handleMouseUp = () => {
       // Check if handle was dragged away to disconnect
-
       if (draggingHandle) {
         const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
 
         const canvasX = (draggingHandle.startX - canvasTransform.translateX) / canvasTransform.scale;
-
         const canvasY = (draggingHandle.startY - canvasTransform.translateY) / canvasTransform.scale;
 
         const endX =
@@ -1334,19 +1240,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           canvasTransform.scale;
 
         // Use a simpler approach: check if mouse moved significantly
-
         const deltaX = Math.abs(endX - canvasX);
-
         const deltaY = Math.abs(endY - canvasY);
-
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
         // If dragged more than 30px away, disconnect
-
         if (distance > 30) {
           if (draggingHandle.handleType === "input") {
             // Disconnect all edges coming into this node
-
             setEdges((prev) => {
               const edgesToRemove = prev.filter((ed) => ed.target === draggingHandle.nodeId);
 
@@ -1358,7 +1259,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   return {
                     sections: newSections,
-
                     combinedPrompt: buildCombinedPrompt(newSections),
                   };
                 });
@@ -1368,7 +1268,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             });
           } else if (draggingHandle.handleType === "output") {
             // Disconnect all edges going out from this node
-
             setEdges((prev) => {
               const edgesToRemove = prev.filter((ed) => ed.source === draggingHandle.nodeId);
 
@@ -1378,7 +1277,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   return {
                     sections: newSections,
-
                     combinedPrompt: buildCombinedPrompt(newSections),
                   };
                 });
@@ -1393,131 +1291,101 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       }
 
       setDragging(null);
-
       setResizing(null);
-
       setPanning(null);
     };
 
     if (panning || dragging || resizing || draggingHandle) {
       window.addEventListener("mousemove", handleMouseMove);
-
       window.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-
       window.removeEventListener("mouseup", handleMouseUp);
-
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [panning, dragging, resizing, canvasTransform.scale, canvasTransform.translateX, canvasTransform.translateY]);
 
   // --- Drawer Helper Components ---
-
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   const filterCategories = (cats: Category[]) => {
     if (!searchQuery) return cats;
-
     return cats.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
   // --- Connection Handlers ---
-
   const handleHandleMouseDown = (e: React.MouseEvent, nodeId: string, handleType: "input" | "output") => {
     e.stopPropagation();
-
     e.preventDefault();
 
     // Prevent double-click issues
-
     if (e.detail > 1) return; // Ignore double-clicks
 
     // Start dragging handle - can be used to disconnect by dragging away
-
     setDraggingHandle({
       nodeId,
-
       handleType,
-
       startX: e.clientX,
-
       startY: e.clientY,
     });
 
     // Normal connection flow
-
     if (handleType === "output") {
       setConnecting({ sourceId: nodeId, sourceHandle: "output" });
     } else if (handleType === "input" && connecting) {
       // Complete connection
-
       const newEdge: Edge = {
         id: `edge-${connecting.sourceId}-${nodeId}-${Date.now()}`,
-
         source: connecting.sourceId,
-
         target: nodeId,
       };
 
       setEdges((prev) => {
         // Check if edge already exists
-
         const exists = prev.some((e) => e.source === connecting.sourceId && e.target === nodeId);
-
         if (exists) return prev;
-
         return [...prev, newEdge];
       });
 
       setConnecting(null);
-
       setDraggingHandle(null);
     }
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Cancel connection if clicking on canvas (but not on handles or widgets)
-
     const target = e.target as HTMLElement;
-
     if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
   };
 
   // Get handle position for a node (in canvas coordinates)
-
   const getHandlePosition = (
     nodeId: string,
     handleType: "input" | "output",
     widgets: Widget[],
   ): { x: number; y: number } => {
     const widget = widgets.find((w) => w.id === nodeId);
-
     if (!widget) return { x: 0, y: 0 };
 
     const handleY = widget.y + widget.height / 2; // Center vertically
-
     // Handles are positioned at -4.5px from edge (half of 9px handle width)
-
     const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
     return { x: handleX, y: handleY };
   };
 
   // --- RENDER ---
-
   return (
     <div className="h-screen bg-[#09090b] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
           // --- LANDING VIEW ---
-
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
@@ -1531,7 +1399,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               className="absolute top-6 left-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
             >
               <Home size={20} />
-
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
@@ -1556,17 +1423,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       onClick={() => !isLoading && handleDomainSelection(chip.label)}
                       disabled={isLoading}
                       className={`
-
                         px-8 py-4 rounded-xl bg-neutral-900 border border-neutral-800 
-
                         text-neutral-300 hover:bg-neutral-800 hover:text-white hover:border-neutral-700 
-
                         transition-all cursor-pointer font-sans 
-
                         flex flex-col items-center gap-3 group min-w-[140px]
-
                         ${isLoading ? "opacity-50 cursor-wait" : ""}
-
                       `}
                     >
                       {isLoading && activeDomain === chip.label ? (
@@ -1584,7 +1445,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           </motion.main>
         ) : (
           // --- WORKSPACE VIEW ---
-
           <motion.div
             key="workspace"
             initial={{ opacity: 0 }}
@@ -1592,31 +1452,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             className="flex-1 relative w-full h-full flex flex-col bg-[#09090b]"
           >
             {/* Top Bar */}
-
             <div className="absolute top-4 left-4 right-4 flex justify-between z-30 pointer-events-none">
               <button
                 onClick={() => setViewMode("landing")}
                 className="pointer-events-auto h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
               >
                 <ArrowLeft size={18} />
-
                 <span className="text-sm font-medium">Back</span>
               </button>
 
               <div className="flex items-center gap-2 pointer-events-auto">
-                {activeDomain === "Website" &&
-                  widgets.some((w) => w.type === "prompt") &&
-                  !widgets.some((w) => w.type.startsWith("flow-")) && (
-                    <button
-                      onClick={handleCreateWebsiteFlowPreset}
-                      className="h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
-                    >
-                      <Sparkles size={16} />
-
-                      <span className="text-sm font-medium">Website Flow</span>
-                    </button>
-                  )}
-
                 <button
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
@@ -1630,7 +1475,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             </div>
 
             {/* Canvas */}
-
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
@@ -1638,51 +1482,43 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Infinite Background Pattern */}
-
+              {/* KEEP CURRENT WORKING BACKGROUND GRID */}
               <div
                 className="absolute pointer-events-none opacity-20"
                 style={{
                   backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-
                   backgroundSize: "24px 24px",
-
-                  width: "20000px",
-
-                  height: "20000px",
-
-                  left: `${-10000 + (canvasTransform.translateX % 24)}px`,
-
-                  top: `${-10000 + (canvasTransform.translateY % 24)}px`,
+                  backgroundRepeat: "repeat",
+                  // Cover entire viewport plus extra to handle zoom/pan
+                  // Use large dimensions to ensure coverage at all zoom levels
+                  left: "-5000px",
+                  top: "-5000px",
+                  width: "10000px",
+                  height: "10000px",
+                  // Apply same transform as nodes to stay in sync
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
                 }}
               />
 
               {/* Edges Container with Transform */}
-
               <svg
                 className="absolute inset-0"
                 style={{
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-
                   transformOrigin: "0 0",
-
                   overflow: "visible",
                 }}
               >
                 {/* Active connection line (while dragging) */}
-
                 {connecting &&
                   (() => {
                     const sourcePos = getHandlePosition(connecting.sourceId, "output", widgets);
-
                     const sourceWidget = widgets.find((w) => w.id === connecting.sourceId);
-
                     if (!sourceWidget) return null;
 
                     // Get mouse position relative to canvas
-
                     const mouseX = sourcePos.x + 150;
-
                     const mouseY = sourcePos.y;
 
                     return (
@@ -1700,21 +1536,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                 {edges.map((edge) => {
                   const sourceWidget = widgets.find((w) => w.id === edge.source);
-
                   const targetWidget = widgets.find((w) => w.id === edge.target);
 
                   if (!sourceWidget || !targetWidget) return null;
 
                   // Connect handle to handle
-
                   const sourcePos = getHandlePosition(edge.source, "output", widgets);
-
                   const targetPos = getHandlePosition(edge.target, "input", widgets);
 
                   return (
                     <g key={edge.id} style={{ pointerEvents: "none" }}>
                       {/* Visible edge line - simple and clean */}
-
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
                         stroke="rgba(148, 163, 184, 0.6)"
@@ -1727,43 +1559,34 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </svg>
 
               {/* Widgets Container with Transform */}
-
               <div
                 className="absolute inset-0"
                 style={{
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-
                   transformOrigin: "0 0",
                 }}
               >
                 {widgets.map((widget) => {
                   let Icon = Sparkles;
-
                   let accentColor = "text-neutral-400";
 
                   if (widget.type === "category" && widget.category) {
                     Icon = widget.category.icon;
-
                     accentColor = widget.category.color;
                   } else if (widget.type === "flow-input") {
                     Icon = Upload;
-
                     accentColor = "text-blue-400";
                   } else if (widget.type === "flow-text-gen") {
                     Icon = FileText;
-
                     accentColor = "text-purple-400";
                   } else if (widget.type === "flow-agent") {
                     Icon = Bot;
-
                     accentColor = "text-green-400";
                   } else if (widget.type === "flow-state") {
                     Icon = Save;
-
                     accentColor = "text-amber-400";
                   } else if (widget.type === "flow-tool") {
                     Icon = Link2;
-
                     accentColor = "text-cyan-400";
                   }
 
@@ -1773,51 +1596,37 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       className="absolute bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
                       style={{
                         left: widget.x,
-
                         top: widget.y,
-
                         width: widget.width,
-
                         height: widget.height,
-
                         boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.5)",
-
                         overflow: "visible",
                       }}
                       onMouseDown={(e) => {
                         // Don't start dragging if clicking on handle
-
                         if (!(e.target as HTMLElement).closest(".flow-handle")) {
                           handleMouseDown(e, widget.id, "move");
                         }
                       }}
                     >
                       {/* Input Handle (Left) - Inside card, visible */}
-
                       {widget.type.startsWith("flow-") && (
                         <div
                           className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
                           style={{
                             left: "-4.5px",
-
                             pointerEvents: "auto",
-
                             zIndex: 1000,
                           }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
-
                             e.preventDefault();
-
                             handleHandleMouseDown(e, widget.id, "input");
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
-
                             e.preventDefault();
-
                             // Double-click to disconnect all edges from this handle
-
                             setEdges((prev) => {
                               const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
 
@@ -1829,7 +1638,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                                   return {
                                     sections: newSections,
-
                                     combinedPrompt: buildCombinedPrompt(newSections),
                                   };
                                 });
@@ -1844,31 +1652,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Output Handle (Right) - Inside card, visible */}
-
                       {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
                         <div
                           className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
                           style={{
                             right: "-4.5px",
-
                             pointerEvents: "auto",
-
                             zIndex: 1000,
                           }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
-
                             e.preventDefault();
-
                             handleHandleMouseDown(e, widget.id, "output");
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
-
                             e.preventDefault();
-
                             // Double-click to disconnect all edges from this handle
-
                             setEdges((prev) => {
                               const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
@@ -1878,7 +1678,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                                   return {
                                     sections: newSections,
-
                                     combinedPrompt: buildCombinedPrompt(newSections),
                                   };
                                 });
@@ -1893,7 +1692,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Header */}
-
                       <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
                         <div className="flex items-center gap-3">
                           <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor}`}>
@@ -1937,7 +1735,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-
                                 toggleIntegration(widget.id);
                               }}
                               disabled={!widget.content?.trim()}
@@ -1948,7 +1745,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               }`}
                             >
                               {widget.integrated ? <Check size={12} /> : <Plus size={12} />}
-
                               {widget.integrated ? "In Prompt" : "Add"}
                             </button>
                           )}
@@ -1956,7 +1752,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-
                               copyWidget(widget);
                             }}
                             className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
@@ -1968,7 +1763,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-
                                 deleteWidget(widget.id);
                               }}
                               className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
@@ -1982,7 +1776,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-
                                   handleGenerateNode(widget.id);
                                 }}
                                 className="px-2 py-1 rounded text-xs font-medium flex items-center gap-1 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
@@ -1995,7 +1788,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-
                                   handleIntegrateToMainPrompt(widget.id);
                                 }}
                                 disabled={
@@ -2014,35 +1806,25 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 }
                               >
                                 {nodeOutputMap[widget.id]?.integrated ? <Check size={12} /> : <Plus size={12} />}
-
                                 {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
                               </button>
 
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-
                                   deleteWidget(widget.id);
-
                                   // Also delete connected edges and remove from state
-
                                   setEdges((prev) =>
                                     prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
                                   );
-
                                   setNodeOutputMap((prev) => {
                                     const newMap = { ...prev };
-
                                     delete newMap[widget.id];
-
                                     return newMap;
                                   });
-
                                   setMainPromptState((prev) => ({
                                     ...prev,
-
                                     sections: prev.sections.filter((s) => s.nodeId !== widget.id),
-
                                     combinedPrompt: buildCombinedPrompt(
                                       prev.sections.filter((s) => s.nodeId !== widget.id),
                                     ),
@@ -2059,7 +1841,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-
                                 if (mainPromptState.combinedPrompt) {
                                   navigator.clipboard.writeText(mainPromptState.combinedPrompt);
                                 }
@@ -2075,7 +1856,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       </div>
 
                       {/* Content */}
-
                       <div className="flex-1 bg-[#121214] flex flex-col relative" style={{ overflow: "visible" }}>
                         {widget.type === "prompt" && (
                           <div className="p-4 overflow-y-auto h-full custom-scrollbar">
@@ -2118,7 +1898,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       </div>
 
                       {/* Resize Handle */}
-
                       <div
                         className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity z-20 flex items-end justify-end p-1"
                         onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
@@ -2132,7 +1911,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             </div>
 
             {/* NEW: Node Drawer (Side Menu) */}
-
             <AnimatePresence>
               {showCategories && (
                 <motion.div
@@ -2143,16 +1921,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
                 >
                   {/* Drawer Header */}
-
                   <div className="p-4 border-b border-neutral-800 bg-[#121214]">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Nodes</h3>
 
                     {/* Domain Switcher */}
-
                     <div className="flex p-1 bg-neutral-900 rounded-lg mb-3">
                       {suggestionChips.map((chip) => {
                         const Icon = chip.icon;
-
                         const isActive = activeDomain === chip.label;
 
                         return (
@@ -2174,7 +1949,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
-
                       <input
                         type="text"
                         placeholder="Search nodes..."
@@ -2186,10 +1960,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   </div>
 
                   {/* Drawer Content */}
-
                   <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#121214]">
                     {/* Section 1 */}
-
                     <div className="mb-2">
                       <button
                         onClick={() => toggleSection("domain")}
@@ -2249,7 +2021,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     </div>
 
                     {/* Section 2 */}
-
                     <div className="mb-2">
                       <button
                         onClick={() => toggleSection("general")}
@@ -2302,6 +2073,103 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   />
                                 </button>
                               ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Flows Subsection */}
+                    <div className="mb-2">
+                      <button
+                        onClick={() => toggleSection("flows")}
+                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={14} className="text-neutral-500" />
+                          Flows
+                        </div>
+
+                        {expandedSections.flows ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
+
+                      <AnimatePresence>
+                        {expandedSections.flows && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-2 space-y-1 mt-1">
+                              <button
+                                onClick={() => handleCreateWebsiteFlowPreset()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
+                                  <Globe size={14} />
+                                </div>
+
+                                <div className="flex-1">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    Website
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Complete website flow preset
+                                  </span>
+                                </div>
+
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                              </button>
+
+                              <button
+                                onClick={() => handleCreateAppFlowPreset()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
+                                  <Smartphone size={14} />
+                                </div>
+
+                                <div className="flex-1">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    App
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Complete app flow preset
+                                  </span>
+                                </div>
+
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                              </button>
+
+                              <button
+                                onClick={() => handleCreateGameFlowPreset()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
+                                  <Gamepad2 size={14} />
+                                </div>
+
+                                <div className="flex-1">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    Game
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Complete game flow preset
+                                  </span>
+                                </div>
+
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                              </button>
                             </div>
                           </motion.div>
                         )}
