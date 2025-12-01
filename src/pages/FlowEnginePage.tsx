@@ -1772,7 +1772,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 letterSpacing: "0",
                                 wordSpacing: "normal",
                                 display: "block",
-                                whiteSpace: "normal",
+                                whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                               }}
