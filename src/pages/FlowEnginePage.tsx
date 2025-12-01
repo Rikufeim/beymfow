@@ -768,9 +768,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Calculate starting position to avoid overlapping with existing nodes
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 320;
-    const nodeHeight = 180;
-    const horizontalSpacing = 400;
+    const nodeWidth = 280;
+    const nodeHeight = 160;
+    const horizontalSpacing = 350;
     const verticalOffset = 0;
 
     const nodes: Widget[] = [
@@ -885,9 +885,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createAppFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 320;
-    const nodeHeight = 180;
-    const horizontalSpacing = 400;
+    const nodeWidth = 280;
+    const nodeHeight = 160;
+    const horizontalSpacing = 350;
 
     const nodes: Widget[] = [
       {
@@ -993,9 +993,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createGameFlowPreset = (): { nodes: Widget[]; edges: Edge[] } => {
     const baseX = 700;
     const baseY = 200;
-    const nodeWidth = 320;
-    const nodeHeight = 180;
-    const horizontalSpacing = 400;
+    const nodeWidth = 280;
+    const nodeHeight = 160;
+    const horizontalSpacing = 350;
 
     const nodes: Widget[] = [
       {
@@ -1973,27 +1973,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         {widget.type.startsWith("flow-") && (
                           <div
                             className="p-3 overflow-auto h-full w-full custom-scrollbar"
-                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
                           >
                             {widget.id === "flow-input-idea" || widget.id === "flow-input-idea-app" || widget.id === "flow-input-idea-game" ? (
                               <textarea
-                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "normal",
-                                }}
+                                className="w-full h-full bg-transparent text-xs text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-500 font-sans"
                                 value={widget.content || ""}
                                 onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                                 placeholder={widget.placeholder}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
                             ) : (
-                              <div className="w-full text-xs text-neutral-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
+                              <div className="w-full text-xs text-neutral-400 font-sans leading-relaxed overflow-hidden">
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
-                                  widget.placeholder ||
-                                  "Click 'Generate' to create content..."}
+                                  ""}
                               </div>
                             )}
                           </div>
