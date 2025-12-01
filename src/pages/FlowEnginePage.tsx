@@ -1755,14 +1755,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Header */}
-                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none min-h-[60px]">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor}`}>
+                      <div className="px-4 py-3 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none">
+                        <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                          <div className={`p-1.5 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
                             <Icon size={16} />
                           </div>
 
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans truncate">
+                            <span className="text-sm font-semibold text-neutral-200 leading-tight font-sans break-words">
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
 
