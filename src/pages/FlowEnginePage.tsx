@@ -1778,10 +1778,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 letterSpacing: "0",
                                 wordSpacing: "normal",
                                 display: "block",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                maxWidth: "100%",
+                                whiteSpace: "normal",
+                                overflow: "visible",
+                                wordBreak: "break-word",
+                                lineHeight: "1.25",
                               }}
                             >
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
