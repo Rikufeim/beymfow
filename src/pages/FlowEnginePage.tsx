@@ -1619,6 +1619,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         height: widget.height,
                         boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.5)",
                         overflow: "visible",
+                        writingMode: "horizontal-tb",
+                        textOrientation: "mixed",
                       }}
                       onMouseDown={(e) => {
                         // Don't start dragging if clicking on handle
@@ -1761,10 +1763,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <Icon size={16} />
                           </div>
 
-                          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                          <div
+                            className="flex flex-col min-w-0 flex-1 overflow-hidden"
+                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                          >
                             <span
                               className="text-sm font-semibold text-neutral-200 leading-tight font-sans whitespace-normal break-words"
-                              style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                              style={{
+                                writingMode: "horizontal-tb",
+                                textOrientation: "mixed",
+                                letterSpacing: "normal",
+                              }}
                             >
                               {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                             </span>
@@ -1772,7 +1781,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             {widget.subtitle && (
                               <span
                                 className="text-[10px] text-neutral-400 mt-0.5 font-sans whitespace-normal break-words"
-                                style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                                style={{
+                                  writingMode: "horizontal-tb",
+                                  textOrientation: "mixed",
+                                  letterSpacing: "normal",
+                                }}
                               >
                                 {widget.subtitle}
                               </span>
@@ -1929,8 +1942,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       {/* Content */}
                       <div className="flex-1 bg-[#121214] flex flex-col relative" style={{ overflow: "visible" }}>
                         {widget.type === "prompt" && (
-                          <div className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar">
-                            <pre className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed">
+                          <div
+                            className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
+                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                          >
+                            <pre
+                              className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
+                              style={{
+                                writingMode: "horizontal-tb",
+                                textOrientation: "mixed",
+                                letterSpacing: "normal",
+                              }}
+                            >
                               {widget.content}
                             </pre>
                           </div>
@@ -1939,6 +1962,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         {widget.type === "category" && (
                           <textarea
                             className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
+                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed", letterSpacing: "normal" }}
                             value={widget.content}
                             onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                             placeholder={widget.placeholder}
@@ -1949,12 +1973,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         {widget.type.startsWith("flow-") && (
                           <div
                             className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
-                            style={{ writingMode: "horizontal-tb" }}
+                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
                           >
                             {widget.id === "flow-input-idea" ? (
                               <textarea
                                 className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
-                                style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                                style={{
+                                  writingMode: "horizontal-tb",
+                                  textOrientation: "mixed",
+                                  letterSpacing: "normal",
+                                }}
                                 value={widget.content || ""}
                                 onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                                 placeholder={widget.placeholder}
@@ -1963,7 +1991,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             ) : (
                               <pre
                                 className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
-                                style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
+                                style={{
+                                  writingMode: "horizontal-tb",
+                                  textOrientation: "mixed",
+                                  letterSpacing: "normal",
+                                }}
                               >
                                 {nodeOutputMap[widget.id]?.generatedText ||
                                   widget.content ||
