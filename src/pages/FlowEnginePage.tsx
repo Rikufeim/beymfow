@@ -1720,44 +1720,47 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       )}
 
                       {/* Output Handle (Right) - Inside card, visible */}
-                      {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
-                        <div
-                          className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
-                          style={{
-                            right: "-4.5px",
-                            pointerEvents: "auto",
-                            zIndex: 1000,
-                          }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            handleHandleMouseDown(e, widget.id, "output");
-                          }}
-                          onDoubleClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            // Double-click to disconnect all edges from this handle
-                            setEdges((prev) => {
-                              const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
+                      {widget.type.startsWith("flow-") &&
+                        widget.id !== "flow-text-final" &&
+                        widget.id !== "flow-text-final-app" &&
+                        widget.id !== "flow-text-final-game" && (
+                          <div
+                            className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                            style={{
+                              right: "-4.5px",
+                              pointerEvents: "auto",
+                              zIndex: 1000,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              // Double-click to disconnect all edges from this handle
+                              setEdges((prev) => {
+                                const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
-                              if (edgesToRemove.length > 0) {
-                                setMainPromptState((prevState) => {
-                                  const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
+                                if (edgesToRemove.length > 0) {
+                                  setMainPromptState((prevState) => {
+                                    const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
 
-                                  return {
-                                    sections: newSections,
-                                    combinedPrompt: buildCombinedPrompt(newSections),
-                                  };
-                                });
-                              }
+                                    return {
+                                      sections: newSections,
+                                      combinedPrompt: buildCombinedPrompt(newSections),
+                                    };
+                                  });
+                                }
 
-                              return prev.filter((ed) => ed.source !== widget.id);
-                            });
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          title="Output connection point - drag to connect"
-                        />
-                      )}
+                                return prev.filter((ed) => ed.source !== widget.id);
+                              });
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            title="Output connection point - drag to connect"
+                          />
+                        )}
 
                       {/* Header */}
                       <div className="px-3 py-2.5 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none gap-2">
@@ -1848,75 +1851,80 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             </button>
                           )}
 
-                          {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleGenerateNode(widget.id);
-                                }}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
-                                title="Generate content for this node"
-                              >
-                                <Sparkles size={10} />
-                                <span className="hidden sm:inline">Generate</span>
-                              </button>
+                          {widget.type.startsWith("flow-") &&
+                            widget.id !== "flow-text-final" &&
+                            widget.id !== "flow-text-final-app" &&
+                            widget.id !== "flow-text-final-game" && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGenerateNode(widget.id);
+                                  }}
+                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                                  title="Generate content for this node"
+                                >
+                                  <Sparkles size={10} />
+                                  <span className="hidden sm:inline">Generate</span>
+                                </button>
 
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleIntegrateToMainPrompt(widget.id);
-                                }}
-                                disabled={
-                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
-                                  !nodeOutputMap[widget.id]?.generatedText
-                                }
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
-                                  nodeOutputMap[widget.id]?.integrated
-                                    ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                }`}
-                                title={
-                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges)
-                                    ? "Connect this node to Main Prompt to integrate"
-                                    : "Integrate to Main Prompt"
-                                }
-                              >
-                                {nodeOutputMap[widget.id]?.integrated ? <Check size={10} /> : <Plus size={10} />}
-                                <span className="hidden sm:inline">
-                                  {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
-                                </span>
-                              </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleIntegrateToMainPrompt(widget.id);
+                                  }}
+                                  disabled={
+                                    !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
+                                    !nodeOutputMap[widget.id]?.generatedText
+                                  }
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
+                                    nodeOutputMap[widget.id]?.integrated
+                                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                      : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                  }`}
+                                  title={
+                                    !isConnectedToMain(widget.id, getMainPromptNodeId(), edges)
+                                      ? "Connect this node to Main Prompt to integrate"
+                                      : "Integrate to Main Prompt"
+                                  }
+                                >
+                                  {nodeOutputMap[widget.id]?.integrated ? <Check size={10} /> : <Plus size={10} />}
+                                  <span className="hidden sm:inline">
+                                    {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
+                                  </span>
+                                </button>
 
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteWidget(widget.id);
-                                  // Also delete connected edges and remove from state
-                                  setEdges((prev) =>
-                                    prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
-                                  );
-                                  setNodeOutputMap((prev) => {
-                                    const newMap = { ...prev };
-                                    delete newMap[widget.id];
-                                    return newMap;
-                                  });
-                                  setMainPromptState((prev) => ({
-                                    ...prev,
-                                    sections: prev.sections.filter((s) => s.nodeId !== widget.id),
-                                    combinedPrompt: buildCombinedPrompt(
-                                      prev.sections.filter((s) => s.nodeId !== widget.id),
-                                    ),
-                                  }));
-                                }}
-                                className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
-                              >
-                                <X size={12} />
-                              </button>
-                            </>
-                          )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteWidget(widget.id);
+                                    // Also delete connected edges and remove from state
+                                    setEdges((prev) =>
+                                      prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
+                                    );
+                                    setNodeOutputMap((prev) => {
+                                      const newMap = { ...prev };
+                                      delete newMap[widget.id];
+                                      return newMap;
+                                    });
+                                    setMainPromptState((prev) => ({
+                                      ...prev,
+                                      sections: prev.sections.filter((s) => s.nodeId !== widget.id),
+                                      combinedPrompt: buildCombinedPrompt(
+                                        prev.sections.filter((s) => s.nodeId !== widget.id),
+                                      ),
+                                    }));
+                                  }}
+                                  className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </>
+                            )}
 
-                          {widget.id === "flow-text-final" && (
+                          {(widget.id === "flow-text-final" ||
+                            widget.id === "flow-text-final-app" ||
+                            widget.id === "flow-text-final-game") && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
