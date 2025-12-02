@@ -263,8 +263,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Drawer State
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    domain: true,
-    general: true,
+    domain: false,
+    general: false,
     flows: false,
   });
 
@@ -1505,20 +1505,25 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Scales smoothly with zoom */}
+              {/* Background Grid - Scales smoothly with zoom, better quality */}
               <div
-                className="absolute pointer-events-none opacity-20 transition-opacity duration-200"
+                className="absolute pointer-events-none transition-opacity duration-300"
                 style={{
-                  backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
                   // Scale background size inversely with zoom to keep grid dots visually consistent
                   backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
                   backgroundRepeat: "repeat",
+                  // Dynamic opacity based on zoom level - more visible when zoomed out
+                  // When scale is small (zoomed out), opacity is higher
+                  // When scale is large (zoomed in), opacity is lower
+                  opacity: Math.min(0.4, Math.max(0.15, 0.4 - (canvasTransform.scale - 0.5) * 0.15)),
                   // Use inset to ensure background always covers viewport
                   inset: "-500000px",
                   // Position and scale background with canvas transform
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
-                  willChange: "transform, background-size",
+                  willChange: "transform, background-size, opacity",
+                  imageRendering: "crisp-edges",
                 }}
               />
 
@@ -2118,26 +2123,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
                                 >
                                   <div
-                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800`}
+                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800 flex-shrink-0`}
                                   >
                                     <cat.icon size={14} />
                                   </div>
 
-                                  <div className="flex-1">
-                                    <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                                      {cat.name}
-                                    </span>
-
-                                    {cat.description && (
-                                      <span className="block text-[10px] text-neutral-500 truncate">
-                                        {cat.description}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-medium text-neutral-300 group-hover:text-white whitespace-nowrap flex-shrink-0">
+                                        {cat.name}
                                       </span>
-                                    )}
+                                      {cat.description && (
+                                        <span className="text-[10px] text-neutral-500 truncate flex-1 min-w-0">
+                                          {cat.description}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
 
                                   <Plus
                                     size={12}
-                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                   />
                                 </button>
                               ))}
@@ -2177,26 +2183,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
                                 >
                                   <div
-                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800`}
+                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800 flex-shrink-0`}
                                   >
                                     <cat.icon size={14} />
                                   </div>
 
-                                  <div className="flex-1">
-                                    <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                                      {cat.name}
-                                    </span>
-
-                                    {cat.description && (
-                                      <span className="block text-[10px] text-neutral-500 truncate">
-                                        {cat.description}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-medium text-neutral-300 group-hover:text-white whitespace-nowrap flex-shrink-0">
+                                        {cat.name}
                                       </span>
-                                    )}
+                                      {cat.description && (
+                                        <span className="text-[10px] text-neutral-500 truncate flex-1 min-w-0">
+                                          {cat.description}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
 
                                   <Plus
                                     size={12}
-                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                                   />
                                 </button>
                               ))}
