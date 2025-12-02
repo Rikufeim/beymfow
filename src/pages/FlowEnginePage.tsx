@@ -1475,10 +1475,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 relative w-full h-full flex flex-col bg-[#09090b]"
+            className="flex-1 relative w-full h-full flex flex-col bg-neutral-900"
           >
             {/* Top Bar - Flowise Style */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-[#09090b] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
+            <div className="absolute top-0 left-0 right-0 h-14 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-30">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
                   onClick={() => setViewMode("landing")}
@@ -1617,7 +1617,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {/* Canvas */}
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-900"
               style={{ marginTop: "56px" }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
