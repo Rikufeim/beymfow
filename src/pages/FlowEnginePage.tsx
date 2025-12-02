@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
+import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
+
 import {
   ArrowRight,
   Copy,
@@ -1617,29 +1619,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {/* Canvas */}
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-900"
+              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
               style={{ marginTop: "56px" }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - High quality, scales smoothly with zoom */}
-              <div
-                className="absolute pointer-events-none"
-                style={{
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-                  // Scale background size inversely with zoom to keep grid dots visually consistent
-                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
-                  backgroundRepeat: "repeat",
-                  // Dynamic opacity based on zoom level - more visible when zoomed out
-                  opacity: Math.min(0.3, Math.max(0.15, 0.3 - (canvasTransform.scale - 0.5) * 0.1)),
-                  // Use inset to ensure background always covers viewport
-                  inset: "-500000px",
-                  // Position and scale background with canvas transform
-                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-                  transformOrigin: "0 0",
-                  willChange: "transform, background-size, opacity",
-                }}
+              {/* Dotted Glow Background */}
+              <DottedGlowBackground
+                className="absolute inset-0"
+                color="rgba(100, 116, 139, 0.4)"
+                glowColor="rgba(100, 116, 139, 0.6)"
+                gap={32}
+                radius={1.5}
+                opacity={0.3}
+                speedMin={0.5}
+                speedMax={1.5}
               />
 
               {/* Edges Container with Transform */}
