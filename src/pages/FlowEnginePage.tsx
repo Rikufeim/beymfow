@@ -12,7 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
-import { NodeAnchor } from "../components/NodeAnchor";
+import { NodeAnchor } from "@/components/NodeAnchor";
 
 import {
   ArrowRight,
