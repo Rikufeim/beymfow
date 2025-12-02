@@ -268,6 +268,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     flows: false,
   });
 
+  // Settings State
+  const [showSettings, setShowSettings] = useState(false);
+
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // --- Shared State for Node Data Flow ---
@@ -1474,28 +1477,137 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             animate={{ opacity: 1 }}
             className="flex-1 relative w-full h-full flex flex-col bg-[#09090b]"
           >
-            {/* Top Bar */}
-            <div className="absolute top-4 left-4 right-4 flex justify-between z-30 pointer-events-none">
-              <button
-                onClick={() => setViewMode("landing")}
-                className="pointer-events-auto h-10 px-4 rounded-lg bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white flex items-center gap-2 transition-all shadow-lg cursor-pointer font-sans"
-              >
-                <ArrowLeft size={18} />
-                <span className="text-sm font-medium">Back</span>
-              </button>
+            {/* Top Bar - Flowise Style */}
+            <div className="absolute top-0 left-0 right-0 h-14 bg-[#0a0a0a] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setViewMode("landing")}
+                  className="h-8 px-3 rounded-md bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer font-sans text-sm"
+                >
+                  <ArrowLeft size={16} />
+                  <span>Back</span>
+                </button>
+              </div>
 
-              <div className="flex items-center gap-2 pointer-events-auto">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowCategories(!showCategories)}
-                  className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+                  className={`h-8 w-8 rounded-md border border-neutral-800 flex items-center justify-center transition-all cursor-pointer ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
                 >
                   <Plus
-                    size={20}
+                    size={16}
                     className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
                   />
                 </button>
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className={`h-8 w-8 rounded-md border border-neutral-800 flex items-center justify-center transition-all cursor-pointer ${showSettings ? "bg-neutral-800 text-white" : "bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+                >
+                  <Settings size={16} />
+                </button>
               </div>
             </div>
+
+            {/* Settings Dropdown */}
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-14 right-4 w-64 bg-[#121214] border border-neutral-800 rounded-lg shadow-2xl z-40 overflow-hidden"
+                >
+                  <div className="p-3">
+                    <h3 className="text-sm font-semibold text-white mb-3 px-2">Settings</h3>
+                    <div className="space-y-1">
+                      <label className="block">
+                        <input
+                          type="file"
+                          accept=".json"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                try {
+                                  const data = JSON.parse(event.target?.result as string);
+                                  if (data.widgets && data.edges) {
+                                    setWidgets(data.widgets);
+                                    setEdges(data.edges);
+                                    if (data.nodeOutputMap) {
+                                      setNodeOutputMap(data.nodeOutputMap);
+                                    }
+                                    if (data.mainPromptState) {
+                                      setMainPromptState(data.mainPromptState);
+                                    }
+                                    if (data.canvasTransform) {
+                                      setCanvasTransform(data.canvasTransform);
+                                    }
+                                    setShowSettings(false);
+                                  } else {
+                                    alert("Invalid flow file format");
+                                  }
+                                } catch (error) {
+                                  alert("Error loading flow file");
+                                  console.error(error);
+                                }
+                              };
+                              reader.readAsText(file);
+                            }
+                            // Reset input
+                            e.target.value = "";
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            const input = document.createElement("input");
+                            input.type = "file";
+                            input.accept = ".json";
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  try {
+                                    const data = JSON.parse(event.target?.result as string);
+                                    if (data.widgets && data.edges) {
+                                      setWidgets(data.widgets);
+                                      setEdges(data.edges);
+                                      if (data.nodeOutputMap) {
+                                        setNodeOutputMap(data.nodeOutputMap);
+                                      }
+                                      if (data.mainPromptState) {
+                                        setMainPromptState(data.mainPromptState);
+                                      }
+                                      if (data.canvasTransform) {
+                                        setCanvasTransform(data.canvasTransform);
+                                      }
+                                      setShowSettings(false);
+                                    } else {
+                                      alert("Invalid flow file format");
+                                    }
+                                  } catch (error) {
+                                    alert("Error loading flow file");
+                                    console.error(error);
+                                  }
+                                };
+                                reader.readAsText(file);
+                              }
+                            };
+                            input.click();
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md transition-colors flex items-center gap-2"
+                        >
+                          <Upload size={14} />
+                          Load Flow
+                        </button>
+                      </label>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Canvas */}
             <div
@@ -1505,25 +1617,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Scales smoothly with zoom, better quality */}
+              {/* Background Grid - High quality, scales smoothly with zoom */}
               <div
-                className="absolute pointer-events-none transition-opacity duration-300"
+                className="absolute pointer-events-none"
                 style={{
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)",
                   // Scale background size inversely with zoom to keep grid dots visually consistent
-                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
+                  backgroundSize: `${20 / canvasTransform.scale}px ${20 / canvasTransform.scale}px`,
                   backgroundRepeat: "repeat",
                   // Dynamic opacity based on zoom level - more visible when zoomed out
-                  // When scale is small (zoomed out), opacity is higher
-                  // When scale is large (zoomed in), opacity is lower
-                  opacity: Math.min(0.4, Math.max(0.15, 0.4 - (canvasTransform.scale - 0.5) * 0.15)),
+                  opacity: Math.min(0.35, Math.max(0.2, 0.35 - (canvasTransform.scale - 0.5) * 0.12)),
                   // Use inset to ensure background always covers viewport
                   inset: "-500000px",
                   // Position and scale background with canvas transform
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                   willChange: "transform, background-size, opacity",
-                  imageRendering: "crisp-edges",
                 }}
               />
 
