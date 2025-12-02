@@ -1,11 +1,12 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
 
+// --- TYPES ---
 type InfoCard = {
   question: string;
   answer: string;
 };
 
+// --- DATA ---
 const infoCards: InfoCard[] = [
   {
     question: "WHAT IS BEYMFLOW?",
@@ -34,37 +35,59 @@ const infoCards: InfoCard[] = [
   },
 ];
 
-// Erotetaan kortti omaksi komponentikseen
-const FlowCard = ({ card, index }: { card: InfoCard; index: number }) => {
+// --- COMPONENTS ---
+
+// 1. FlowCard Component
+const FlowCard = ({ card, index, isActive }: { card: InfoCard; index: number; isActive: boolean }) => {
   const isEven = index % 2 === 0;
 
   return (
     <div
-      className={`relative flex w-full items-center justify-center md:justify-between ${isEven ? "md:flex-row" : "md:flex-row-reverse"}`}
+      className={`relative flex w-full items-center justify-center md:justify-between ${
+        isEven ? "md:flex-row" : "md:flex-row-reverse"
+      }`}
     >
-      {/* Tyhjä tila toisella puolella desktopissa tasapainottamaan layoutia */}
+      {/* Empty space for desktop layout balance */}
       <div className="hidden w-5/12 md:block" />
 
-      {/* Keskiviivan pallo (Timeline node) - GLOW POISTETTU, NYT YKSINKERTAINEN */}
-      <div className="absolute left-1/2 z-20 hidden h-4 w-4 -translate-x-1/2 transform items-center justify-center rounded-full border border-cyan-500 bg-black md:flex">
-        <div className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+      {/* Center Timeline Node */}
+      <div className="absolute left-1/2 z-20 flex -translate-x-1/2 transform items-center justify-center">
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-full border-2 bg-black transition-all duration-500 ${
+            isActive ? "border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] scale-110" : "border-white/10 opacity-70"
+          }`}
+        >
+          <span
+            className={`text-sm font-bold transition-colors duration-500 ${
+              isActive ? "text-cyan-300" : "text-gray-500"
+            }`}
+          >
+            0{index + 1}
+          </span>
+        </div>
       </div>
 
-      {/* Itse kortti */}
+      {/* Content Card */}
       <div className="group relative w-full md:w-5/12">
-        {/* Kortin container - GLOW BLOBIT POISTETTU SISÄLTÄ */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20">
+        <div
+          className={`relative overflow-hidden rounded-3xl border p-8 text-left backdrop-blur-xl transition-all duration-500 ${
+            isActive ? "border-cyan-500/30 bg-white/10 translate-y-0" : "border-white/10 bg-white/5 md:opacity-60"
+          }`}
+        >
           <div className="relative z-10 flex flex-col gap-4">
             <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-              {/* Numero pallura */}
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/5 text-sm font-bold text-cyan-300 ring-1 ring-white/10 backdrop-blur-md">
+              {/* Mobile Index Indicator */}
+              <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-cyan-300 ring-1 ring-white/10">
                 0{index + 1}
               </span>
-              {/* Otsikko */}
-              <h3 className="text-lg font-bold uppercase tracking-widest text-white">{card.question}</h3>
+
+              <h3
+                className={`text-lg font-bold uppercase tracking-widest transition-colors duration-300 ${isActive ? "text-white" : "text-gray-300"}`}
+              >
+                {card.question}
+              </h3>
             </div>
 
-            {/* Leipäteksti */}
             <p className="text-base leading-relaxed text-gray-300/90">{card.answer}</p>
           </div>
         </div>
@@ -73,60 +96,95 @@ const FlowCard = ({ card, index }: { card: InfoCard; index: number }) => {
   );
 };
 
-const About = () => {
-  const navigate = useNavigate();
+// 2. About Page Component
+const About = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Scroll Progress Logic
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const { top, height } = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Start drawing when the top of the section is somewhat visible (offset for visual appeal)
+      const startOffset = windowHeight / 1.8;
+
+      const dist = startOffset - top;
+      let percentage = (dist / height) * 100;
+
+      // Clamp between 0-100%
+      percentage = Math.max(0, Math.min(100, percentage));
+
+      requestAnimationFrame(() => {
+        setScrollProgress(percentage);
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-cyan-500/30 selection:text-cyan-100">
-
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center pt-20">
-          {/* GLOW POISTETTU TAUSTALTA */}
-
+        <section className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center pt-20 pb-10">
           <div className="relative mb-8 z-10">
             <h1 className="relative text-6xl font-extrabold tracking-tighter sm:text-7xl md:text-9xl text-white drop-shadow-2xl">
               The Future
               <br />
-              {/* pr-4 (padding-right) estää w-kirjaimen leikkautumisen */}
               <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent pr-4 pb-2">
                 in Flow
               </span>
             </h1>
           </div>
 
-          <p className="max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed z-10">
-            Where ideas evolve into systems and systems{" "}
-            <span className="text-white font-semibold border-b border-cyan-500/50 pb-0.5">Beymflow</span> results.
-          </p>
-
-          {/* SCROLL TEKSTI JA ANIMAATIO POISTETTU TÄSTÄ */}
+          <p className="max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed z-10">Where ideas evolve.</p>
         </section>
 
         {/* Timeline Section */}
-        <section className="relative px-4 py-24 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            {/* Keskiviiva */}
-            <div className="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
+        <section className="relative px-4 py-12 sm:px-6 lg:px-8" ref={containerRef}>
+          <div className="mx-auto max-w-6xl relative">
+            {/* --- LINE CONTAINER --- */}
+            {/* Muutos: bottom-64 (256px), jotta viiva loppuu suurinpiirtein viimeisen ympyrän kohdalle */}
+            <div className="absolute left-1/2 top-0 bottom-64 hidden w-px -translate-x-1/2 md:block">
+              {/* Background Line (Gray) */}
+              <div className="h-full w-full bg-white/10" />
 
-            <div className="flex flex-col gap-24 md:gap-32 pb-32">
-              {infoCards.map((card, index) => (
-                <FlowCard key={card.question} card={card} index={index} />
-              ))}
+              {/* Active Progress Line (Gradient) */}
+              <div
+                className="absolute top-0 w-full bg-gradient-to-b from-cyan-400 via-blue-500 to-purple-600 shadow-[0_0_10px_rgba(34,211,238,0.8)] transition-[height] duration-75 ease-linear"
+                style={{ height: `${scrollProgress}%` }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-24 md:gap-32 pb-32 pt-10">
+              {infoCards.map((card, index) => {
+                // Calculate threshold for card activation
+                const cardThreshold = (index / (infoCards.length - 0.5)) * 100;
+                const isCardActive = scrollProgress > cardThreshold;
+
+                return <FlowCard key={card.question} card={card} index={index} isActive={isCardActive} />;
+              })}
             </div>
           </div>
         </section>
 
         {/* Footer CTA Area */}
-        <section className="py-32 text-center relative overflow-hidden">
+        <section className="pt-0 pb-32 text-center relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-4xl font-bold mb-8 text-white">Ready to find your flow?</h2>
+            <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
             <button
-              onClick={() => navigate("/")}
+              onClick={onNavigateHome}
               className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white bg-white/5 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
               <span className="relative flex items-center gap-2">
-                Launch Beymflow
+                Start creating
                 <svg
                   className="w-5 h-5 transition-transform group-hover:translate-x-1"
                   fill="none"
@@ -144,4 +202,29 @@ const About = () => {
   );
 };
 
-export default About;
+// 3. Main App Component (Handles Navigation State)
+const App = () => {
+  const [view, setView] = useState<"about" | "home">("about");
+
+  // Simple view switching instead of Router
+  if (view === "home") {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-black text-white p-4 text-center">
+        <h1 className="mb-4 text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
+          Home Page
+        </h1>
+        <p className="mb-8 text-gray-400">This is a placeholder for the home page.</p>
+        <button
+          onClick={() => setView("about")}
+          className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-8 py-3 text-cyan-300 hover:bg-cyan-500/20 transition-all"
+        >
+          View About Page
+        </button>
+      </div>
+    );
+  }
+
+  return <About onNavigateHome={() => setView("home")} />;
+};
+
+export default App;
