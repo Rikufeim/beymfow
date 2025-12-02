@@ -1,8 +1,9 @@
-// Zoom + background sync & grid restore for Beymflow workspace
+// Full-screen grid background fix for Beymflow workspace
 // Single source of truth: canvasTransform state controls both node transforms and background grid
 // Background grid uses the same translate/scale transform as nodes for perfect synchronization
 // Fixed zoom range: 0.25 to 2.0 (Flowise-like range)
-// Background grid: CSS-based repeating-radial-gradient pattern, always visible, covers full viewport
+// Background grid: CSS-based radial-gradient pattern, always visible, covers full viewport
+// Grid uses large fixed size (200000px) positioned to cover entire workspace at all zoom/pan levels
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
 
 import React, { useState, useRef, useEffect } from "react";
@@ -1627,27 +1628,38 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               )}
             </AnimatePresence>
 
-            {/* Canvas */}
+            {/* Canvas - Full viewport workspace container */}
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-900"
-              style={{ marginTop: "56px" }}
+              style={{
+                marginTop: "56px",
+                width: "100%",
+                height: "100%",
+                position: "relative",
+              }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Always visible, synced with canvas transform */}
+              {/* Background Grid - Always visible, full-screen coverage, synced with canvas transform */}
               {/* 
                 Grid implementation: CSS radial-gradient pattern creating dot grid
                 Alignment: Uses same transform (translate + scale) as nodes for perfect sync
-                Coverage: Full viewport (inset: 0) with background-size spacing for grid dots
+                Coverage: Very large fixed size (1000000px x 1000000px) positioned to cover entire viewport at all zoom/pan levels
                 Visibility: Always rendered, never conditionally hidden, z-index: 0 (behind content)
+                The large size ensures grid is always visible even when zoomed out to 0.25x and panned far
               */}
               <div
                 className="absolute pointer-events-none"
                 style={{
-                  // Full viewport coverage
-                  inset: 0,
+                  // Very large fixed size to cover entire workspace at all zoom/pan levels
+                  // Positioned to cover a massive area: from -500000 to +500000 in canvas coordinates
+                  // This ensures grid is always visible even when zoomed out to 0.25x and panned far
+                  left: "-500000px",
+                  top: "-500000px",
+                  width: "1000000px",
+                  height: "1000000px",
                   zIndex: 0,
                   // Dark gray base (neutral-900)
                   backgroundColor: "#171717",
@@ -1659,6 +1671,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
+                  // The large size ensures background always covers viewport even when transformed
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                   willChange: "transform",
