@@ -1663,20 +1663,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   zIndex: 0,
                   // Dark gray base (neutral-900) - professional workspace background
                   backgroundColor: "#171717",
-                  // High-quality professional grid pattern - crisp and clear
-                  // Optimized contrast and sharp rendering for excellent visibility
+                  // High-quality professional grid pattern - Flowise-style
+                  // Combines subtle grid lines with refined dot pattern for sophisticated appearance
                   backgroundImage: `
-                    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                    radial-gradient(circle, rgba(255, 255, 255, 0.25) 2px, transparent 2px)
+                    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                    radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
                   `,
-                  // Grid spacing: 20px for optimal clarity and professional appearance
-                  // Sharp grid lines with clear, prominent dots for excellent visibility
-                  backgroundSize: "20px 20px, 20px 20px, 20px 20px",
+                  // Grid spacing: 24px for clean, professional appearance
+                  // Primary dots at 24px spacing with subtle grid lines for structure
+                  backgroundSize: "24px 24px, 24px 24px, 24px 24px",
                   backgroundPosition: "0 0, 0 0, 0 0",
                   backgroundRepeat: "repeat, repeat, repeat",
-                  // Ensure crisp rendering with image-rendering optimization
-                  imageRendering: "crisp-edges",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
                   // The large size ensures background always covers viewport even when transformed
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
