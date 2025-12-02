@@ -12,8 +12,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
-import { NodeAnchor } from "../components/NodeAnchor";
-
 import {
   ArrowRight,
   Copy,
@@ -486,7 +484,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
       .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
       
-      /* Legacy flow-handle styles for backward compatibility */
       .flow-handle {
         width: 9px;
         height: 9px;
@@ -512,26 +509,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       
       .flow-handle-target {
         background: rgba(255, 255, 255, 0.85);
-      }
-      
-      /* NodeAnchor styles - ensures anchors stay visible at all zoom levels */
-      .node-anchor {
-        /* Anchors will scale with parent but maintain minimum visibility */
-        will-change: transform, background-color, border-color;
-        /* Ensure good visibility even when zoomed out */
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-      }
-      
-      /* Enhanced visibility for anchors at all zoom levels */
-      .widget-container .node-anchor {
-        /* Maintain consistent styling */
-        display: block;
-        flex-shrink: 0;
-      }
-      
-      /* Ensure anchors are always interactive */
-      .node-anchor:hover {
-        z-index: 1001 !important;
       }
     `;
     document.head.appendChild(style);
@@ -1422,7 +1399,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Cancel connection if clicking on canvas (but not on handles or widgets)
     const target = e.target as HTMLElement;
-    if (connecting && !target.closest(".node-anchor, .widget-container")) {
+    if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
   };
@@ -1437,8 +1414,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (!widget) return { x: 0, y: 0 };
 
     const handleY = widget.y + widget.height / 2; // Center vertically
-    // Anchors are positioned at -5px from edge (half of 10px anchor width)
-    const handleX = handleType === "input" ? widget.x - 5 : widget.x + widget.width + 5;
+    // Handles are positioned at -4.5px from edge (half of 9px handle width)
+    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
     return { x: handleX, y: handleY };
   };
@@ -1809,94 +1786,120 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         textOrientation: "mixed",
                       }}
                       onMouseDown={(e) => {
-                        // Don't start dragging if clicking on anchor
-                        if (!(e.target as HTMLElement).closest(".node-anchor")) {
+                        // Don't start dragging if clicking on handle
+                        if (!(e.target as HTMLElement).closest(".flow-handle")) {
                           handleMouseDown(e, widget.id, "move");
                         }
                       }}
                     >
-                      {/* Input Anchor (Left) - Automatically included on ALL nodes */}
-                      <NodeAnchor
-                        type="input"
-                        nodeId={widget.id}
-                        onMouseDown={handleHandleMouseDown}
-                        onDoubleClick={(e) => {
-                          // Double-click to disconnect all edges from this anchor
-                          setEdges((prev) => {
-                            const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
+                      {/* Input Handle (Left) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") && (
+                        <div
+                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
+                          style={{
+                            left: "-4.5px",
+                            pointerEvents: "auto",
+                            zIndex: 1000,
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleHandleMouseDown(e, widget.id, "input");
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // Double-click to disconnect all edges from this handle
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
 
-                            if (edgesToRemove.length > 0) {
-                              const sourceIds = edgesToRemove.map((ed) => ed.source);
+                              if (edgesToRemove.length > 0) {
+                                const sourceIds = edgesToRemove.map((ed) => ed.source);
 
-                              setMainPromptState((prevState) => {
-                                const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
 
-                                return {
-                                  sections: newSections,
-                                  combinedPrompt: buildCombinedPrompt(newSections),
-                                };
+                                  return {
+                                    sections: newSections,
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
+
+                              return prev.filter((ed) => ed.target !== widget.id);
+                            });
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
+
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
                               });
+
+                              setConnecting(null);
+                              setDraggingHandle(null);
                             }
+                          }}
+                          onMouseUp={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active (when releasing mouse)
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
 
-                            return prev.filter((ed) => ed.target !== widget.id);
-                          });
-                        }}
-                        onClick={(e) => {
-                          // Complete connection if connecting is active
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
+                              });
 
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
+                              setConnecting(null);
+                              setDraggingHandle(null);
+                            }
+                          }}
+                          title="Input connection point - drag to connect"
+                        />
+                      )}
 
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                        onMouseUp={(e) => {
-                          // Complete connection if connecting is active (when releasing mouse)
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
-
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
-
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                      />
-
-                      {/* Output Anchor (Right) - Automatically included on ALL nodes (except final nodes) */}
-                      {widget.id !== "flow-text-final" &&
+                      {/* Output Handle (Right) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") &&
+                        widget.id !== "flow-text-final" &&
                         widget.id !== "flow-text-final-app" &&
                         widget.id !== "flow-text-final-game" && (
-                          <NodeAnchor
-                            type="output"
-                            nodeId={widget.id}
-                            onMouseDown={handleHandleMouseDown}
+                          <div
+                            className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                            style={{
+                              right: "-4.5px",
+                              pointerEvents: "auto",
+                              zIndex: 1000,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
                             onDoubleClick={(e) => {
-                              // Double-click to disconnect all edges from this anchor
+                              e.stopPropagation();
+                              e.preventDefault();
+                              // Double-click to disconnect all edges from this handle
                               setEdges((prev) => {
                                 const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
@@ -1914,6 +1917,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 return prev.filter((ed) => ed.source !== widget.id);
                               });
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            title="Output connection point - drag to connect"
                           />
                         )}
 
