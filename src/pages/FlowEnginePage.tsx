@@ -1628,13 +1628,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               {/* Dotted Glow Background */}
               <DottedGlowBackground
                 className="absolute inset-0"
-                color="rgba(100, 116, 139, 0.4)"
-                glowColor="rgba(100, 116, 139, 0.6)"
-                gap={32}
-                radius={1.5}
-                opacity={0.3}
-                speedMin={0.5}
-                speedMax={1.5}
+                gap={22}
+                radius={1.6}
+                opacity={0.6}
+                backgroundOpacity={0.85}
+                color="rgba(75, 85, 99, 0.7)"
+                glowColor="rgba(94, 234, 212, 0.8)"
+                darkColor="rgba(75, 85, 99, 0.7)"
+                darkGlowColor="rgba(94, 234, 212, 0.8)"
+                speedMin={0.4}
+                speedMax={1.2}
+                speedScale={1.1}
               />
 
               {/* Edges Container with Transform */}
