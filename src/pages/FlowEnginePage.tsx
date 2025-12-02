@@ -1661,15 +1661,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   width: "1000000px",
                   height: "1000000px",
                   zIndex: 0,
-                  // Dark gray base (neutral-900)
+                  // Dark gray base (neutral-900) - professional workspace background
                   backgroundColor: "#171717",
-                  // CSS-based dotted grid pattern - creates subtle light gray dots on dark background
-                  // Each dot is 1px, spaced 24px apart (Flowise-style)
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                  // Background size controls dot spacing - 24px spacing between dots
-                  // The transform scale will visually scale the grid, keeping dots consistent
-                  backgroundSize: "24px 24px",
-                  backgroundRepeat: "repeat",
+                  // High-quality professional grid pattern - Flowise-style
+                  // Combines subtle grid lines with refined dot pattern for sophisticated appearance
+                  backgroundImage: `
+                    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                    radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+                  `,
+                  // Grid spacing: 24px for clean, professional appearance
+                  // Primary dots at 24px spacing with subtle grid lines for structure
+                  backgroundSize: "24px 24px, 24px 24px, 24px 24px",
+                  backgroundPosition: "0 0, 0 0, 0 0",
+                  backgroundRepeat: "repeat, repeat, repeat",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
                   // The large size ensures background always covers viewport even when transformed
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
