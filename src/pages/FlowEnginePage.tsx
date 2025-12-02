@@ -1491,15 +1491,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowCategories(!showCategories)}
-                  className={`h-8 w-8 rounded-md border border-neutral-800 flex items-center justify-center transition-all cursor-pointer ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
-                >
-                  <Plus
-                    size={16}
-                    className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
-                  />
-                </button>
-                <button
                   onClick={() => setShowSettings(!showSettings)}
                   className={`h-8 w-8 rounded-md border border-neutral-800 flex items-center justify-center transition-all cursor-pointer ${showSettings ? "bg-neutral-800 text-white" : "bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
                 >
@@ -1609,10 +1600,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               )}
             </AnimatePresence>
 
+            {/* Plus Button - Canvas Area */}
+            <div className="absolute top-16 right-4 z-30 pointer-events-none">
+              <button
+                onClick={() => setShowCategories(!showCategories)}
+                className={`pointer-events-auto h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+              >
+                <Plus
+                  size={20}
+                  className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
+                />
+              </button>
+            </div>
+
             {/* Canvas */}
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              style={{ marginTop: "56px" }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
