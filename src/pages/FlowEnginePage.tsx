@@ -1490,7 +1490,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                 {/* Project Name - Static */}
                 <div className="flex items-center min-w-0 flex-1">
-                  <span className="text-sm font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
+                  <span className="text-base font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
                 </div>
               </div>
 
