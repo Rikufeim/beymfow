@@ -12,8 +12,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
-import { NodeAnchor } from "@/components/NodeAnchor";
-
 import {
   ArrowRight,
   Copy,
@@ -54,9 +52,6 @@ import {
   Bot,
   Save,
   Link2,
-  Minus,
-  Lock,
-  Sun,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
@@ -284,10 +279,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
 
-  // Control Panel State
-  const [widgetsLocked, setWidgetsLocked] = useState(false);
-  const [backgroundVisible, setBackgroundVisible] = useState(true);
-
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // --- Shared State for Node Data Flow ---
@@ -493,7 +484,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
       .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
       
-      /* Legacy flow-handle styles for backward compatibility */
       .flow-handle {
         width: 9px;
         height: 9px;
@@ -519,26 +509,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       
       .flow-handle-target {
         background: rgba(255, 255, 255, 0.85);
-      }
-      
-      /* NodeAnchor styles - ensures anchors stay visible at all zoom levels */
-      .node-anchor {
-        /* Anchors will scale with parent but maintain minimum visibility */
-        will-change: transform, background-color, border-color;
-        /* Ensure good visibility even when zoomed out */
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-      }
-      
-      /* Enhanced visibility for anchors at all zoom levels */
-      .widget-container .node-anchor {
-        /* Maintain consistent styling */
-        display: block;
-        flex-shrink: 0;
-      }
-      
-      /* Ensure anchors are always interactive */
-      .node-anchor:hover {
-        z-index: 1001 !important;
       }
     `;
     document.head.appendChild(style);
@@ -1214,9 +1184,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
     if ((e.target as HTMLElement).closest("textarea, input, button")) return;
 
-    // Prevent dragging if widgets are locked
-    if (widgetsLocked && action === "move") return;
-
     e.stopPropagation();
 
     const widget = widgets.find((w) => w.id === widgetId);
@@ -1432,7 +1399,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Cancel connection if clicking on canvas (but not on handles or widgets)
     const target = e.target as HTMLElement;
-    if (connecting && !target.closest(".node-anchor, .widget-container")) {
+    if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
   };
@@ -1447,8 +1414,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (!widget) return { x: 0, y: 0 };
 
     const handleY = widget.y + widget.height / 2; // Center vertically
-    // Anchors are positioned at -5px from edge (half of 10px anchor width)
-    const handleX = handleType === "input" ? widget.x - 5 : widget.x + widget.width + 5;
+    // Handles are positioned at -4.5px from edge (half of 9px handle width)
+    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
     return { x: handleX, y: handleY };
   };
@@ -1683,38 +1650,36 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 Visibility: Always rendered, never conditionally hidden, z-index: 0 (behind content)
                 The large size ensures grid is always visible even when zoomed out to 0.25x and panned far
               */}
-              {backgroundVisible && (
-                <div
-                  className="absolute pointer-events-none"
-                  style={{
-                    // Extremely large fixed size to cover entire workspace at all zoom/pan levels
-                    // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
-                    // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
-                    left: "-2000000px",
-                    top: "-2000000px",
-                    width: "4000000px",
-                    height: "4000000px",
-                    zIndex: 0,
-                    // Dark gray base (neutral-900) - professional workspace background
-                    backgroundColor: "#171717",
-                    // Clean dot pattern only - no grid lines, classic canvas style
-                    // Consistent rendering: all dots look identical at all zoom levels
-                    // Using precise pixel values to ensure uniform appearance
-                    backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                    // Fixed spacing: 24px ensures all dots are identical and evenly spaced
-                    // backgroundSize scales with transform, keeping dots uniform
-                    backgroundSize: "24px 24px",
-                    backgroundRepeat: "repeat",
-                    // Ensure consistent rendering quality
-                    imageRendering: "auto",
-                    // Same transform as nodes - single source of truth for zoom/pan synchronization
-                    // The massive size ensures background always covers viewport even when zoomed out far
-                    transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-                    transformOrigin: "0 0",
-                    willChange: "transform",
-                  }}
-                />
-              )}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  // Extremely large fixed size to cover entire workspace at all zoom/pan levels
+                  // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
+                  // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
+                  left: "-2000000px",
+                  top: "-2000000px",
+                  width: "4000000px",
+                  height: "4000000px",
+                  zIndex: 0,
+                  // Dark gray base (neutral-900) - professional workspace background
+                  backgroundColor: "#171717",
+                  // Clean dot pattern only - no grid lines, classic canvas style
+                  // Consistent rendering: all dots look identical at all zoom levels
+                  // Using precise pixel values to ensure uniform appearance
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
+                  // Fixed spacing: 24px ensures all dots are identical and evenly spaced
+                  // backgroundSize scales with transform, keeping dots uniform
+                  backgroundSize: "24px 24px",
+                  backgroundRepeat: "repeat",
+                  // Ensure consistent rendering quality
+                  imageRendering: "auto",
+                  // Same transform as nodes - single source of truth for zoom/pan synchronization
+                  // The massive size ensures background always covers viewport even when zoomed out far
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  willChange: "transform",
+                }}
+              />
 
               {/* Edges Container with Transform */}
               <svg
@@ -1821,94 +1786,120 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         textOrientation: "mixed",
                       }}
                       onMouseDown={(e) => {
-                        // Don't start dragging if clicking on anchor
-                        if (!(e.target as HTMLElement).closest(".node-anchor")) {
+                        // Don't start dragging if clicking on handle
+                        if (!(e.target as HTMLElement).closest(".flow-handle")) {
                           handleMouseDown(e, widget.id, "move");
                         }
                       }}
                     >
-                      {/* Input Anchor (Left) - Automatically included on ALL nodes */}
-                      <NodeAnchor
-                        type="input"
-                        nodeId={widget.id}
-                        onMouseDown={handleHandleMouseDown}
-                        onDoubleClick={(e) => {
-                          // Double-click to disconnect all edges from this anchor
-                          setEdges((prev) => {
-                            const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
+                      {/* Input Handle (Left) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") && (
+                        <div
+                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
+                          style={{
+                            left: "-4.5px",
+                            pointerEvents: "auto",
+                            zIndex: 1000,
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleHandleMouseDown(e, widget.id, "input");
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // Double-click to disconnect all edges from this handle
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
 
-                            if (edgesToRemove.length > 0) {
-                              const sourceIds = edgesToRemove.map((ed) => ed.source);
+                              if (edgesToRemove.length > 0) {
+                                const sourceIds = edgesToRemove.map((ed) => ed.source);
 
-                              setMainPromptState((prevState) => {
-                                const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
 
-                                return {
-                                  sections: newSections,
-                                  combinedPrompt: buildCombinedPrompt(newSections),
-                                };
+                                  return {
+                                    sections: newSections,
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
+
+                              return prev.filter((ed) => ed.target !== widget.id);
+                            });
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
+
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
                               });
+
+                              setConnecting(null);
+                              setDraggingHandle(null);
                             }
+                          }}
+                          onMouseUp={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active (when releasing mouse)
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
 
-                            return prev.filter((ed) => ed.target !== widget.id);
-                          });
-                        }}
-                        onClick={(e) => {
-                          // Complete connection if connecting is active
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
+                              });
 
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
+                              setConnecting(null);
+                              setDraggingHandle(null);
+                            }
+                          }}
+                          title="Input connection point - drag to connect"
+                        />
+                      )}
 
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                        onMouseUp={(e) => {
-                          // Complete connection if connecting is active (when releasing mouse)
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
-
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
-
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                      />
-
-                      {/* Output Anchor (Right) - Automatically included on ALL nodes (except final nodes) */}
-                      {widget.id !== "flow-text-final" &&
+                      {/* Output Handle (Right) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") &&
+                        widget.id !== "flow-text-final" &&
                         widget.id !== "flow-text-final-app" &&
                         widget.id !== "flow-text-final-game" && (
-                          <NodeAnchor
-                            type="output"
-                            nodeId={widget.id}
-                            onMouseDown={handleHandleMouseDown}
+                          <div
+                            className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                            style={{
+                              right: "-4.5px",
+                              pointerEvents: "auto",
+                              zIndex: 1000,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
                             onDoubleClick={(e) => {
-                              // Double-click to disconnect all edges from this anchor
+                              e.stopPropagation();
+                              e.preventDefault();
+                              // Double-click to disconnect all edges from this handle
                               setEdges((prev) => {
                                 const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
@@ -1926,6 +1917,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 return prev.filter((ed) => ed.source !== widget.id);
                               });
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            title="Output connection point - drag to connect"
                           />
                         )}
 
@@ -2176,75 +2169,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     </div>
                   );
                 })}
-              </div>
-
-              {/* Control Panel Banner - Bottom Center */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-                <div className="bg-[#121214] border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg pointer-events-auto">
-                  {/* Zoom Out */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.max(0.25, canvasTransform.scale - 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom out"
-                  >
-                    <Minus size={16} />
-                  </button>
-
-                  {/* Zoom In */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.min(2.0, canvasTransform.scale + 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom in"
-                  >
-                    <Plus size={16} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Lock/Unlock Widgets */}
-                  <button
-                    onClick={() => setWidgetsLocked(!widgetsLocked)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors ${
-                      widgetsLocked ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={widgetsLocked ? "Unlock widgets" : "Lock widgets"}
-                  >
-                    <Lock size={16} className={widgetsLocked ? "fill-current" : ""} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Toggle Background */}
-                  <button
-                    onClick={() => setBackgroundVisible(!backgroundVisible)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors relative ${
-                      !backgroundVisible ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={backgroundVisible ? "Hide background" : "Show background"}
-                  >
-                    <Sun size={16} />
-                    {!backgroundVisible && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-4 h-0.5 bg-amber-400 rotate-45 absolute" />
-                        <div className="w-4 h-0.5 bg-amber-400 -rotate-45 absolute" />
-                      </div>
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
 
