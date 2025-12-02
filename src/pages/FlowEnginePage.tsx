@@ -1520,7 +1520,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-14 right-4 w-64 bg-[#121214] border border-neutral-800 rounded-lg shadow-2xl z-40 overflow-hidden"
+                  className="absolute top-14 right-4 w-64 bg-[#121214] border border-neutral-800 rounded-lg z-40 overflow-hidden"
                 >
                   <div className="p-3">
                     <h3 className="text-sm font-semibold text-white mb-3 px-2">Settings</h3>
@@ -1881,55 +1881,32 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           />
                         )}
 
-                      {/* Header */}
-                      <div className="px-3 py-2.5 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none gap-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
-                          <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
-                            <Icon size={14} />
+                      {/* Title - Above header if needed, otherwise in header */}
+                      <div className="px-2.5 pt-2 pb-1 border-b border-neutral-800 bg-[#121214] cursor-move select-none">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-0.5 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
+                            <Icon size={12} />
                           </div>
-
-                          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-                            <span
-                              className="text-sm font-semibold text-neutral-200 leading-tight font-sans"
-                              style={{
-                                writingMode: "horizontal-tb",
-                                textOrientation: "mixed",
-                                letterSpacing: "0",
-                                wordSpacing: "normal",
-                                display: "block",
-                                whiteSpace: "normal",
-                                overflow: "visible",
-                                wordBreak: "break-word",
-                                lineHeight: "1.25",
-                              }}
-                            >
-                              {widget.type === "category" && widget.category ? widget.category.name : widget.title}
-                            </span>
-
-                            {widget.type === "prompt" && widgets.some((w) => w.type === "category" && w.integrated) && (
-                              <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                Live Syncing
-                              </span>
-                            )}
-
-                            {widget.type.startsWith("flow-") && nodeOutputMap[widget.id]?.generatedText && (
-                              <span className="text-[10px] text-blue-500 flex items-center gap-1 mt-0.5 font-sans">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                Generated
-                              </span>
-                            )}
-
-                            {widget.type.startsWith("flow-") && nodeOutputMap[widget.id]?.integrated && (
-                              <span className="text-[10px] text-green-500 flex items-center gap-1 mt-0.5 font-sans">
-                                <Check size={10} />
-                                Integrated
-                              </span>
-                            )}
-                          </div>
+                          <span
+                            className="text-sm font-semibold text-neutral-200 leading-tight font-sans"
+                            style={{
+                              writingMode: "horizontal-tb",
+                              textOrientation: "mixed",
+                              letterSpacing: "0",
+                              wordSpacing: "normal",
+                              whiteSpace: "nowrap",
+                              overflow: "visible",
+                              flex: "1",
+                            }}
+                          >
+                            {widget.type === "category" && widget.category ? widget.category.name : widget.title}
+                          </span>
                         </div>
+                      </div>
 
-                        <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
+                      {/* Header */}
+                      <div className="px-2.5 py-1.5 border-b border-neutral-800 bg-[#121214] flex items-center justify-end cursor-move select-none gap-1">
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
                           {widget.type === "category" && (
                             <button
                               onClick={(e) => {
@@ -2164,7 +2141,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 320, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
+                  className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
                 >
                   {/* Drawer Header */}
                   <div className="p-4 border-b border-neutral-800 bg-[#121214]">
