@@ -91,34 +91,21 @@ const Index = () => {
                 </motion.div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                  {[
-                    {
-                      icon: <Pen className="h-4 w-4 text-cyan-300" />,
-                      title: "Enter Your Idea",
-                      description: "Simply input your task, goal, or a simple prompt. Our tool works with any type of input to create custom AI instructions."
-                    },
-                    {
-                      icon: <Cpu className="h-4 w-4 text-cyan-300" />,
-                      title: "AI-Powered Enhancements",
-                      description: "Our AI analyzes your input and generates a comprehensive, optimized prompt tailored for various AI models."
-                    },
-                    {
-                      icon: <Share2 className="h-4 w-4 text-purple-300" />,
-                      title: "Usage and Refinement",
-                      description: "You can instantly view the generated prompt. Copy and paste it directly into ChatGPT, Claude, Gemini, or any other AI model."
-                    }
-                  ].map((item, idx) => (
-                    <div key={idx} className="min-h-[11rem]">
+                  {[{
+                  icon: <Pen className="h-4 w-4 text-cyan-300" />,
+                  title: "Enter Your Idea",
+                  description: "Simply input your task, goal, or a simple prompt. Our tool works with any type of input to create custom AI instructions."
+                }, {
+                  icon: <Cpu className="h-4 w-4 text-cyan-300" />,
+                  title: "AI-Powered Enhancements",
+                  description: "Our AI analyzes your input and generates a comprehensive, optimized prompt tailored for various AI models."
+                }, {
+                  icon: <Share2 className="h-4 w-4 text-purple-300" />,
+                  title: "Usage and Refinement",
+                  description: "You can instantly view the generated prompt. Copy and paste it directly into ChatGPT, Claude, Gemini, or any other AI model."
+                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
                       <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
-                        <GlowingEffect
-                          spread={40}
-                          glow
-                          disabled={false}
-                          proximity={64}
-                          inactiveZone={0.01}
-                          borderWidth={2}
-                          className="opacity-70"
-                        />
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                         <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
                           <div className="flex flex-col gap-3">
                             <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
@@ -128,15 +115,14 @@ const Index = () => {
                               <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-white">
                                 {item.title}
                               </h3>
-                              <p className="text-xs sm:text-sm md:text-base leading-relaxed text-white/70">
+                              <p className="text-xs sm:text-sm leading-relaxed text-white/70 md:text-lg">
                                 {item.description}
                               </p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </div>
             </section>
@@ -163,23 +149,29 @@ const Index = () => {
                 </motion.div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[
-                    { number: "01", icon: <Target className="h-4 w-4 text-cyan-300" />, title: "Define Clear Objectives", description: "Start with a clear goal and specific requirements for your prompt" },
-                    { number: "02", icon: <FileText className="h-4 w-4 text-cyan-300" />, title: "Provide Context", description: "Include relevant background information and specific details" },
-                    { number: "03", icon: <Layers className="h-4 w-4 text-purple-300" />, title: "Structure Your Prompt", description: "Organize information logically with clear sections and formatting" },
-                    { number: "04", icon: <Zap className="h-4 w-4 text-purple-300" />, title: "Refine and Test", description: "Iterate and improve your prompt based on the results" }
-                  ].map((item, idx) => (
-                    <div key={idx} className="min-h-[11rem]">
+                  {[{
+                  number: "01",
+                  icon: <Target className="h-4 w-4 text-cyan-300" />,
+                  title: "Define Clear Objectives",
+                  description: "Start with a clear goal and specific requirements for your prompt"
+                }, {
+                  number: "02",
+                  icon: <FileText className="h-4 w-4 text-cyan-300" />,
+                  title: "Provide Context",
+                  description: "Include relevant background information and specific details"
+                }, {
+                  number: "03",
+                  icon: <Layers className="h-4 w-4 text-purple-300" />,
+                  title: "Structure Your Prompt",
+                  description: "Organize information logically with clear sections and formatting"
+                }, {
+                  number: "04",
+                  icon: <Zap className="h-4 w-4 text-purple-300" />,
+                  title: "Refine and Test",
+                  description: "Iterate and improve your prompt based on the results"
+                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
                       <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
-                        <GlowingEffect
-                          spread={40}
-                          glow
-                          disabled={false}
-                          proximity={64}
-                          inactiveZone={0.01}
-                          borderWidth={2}
-                          className="opacity-70"
-                        />
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                         <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
                           <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between">
@@ -192,15 +184,14 @@ const Index = () => {
                               <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white">
                                 {item.title}
                               </h3>
-                              <p className="text-xs md:text-sm leading-relaxed text-white/70">
+                              <p className="text-xs leading-relaxed text-white/70 md:text-lg">
                                 {item.description}
                               </p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </div>
             </section>
@@ -228,29 +219,31 @@ const Index = () => {
                 </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-                  {[
-                    { icon: <Zap className="h-4 w-4 text-blue-400" />, title: "Instant Enhancement", description: "Get immediate improvements to your prompts using advanced AI techniques." },
-                    { icon: <Lightbulb className="h-4 w-4 text-purple-400" />, title: "Smart Analysis", description: "Our system uses sophisticated analysis techniques to understand your prompt context and provide optimal suggestions." },
-                    { icon: <CheckCircle className="h-4 w-4 text-pink-400" />, title: "Precision Results", description: "Get accurate and relevant responses from AI with our enhanced prompts." }
-                  ].map((item, idx) => (
-                    <motion.div 
-                      key={idx}
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 0.6, delay: idx * 0.1 }}
-                      className="min-h-[11rem]"
-                    >
+                  {[{
+                  icon: <Zap className="h-4 w-4 text-blue-400" />,
+                  title: "Instant Enhancement",
+                  description: "Get immediate improvements to your prompts using advanced AI techniques."
+                }, {
+                  icon: <Lightbulb className="h-4 w-4 text-purple-400" />,
+                  title: "Smart Analysis",
+                  description: "Our system uses sophisticated analysis techniques to understand your prompt context and provide optimal suggestions."
+                }, {
+                  icon: <CheckCircle className="h-4 w-4 text-pink-400" />,
+                  title: "Precision Results",
+                  description: "Get accurate and relevant responses from AI with our enhanced prompts."
+                }].map((item, idx) => <motion.div key={idx} initial={{
+                  opacity: 0
+                }} whileInView={{
+                  opacity: 1
+                }} viewport={{
+                  once: true,
+                  amount: 0.3
+                }} transition={{
+                  duration: 0.6,
+                  delay: idx * 0.1
+                }} className="min-h-[11rem]">
                       <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
-                        <GlowingEffect
-                          spread={40}
-                          glow
-                          disabled={false}
-                          proximity={64}
-                          inactiveZone={0.01}
-                          borderWidth={2}
-                          className="opacity-70"
-                        />
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                         <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
                           <div className="flex flex-col gap-3">
                             <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
@@ -260,15 +253,14 @@ const Index = () => {
                               <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-white">
                                 {item.title}
                               </h3>
-                              <p className="text-xs sm:text-sm leading-relaxed text-white/70">
+                              <p className="text-xs leading-relaxed text-white/70 sm:text-lg">
                                 {item.description}
                               </p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
+                    </motion.div>)}
                 </div>
               </div>
             </section>
