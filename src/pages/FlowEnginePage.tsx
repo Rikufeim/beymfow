@@ -1653,13 +1653,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div
                 className="absolute pointer-events-none"
                 style={{
-                  // Very large fixed size to cover entire workspace at all zoom/pan levels
-                  // Positioned to cover a massive area: from -500000 to +500000 in canvas coordinates
-                  // This ensures grid is always visible even when zoomed out to 0.25x and panned far
-                  left: "-500000px",
-                  top: "-500000px",
-                  width: "1000000px",
-                  height: "1000000px",
+                  // Extremely large fixed size to cover entire workspace at all zoom/pan levels
+                  // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
+                  // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
+                  left: "-2000000px",
+                  top: "-2000000px",
+                  width: "4000000px",
+                  height: "4000000px",
                   zIndex: 0,
                   // Dark gray base (neutral-900) - professional workspace background
                   backgroundColor: "#171717",
@@ -1671,7 +1671,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
-                  // The large size ensures background always covers viewport even when transformed
+                  // The massive size ensures background always covers viewport even when zoomed out far
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                   willChange: "transform",
