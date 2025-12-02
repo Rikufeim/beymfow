@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ const CATEGORIES = [
   "Social Media",
   "Image Creation",
   "Product Mockups",
-];
+] as const;
 
 type PipelineStep = "idle" | "running" | "input_done" | "refined" | "created" | "error";
 
@@ -35,22 +35,19 @@ const PROMPT_LAB_CATEGORY_CARDS: Array<{
 }> = [
   {
     title: "Personal",
-    description:
-      "Daily productivity systems, learning workflows and growth prompts tailored to your life goals.",
+    description: "Daily productivity systems, learning workflows and growth prompts tailored to your life goals.",
     icon: UserRound,
     gradient: "from-[#8B5CF6]/40 via-transparent to-transparent",
   },
   {
     title: "Business",
-    description:
-      "Marketing strategies, operations playbooks and growth prompts to scale your company faster.",
+    description: "Marketing strategies, operations playbooks and growth prompts to scale your company faster.",
     icon: Briefcase,
     gradient: "from-[#22D3EE]/40 via-transparent to-transparent",
   },
   {
     title: "Crypto",
-    description:
-      "Market intelligence, investor updates and Web3 research prompts for the next frontier.",
+    description: "Market intelligence, investor updates and Web3 research prompts for the next frontier.",
     icon: Coins,
     gradient: "from-[#F59E0B]/40 via-transparent to-transparent",
   },
@@ -67,19 +64,18 @@ const PromptLab = () => {
   const [finalOutput, setFinalOutput] = useState("");
   const [pipelineStep, setPipelineStep] = useState<PipelineStep>("idle");
   const [progress, setProgress] = useState(0);
+  const streamUpdateTimeoutRef = useRef<number | null>(null);
+  const lastUpdateTimeRef = useRef<number>(0);
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
-  const toggleCategory = (category: string) => {
-    setCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
+  const toggleCategory = useCallback((category: string) => {
+    setCategories((prev) => (prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]));
+  }, []);
 
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
     console.log("Generate button clicked");
     console.log("User goal length:", userGoal.length);
-    
+
     if (userGoal.length < 20) {
       toast({
         title: "Kerro tarkemmin",
@@ -98,7 +94,7 @@ const PromptLab = () => {
       // Step A: Input Agent
       console.log("Starting Input Agent...");
       setProgress(10);
-      
+
       const inputPayload = {
         userGoal,
         context,
@@ -108,13 +104,10 @@ const PromptLab = () => {
         expertTone,
       };
       console.log("Input Agent payload:", inputPayload);
-      
-      const { data: inputData, error: inputError } = await supabase.functions.invoke(
-        "agent-input",
-        {
-          body: inputPayload,
-        }
-      );
+
+      const { data: inputData, error: inputError } = await supabase.functions.invoke("agent-input", {
+        body: inputPayload,
+      });
 
       console.log("Input Agent response:", { data: inputData, error: inputError });
 
@@ -133,12 +126,9 @@ const PromptLab = () => {
 
       // Step B: Refine Agent
       console.log("Starting Refine Agent...");
-      const { data: refineData, error: refineError } = await supabase.functions.invoke(
-        "agent-refine",
-        {
-          body: { spec: inputData.spec },
-        }
-      );
+      const { data: refineData, error: refineError } = await supabase.functions.invoke("agent-refine", {
+        body: { spec: inputData.spec },
+      });
 
       console.log("Refine Agent response:", { data: refineData, error: refineError });
 
@@ -160,12 +150,12 @@ const PromptLab = () => {
       console.log("Starting Creator Agent (streaming)...");
       const CREATOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-creator`;
       console.log("Creator URL:", CREATOR_URL);
-      
+
       const response = await fetch(CREATOR_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
           optimizedPrompt: refineData.optimizedPrompt,
@@ -187,6 +177,8 @@ const PromptLab = () => {
         throw new Error("No response body");
       }
 
+      readerRef.current = reader;
+
       console.log("Starting to read stream...");
       const decoder = new TextDecoder();
       let textBuffer = "";
@@ -197,6 +189,25 @@ const PromptLab = () => {
         accumulatedOutput = "Educational content. Not financial advice.\n\n";
         setFinalOutput(accumulatedOutput);
       }
+
+      // Throttled update function for streaming
+      const throttledUpdate = (content: string) => {
+        const now = Date.now();
+        // Update at most every 50ms during streaming
+        if (now - lastUpdateTimeRef.current > 50) {
+          lastUpdateTimeRef.current = now;
+          setFinalOutput(content);
+        } else {
+          // Schedule update for next frame
+          if (streamUpdateTimeoutRef.current) {
+            cancelAnimationFrame(streamUpdateTimeoutRef.current);
+          }
+          streamUpdateTimeoutRef.current = requestAnimationFrame(() => {
+            setFinalOutput(content);
+            lastUpdateTimeRef.current = Date.now();
+          });
+        }
+      };
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -224,7 +235,8 @@ const PromptLab = () => {
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               accumulatedOutput += content;
-              setFinalOutput(accumulatedOutput);
+              // Use throttled update
+              throttledUpdate(accumulatedOutput);
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
@@ -233,9 +245,15 @@ const PromptLab = () => {
         }
       }
 
+      // Final update to ensure all content is saved
+      if (accumulatedOutput) {
+        setFinalOutput(accumulatedOutput);
+      }
+
       console.log("Stream complete. Final output length:", accumulatedOutput.length);
       setPipelineStep("created");
       setProgress(100);
+      lastUpdateTimeRef.current = 0;
 
       toast({
         title: "Valmis!",
@@ -249,15 +267,36 @@ const PromptLab = () => {
         name: error.name,
       });
       setPipelineStep("error");
+      lastUpdateTimeRef.current = 0;
       toast({
         title: "Virhe",
         description: error.message || "Agent pipeline failed — try again or simplify inputs.",
         variant: "destructive",
       });
+    } finally {
+      // Cleanup reader
+      if (readerRef.current) {
+        try {
+          await readerRef.current.cancel();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        readerRef.current = null;
+      }
     }
-  };
+  }, [userGoal, context, categories, mode, timeframeDays, expertTone]);
 
-  const handleStartOver = () => {
+  const handleStartOver = useCallback(() => {
+    // Cancel any ongoing stream
+    if (readerRef.current) {
+      readerRef.current.cancel().catch(() => {});
+      readerRef.current = null;
+    }
+    if (streamUpdateTimeoutRef.current) {
+      cancelAnimationFrame(streamUpdateTimeoutRef.current);
+      streamUpdateTimeoutRef.current = null;
+    }
+
     setOptimizedPrompt("");
     setFinalOutput("");
     setPipelineStep("idle");
@@ -267,17 +306,18 @@ const PromptLab = () => {
     setCategories([]);
     setTimeframeDays(7);
     setExpertTone(true);
-  };
+    lastUpdateTimeRef.current = 0;
+  }, []);
 
-  const copyToClipboard = (text: string, label: string) => {
+  const copyToClipboard = useCallback((text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
       title: "Kopioitu!",
       description: `${label} kopioitu leikepöydälle.`,
     });
-  };
+  }, []);
 
-  const getProgressLabel = () => {
+  const getProgressLabel = useMemo(() => {
     if (pipelineStep === "idle") return "Odottaa";
     if (pipelineStep === "running") return "Input Agent ⏳";
     if (pipelineStep === "input_done") return "Input Agent ✅";
@@ -285,12 +325,26 @@ const PromptLab = () => {
     if (pipelineStep === "created") return "Creator Agent ✅";
     if (pipelineStep === "error") return "Virhe ❌";
     return "";
-  };
+  }, [pipelineStep]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (readerRef.current) {
+        readerRef.current.cancel().catch(() => {});
+        readerRef.current = null;
+      }
+      if (streamUpdateTimeoutRef.current) {
+        cancelAnimationFrame(streamUpdateTimeoutRef.current);
+        streamUpdateTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
-      
+
       <div className="max-w-5xl mx-auto px-4 pt-32 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
@@ -298,22 +352,14 @@ const PromptLab = () => {
             <Sparkles className="h-8 w-8 text-primary" />
             <h1 className="text-4xl md:text-5xl font-bold">PromptLab</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Multi-Agent Prompt Generator: Input → Refine → Creator
-          </p>
+          <p className="text-muted-foreground text-lg">Multi-Agent Prompt Generator: Input → Refine → Creator</p>
         </div>
 
         {/* Category Cards */}
         <div className="grid gap-4 md:grid-cols-3 mb-12">
           {PROMPT_LAB_CATEGORY_CARDS.map(({ title, description, icon: Icon, gradient }) => (
-            <Card
-              key={title}
-              className="relative overflow-hidden border-white/10 bg-white/5 backdrop-blur"
-            >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80`}
-                aria-hidden={true}
-              />
+            <Card key={title} className="relative overflow-hidden border-white/10 bg-white/5 backdrop-blur">
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80`} aria-hidden={true} />
               <div className="relative p-6 flex flex-col h-full">
                 <div className="w-12 h-12 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center mb-5">
                   <Icon className="h-6 w-6 text-white" />
@@ -399,11 +445,7 @@ const PromptLab = () => {
               </div>
 
               <div className="flex items-center space-x-2 pt-8">
-                <Switch
-                  id="expertTone"
-                  checked={expertTone}
-                  onCheckedChange={setExpertTone}
-                />
+                <Switch id="expertTone" checked={expertTone} onCheckedChange={setExpertTone} />
                 <Label htmlFor="expertTone" className="cursor-pointer">
                   Asiantuntijamainen sävy
                 </Label>
@@ -411,12 +453,7 @@ const PromptLab = () => {
             </div>
 
             {/* Generate Button */}
-            <Button
-              onClick={handleGenerate}
-              disabled={pipelineStep === "running"}
-              className="w-full"
-              size="lg"
-            >
+            <Button onClick={handleGenerate} disabled={pipelineStep === "running"} className="w-full" size="lg">
               {pipelineStep === "running" ? "Generating..." : "Generate"}
             </Button>
           </div>
@@ -427,7 +464,7 @@ const PromptLab = () => {
           <Card className="bg-card/50 border-white/10 p-6 mb-8">
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span>{getProgressLabel()}</span>
+                <span>{getProgressLabel}</span>
                 <span>{progress}%</span>
               </div>
               <Progress value={progress} className="h-3" />
@@ -452,11 +489,7 @@ const PromptLab = () => {
                     Copy
                   </Button>
                 </div>
-                <Textarea
-                  value={optimizedPrompt}
-                  readOnly
-                  className="min-h-[200px] bg-background font-mono text-sm"
-                />
+                <Textarea value={optimizedPrompt} readOnly className="min-h-[200px] bg-background font-mono text-sm" />
               </Card>
             )}
 
@@ -465,30 +498,17 @@ const PromptLab = () => {
               <Card className="bg-card/50 border-white/10 p-6">
                 <div className="flex justify-between items-center mb-4">
                   <Label className="text-lg font-semibold">Final Output</Label>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(finalOutput, "Final Output")}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => copyToClipboard(finalOutput, "Final Output")}>
                     <Copy className="h-4 w-4 mr-2" />
                     Copy
                   </Button>
                 </div>
-                <Textarea
-                  value={finalOutput}
-                  readOnly
-                  className="min-h-[300px] bg-background whitespace-pre-wrap"
-                />
+                <Textarea value={finalOutput} readOnly className="min-h-[300px] bg-background whitespace-pre-wrap" />
               </Card>
             )}
 
             {/* Start Over Button */}
-            <Button
-              variant="outline"
-              onClick={handleStartOver}
-              className="w-full"
-              size="lg"
-            >
+            <Button variant="outline" onClick={handleStartOver} className="w-full" size="lg">
               <RotateCcw className="h-4 w-4 mr-2" />
               Start Over
             </Button>
