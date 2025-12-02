@@ -1619,27 +1619,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {/* Canvas */}
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing"
+              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-black"
               style={{ marginTop: "56px" }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Dotted Glow Background */}
-              <DottedGlowBackground
-                className="absolute inset-0"
-                gap={22}
-                radius={1.6}
-                opacity={0.6}
-                backgroundOpacity={0.85}
-                color="rgba(75, 85, 99, 0.7)"
-                glowColor="rgba(94, 234, 212, 0.8)"
-                darkColor="rgba(75, 85, 99, 0.7)"
-                darkGlowColor="rgba(94, 234, 212, 0.8)"
-                speedMin={0.4}
-                speedMax={1.2}
-                speedScale={1.1}
-              />
 
               {/* Edges Container with Transform */}
               <svg
@@ -1706,6 +1691,32 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   transformOrigin: "0 0",
                 }}
               >
+                {/* Dotted Glow Background - moves with canvas */}
+                <div 
+                  className="absolute pointer-events-none"
+                  style={{
+                    left: -10000,
+                    top: -10000,
+                    width: 20000,
+                    height: 20000,
+                  }}
+                >
+                  <DottedGlowBackground
+                    className="absolute inset-0"
+                    gap={22}
+                    radius={1.6}
+                    opacity={0.6}
+                    backgroundOpacity={0}
+                    color="rgba(139, 92, 246, 0.5)"
+                    glowColor="rgba(168, 85, 247, 0.9)"
+                    darkColor="rgba(139, 92, 246, 0.5)"
+                    darkGlowColor="rgba(168, 85, 247, 0.9)"
+                    speedMin={0.4}
+                    speedMax={1.2}
+                    speedScale={1.1}
+                  />
+                </div>
+                
                 {widgets.map((widget) => {
                   let Icon = Sparkles;
                   let accentColor = "text-neutral-400";
