@@ -185,7 +185,7 @@ export const QuickPromptGenerator = () => {
           <div className="pt-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex-shrink-0 px-2 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center">
+                <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0">
                   <Plus className="w-4 h-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -228,7 +228,7 @@ export const QuickPromptGenerator = () => {
             <button
               onClick={handleGenerate}
               disabled={isLoading || !input.trim()}
-              className="flex-shrink-0 px-2 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center"
+              className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
             >
               {isLoading ? (
                 <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
