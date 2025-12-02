@@ -1734,13 +1734,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   return (
                     <div
                       key={widget.id}
-                      className="absolute bg-[#121214] border border-neutral-800 rounded-xl shadow-2xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
+                      className="absolute bg-[#121214] border border-neutral-800 rounded-xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
                       style={{
                         left: widget.x,
                         top: widget.y,
                         width: widget.width,
                         height: widget.height,
-                        boxShadow: "0 10px 40px -10px rgba(0, 0, 0, 0.5)",
                         overflow: "visible",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
