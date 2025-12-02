@@ -1492,9 +1492,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className={`h-8 w-8 rounded-md border border-neutral-800 flex items-center justify-center transition-all cursor-pointer ${showSettings ? "bg-neutral-800 text-white" : "bg-neutral-900/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+                  className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showSettings ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
                 >
-                  <Settings size={16} />
+                  <Settings size={20} />
                 </button>
               </div>
             </div>
@@ -1601,7 +1601,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             </AnimatePresence>
 
             {/* Plus Button - Canvas Area */}
-            <div className="absolute top-16 right-4 z-30 pointer-events-none">
+            <div className="absolute top-[60px] right-4 z-30 pointer-events-none">
               <button
                 onClick={() => setShowCategories(!showCategories)}
                 className={`pointer-events-auto h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
