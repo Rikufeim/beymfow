@@ -227,6 +227,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [showCategories, setShowCategories] = useState(false);
+  const [projectName, setProjectName] = useState<string>("Untitled flow");
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
   const [dragging, setDragging] = useState<{ id: string; startX: number; startY: number } | null>(null);
   const [resizing, setResizing] = useState<{
     id: string;
@@ -1479,17 +1481,56 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           >
             {/* Top Bar - Flowise Style */}
             <div className="absolute top-0 left-0 right-0 h-14 bg-[#0a0a0a] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
                   onClick={() => setViewMode("landing")}
-                  className="h-8 px-3 rounded-md bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer font-sans text-sm"
+                  className="h-8 px-3 rounded-md bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer font-sans text-sm flex-shrink-0"
                 >
                   <ArrowLeft size={16} />
                   <span>Back</span>
                 </button>
+
+                {/* Project Name - Editable */}
+                <div className="flex items-center min-w-0 flex-1">
+                  {isEditingProjectName ? (
+                    <input
+                      type="text"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      onBlur={() => setIsEditingProjectName(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          setIsEditingProjectName(false);
+                        }
+                        if (e.key === "Escape") {
+                          setIsEditingProjectName(false);
+                        }
+                      }}
+                      className="bg-transparent border-none outline-none text-sm font-medium text-neutral-300 px-2 py-1 rounded focus:bg-neutral-900/50 focus:ring-1 focus:ring-neutral-700 min-w-0 flex-1"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setIsEditingProjectName(true)}
+                      className="text-sm font-medium text-neutral-300 hover:text-white px-2 py-1 rounded hover:bg-neutral-900/50 transition-colors text-left truncate min-w-0 flex-1"
+                      title="Click to edit project name"
+                    >
+                      {projectName}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowCategories(!showCategories)}
+                  className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
+                >
+                  <Plus
+                    size={20}
+                    className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
+                  />
+                </button>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showSettings ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
@@ -1599,19 +1640,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Plus Button - Canvas Area */}
-            <div className="absolute top-[60px] right-4 z-30 pointer-events-none">
-              <button
-                onClick={() => setShowCategories(!showCategories)}
-                className={`pointer-events-auto h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
-              >
-                <Plus
-                  size={20}
-                  className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
-                />
-              </button>
-            </div>
 
             {/* Canvas */}
             <div
