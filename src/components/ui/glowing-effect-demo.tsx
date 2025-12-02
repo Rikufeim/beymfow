@@ -11,7 +11,7 @@ export function GlowingEffectDemo() {
           Beymflow Lab
         </span>
         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">Engineered for Pure Flow</h2>
-        <p className="text-sm md:text-base text-white/70 max-w-md">
+        <p className="text-sm text-white/70 max-w-md md:text-lg">
           A focused layer where prompts, tools, and workflows behave like a
           single system. Less drag, more signal.
         </p>
@@ -47,7 +47,7 @@ const GridItem = ({
               <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white">
                 {title}
               </h3>
-              <p className="text-xs md:text-sm leading-relaxed text-white/70">
+              <p className="text-xs leading-relaxed text-white/70 md:text-lg">
                 {description}
               </p>
             </div>
