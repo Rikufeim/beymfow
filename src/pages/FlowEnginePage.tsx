@@ -1664,15 +1664,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   // Dark gray base (neutral-900) - professional workspace background
                   backgroundColor: "#171717",
                   // Clean dot pattern only - no grid lines, classic canvas style
-                  // Consistent rendering: all dots look identical at all zoom levels
-                  // Using precise pixel values to ensure uniform appearance
+                  // High-quality rendering that stays crisp at all zoom levels
                   backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                  // Fixed spacing: 24px ensures all dots are identical and evenly spaced
-                  // backgroundSize scales with transform, keeping dots uniform
+                  // Optimal spacing: 24px for clean, professional appearance
+                  // Single dot pattern ensures consistent quality at all zoom levels
                   backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
-                  // Ensure consistent rendering quality
-                  imageRendering: "auto",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
                   // The massive size ensures background always covers viewport even when zoomed out far
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
