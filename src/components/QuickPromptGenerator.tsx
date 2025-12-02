@@ -180,9 +180,9 @@ export const QuickPromptGenerator = () => {
 
       <div className="relative">
         <div
-          className={`flex items-center gap-2 sm:gap-3 bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 border transition-all duration-300 ${categoryColors[selectedCategory]}`}
+          className={`flex items-start gap-2 sm:gap-3 bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 border transition-all duration-300 ${categoryColors[selectedCategory]}`}
         >
-          <div>
+          <div className="pt-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex-shrink-0 px-2 py-1 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center">
@@ -224,7 +224,7 @@ export const QuickPromptGenerator = () => {
             />
           </div>
 
-          <div>
+          <div className="pt-2">
             <button
               onClick={handleGenerate}
               disabled={isLoading || !input.trim()}
