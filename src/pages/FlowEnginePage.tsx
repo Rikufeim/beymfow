@@ -1,3 +1,9 @@
+// Zoom + background sync fix for Beymflow workspace
+// Single source of truth: canvasTransform state controls both node transforms and background grid
+// Background grid uses the same translate/scale transform as nodes for perfect synchronization
+// Fixed zoom range: 0.25 to 2.0 (Flowise-like range)
+// Background uses fixed-size repeating pattern that scales with transform, ensuring visibility at all zoom levels
+
 import React, { useState, useRef, useEffect } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -1149,21 +1155,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
 
     // Normal scroll = zoom in/out (like Flowise)
-    // Zoom ONLY - no panning/translation on scroll
+    // Zoom around mouse cursor position for intuitive UX
     const zoomSpeed = 0.1;
     const zoomFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-    // Calculate new scale with reasonable limits (0.05 = 5% to 2.0 = 200%)
-    const newScale = Math.max(0.05, Math.min(2.0, canvasTransform.scale * zoomFactor));
+    // Calculate new scale with reasonable limits (0.25 = 25% to 2.0 = 200%) - Flowise-like range
+    const newScale = Math.max(0.25, Math.min(2.0, canvasTransform.scale * zoomFactor));
 
-    // Zoom around the viewport center (or mouse position) without changing translate
-    // This ensures the viewport stays stable - no drift left/right/up/down
-    // We keep the current translateX and translateY unchanged during zoom
-    setCanvasTransform((prev) => ({
-      translateX: prev.translateX,
-      translateY: prev.translateY,
+    // Zoom around mouse cursor position
+    // Calculate the point under the mouse in canvas coordinates before zoom
+    const canvasX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
+    const canvasY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
+
+    // Calculate new translate to keep the same point under the mouse after zoom
+    const newTranslateX = mouseX - canvasX * newScale;
+    const newTranslateY = mouseY - canvasY * newScale;
+
+    setCanvasTransform({
+      translateX: newTranslateX,
+      translateY: newTranslateY,
       scale: newScale,
-    }));
+    });
   };
 
   // --- Drag & Resize Logic ---
@@ -1623,22 +1635,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - High quality, scales smoothly with zoom */}
+              {/* Background Grid - Synced with canvas transform for perfect alignment */}
               <div
                 className="absolute pointer-events-none"
                 style={{
+                  // Fixed grid pattern size in canvas coordinates (24px spacing)
+                  // The transform scale will handle visual scaling, keeping grid consistent
                   backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-                  // Scale background size inversely with zoom to keep grid dots visually consistent
-                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
+                  backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
-                  // Dynamic opacity based on zoom level - more visible when zoomed out
-                  opacity: Math.min(0.3, Math.max(0.15, 0.3 - (canvasTransform.scale - 0.5) * 0.1)),
-                  // Use inset to ensure background always covers viewport
-                  inset: "-500000px",
-                  // Position and scale background with canvas transform
+                  // Stable opacity - always visible across zoom range
+                  opacity: 0.2,
+                  // Large fixed size to cover entire workspace at all zoom levels
+                  // Positioned to cover from -50000 to +50000 in canvas coordinates
+                  left: "-50000px",
+                  top: "-50000px",
+                  width: "100000px",
+                  height: "100000px",
+                  // Same transform as nodes - single source of truth for zoom/pan
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
-                  willChange: "transform, background-size, opacity",
+                  willChange: "transform",
                 }}
               />
 
