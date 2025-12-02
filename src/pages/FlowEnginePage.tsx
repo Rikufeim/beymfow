@@ -1478,7 +1478,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             className="flex-1 relative w-full h-full flex flex-col bg-[#09090b]"
           >
             {/* Top Bar - Flowise Style */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-[#0a0a0a] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
+            <div className="absolute top-0 left-0 right-0 h-14 bg-[#09090b] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
                   onClick={() => setViewMode("landing")}
@@ -1627,12 +1627,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div
                 className="absolute pointer-events-none"
                 style={{
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px)",
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
                   // Scale background size inversely with zoom to keep grid dots visually consistent
-                  backgroundSize: `${20 / canvasTransform.scale}px ${20 / canvasTransform.scale}px`,
+                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
                   backgroundRepeat: "repeat",
                   // Dynamic opacity based on zoom level - more visible when zoomed out
-                  opacity: Math.min(0.35, Math.max(0.2, 0.35 - (canvasTransform.scale - 0.5) * 0.12)),
+                  opacity: Math.min(0.3, Math.max(0.15, 0.3 - (canvasTransform.scale - 0.5) * 0.1)),
                   // Use inset to ensure background always covers viewport
                   inset: "-500000px",
                   // Position and scale background with canvas transform
