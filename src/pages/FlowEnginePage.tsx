@@ -238,9 +238,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // Canvas Pan-Zoom State
   const [canvasTransform, setCanvasTransform] = useState({
-    translateX: 200,
-    translateY: 120,
-    scale: 0.9,
+    translateX: 0,
+    translateY: 0,
+    scale: 1,
   });
 
   const [panning, setPanning] = useState<{
@@ -711,7 +711,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       };
 
       // Reset canvas transform when entering workspace
-      setCanvasTransform({ translateX: 200, translateY: 120, scale: 0.9 });
+      setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
       setWidgets([mainPromptWidget]);
       setViewMode("workspace");
       setIsLoading(false);
@@ -1617,12 +1617,30 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {/* Canvas */}
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-950"
+              className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-900"
               style={{ marginTop: "56px" }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
+              {/* Background Grid - High quality, scales smoothly with zoom */}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+                  // Scale background size inversely with zoom to keep grid dots visually consistent
+                  backgroundSize: `${24 / canvasTransform.scale}px ${24 / canvasTransform.scale}px`,
+                  backgroundRepeat: "repeat",
+                  // Dynamic opacity based on zoom level - more visible when zoomed out
+                  opacity: Math.min(0.3, Math.max(0.15, 0.3 - (canvasTransform.scale - 0.5) * 0.1)),
+                  // Use inset to ensure background always covers viewport
+                  inset: "-500000px",
+                  // Position and scale background with canvas transform
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  willChange: "transform, background-size, opacity",
+                }}
+              />
 
               {/* Edges Container with Transform */}
               <svg
@@ -1689,20 +1707,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   transformOrigin: "0 0",
                 }}
               >
-                {/* CSS Dotted Background - lightweight and performant */}
-                <div 
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: -5000,
-                    top: -5000,
-                    width: 10000,
-                    height: 10000,
-                    backgroundImage: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 1px, transparent 1px)',
-                    backgroundSize: '40px 40px',
-                    backgroundRepeat: 'repeat',
-                  }}
-                />
-                
                 {widgets.map((widget) => {
                   let Icon = Sparkles;
                   let accentColor = "text-neutral-400";
