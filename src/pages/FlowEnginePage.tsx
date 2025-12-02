@@ -238,9 +238,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // Canvas Pan-Zoom State
   const [canvasTransform, setCanvasTransform] = useState({
-    translateX: 0,
-    translateY: 0,
-    scale: 1,
+    translateX: 200,
+    translateY: 120,
+    scale: 0.9,
   });
 
   const [panning, setPanning] = useState<{
@@ -711,7 +711,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       };
 
       // Reset canvas transform when entering workspace
-      setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+      setCanvasTransform({ translateX: 200, translateY: 120, scale: 0.9 });
       setWidgets([mainPromptWidget]);
       setViewMode("workspace");
       setIsLoading(false);
@@ -1693,12 +1693,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 <div 
                   className="absolute pointer-events-none"
                   style={{
-                    left: -10000,
-                    top: -10000,
-                    width: 20000,
-                    height: 20000,
-                    backgroundImage: 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 1.5px, transparent 1.5px)',
-                    backgroundSize: '24px 24px',
+                    left: -5000,
+                    top: -5000,
+                    width: 10000,
+                    height: 10000,
+                    backgroundImage: 'radial-gradient(circle, rgba(168, 85, 247, 0.25) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px',
                     backgroundRepeat: 'repeat',
                   }}
                 />
