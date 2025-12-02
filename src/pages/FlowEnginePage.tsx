@@ -1663,18 +1663,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   zIndex: 0,
                   // Dark gray base (neutral-900) - professional workspace background
                   backgroundColor: "#171717",
-                  // High-quality professional grid pattern - Flowise-style
-                  // Combines subtle grid lines with refined dot pattern for sophisticated appearance
-                  backgroundImage: `
-                    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-                    radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-                  `,
-                  // Grid spacing: 24px for clean, professional appearance
-                  // Primary dots at 24px spacing with subtle grid lines for structure
-                  backgroundSize: "24px 24px, 24px 24px, 24px 24px",
-                  backgroundPosition: "0 0, 0 0, 0 0",
-                  backgroundRepeat: "repeat, repeat, repeat",
+                  // Clean dot pattern only - no grid lines, classic canvas style
+                  // High-quality rendering that stays crisp at all zoom levels
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
+                  // Optimal spacing: 24px for clean, professional appearance
+                  // Single dot pattern ensures consistent quality at all zoom levels
+                  backgroundSize: "24px 24px",
+                  backgroundRepeat: "repeat",
                   // Same transform as nodes - single source of truth for zoom/pan synchronization
                   // The large size ensures background always covers viewport even when transformed
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
