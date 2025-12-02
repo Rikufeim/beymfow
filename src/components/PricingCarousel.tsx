@@ -35,7 +35,7 @@ export const PricingCarousel = () => {
                           <div className="flex-shrink-0 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center mt-0.5">
                             <Check className="w-3 h-3 text-white stroke-[3]" />
                           </div>
-                          <span className="text-xs sm:text-sm text-neutral-300 leading-snug">{item}</span>
+                          <span className="text-xs text-neutral-300 leading-snug sm:text-lg">{item}</span>
                         </li>)}
                     </ul>
                   </div>
@@ -71,7 +71,7 @@ export const PricingCarousel = () => {
                       <span className="text-lg sm:text-2xl font-medium text-neutral-400">/mo</span>
                     </div>
 
-                    <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
+                    <p className="text-sm text-neutral-300 leading-relaxed sm:text-lg">
                       Upgrade as you go for more credits, more features, and more support.
                     </p>
                   </div>
