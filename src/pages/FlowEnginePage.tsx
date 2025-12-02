@@ -227,8 +227,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [showCategories, setShowCategories] = useState(false);
-  const [projectName, setProjectName] = useState<string>("Untitled flow");
-  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
   const [dragging, setDragging] = useState<{ id: string; startX: number; startY: number } | null>(null);
   const [resizing, setResizing] = useState<{
     id: string;
@@ -1490,34 +1488,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <span>Back</span>
                 </button>
 
-                {/* Project Name - Editable */}
+                {/* Project Name - Static */}
                 <div className="flex items-center min-w-0 flex-1">
-                  {isEditingProjectName ? (
-                    <input
-                      type="text"
-                      value={projectName}
-                      onChange={(e) => setProjectName(e.target.value)}
-                      onBlur={() => setIsEditingProjectName(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          setIsEditingProjectName(false);
-                        }
-                        if (e.key === "Escape") {
-                          setIsEditingProjectName(false);
-                        }
-                      }}
-                      className="bg-transparent border-none outline-none text-sm font-medium text-neutral-300 px-2 py-1 rounded focus:bg-neutral-900/50 focus:ring-1 focus:ring-neutral-700 min-w-0 flex-1"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      onClick={() => setIsEditingProjectName(true)}
-                      className="text-sm font-medium text-neutral-300 hover:text-white px-2 py-1 rounded hover:bg-neutral-900/50 transition-colors text-left truncate min-w-0 flex-1"
-                      title="Click to edit project name"
-                    >
-                      {projectName}
-                    </button>
-                  )}
+                  <span className="text-sm font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
                 </div>
               </div>
 
