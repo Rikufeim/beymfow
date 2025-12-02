@@ -1,8 +1,9 @@
-// Zoom + background sync fix for Beymflow workspace
+// Zoom + background sync & grid restore for Beymflow workspace
 // Single source of truth: canvasTransform state controls both node transforms and background grid
 // Background grid uses the same translate/scale transform as nodes for perfect synchronization
 // Fixed zoom range: 0.25 to 2.0 (Flowise-like range)
-// Background uses fixed-size repeating pattern that scales with transform, ensuring visibility at all zoom levels
+// Background grid: CSS-based repeating-radial-gradient pattern, always visible, covers full viewport
+// Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
 
 import React, { useState, useRef, useEffect } from "react";
 
@@ -1635,24 +1636,29 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
-              {/* Background Grid - Synced with canvas transform for perfect alignment */}
+              {/* Background Grid - Always visible, synced with canvas transform */}
+              {/* 
+                Grid implementation: CSS radial-gradient pattern creating dot grid
+                Alignment: Uses same transform (translate + scale) as nodes for perfect sync
+                Coverage: Full viewport (inset: 0) with background-size spacing for grid dots
+                Visibility: Always rendered, never conditionally hidden, z-index: 0 (behind content)
+              */}
               <div
                 className="absolute pointer-events-none"
                 style={{
-                  // Fixed grid pattern size in canvas coordinates (24px spacing)
-                  // The transform scale will handle visual scaling, keeping grid consistent
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+                  // Full viewport coverage
+                  inset: 0,
+                  zIndex: 0,
+                  // Dark gray base (neutral-900)
+                  backgroundColor: "#171717",
+                  // CSS-based dotted grid pattern - creates subtle light gray dots on dark background
+                  // Each dot is 1px, spaced 24px apart (Flowise-style)
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
+                  // Background size controls dot spacing - 24px spacing between dots
+                  // The transform scale will visually scale the grid, keeping dots consistent
                   backgroundSize: "24px 24px",
                   backgroundRepeat: "repeat",
-                  // Stable opacity - always visible across zoom range
-                  opacity: 0.2,
-                  // Large fixed size to cover entire workspace at all zoom levels
-                  // Positioned to cover from -50000 to +50000 in canvas coordinates
-                  left: "-50000px",
-                  top: "-50000px",
-                  width: "100000px",
-                  height: "100000px",
-                  // Same transform as nodes - single source of truth for zoom/pan
+                  // Same transform as nodes - single source of truth for zoom/pan synchronization
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                   willChange: "transform",
@@ -1663,6 +1669,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <svg
                 className="absolute inset-0"
                 style={{
+                  zIndex: 1,
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                   overflow: "visible",
@@ -1720,6 +1727,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div
                 className="absolute inset-0"
                 style={{
+                  zIndex: 1,
                   transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                   transformOrigin: "0 0",
                 }}
