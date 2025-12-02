@@ -736,7 +736,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       integrated: true,
       x: baseX + Math.random() * 50,
       y: baseY + offset,
-      width: 350,
+      width: 420,
       height: 220,
     };
 
@@ -1881,11 +1881,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           />
                         )}
 
-                      {/* Title - Above header if needed, otherwise in header */}
-                      <div className="px-2.5 pt-2 pb-1 border-b border-neutral-800 bg-[#121214] cursor-move select-none">
-                        <div className="flex items-center gap-2">
-                          <div className={`p-0.5 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
-                            <Icon size={12} />
+                      {/* Header */}
+                      <div className="px-3 py-2 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                          <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
+                            <Icon size={14} />
                           </div>
                           <span
                             className="text-sm font-semibold text-neutral-200 leading-tight font-sans"
@@ -1897,16 +1897,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               whiteSpace: "nowrap",
                               overflow: "visible",
                               flex: "1",
+                              minWidth: 0,
                             }}
                           >
                             {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                           </span>
                         </div>
-                      </div>
 
-                      {/* Header */}
-                      <div className="px-2.5 py-1.5 border-b border-neutral-800 bg-[#121214] flex items-center justify-end cursor-move select-none gap-1">
-                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
                           {widget.type === "category" && (
                             <button
                               onClick={(e) => {
