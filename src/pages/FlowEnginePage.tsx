@@ -6,13 +6,14 @@
 // Grid uses large fixed size (200000px) positioned to cover entire workspace at all zoom/pan levels
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
-import { NodeAnchor } from "@/components/NodeAnchor";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 import {
   ArrowRight,
@@ -54,20 +55,8 @@ import {
   Bot,
   Save,
   Link2,
-  Minus,
-  Lock,
-  Sun,
-  FileStack,
+  LogIn,
 } from "lucide-react";
-
-import {
-  BusinessModelCanvas,
-  LeanCanvas,
-  SWOTAnalysis,
-  UserJourneyMap,
-  AIPromptBlueprint,
-  TemplateDefinition,
-} from "@/flowTemplates";
 
 // --- Types & Interfaces ---
 
@@ -93,9 +82,6 @@ interface Widget {
   y: number;
   width: number;
   height: number;
-  templateGroup?: string;
-  templateGroupId?: string;
-  style?: string;
 }
 
 interface Edge {
@@ -241,13 +227,62 @@ const suggestionChips = [
   { label: "Game", icon: Gamepad2 },
 ];
 
+// --- Saved Project Types ---
+interface SavedFlowProject {
+  id: string;
+  name: string;
+  domain: string;
+  createdAt: string;
+  updatedAt: string;
+  widgets: Widget[];
+  edges: Edge[];
+  nodeOutputMap?: any;
+  mainPromptState?: any;
+  canvasTransform?: { translateX: number; translateY: number; scale: number };
+}
+
+const FLOW_PROJECTS_KEY = "beymflow.flow-engine.projects";
+
+const loadSavedProjects = (): SavedFlowProject[] => {
+  try {
+    return JSON.parse(localStorage.getItem(FLOW_PROJECTS_KEY) || "[]") || [];
+  } catch {
+    return [];
+  }
+};
+
+const saveProjectsToStorage = (projects: SavedFlowProject[]) => {
+  localStorage.setItem(FLOW_PROJECTS_KEY, JSON.stringify(projects));
+};
+
 const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // --- State ---
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
   const [activeDomain, setActiveDomain] = useState<string>("Website");
   const [isLoading, setIsLoading] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<SavedFlowProject[]>([]);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("Untitled Project");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load saved projects on mount (user-specific)
+  useEffect(() => {
+    if (user) {
+      const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+      try {
+        const projects = JSON.parse(localStorage.getItem(userKey) || "[]") || [];
+        setSavedProjects(projects);
+      } catch {
+        setSavedProjects([]);
+      }
+    } else {
+      setSavedProjects([]);
+    }
+  }, [user]);
 
   // Workspace State
   const [widgets, setWidgets] = useState<Widget[]>([]);
@@ -292,17 +327,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     domain: false,
     general: false,
     flows: false,
-    templates: false,
   });
-
-  const [recentlyInsertedNodeIds, setRecentlyInsertedNodeIds] = useState<string[]>([]);
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
-
-  // Control Panel State
-  const [widgetsLocked, setWidgetsLocked] = useState(false);
-  const [backgroundVisible, setBackgroundVisible] = useState(true);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -330,6 +358,133 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     sections: [],
     combinedPrompt: "",
   });
+
+  // --- Save/Load Project Functions ---
+  const saveCurrentProject = useCallback((silent = false) => {
+    if (!user) {
+      if (!silent) {
+        toast.error("Kirjaudu sisään tallentaaksesi projekteja", {
+          action: {
+            label: "Kirjaudu",
+            onClick: () => navigate("/auth"),
+          },
+        });
+      }
+      return;
+    }
+
+    if (widgets.length === 0) return; // Don't save empty projects
+
+    setIsSaving(true);
+    const now = new Date().toISOString();
+    const projectId = currentProjectId || crypto.randomUUID();
+    
+    const project: SavedFlowProject = {
+      id: projectId,
+      name: projectName,
+      domain: activeDomain,
+      createdAt: currentProjectId ? (savedProjects.find(p => p.id === currentProjectId)?.createdAt || now) : now,
+      updatedAt: now,
+      widgets,
+      edges,
+      nodeOutputMap,
+      mainPromptState,
+      canvasTransform,
+    };
+
+    const updated = currentProjectId
+      ? savedProjects.map(p => p.id === currentProjectId ? project : p)
+      : [...savedProjects, project];
+
+    // Save to user-specific key
+    const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+    localStorage.setItem(userKey, JSON.stringify(updated));
+    setSavedProjects(updated);
+    setCurrentProjectId(projectId);
+    setLastSaved(new Date());
+    setIsSaving(false);
+    
+    if (!silent) {
+      toast.success("Projekti tallennettu");
+    }
+  }, [user, widgets, edges, projectName, activeDomain, currentProjectId, savedProjects, canvasTransform, navigate, nodeOutputMap, mainPromptState]);
+
+  // Auto-save every 30 seconds when in workspace mode with changes
+  useEffect(() => {
+    if (viewMode !== "workspace" || !user || widgets.length === 0) return;
+
+    const autoSaveInterval = setInterval(() => {
+      saveCurrentProject(true); // Silent save
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [viewMode, user, widgets, saveCurrentProject]);
+
+  // Save on significant changes (debounced)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    if (viewMode !== "workspace" || !user || widgets.length === 0) return;
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save after 5 seconds of no changes
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveCurrentProject(true);
+    }, 5000);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [widgets, edges, viewMode, user]);
+
+  // Save before leaving the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (user && widgets.length > 0 && viewMode === "workspace") {
+        saveCurrentProject(true);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [user, widgets, viewMode, saveCurrentProject]);
+
+  const loadProject = (project: SavedFlowProject) => {
+    setCurrentProjectId(project.id);
+    setProjectName(project.name);
+    setActiveDomain(project.domain);
+    setWidgets(project.widgets);
+    setEdges(project.edges);
+    if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
+    if (project.mainPromptState) setMainPromptState(project.mainPromptState);
+    if (project.canvasTransform) setCanvasTransform(project.canvasTransform);
+    setViewMode("workspace");
+  };
+
+  const deleteProject = (projectId: string) => {
+    if (!user) return;
+    const updated = savedProjects.filter(p => p.id !== projectId);
+    const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+    localStorage.setItem(userKey, JSON.stringify(updated));
+    setSavedProjects(updated);
+  };
+
+  const createNewProject = () => {
+    setCurrentProjectId(null);
+    setProjectName("Untitled Project");
+    setWidgets([]);
+    setEdges([]);
+    setNodeOutputMap({});
+    setMainPromptState({ sections: [], combinedPrompt: "" });
+    setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    // Stay on landing to select domain
+  };
 
   // Find Main Prompt Node (the final TEXT GENERATION node)
   const getMainPromptNodeId = (): string | null => {
@@ -509,7 +664,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
       .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #333 transparent; }
       
-      /* Legacy flow-handle styles for backward compatibility */
       .flow-handle {
         width: 9px;
         height: 9px;
@@ -535,26 +689,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       
       .flow-handle-target {
         background: rgba(255, 255, 255, 0.85);
-      }
-      
-      /* NodeAnchor styles - ensures anchors stay visible at all zoom levels */
-      .node-anchor {
-        /* Anchors will scale with parent but maintain minimum visibility */
-        will-change: transform, background-color, border-color;
-        /* Ensure good visibility even when zoomed out */
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
-      }
-      
-      /* Enhanced visibility for anchors at all zoom levels */
-      .widget-container .node-anchor {
-        /* Maintain consistent styling */
-        display: block;
-        flex-shrink: 0;
-      }
-      
-      /* Ensure anchors are always interactive */
-      .node-anchor:hover {
-        z-index: 1001 !important;
       }
     `;
     document.head.appendChild(style);
@@ -1154,130 +1288,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     });
   };
 
-  // --- Template Insertion Logic ---
-  const handleInsertTemplate = (template: TemplateDefinition) => {
-    if (!canvasRef.current) return;
-
-    // Calculate viewport center in canvas coordinates
-    const rect = canvasRef.current.getBoundingClientRect();
-    const viewportCenterX = (rect.width / 2 - canvasTransform.translateX) / canvasTransform.scale;
-    const viewportCenterY = (rect.height / 2 - canvasTransform.translateY) / canvasTransform.scale;
-
-    // Calculate template bounding box
-    const templateBounds = {
-      minX: Math.min(...template.nodes.map((n) => n.x)),
-      minY: Math.min(...template.nodes.map((n) => n.y)),
-      maxX: Math.max(...template.nodes.map((n) => n.x + n.width)),
-      maxY: Math.max(...template.nodes.map((n) => n.y + n.height)),
-    };
-
-    const templateWidth = templateBounds.maxX - templateBounds.minX;
-    const templateHeight = templateBounds.maxY - templateBounds.minY;
-
-    // Calculate template origin (top-left) to center it on viewport
-    let templateOriginX = viewportCenterX - templateWidth / 2;
-    let templateOriginY = viewportCenterY - templateHeight / 2;
-
-    // Check for overlap with existing nodes
-    const offsetX = 200;
-    const offsetY = 200;
-    let adjustedX = templateOriginX;
-    let adjustedY = templateOriginY;
-
-    for (const existingWidget of widgets) {
-      const templateBoundsAdjusted = {
-        minX: adjustedX + templateBounds.minX,
-        minY: adjustedY + templateBounds.minY,
-        maxX: adjustedX + templateBounds.maxX,
-        maxY: adjustedY + templateBounds.maxY,
-      };
-
-      const existingBounds = {
-        minX: existingWidget.x,
-        minY: existingWidget.y,
-        maxX: existingWidget.x + existingWidget.width,
-        maxY: existingWidget.y + existingWidget.height,
-      };
-
-      // Check if bounding boxes overlap
-      const overlaps =
-        templateBoundsAdjusted.minX < existingBounds.maxX &&
-        templateBoundsAdjusted.maxX > existingBounds.minX &&
-        templateBoundsAdjusted.minY < existingBounds.maxY &&
-        templateBoundsAdjusted.maxY > existingBounds.minY;
-
-      if (overlaps) {
-        // Apply offset
-        adjustedX = existingBounds.maxX + offsetX;
-        adjustedY = existingBounds.minY;
-        break;
-      }
-    }
-
-    // Generate unique IDs for template nodes
-    const timestamp = Date.now();
-    const templateGroupId = `${template.name}-${timestamp}`;
-    const nodeIdMap = new Map<string, string>();
-
-    // Map template node IDs to unique generated IDs
-    template.nodes.forEach((node) => {
-      const uniqueId = `${node.id}-${timestamp}`;
-      nodeIdMap.set(node.id, uniqueId);
-    });
-
-    // Create nodes with unique IDs and adjusted positions
-    const newNodes: Widget[] = template.nodes.map((node) => {
-      const uniqueId = nodeIdMap.get(node.id) || `${node.id}-${timestamp}`;
-      return {
-        id: uniqueId,
-        type: node.type,
-        title: node.title,
-        subtitle: node.subtitle,
-        content: node.content,
-        placeholder: node.placeholder,
-        x: adjustedX + node.x - templateBounds.minX,
-        y: adjustedY + node.y - templateBounds.minY,
-        width: node.width,
-        height: node.height,
-        templateGroup: template.name,
-        templateGroupId,
-        style: node.style,
-      };
-    });
-
-    // Create edges with mapped node IDs
-    const newEdges: Edge[] = template.connections
-      .map((conn, index) => {
-        const sourceId = nodeIdMap.get(conn.source);
-        const targetId = nodeIdMap.get(conn.target);
-
-        // Skip if source or target not found
-        if (!sourceId || !targetId) {
-          return null;
-        }
-
-        return {
-          id: `edge-${sourceId}-${targetId}-${timestamp}-${index}`,
-          source: sourceId,
-          target: targetId,
-        };
-      })
-      .filter((edge): edge is Edge => edge !== null);
-
-    // Add nodes and edges to state
-    setWidgets((prev) => [...prev, ...newNodes]);
-    setEdges((prev) => [...prev, ...newEdges]);
-
-    const insertedIds = newNodes.map((node) => node.id);
-    setRecentlyInsertedNodeIds((prev) => [...prev, ...insertedIds]);
-    setTimeout(() => {
-      setRecentlyInsertedNodeIds((prev) => prev.filter((id) => !insertedIds.includes(id)));
-    }, 600);
-
-    // Close the categories drawer
-    setShowCategories(false);
-  };
-
   // --- Canvas Pan-Zoom Logic ---
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     // Don't pan if clicking on widgets or interactive elements
@@ -1353,9 +1363,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // --- Drag & Resize Logic ---
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
     if ((e.target as HTMLElement).closest("textarea, input, button")) return;
-
-    // Prevent dragging if widgets are locked
-    if (widgetsLocked && action === "move") return;
 
     e.stopPropagation();
 
@@ -1572,7 +1579,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCanvasClick = (e: React.MouseEvent) => {
     // Cancel connection if clicking on canvas (but not on handles or widgets)
     const target = e.target as HTMLElement;
-    if (connecting && !target.closest(".node-anchor, .widget-container")) {
+    if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
     }
   };
@@ -1587,8 +1594,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (!widget) return { x: 0, y: 0 };
 
     const handleY = widget.y + widget.height / 2; // Center vertically
-    // Anchors are positioned at -5px from edge (half of 10px anchor width)
-    const handleX = handleType === "input" ? widget.x - 5 : widget.x + widget.width + 5;
+    // Handles are positioned at -4.5px from edge (half of 9px handle width)
+    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
     return { x: handleX, y: handleY };
   };
@@ -1602,8 +1609,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-            className="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-4xl mx-auto z-10 pb-32 text-center h-screen"
+            className="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto z-10 pt-24 text-center min-h-screen overflow-y-auto"
           >
+            {/* Home Button - Top Left */}
             <button
               onClick={() => {
                 if (onBack) onBack();
@@ -1615,7 +1623,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+            {/* Login/New Project Button - Top Right */}
+            {user ? (
+              <button
+                onClick={createNewProject}
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+              >
+                <Plus size={20} />
+                <span className="text-sm font-medium pr-1">Project</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+              >
+                <LogIn size={20} />
+                <span className="text-sm font-medium pr-1">Sign in</span>
+              </button>
+            )}
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12 w-full">
               <motion.h1
                 className="text-3xl md:text-4xl font-bold tracking-tight text-white pb-6"
                 style={{
@@ -1654,6 +1681,68 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   );
                 })}
               </div>
+
+              {/* Saved Projects Section */}
+              {user && savedProjects.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-full mt-16"
+                >
+                  <h2 className="text-xl font-semibold text-neutral-300 mb-6">Your Projects</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedProjects.map((project) => {
+                      const DomainIcon = suggestionChips.find(c => c.label === project.domain)?.icon || Globe;
+                      return (
+                        <div
+                          key={project.id}
+                          className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                          onClick={() => loadProject(project)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <DomainIcon className="w-5 h-5 text-neutral-500" />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteProject(project.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <h3 className="text-sm font-medium text-white truncate mb-1">{project.name}</h3>
+                          <p className="text-xs text-neutral-500">
+                            {new Date(project.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Login prompt for non-logged in users */}
+              {!user && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-full mt-16"
+                >
+                  <div className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800 text-center">
+                    <LogIn className="w-8 h-8 text-neutral-500 mx-auto mb-3" />
+                    <p className="text-neutral-400 mb-4">Kirjaudu sisään tallentaaksesi projekteja</p>
+                    <button
+                      onClick={() => navigate("/auth")}
+                      className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all"
+                    >
+                      Kirjaudu sisään
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </motion.main>
         ) : (
@@ -1675,13 +1764,32 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <span>Back</span>
                 </button>
 
-                {/* Project Name - Static */}
+                {/* Editable Project Name */}
                 <div className="flex items-center min-w-0 flex-1">
-                  <span className="text-base font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
+                  <input
+                    type="text"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="text-base font-medium text-neutral-300 px-2 py-1 bg-transparent border-none outline-none hover:bg-neutral-800 focus:bg-neutral-800 rounded transition-colors truncate max-w-[200px]"
+                    placeholder="Project name..."
+                  />
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Save Button */}
+                <button
+                  onClick={() => saveCurrentProject(false)}
+                  disabled={isSaving}
+                  className="h-10 px-4 rounded-lg border border-neutral-800 flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer backdrop-blur-md bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white disabled:opacity-50"
+                >
+                  {isSaving ? (
+                    <div className="w-4 h-4 border-2 border-neutral-500 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  <span className="text-sm">{isSaving ? "Saving..." : "Save"}</span>
+                </button>
                 <button
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
@@ -1823,38 +1931,33 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 Visibility: Always rendered, never conditionally hidden, z-index: 0 (behind content)
                 The large size ensures grid is always visible even when zoomed out to 0.25x and panned far
               */}
-              {backgroundVisible && (
-                <div
-                  className="absolute pointer-events-none"
-                  style={{
-                    // Extremely large fixed size to cover entire workspace at all zoom/pan levels
-                    // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
-                    // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
-                    left: "-2000000px",
-                    top: "-2000000px",
-                    width: "4000000px",
-                    height: "4000000px",
-                    zIndex: 0,
-                    // Dark gray base (neutral-900) - professional workspace background
-                    backgroundColor: "#171717",
-                    // Clean dot pattern only - no grid lines, classic canvas style
-                    // Consistent rendering: all dots look identical at all zoom levels
-                    // Using precise pixel values to ensure uniform appearance
-                    backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                    // Fixed spacing: 24px ensures all dots are identical and evenly spaced
-                    // backgroundSize scales with transform, keeping dots uniform
-                    backgroundSize: "24px 24px",
-                    backgroundRepeat: "repeat",
-                    // Ensure consistent rendering quality
-                    imageRendering: "auto",
-                    // Same transform as nodes - single source of truth for zoom/pan synchronization
-                    // The massive size ensures background always covers viewport even when zoomed out far
-                    transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
-                    transformOrigin: "0 0",
-                    willChange: "transform",
-                  }}
-                />
-              )}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  // Extremely large fixed size to cover entire workspace at all zoom/pan levels
+                  // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
+                  // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
+                  left: "-2000000px",
+                  top: "-2000000px",
+                  width: "4000000px",
+                  height: "4000000px",
+                  zIndex: 0,
+                  // Dark gray base (neutral-900) - professional workspace background
+                  backgroundColor: "#171717",
+                  // Clean dot pattern only - no grid lines, classic canvas style
+                  // High-quality rendering that stays crisp at all zoom levels
+                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
+                  // Optimal spacing: 24px for clean, professional appearance
+                  // Single dot pattern ensures consistent quality at all zoom levels
+                  backgroundSize: "24px 24px",
+                  backgroundRepeat: "repeat",
+                  // Same transform as nodes - single source of truth for zoom/pan synchronization
+                  // The massive size ensures background always covers viewport even when zoomed out far
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  willChange: "transform",
+                }}
+              />
 
               {/* Edges Container with Transform */}
               <svg
@@ -1926,7 +2029,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 {widgets.map((widget) => {
                   let Icon = Sparkles;
                   let accentColor = "text-neutral-400";
-                  const isRecentlyInserted = recentlyInsertedNodeIds.includes(widget.id);
 
                   if (widget.type === "category" && widget.category) {
                     Icon = widget.category.icon;
@@ -1949,11 +2051,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   }
 
                   return (
-                    <motion.div
+                    <div
                       key={widget.id}
-                      initial={isRecentlyInserted ? { opacity: 0, scale: 0.96 } : false}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       className="absolute bg-[#121214] border border-neutral-800 rounded-xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
                       style={{
                         left: widget.x,
@@ -1963,97 +2062,122 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         overflow: "visible",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
-                        boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
                       }}
                       onMouseDown={(e) => {
-                        // Don't start dragging if clicking on anchor
-                        if (!(e.target as HTMLElement).closest(".node-anchor")) {
+                        // Don't start dragging if clicking on handle
+                        if (!(e.target as HTMLElement).closest(".flow-handle")) {
                           handleMouseDown(e, widget.id, "move");
                         }
                       }}
                     >
-                      {/* Input Anchor (Left) - Automatically included on ALL nodes */}
-                      <NodeAnchor
-                        type="input"
-                        nodeId={widget.id}
-                        onMouseDown={handleHandleMouseDown}
-                        onDoubleClick={(e) => {
-                          // Double-click to disconnect all edges from this anchor
-                          setEdges((prev) => {
-                            const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
+                      {/* Input Handle (Left) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") && (
+                        <div
+                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
+                          style={{
+                            left: "-4.5px",
+                            pointerEvents: "auto",
+                            zIndex: 1000,
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleHandleMouseDown(e, widget.id, "input");
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // Double-click to disconnect all edges from this handle
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
 
-                            if (edgesToRemove.length > 0) {
-                              const sourceIds = edgesToRemove.map((ed) => ed.source);
+                              if (edgesToRemove.length > 0) {
+                                const sourceIds = edgesToRemove.map((ed) => ed.source);
 
-                              setMainPromptState((prevState) => {
-                                const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => !sourceIds.includes(s.nodeId));
 
-                                return {
-                                  sections: newSections,
-                                  combinedPrompt: buildCombinedPrompt(newSections),
-                                };
+                                  return {
+                                    sections: newSections,
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
+
+                              return prev.filter((ed) => ed.target !== widget.id);
+                            });
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
+
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
                               });
+
+                              setConnecting(null);
+                              setDraggingHandle(null);
                             }
+                          }}
+                          onMouseUp={(e) => {
+                            e.stopPropagation();
+                            // Complete connection if connecting is active (when releasing mouse)
+                            if (connecting && connecting.sourceId !== widget.id) {
+                              const newEdge: Edge = {
+                                id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
+                                source: connecting.sourceId,
+                                target: widget.id,
+                              };
 
-                            return prev.filter((ed) => ed.target !== widget.id);
-                          });
-                        }}
-                        onClick={(e) => {
-                          // Complete connection if connecting is active
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
+                              setEdges((prev) => {
+                                // Check if edge already exists
+                                const exists = prev.some(
+                                  (e) => e.source === connecting.sourceId && e.target === widget.id,
+                                );
+                                if (exists) return prev;
+                                return [...prev, newEdge];
+                              });
 
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
+                              setConnecting(null);
+                              setDraggingHandle(null);
+                            }
+                          }}
+                          title="Input connection point - drag to connect"
+                        />
+                      )}
 
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                        onMouseUp={(e) => {
-                          // Complete connection if connecting is active (when releasing mouse)
-                          if (connecting && connecting.sourceId !== widget.id) {
-                            const newEdge: Edge = {
-                              id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
-                              source: connecting.sourceId,
-                              target: widget.id,
-                            };
-
-                            setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
-                              if (exists) return prev;
-                              return [...prev, newEdge];
-                            });
-
-                            setConnecting(null);
-                            setDraggingHandle(null);
-                          }
-                        }}
-                      />
-
-                      {/* Output Anchor (Right) - Automatically included on ALL nodes (except final nodes) */}
-                      {widget.id !== "flow-text-final" &&
+                      {/* Output Handle (Right) - Inside card, visible */}
+                      {widget.type.startsWith("flow-") &&
+                        widget.id !== "flow-text-final" &&
                         widget.id !== "flow-text-final-app" &&
                         widget.id !== "flow-text-final-game" && (
-                          <NodeAnchor
-                            type="output"
-                            nodeId={widget.id}
-                            onMouseDown={handleHandleMouseDown}
+                          <div
+                            className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
+                            style={{
+                              right: "-4.5px",
+                              pointerEvents: "auto",
+                              zIndex: 1000,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
                             onDoubleClick={(e) => {
-                              // Double-click to disconnect all edges from this anchor
+                              e.stopPropagation();
+                              e.preventDefault();
+                              // Double-click to disconnect all edges from this handle
                               setEdges((prev) => {
                                 const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
@@ -2071,6 +2195,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 return prev.filter((ed) => ed.source !== widget.id);
                               });
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            title="Output connection point - drag to connect"
                           />
                         )}
 
@@ -2095,11 +2221,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           >
                             {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                           </span>
-                          {widget.templateGroup && (
-                            <span className="text-[10px] text-neutral-500 bg-neutral-900/80 border border-neutral-800 rounded-full px-2 py-0.5 whitespace-nowrap">
-                              Template · {widget.templateGroup}
-                            </span>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
@@ -2323,78 +2444,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       >
                         <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
-              </div>
-
-              {/* Control Panel Banner - Bottom Center */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-                <div className="bg-[#121214] border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg pointer-events-auto">
-                  {/* Zoom Out */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.max(0.25, canvasTransform.scale - 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom out"
-                  >
-                    <Minus size={16} />
-                  </button>
-
-                  {/* Zoom In */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.min(2.0, canvasTransform.scale + 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom in"
-                  >
-                    <Plus size={16} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Lock/Unlock Widgets */}
-                  <button
-                    onClick={() => setWidgetsLocked(!widgetsLocked)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors ${
-                      widgetsLocked ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={widgetsLocked ? "Unlock widgets" : "Lock widgets"}
-                  >
-                    <Lock size={16} className={widgetsLocked ? "fill-current" : ""} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Toggle Background */}
-                  <button
-                    onClick={() => setBackgroundVisible(!backgroundVisible)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors relative ${
-                      !backgroundVisible ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={backgroundVisible ? "Hide background" : "Show background"}
-                  >
-                    <Sun size={16} />
-                    {!backgroundVisible && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-4 h-0.5 bg-amber-400 rotate-45 absolute" />
-                        <div className="w-4 h-0.5 bg-amber-400 -rotate-45 absolute" />
-                      </div>
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -2660,64 +2712,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                 />
                               </button>
-
-                              {/* Templates Subsection */}
-                              <div className="mt-2 pt-2 border-t border-neutral-800">
-                                <button
-                                  onClick={() => toggleSection("templates")}
-                                  className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <FileStack size={12} className="text-neutral-500" />
-                                    Templates
-                                  </div>
-                                  {expandedSections.templates ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                                </button>
-
-                                <AnimatePresence>
-                                  {expandedSections.templates && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      className="overflow-hidden"
-                                    >
-                                      <div className="pl-2 space-y-1 mt-1">
-                                        {[
-                                          BusinessModelCanvas,
-                                          LeanCanvas,
-                                          SWOTAnalysis,
-                                          UserJourneyMap,
-                                          AIPromptBlueprint,
-                                        ].map((template) => (
-                                          <button
-                                            key={template.name}
-                                            onClick={() => handleInsertTemplate(template)}
-                                            className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                          >
-                                            <div
-                                              className="flex-shrink-0 w-[120px] h-[60px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
-                                              dangerouslySetInnerHTML={{ __html: template.thumbnail }}
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                              <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                                {template.name}
-                                              </span>
-                                              <span className="block text-[10px] text-neutral-500 truncate">
-                                                {template.nodes.length} nodes
-                                              </span>
-                                            </div>
-                                            <Plus
-                                              size={12}
-                                              className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                            />
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
                             </div>
                           </motion.div>
                         )}
