@@ -223,6 +223,34 @@ const suggestionChips = [
   { label: "Game", icon: Gamepad2 },
 ];
 
+// --- Saved Project Types ---
+interface SavedFlowProject {
+  id: string;
+  name: string;
+  domain: string;
+  createdAt: string;
+  updatedAt: string;
+  widgets: Widget[];
+  edges: Edge[];
+  nodeOutputMap?: any;
+  mainPromptState?: any;
+  canvasTransform?: { translateX: number; translateY: number; scale: number };
+}
+
+const FLOW_PROJECTS_KEY = "beymflow.flow-engine.projects";
+
+const loadSavedProjects = (): SavedFlowProject[] => {
+  try {
+    return JSON.parse(localStorage.getItem(FLOW_PROJECTS_KEY) || "[]") || [];
+  } catch {
+    return [];
+  }
+};
+
+const saveProjectsToStorage = (projects: SavedFlowProject[]) => {
+  localStorage.setItem(FLOW_PROJECTS_KEY, JSON.stringify(projects));
+};
+
 const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
@@ -230,6 +258,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
   const [activeDomain, setActiveDomain] = useState<string>("Website");
   const [isLoading, setIsLoading] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<SavedFlowProject[]>([]);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("Untitled Project");
+
+  // Load saved projects on mount
+  useEffect(() => {
+    setSavedProjects(loadSavedProjects());
+  }, []);
 
   // Workspace State
   const [widgets, setWidgets] = useState<Widget[]>([]);
@@ -280,6 +316,60 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [showSettings, setShowSettings] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // --- Save/Load Project Functions ---
+  const saveCurrentProject = () => {
+    const now = new Date().toISOString();
+    const project: SavedFlowProject = {
+      id: currentProjectId || crypto.randomUUID(),
+      name: projectName,
+      domain: activeDomain,
+      createdAt: currentProjectId ? (savedProjects.find(p => p.id === currentProjectId)?.createdAt || now) : now,
+      updatedAt: now,
+      widgets,
+      edges,
+      nodeOutputMap,
+      mainPromptState,
+      canvasTransform,
+    };
+
+    const updated = currentProjectId
+      ? savedProjects.map(p => p.id === currentProjectId ? project : p)
+      : [...savedProjects, project];
+
+    saveProjectsToStorage(updated);
+    setSavedProjects(updated);
+    setCurrentProjectId(project.id);
+  };
+
+  const loadProject = (project: SavedFlowProject) => {
+    setCurrentProjectId(project.id);
+    setProjectName(project.name);
+    setActiveDomain(project.domain);
+    setWidgets(project.widgets);
+    setEdges(project.edges);
+    if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
+    if (project.mainPromptState) setMainPromptState(project.mainPromptState);
+    if (project.canvasTransform) setCanvasTransform(project.canvasTransform);
+    setViewMode("workspace");
+  };
+
+  const deleteProject = (projectId: string) => {
+    const updated = savedProjects.filter(p => p.id !== projectId);
+    saveProjectsToStorage(updated);
+    setSavedProjects(updated);
+  };
+
+  const createNewProject = () => {
+    setCurrentProjectId(null);
+    setProjectName("Untitled Project");
+    setWidgets([]);
+    setEdges([]);
+    setNodeOutputMap({});
+    setMainPromptState({ sections: [], combinedPrompt: "" });
+    setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    // Stay on landing to select domain
+  };
 
   // --- Shared State for Node Data Flow ---
   type NodeOutputMap = {
@@ -1429,8 +1519,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-            className="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-4xl mx-auto z-10 pb-32 text-center h-screen"
+            className="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto z-10 pt-24 text-center min-h-screen overflow-y-auto"
           >
+            {/* Home Button - Top Left */}
             <button
               onClick={() => {
                 if (onBack) onBack();
@@ -1442,7 +1533,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+            {/* New Project Button - Top Right */}
+            <button
+              onClick={createNewProject}
+              className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+            >
+              <Plus size={20} />
+              <span className="text-sm font-medium pr-1">Project</span>
+            </button>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12 w-full">
               <motion.h1
                 className="text-3xl md:text-4xl font-bold tracking-tight text-white pb-6"
                 style={{
@@ -1481,6 +1581,47 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   );
                 })}
               </div>
+
+              {/* Saved Projects Section */}
+              {savedProjects.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-full mt-16"
+                >
+                  <h2 className="text-xl font-semibold text-neutral-300 mb-6">Your Projects</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedProjects.map((project) => {
+                      const DomainIcon = suggestionChips.find(c => c.label === project.domain)?.icon || Globe;
+                      return (
+                        <div
+                          key={project.id}
+                          className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                          onClick={() => loadProject(project)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <DomainIcon className="w-5 h-5 text-neutral-500" />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteProject(project.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <h3 className="text-sm font-medium text-white truncate mb-1">{project.name}</h3>
+                          <p className="text-xs text-neutral-500">
+                            {new Date(project.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </motion.main>
         ) : (
@@ -1502,13 +1643,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <span>Back</span>
                 </button>
 
-                {/* Project Name - Static */}
+                {/* Editable Project Name */}
                 <div className="flex items-center min-w-0 flex-1">
-                  <span className="text-base font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
+                  <input
+                    type="text"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="text-base font-medium text-neutral-300 px-2 py-1 bg-transparent border-none outline-none hover:bg-neutral-800 focus:bg-neutral-800 rounded transition-colors truncate max-w-[200px]"
+                    placeholder="Project name..."
+                  />
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Save Button */}
+                <button
+                  onClick={saveCurrentProject}
+                  className="h-10 px-4 rounded-lg border border-neutral-800 flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer backdrop-blur-md bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                >
+                  <Save size={16} />
+                  <span className="text-sm">Save</span>
+                </button>
                 <button
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
