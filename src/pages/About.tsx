@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState, MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 // --- TYPES ---
 type InfoCard = {
@@ -162,9 +164,19 @@ const FlowCard = ({ card, index, isActive }: { card: InfoCard; index: number; is
 };
 
 // 2. About Page Component
-const About = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
+const About = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartCreating = () => {
+    if (user) {
+      navigate("/");
+    } else {
+      navigate("/auth");
+    }
+  };
 
   // Scroll Progress Logic
   useEffect(() => {
@@ -248,7 +260,7 @@ const About = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
           <div className="relative z-10">
             <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
             <button
-              onClick={onNavigateHome}
+              onClick={handleStartCreating}
               className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white bg-white/5 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
               <span className="relative flex items-center gap-2">
@@ -270,28 +282,4 @@ const About = ({ onNavigateHome }: { onNavigateHome: () => void }) => {
   );
 };
 
-// 3. Main App Component
-const App = () => {
-  const [view, setView] = useState<"about" | "home">("about");
-
-  if (view === "home") {
-    return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-black text-white p-4 text-center">
-        <h1 className="mb-4 text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600">
-          Home Page
-        </h1>
-        <p className="mb-8 text-gray-400">This is a placeholder for the home page.</p>
-        <button
-          onClick={() => setView("about")}
-          className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-8 py-3 text-cyan-300 hover:bg-cyan-500/20 transition-all"
-        >
-          View About Page
-        </button>
-      </div>
-    );
-  }
-
-  return <About onNavigateHome={() => setView("home")} />;
-};
-
-export default App;
+export default About;
