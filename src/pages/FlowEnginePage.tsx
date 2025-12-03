@@ -93,6 +93,9 @@ interface Widget {
   y: number;
   width: number;
   height: number;
+  templateGroup?: string;
+  templateGroupId?: string;
+  style?: string;
 }
 
 interface Edge {
@@ -291,6 +294,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     flows: false,
     templates: false,
   });
+
+  const [recentlyInsertedNodeIds, setRecentlyInsertedNodeIds] = useState<string[]>([]);
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
@@ -1211,6 +1216,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     // Generate unique IDs for template nodes
     const timestamp = Date.now();
+    const templateGroupId = `${template.name}-${timestamp}`;
     const nodeIdMap = new Map<string, string>();
 
     // Map template node IDs to unique generated IDs
@@ -1233,6 +1239,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         y: adjustedY + node.y - templateBounds.minY,
         width: node.width,
         height: node.height,
+        templateGroup: template.name,
+        templateGroupId,
+        style: node.style,
       };
     });
 
@@ -1258,6 +1267,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Add nodes and edges to state
     setWidgets((prev) => [...prev, ...newNodes]);
     setEdges((prev) => [...prev, ...newEdges]);
+
+    const insertedIds = newNodes.map((node) => node.id);
+    setRecentlyInsertedNodeIds((prev) => [...prev, ...insertedIds]);
+    setTimeout(() => {
+      setRecentlyInsertedNodeIds((prev) => prev.filter((id) => !insertedIds.includes(id)));
+    }, 600);
 
     // Close the categories drawer
     setShowCategories(false);
@@ -1911,6 +1926,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 {widgets.map((widget) => {
                   let Icon = Sparkles;
                   let accentColor = "text-neutral-400";
+                  const isRecentlyInserted = recentlyInsertedNodeIds.includes(widget.id);
 
                   if (widget.type === "category" && widget.category) {
                     Icon = widget.category.icon;
@@ -1933,8 +1949,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   }
 
                   return (
-                    <div
+                    <motion.div
                       key={widget.id}
+                      initial={isRecentlyInserted ? { opacity: 0, scale: 0.96 } : false}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       className="absolute bg-[#121214] border border-neutral-800 rounded-xl flex flex-col hover:border-neutral-700 transition-colors font-sans widget-container"
                       style={{
                         left: widget.x,
@@ -1944,6 +1963,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         overflow: "visible",
                         writingMode: "horizontal-tb",
                         textOrientation: "mixed",
+                        boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
                       }}
                       onMouseDown={(e) => {
                         // Don't start dragging if clicking on anchor
@@ -2075,6 +2095,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           >
                             {widget.type === "category" && widget.category ? widget.category.name : widget.title}
                           </span>
+                          {widget.templateGroup && (
+                            <span className="text-[10px] text-neutral-500 bg-neutral-900/80 border border-neutral-800 rounded-full px-2 py-0.5 whitespace-nowrap">
+                              Template · {widget.templateGroup}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-0.5 flex-shrink-0 ml-2">
@@ -2298,7 +2323,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       >
                         <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -2671,7 +2696,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                             className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
                                           >
                                             <div
-                                              className="flex-shrink-0 w-[60px] h-[30px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
+                                              className="flex-shrink-0 w-[120px] h-[60px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
                                               dangerouslySetInnerHTML={{ __html: template.thumbnail }}
                                             />
                                             <div className="flex-1 min-w-0">
