@@ -6,11 +6,14 @@
 // Grid uses large fixed size (200000px) positioned to cover entire workspace at all zoom/pan levels
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 import {
   ArrowRight,
@@ -52,6 +55,7 @@ import {
   Bot,
   Save,
   Link2,
+  LogIn,
 } from "lucide-react";
 
 // --- Types & Interfaces ---
@@ -253,6 +257,7 @@ const saveProjectsToStorage = (projects: SavedFlowProject[]) => {
 
 const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // --- State ---
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
@@ -261,11 +266,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [savedProjects, setSavedProjects] = useState<SavedFlowProject[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Untitled Project");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Load saved projects on mount
+  // Load saved projects on mount (user-specific)
   useEffect(() => {
-    setSavedProjects(loadSavedProjects());
-  }, []);
+    if (user) {
+      const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+      try {
+        const projects = JSON.parse(localStorage.getItem(userKey) || "[]") || [];
+        setSavedProjects(projects);
+      } catch {
+        setSavedProjects([]);
+      }
+    } else {
+      setSavedProjects([]);
+    }
+  }, [user]);
 
   // Workspace State
   const [widgets, setWidgets] = useState<Widget[]>([]);
@@ -317,60 +334,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // --- Save/Load Project Functions ---
-  const saveCurrentProject = () => {
-    const now = new Date().toISOString();
-    const project: SavedFlowProject = {
-      id: currentProjectId || crypto.randomUUID(),
-      name: projectName,
-      domain: activeDomain,
-      createdAt: currentProjectId ? (savedProjects.find(p => p.id === currentProjectId)?.createdAt || now) : now,
-      updatedAt: now,
-      widgets,
-      edges,
-      nodeOutputMap,
-      mainPromptState,
-      canvasTransform,
-    };
-
-    const updated = currentProjectId
-      ? savedProjects.map(p => p.id === currentProjectId ? project : p)
-      : [...savedProjects, project];
-
-    saveProjectsToStorage(updated);
-    setSavedProjects(updated);
-    setCurrentProjectId(project.id);
-  };
-
-  const loadProject = (project: SavedFlowProject) => {
-    setCurrentProjectId(project.id);
-    setProjectName(project.name);
-    setActiveDomain(project.domain);
-    setWidgets(project.widgets);
-    setEdges(project.edges);
-    if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
-    if (project.mainPromptState) setMainPromptState(project.mainPromptState);
-    if (project.canvasTransform) setCanvasTransform(project.canvasTransform);
-    setViewMode("workspace");
-  };
-
-  const deleteProject = (projectId: string) => {
-    const updated = savedProjects.filter(p => p.id !== projectId);
-    saveProjectsToStorage(updated);
-    setSavedProjects(updated);
-  };
-
-  const createNewProject = () => {
-    setCurrentProjectId(null);
-    setProjectName("Untitled Project");
-    setWidgets([]);
-    setEdges([]);
-    setNodeOutputMap({});
-    setMainPromptState({ sections: [], combinedPrompt: "" });
-    setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
-    // Stay on landing to select domain
-  };
-
   // --- Shared State for Node Data Flow ---
   type NodeOutputMap = {
     [nodeId: string]: {
@@ -395,6 +358,133 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     sections: [],
     combinedPrompt: "",
   });
+
+  // --- Save/Load Project Functions ---
+  const saveCurrentProject = useCallback((silent = false) => {
+    if (!user) {
+      if (!silent) {
+        toast.error("Kirjaudu sisään tallentaaksesi projekteja", {
+          action: {
+            label: "Kirjaudu",
+            onClick: () => navigate("/auth"),
+          },
+        });
+      }
+      return;
+    }
+
+    if (widgets.length === 0) return; // Don't save empty projects
+
+    setIsSaving(true);
+    const now = new Date().toISOString();
+    const projectId = currentProjectId || crypto.randomUUID();
+    
+    const project: SavedFlowProject = {
+      id: projectId,
+      name: projectName,
+      domain: activeDomain,
+      createdAt: currentProjectId ? (savedProjects.find(p => p.id === currentProjectId)?.createdAt || now) : now,
+      updatedAt: now,
+      widgets,
+      edges,
+      nodeOutputMap,
+      mainPromptState,
+      canvasTransform,
+    };
+
+    const updated = currentProjectId
+      ? savedProjects.map(p => p.id === currentProjectId ? project : p)
+      : [...savedProjects, project];
+
+    // Save to user-specific key
+    const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+    localStorage.setItem(userKey, JSON.stringify(updated));
+    setSavedProjects(updated);
+    setCurrentProjectId(projectId);
+    setLastSaved(new Date());
+    setIsSaving(false);
+    
+    if (!silent) {
+      toast.success("Projekti tallennettu");
+    }
+  }, [user, widgets, edges, projectName, activeDomain, currentProjectId, savedProjects, canvasTransform, navigate, nodeOutputMap, mainPromptState]);
+
+  // Auto-save every 30 seconds when in workspace mode with changes
+  useEffect(() => {
+    if (viewMode !== "workspace" || !user || widgets.length === 0) return;
+
+    const autoSaveInterval = setInterval(() => {
+      saveCurrentProject(true); // Silent save
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [viewMode, user, widgets, saveCurrentProject]);
+
+  // Save on significant changes (debounced)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    if (viewMode !== "workspace" || !user || widgets.length === 0) return;
+
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save after 5 seconds of no changes
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveCurrentProject(true);
+    }, 5000);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [widgets, edges, viewMode, user]);
+
+  // Save before leaving the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (user && widgets.length > 0 && viewMode === "workspace") {
+        saveCurrentProject(true);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [user, widgets, viewMode, saveCurrentProject]);
+
+  const loadProject = (project: SavedFlowProject) => {
+    setCurrentProjectId(project.id);
+    setProjectName(project.name);
+    setActiveDomain(project.domain);
+    setWidgets(project.widgets);
+    setEdges(project.edges);
+    if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
+    if (project.mainPromptState) setMainPromptState(project.mainPromptState);
+    if (project.canvasTransform) setCanvasTransform(project.canvasTransform);
+    setViewMode("workspace");
+  };
+
+  const deleteProject = (projectId: string) => {
+    if (!user) return;
+    const updated = savedProjects.filter(p => p.id !== projectId);
+    const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+    localStorage.setItem(userKey, JSON.stringify(updated));
+    setSavedProjects(updated);
+  };
+
+  const createNewProject = () => {
+    setCurrentProjectId(null);
+    setProjectName("Untitled Project");
+    setWidgets([]);
+    setEdges([]);
+    setNodeOutputMap({});
+    setMainPromptState({ sections: [], combinedPrompt: "" });
+    setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    // Stay on landing to select domain
+  };
 
   // Find Main Prompt Node (the final TEXT GENERATION node)
   const getMainPromptNodeId = (): string | null => {
@@ -1533,14 +1623,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
-            {/* New Project Button - Top Right */}
-            <button
-              onClick={createNewProject}
-              className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
-            >
-              <Plus size={20} />
-              <span className="text-sm font-medium pr-1">Project</span>
-            </button>
+            {/* Login/New Project Button - Top Right */}
+            {user ? (
+              <button
+                onClick={createNewProject}
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+              >
+                <Plus size={20} />
+                <span className="text-sm font-medium pr-1">Project</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+              >
+                <LogIn size={20} />
+                <span className="text-sm font-medium pr-1">Sign in</span>
+              </button>
+            )}
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12 w-full">
               <motion.h1
@@ -1583,7 +1683,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </div>
 
               {/* Saved Projects Section */}
-              {savedProjects.length > 0 && (
+              {user && savedProjects.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1619,6 +1719,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         </div>
                       );
                     })}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Login prompt for non-logged in users */}
+              {!user && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="w-full mt-16"
+                >
+                  <div className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800 text-center">
+                    <LogIn className="w-8 h-8 text-neutral-500 mx-auto mb-3" />
+                    <p className="text-neutral-400 mb-4">Kirjaudu sisään tallentaaksesi projekteja</p>
+                    <button
+                      onClick={() => navigate("/auth")}
+                      className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all"
+                    >
+                      Kirjaudu sisään
+                    </button>
                   </div>
                 </motion.div>
               )}
@@ -1658,11 +1779,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Save Button */}
                 <button
-                  onClick={saveCurrentProject}
-                  className="h-10 px-4 rounded-lg border border-neutral-800 flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer backdrop-blur-md bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                  onClick={() => saveCurrentProject(false)}
+                  disabled={isSaving}
+                  className="h-10 px-4 rounded-lg border border-neutral-800 flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer backdrop-blur-md bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white disabled:opacity-50"
                 >
-                  <Save size={16} />
-                  <span className="text-sm">Save</span>
+                  {isSaving ? (
+                    <div className="w-4 h-4 border-2 border-neutral-500 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  <span className="text-sm">{isSaving ? "Saving..." : "Save"}</span>
                 </button>
                 <button
                   onClick={() => setShowCategories(!showCategories)}
