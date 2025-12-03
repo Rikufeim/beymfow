@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { GlassButton } from "@/components/ui/glass-button";
 
 // --- TYPES ---
 type InfoCard = {
@@ -259,22 +260,9 @@ const About = () => {
         <section className="pt-0 pb-32 text-center relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
-            <button
-              onClick={handleStartCreating}
-              className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white bg-white/5 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
-            >
-              <span className="relative flex items-center gap-2">
-                Start creating
-                <svg
-                  className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
-            </button>
+            <GlassButton onClick={handleStartCreating} size="lg">
+              Start creating
+            </GlassButton>
           </div>
         </section>
       </div>
