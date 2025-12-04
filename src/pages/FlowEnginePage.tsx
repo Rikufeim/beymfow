@@ -8,7 +8,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, BrowserRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import { useAuth } from "@/contexts/AuthContext"; // REMOVED: External dependency
 import { toast, Toaster } from "sonner";
 
@@ -718,6 +718,113 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   });
   const generateDesignSystem = (upstreamOutputs: NodeOutputMap) => ({ generatedText: "Design...", jsonPayload: {} });
   const generateSeoPlan = (upstreamOutputs: NodeOutputMap) => ({ generatedText: "SEO...", jsonPayload: {} });
+
+  // --- Missing Helper Functions ---
+  const updateWidget = (widgetId: string, field: string, value: any) => {
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === widgetId ? { ...w, [field]: value } : w))
+    );
+  };
+
+  const handleCategoryAdd = (category: Category) => {
+    const newWidget: Widget = {
+      id: `cat-${category.id}-${Date.now()}`,
+      type: "category",
+      category,
+      title: category.name,
+      content: "",
+      x: 100 + Math.random() * 200,
+      y: 100 + Math.random() * 200,
+      width: 280,
+      height: 200,
+    };
+    setWidgets((prev) => [...prev, newWidget]);
+  };
+
+  // --- Flow Preset Creators ---
+  const createWebsiteFlowPreset = () => {
+    const nodes: Widget[] = [
+      { id: "flow-input-1", type: "flow-input", title: "User Input", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-text-1", type: "flow-text-gen", title: "Idea Summary", x: 300, y: 100, width: 220, height: 150 },
+      { id: "flow-text-2", type: "flow-text-gen", title: "Page Structure", x: 300, y: 300, width: 220, height: 150 },
+      { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "flow-input-1", target: "flow-text-1" },
+      { id: "e2", source: "flow-input-1", target: "flow-text-2" },
+      { id: "e3", source: "flow-text-1", target: "flow-text-final" },
+      { id: "e4", source: "flow-text-2", target: "flow-text-final" },
+    ];
+    return { nodes, edges };
+  };
+
+  const createAppFlowPreset = () => {
+    const nodes: Widget[] = [
+      { id: "flow-input-1", type: "flow-input", title: "App Idea", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-text-1", type: "flow-text-gen", title: "Features", x: 300, y: 100, width: 220, height: 150 },
+      { id: "flow-text-2", type: "flow-text-gen", title: "Tech Stack", x: 300, y: 300, width: 220, height: 150 },
+      { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "flow-input-1", target: "flow-text-1" },
+      { id: "e2", source: "flow-input-1", target: "flow-text-2" },
+      { id: "e3", source: "flow-text-1", target: "flow-text-final" },
+      { id: "e4", source: "flow-text-2", target: "flow-text-final" },
+    ];
+    return { nodes, edges };
+  };
+
+  const createGameFlowPreset = () => {
+    const nodes: Widget[] = [
+      { id: "flow-input-1", type: "flow-input", title: "Game Concept", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-text-1", type: "flow-text-gen", title: "Mechanics", x: 300, y: 100, width: 220, height: 150 },
+      { id: "flow-text-2", type: "flow-text-gen", title: "Art Style", x: 300, y: 300, width: 220, height: 150 },
+      { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "flow-input-1", target: "flow-text-1" },
+      { id: "e2", source: "flow-input-1", target: "flow-text-2" },
+      { id: "e3", source: "flow-text-1", target: "flow-text-final" },
+      { id: "e4", source: "flow-text-2", target: "flow-text-final" },
+    ];
+    return { nodes, edges };
+  };
+
+  const handleCreateWebsiteFlowPreset = () => handleLoadTemplate("Website");
+  const handleCreateAppFlowPreset = () => handleLoadTemplate("App");
+  const handleCreateGameFlowPreset = () => handleLoadTemplate("Game");
+
+  const handleCreateLoginFlowTemplate = () => {
+    const nodes: Widget[] = [
+      { id: "flow-input-1", type: "flow-input", title: "User Credentials", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-agent-1", type: "flow-agent", title: "Auth Agent", x: 300, y: 200, width: 220, height: 150 },
+      { id: "flow-state-1", type: "flow-state", title: "Session State", x: 550, y: 200, width: 200, height: 120 },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "flow-input-1", target: "flow-agent-1" },
+      { id: "e2", source: "flow-agent-1", target: "flow-state-1" },
+    ];
+    setWidgets(nodes);
+    setEdges(edges);
+    setProjectName("Login Flow");
+    setCurrentProjectId(null);
+  };
+
+  const handleCreateFeedbackFlowTemplate = () => {
+    const nodes: Widget[] = [
+      { id: "flow-input-1", type: "flow-input", title: "User Feedback", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-text-1", type: "flow-text-gen", title: "Sentiment Analysis", x: 300, y: 200, width: 220, height: 150 },
+      { id: "flow-state-1", type: "flow-state", title: "Save Result", x: 550, y: 200, width: 200, height: 120 },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "flow-input-1", target: "flow-text-1" },
+      { id: "e2", source: "flow-text-1", target: "flow-state-1" },
+    ];
+    setWidgets(nodes);
+    setEdges(edges);
+    setProjectName("Feedback Loop");
+    setCurrentProjectId(null);
+  };
 
   // --- Canvas Logic ---
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -2113,12 +2220,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
 const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
   return (
-    <BrowserRouter>
-      <MockAuthProvider>
-        <Toaster position="top-center" />
-        <FlowEngineContent {...props} />
-      </MockAuthProvider>
-    </BrowserRouter>
+    <MockAuthProvider>
+      <Toaster position="top-center" />
+      <FlowEngineContent {...props} />
+    </MockAuthProvider>
   );
 };
 
