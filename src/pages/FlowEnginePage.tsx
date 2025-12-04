@@ -9,8 +9,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-// import { useAuth } from "@/contexts/AuthContext"; // REMOVED: External dependency
 import { toast, Toaster } from "sonner";
+import { HexColorPicker } from "react-colorful";
 
 import {
   ArrowRight,
@@ -420,8 +420,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     templates: false, // New templates section
   });
 
-  // Settings State
   const [showSettings, setShowSettings] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -1628,14 +1628,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                     {/* Color */}
                     <div className="relative">
-                      <input
-                        type="color"
-                        value={textToolSettings.color}
-                        onChange={(e) => setTextToolSettings((prev) => ({ ...prev, color: e.target.value }))}
-                        className="w-6 h-6 rounded cursor-pointer border border-neutral-600 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:rounded [&::-moz-color-swatch]:border-none"
-                        style={{ backgroundColor: '#333' }}
+                      <button
+                        onClick={() => setShowColorPicker(!showColorPicker)}
+                        className="w-6 h-6 rounded border border-neutral-600 cursor-pointer"
+                        style={{ backgroundColor: textToolSettings.color }}
                         title="Text Color"
                       />
+                      {showColorPicker && (
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-3 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl z-50">
+                          <HexColorPicker
+                            color={textToolSettings.color}
+                            onChange={(color) => setTextToolSettings((prev) => ({ ...prev, color }))}
+                          />
+                          <div className="mt-2 flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={textToolSettings.color}
+                              onChange={(e) => setTextToolSettings((prev) => ({ ...prev, color: e.target.value }))}
+                              className="flex-1 bg-neutral-700 text-white text-xs px-2 py-1 rounded border border-neutral-600 outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
