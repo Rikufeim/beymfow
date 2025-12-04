@@ -808,6 +808,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setEdges(edges);
     setProjectName("Login Flow");
     setCurrentProjectId(null);
+    setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+    setViewMode("workspace");
   };
 
   const handleCreateFeedbackFlowTemplate = () => {
@@ -824,6 +826,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setEdges(edges);
     setProjectName("Feedback Loop");
     setCurrentProjectId(null);
+    setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+    setViewMode("workspace");
   };
 
   // --- Canvas Logic ---
@@ -1623,13 +1627,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     <div className="w-px h-4 bg-neutral-700 mx-1" />
 
                     {/* Color */}
-                    <input
-                      type="color"
-                      value={textToolSettings.color}
-                      onChange={(e) => setTextToolSettings((prev) => ({ ...prev, color: e.target.value }))}
-                      className="w-6 h-6 rounded cursor-pointer bg-transparent border-none"
-                      title="Text Color"
-                    />
+                    <div className="relative">
+                      <input
+                        type="color"
+                        value={textToolSettings.color}
+                        onChange={(e) => setTextToolSettings((prev) => ({ ...prev, color: e.target.value }))}
+                        className="w-6 h-6 rounded cursor-pointer border border-neutral-600 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:rounded [&::-moz-color-swatch]:border-none"
+                        style={{ backgroundColor: '#333' }}
+                        title="Text Color"
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1638,21 +1645,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <div className="flex items-center gap-1 p-1.5 bg-[#1e1e20] border border-neutral-700 rounded-full shadow-xl">
                 <button
                   onClick={() => setActiveTool("select")}
-                  className={`p-2.5 rounded-full transition-all ${activeTool === "select" ? "bg-blue-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                  className={`p-2.5 rounded-full transition-all ${activeTool === "select" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
                   title="Move / Select (V)"
                 >
                   <MousePointer2 size={18} />
                 </button>
                 <button
                   onClick={() => setActiveTool("hand")}
-                  className={`p-2.5 rounded-full transition-all ${activeTool === "hand" ? "bg-blue-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                  className={`p-2.5 rounded-full transition-all ${activeTool === "hand" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
                   title="Hand Tool (H)"
                 >
                   <Hand size={18} />
                 </button>
                 <button
                   onClick={() => setActiveTool("text")}
-                  className={`p-2.5 rounded-full transition-all ${activeTool === "text" ? "bg-blue-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                  className={`p-2.5 rounded-full transition-all ${activeTool === "text" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
                   title="Text Tool (T)"
                 >
                   <Type size={18} />
