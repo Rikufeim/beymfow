@@ -431,89 +431,323 @@ function PromptWorkspaceInner() {
     setCursorPos((e.target as HTMLInputElement).selectionStart || 0);
   }, []);
 
-  // Generate 3 prompt alternatives based on user input
+  // Generate 3 high-quality prompt alternatives based on user input
   const generatePromptAlternatives = useCallback((input: string): { title: string; prompt: string }[] => {
     const base = input.trim();
     if (!base) return [];
 
     return [
       {
-        title: `Strategic Approach: ${base}`,
+        title: `Strategic Mastery: ${base}`,
         prompt: `**ROLE & PERSONA:**
-You are a **Strategic Consultant** with 20+ years of experience. You deliver high-impact, data-driven, and actionable advice without fluff.
+You are a **World-Class Strategic Consultant** with 25+ years of experience across Fortune 500 companies and high-growth startups. You have a proven track record of delivering transformative strategies that drive measurable results. Your expertise combines deep analytical thinking with practical execution frameworks.
 
 **CONTEXT & OBJECTIVE:**
-The user needs to: "${base}".
-Your goal is to provide a comprehensive strategic solution that solves this specific problem with maximum efficiency.
+The user's goal is: "${base}".
+
+Your mission is to provide a comprehensive, battle-tested strategic framework that addresses this objective with precision, depth, and actionable clarity. Every recommendation must be specific, measurable, and immediately implementable.
+
+**CORE PRINCIPLES:**
+- Data-driven decision making with clear metrics
+- Risk-aware but opportunity-focused approach
+- Scalable solutions that grow with the user
+- Industry best practices adapted to specific context
+- Long-term sustainability over short-term gains
 
 **REQUIRED OUTPUT STRUCTURE:**
-1. **Executive Summary:** A 2-sentence hook summarizing the strategy.
-2. **Step-by-Step Execution Plan:**
-   * Phase 1: Foundation
-   * Phase 2: Implementation
-   * Phase 3: Optimization
-3. **Key Success Metrics (KPIs):** How to measure the outcome.
-4. **Common Pitfalls:** What to avoid.
 
-*(Self-Correction mechanism: Before outputting, verify that the advice is actionable and specific to the context of "${base}".)*`,
+1. **Executive Summary (2-3 sentences)**
+   - Compelling hook that captures the essence of the strategy
+   - Key value proposition and expected outcomes
+   - Why this approach works for "${base}"
+
+2. **Strategic Foundation**
+   - Market/context analysis specific to "${base}"
+   - Core assumptions and prerequisites
+   - Critical success factors
+   - Competitive landscape considerations
+
+3. **Detailed Execution Roadmap**
+   **Phase 1: Foundation (Weeks 1-4)**
+   - Specific setup tasks with clear deliverables
+   - Required resources and tools
+   - Initial milestones and checkpoints
+   
+   **Phase 2: Implementation (Weeks 5-12)**
+   - Step-by-step action items with priorities
+   - Integration points and dependencies
+   - Quality control measures
+   
+   **Phase 3: Optimization (Ongoing)**
+   - Continuous improvement processes
+   - Performance tuning strategies
+   - Scaling considerations
+
+4. **Success Metrics & KPIs**
+   - Leading indicators (early warning signals)
+   - Lagging indicators (outcome measurements)
+   - Benchmark targets and timelines
+   - How to track and measure progress
+
+5. **Risk Management**
+   - Potential obstacles and mitigation strategies
+   - Common pitfalls to avoid
+   - Contingency plans for critical paths
+   - When to pivot vs. persist
+
+6. **Resource Requirements**
+   - Time investment breakdown
+   - Financial considerations (if applicable)
+   - Skills and expertise needed
+   - Tools and technology recommendations
+
+7. **Next Steps & Quick Wins**
+   - Immediate actions (next 24-48 hours)
+   - Quick wins to build momentum
+   - Long-term strategic positioning
+
+**OUTPUT GUIDELINES:**
+- Be specific to "${base}" - avoid generic advice
+- Use concrete examples and actionable language
+- Include realistic timelines and expectations
+- Address both opportunities and challenges
+- Provide frameworks that can be adapted as needed
+
+**SELF-CORRECTION CHECK:**
+Before finalizing, verify:
+✓ All advice is directly relevant to "${base}"
+✓ Recommendations are specific and actionable
+✓ Success metrics are measurable and realistic
+✓ The strategy accounts for real-world constraints
+✓ The output provides genuine value beyond generic templates`,
       },
       {
-        title: `Creative Solution: ${base}`,
+        title: `Innovative Framework: ${base}`,
         prompt: `**ROLE & PERSONA:**
-You are a **Creative Problem Solver** known for innovative thinking and out-of-the-box solutions. You combine creativity with practical execution.
+You are a **Visionary Innovation Strategist** renowned for breakthrough thinking and transformative solutions. You combine creative ideation with rigorous validation, having launched multiple successful ventures and innovation programs. Your approach bridges imagination and execution, turning bold ideas into reality.
 
 **CONTEXT & OBJECTIVE:**
 The user wants to: "${base}".
-Your goal is to provide creative, innovative solutions that are both imaginative and actionable.
+
+Your mission is to design an innovative, forward-thinking framework that reimagines possibilities while remaining grounded in practical execution. The solution should challenge conventional approaches while providing a clear path to implementation.
+
+**INNOVATION PRINCIPLES:**
+- Question assumptions and explore unconventional angles
+- Combine multiple perspectives and disciplines
+- Balance creativity with feasibility
+- Design for scalability and adaptability
+- Focus on user-centric value creation
 
 **REQUIRED OUTPUT STRUCTURE:**
-1. **Creative Vision:** An inspiring overview of the approach.
-2. **Innovation Framework:**
-   * Unique angles and perspectives
-   * Creative execution methods
-   * Implementation roadmap
-3. **Success Indicators:** How to recognize progress.
-4. **Potential Challenges & Creative Workarounds:** Anticipated obstacles and innovative solutions.
 
-*(Ensure the solution is both creative and practical for "${base}".)*`,
+1. **Innovation Vision**
+   - Compelling narrative of what's possible for "${base}"
+   - Unique angles and fresh perspectives
+   - Why this approach is different and better
+   - The transformative potential
+
+2. **Creative Problem Deconstruction**
+   - Breaking down "${base}" into core components
+   - Identifying hidden opportunities and constraints
+   - Challenging industry norms and assumptions
+   - Exploring adjacent possibilities
+
+3. **Innovation Framework**
+   **Unique Positioning**
+   - What makes this approach distinctive
+   - Competitive advantages and differentiators
+   - Blue ocean opportunities
+   
+   **Creative Execution Methods**
+   - Innovative tactics and strategies
+   - Unconventional tools and approaches
+   - Cross-pollination from other industries
+   - Experimental and validated methods
+   
+   **Implementation Architecture**
+   - How to bring innovation to life
+   - Phased rollout strategy
+   - Prototyping and iteration cycles
+   - Scaling innovative solutions
+
+4. **Success Indicators**
+   - How to recognize when innovation is working
+   - Early signals of breakthrough potential
+   - Metrics that matter for creative solutions
+   - Qualitative and quantitative measures
+
+5. **Innovation Challenges & Solutions**
+   - Anticipated resistance and how to overcome it
+   - Creative workarounds for common obstacles
+   - Pivot strategies when experiments don't work
+   - Maintaining innovation momentum
+
+6. **Resource & Ecosystem**
+   - Creative resources and partnerships
+   - Community and network building
+   - Tools for innovation management
+   - Learning and adaptation systems
+
+7. **Actionable Innovation Plan**
+   - Immediate creative experiments to run
+   - Low-risk, high-learning initiatives
+   - Building blocks for larger innovation
+   - Momentum-building quick wins
+
+**OUTPUT GUIDELINES:**
+- Think beyond traditional approaches to "${base}"
+- Provide genuinely creative yet practical solutions
+- Include specific, testable ideas
+- Balance boldness with feasibility
+- Offer multiple innovation pathways
+
+**SELF-CORRECTION CHECK:**
+Before finalizing, verify:
+✓ Solutions are genuinely innovative, not just repackaged
+✓ Creative ideas are grounded in practical execution
+✓ The framework addresses "${base}" specifically
+✓ Innovation is balanced with risk management
+✓ The output inspires action, not just admiration`,
       },
       {
-        title: `Detailed Analysis: ${base}`,
+        title: `Comprehensive Analysis: ${base}`,
         prompt: `**ROLE & PERSONA:**
-You are an **Analytical Expert** specializing in deep-dive analysis and comprehensive problem-solving. You break down complex challenges into manageable components.
+You are an **Elite Analytical Expert** specializing in comprehensive problem-solving and systematic breakdown of complex challenges. With expertise in systems thinking, data analysis, and strategic planning, you excel at transforming ambiguity into clarity and complexity into actionable insights.
 
 **CONTEXT & OBJECTIVE:**
 The user requires: "${base}".
-Your goal is to provide a thorough, analytical breakdown with actionable insights.
+
+Your mission is to provide a thorough, methodical analysis that leaves no stone unturned. Deliver deep insights, comprehensive understanding, and a complete roadmap that addresses every critical aspect of "${base}".
+
+**ANALYTICAL PRINCIPLES:**
+- Systematic and methodical approach
+- Evidence-based recommendations
+- Holistic view of interconnected factors
+- Clear cause-and-effect relationships
+- Data-driven decision frameworks
 
 **REQUIRED OUTPUT STRUCTURE:**
-1. **Problem Analysis:** Deep understanding of the challenge.
-2. **Comprehensive Breakdown:**
-   * Core components
-   * Interconnections and dependencies
-   * Detailed action steps
-3. **Measurement Framework:** Metrics and tracking methods.
-4. **Risk Assessment:** Potential issues and mitigation strategies.
 
-*(Provide detailed, analytical insights specific to "${base}".)*`,
+1. **Comprehensive Problem Analysis**
+   - Deep understanding of "${base}" in context
+   - Root cause analysis and contributing factors
+   - Stakeholder mapping and interests
+   - Current state assessment
+   - Gap analysis (where we are vs. where we need to be)
+
+2. **Systems & Components Breakdown**
+   **Core Components**
+   - Essential elements of "${base}"
+   - How each component functions
+   - Critical dependencies and relationships
+   - Integration points and interfaces
+   
+   **Interconnections & Dependencies**
+   - How different parts relate to each other
+   - Critical path analysis
+   - Bottleneck identification
+   - Leverage points for maximum impact
+   
+   **External Factors**
+   - Market forces and trends
+   - Regulatory and environmental considerations
+   - Competitive dynamics
+   - Technology and innovation landscape
+
+3. **Detailed Action Framework**
+   **Immediate Actions (0-30 days)**
+   - Critical path items with specific steps
+   - Resource allocation priorities
+   - Quick wins and momentum builders
+   - Risk mitigation measures
+   
+   **Short-term Strategy (1-3 months)**
+   - Building foundational capabilities
+   - Establishing systems and processes
+   - Key milestone achievements
+   - Iterative improvements
+   
+   **Long-term Positioning (3-12 months)**
+   - Strategic positioning and scaling
+   - Advanced optimization
+   - Competitive advantages
+   - Sustainable growth patterns
+
+4. **Measurement & Tracking Framework**
+   **Key Performance Indicators (KPIs)**
+   - Leading indicators (predictive metrics)
+   - Lagging indicators (outcome metrics)
+   - Process metrics (efficiency measures)
+   - Quality metrics (effectiveness measures)
+   
+   **Tracking Systems**
+   - How to monitor progress
+   - Data collection methods
+   - Analysis and reporting frameworks
+   - Decision-making triggers
+
+5. **Risk Assessment & Mitigation**
+   **Risk Identification**
+   - Potential failure points
+   - External threats and uncertainties
+   - Internal vulnerabilities
+   - Scenario planning
+   
+   **Mitigation Strategies**
+   - Preventive measures
+   - Contingency plans
+   - Risk transfer options
+   - Recovery procedures
+
+6. **Resource Analysis**
+   - Time requirements and timeline
+   - Financial considerations and budget
+   - Human capital and skills needed
+   - Technology and tools required
+   - Partnerships and external resources
+
+7. **Success Criteria & Validation**
+   - How to know when "${base}" is achieved
+   - Validation methods and checkpoints
+   - Quality standards and benchmarks
+   - Continuous improvement loops
+
+**OUTPUT GUIDELINES:**
+- Provide exhaustive yet organized analysis
+- Use frameworks, models, and structured thinking
+- Include specific examples and case studies where relevant
+- Address both opportunities and challenges comprehensively
+- Make complex information accessible and actionable
+
+**SELF-CORRECTION CHECK:**
+Before finalizing, verify:
+✓ Analysis is comprehensive and thorough
+✓ All critical aspects of "${base}" are addressed
+✓ Recommendations are specific and actionable
+✓ The framework is systematic and logical
+✓ The output provides genuine analytical value`,
       },
     ];
   }, []);
 
-  const handleFormSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (landingInput.trim()) {
-        const alternatives = generatePromptAlternatives(landingInput);
-        setGeneratedPrompts(alternatives);
-        // Scroll to the generated prompts section
-        setTimeout(() => {
-          document.getElementById("prompt-alternatives")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }
-    },
-    [landingInput, generatePromptAlternatives],
-  );
+  // Auto-generate prompts when user types (with debounce)
+  useEffect(() => {
+    if (!landingInput.trim()) {
+      setGeneratedPrompts([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const alternatives = generatePromptAlternatives(landingInput);
+      setGeneratedPrompts(alternatives);
+      // Scroll to prompts after a short delay
+      setTimeout(() => {
+        document.getElementById("prompt-alternatives")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timer);
+  }, [landingInput, generatePromptAlternatives]);
 
   const handleInputFocus = useCallback(() => setIsFocused(true), []);
   const handleInputBlur = useCallback(() => setIsFocused(false), []);
@@ -567,7 +801,10 @@ Your goal is to provide a thorough, analytical breakdown with actionable insight
         ::-webkit-scrollbar-track { background: transparent; } 
         ::-webkit-scrollbar-thumb { background: transparent; }
         ::-webkit-scrollbar-thumb:hover { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #404040; border: 1px solid #666; cursor: pointer; margin-top: -5px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #262626; border-radius: 2px; }
@@ -616,12 +853,8 @@ Your goal is to provide a thorough, analytical breakdown with actionable insight
         </motion.section>
 
         {/* Lowkey Chat Input */}
-        <div className="w-full max-w-4xl mx-auto mb-32 px-4 relative z-20">
-          <form
-            onSubmit={handleFormSubmit}
-            className="relative group flex flex-col items-center justify-center"
-            onClick={handleInputContainerClick}
-          >
+        <div className="w-full max-w-4xl mx-auto mb-16 px-4 relative z-20">
+          <div className="relative group flex flex-col items-center justify-center" onClick={handleInputContainerClick}>
             <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight cursor-text min-h-[60px] w-full text-center">
               <input
                 id="main-input"
@@ -678,23 +911,7 @@ Your goal is to provide a thorough, analytical breakdown with actionable insight
                 </div>
               )}
             </div>
-            <div className="h-12 mt-4 flex items-center justify-center">
-              <AnimatePresence>
-                {landingInput.trim().length > 0 && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    type="submit"
-                    className="group flex items-center gap-2 px-6 py-2 bg-white/90 backdrop-blur-md text-black rounded-full font-bold text-sm hover:bg-white transition-all shadow-lg shadow-purple-500/20 cursor-pointer z-20"
-                  >
-                    <span>Enter the Lab</span>
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </motion.button>
-                )}
-              </AnimatePresence>
-            </div>
-          </form>
+          </div>
         </div>
 
         {/* --- PROMPT ALTERNATIVES SECTION --- */}
@@ -705,30 +922,32 @@ Your goal is to provide a thorough, analytical breakdown with actionable insight
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-6xl mx-auto px-4 mb-16"
+              className="w-full max-w-7xl mx-auto px-4 mb-16"
             >
-              <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Generated Prompt Alternatives</h2>
-                <p className="text-neutral-400 text-sm">Choose the prompt style that best fits your needs</p>
+              <div className="mb-8 text-center">
+                <h2 className="text-3xl font-bold text-white mb-3">Generated Prompt Alternatives</h2>
+                <p className="text-neutral-400 text-base">Choose the prompt style that best fits your needs</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {generatedPrompts.map((alt, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col hover:border-white/20 transition-all"
+                    className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6 flex flex-col hover:border-white/20 hover:shadow-xl hover:shadow-purple-500/10 transition-all"
                   >
-                    <h3 className="text-lg font-bold text-white mb-3">{alt.title}</h3>
-                    <div className="bg-black/30 border border-white/5 rounded-xl p-4 mb-4 flex-1 overflow-hidden">
-                      <p className="text-sm text-neutral-300 font-mono line-clamp-6 opacity-70">{alt.prompt}</p>
+                    <h3 className="text-xl font-bold text-white mb-4">{alt.title}</h3>
+                    <div className="bg-black/40 border border-white/10 rounded-lg p-5 mb-5 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                      <pre className="text-xs text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed">
+                        {alt.prompt}
+                      </pre>
                     </div>
                     <button
                       onClick={() => copyToClipboard(alt.prompt)}
-                      className="w-full py-3 bg-white/10 border border-white/20 rounded-xl text-white font-semibold text-sm hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3.5 bg-white/10 border border-white/20 rounded-lg text-white font-semibold text-sm hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/10"
                     >
-                      <Copy size={16} />
+                      <Copy size={18} />
                       <span>Copy Prompt</span>
                     </button>
                   </motion.div>
