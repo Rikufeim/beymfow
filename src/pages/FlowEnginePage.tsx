@@ -543,8 +543,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             sections: prev.sections.filter((s) => !idsToRemove.includes(s.nodeId)),
             combinedPrompt: buildCombinedPrompt(prev.sections.filter((s) => !idsToRemove.includes(s.nodeId))),
           }));
-
-          toast.success("Deleted selected items");
         }
       }
     };
