@@ -527,8 +527,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       if (e.key.toLowerCase() === "h") setActiveTool("hand");
       if (e.key.toLowerCase() === "t") setActiveTool("text");
 
-      if (e.key === "Delete" || e.key === "Backspace") {
+      // Delete with Delete, Backspace, or Ctrl+X
+      if (e.key === "Delete" || e.key === "Backspace" || (e.ctrlKey && e.key.toLowerCase() === "x")) {
         if (selectedWidgetIds.size > 0) {
+          e.preventDefault();
           setWidgets((prev) => prev.filter((w) => !selectedWidgetIds.has(w.id)));
           setEdges((prev) =>
             prev.filter((edge) => !selectedWidgetIds.has(edge.source) && !selectedWidgetIds.has(edge.target)),
