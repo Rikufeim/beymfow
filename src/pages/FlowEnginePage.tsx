@@ -4,17 +4,11 @@
 // Fixed zoom range: 0.25 to 2.0 (Flowise-like range)
 // Background grid: CSS-based radial-gradient pattern, always visible, covers full viewport
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
-// UPDATED: Added BrowserRouter to fix useNavigate error.
-// UPDATED: Moved "Prompt Window" button to be a top-level item BELOW "Templates" for better visibility.
-// UPDATED: Changed selection highlight color from Blue to Gray (Neutral).
-// UPDATED: Added Zoom In (+) and Zoom Out (-) buttons to the bottom toolbar between Hand and Text tools.
-// UPDATED: Fixed background grid logic to use CSS background properties for stable zooming/panning.
-// UPDATED: Unified background color to #09090b.
-// UPDATED: Made Prompt Window dynamic (connectable), added Copy functionality, and fixed template loading to append instead of replace.
+// UPDATED: Fixed duplicate function declarations and JSX syntax errors.
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, BrowserRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import { HexColorPicker } from "react-colorful";
 
@@ -72,9 +66,6 @@ import {
   Trash2,
   UserCheck,
   MessageCircle,
-  Eye,
-  Edit3,
-  Clipboard,
 } from "lucide-react";
 
 // --- Mock Auth Context (Local Implementation) ---
@@ -144,17 +135,7 @@ interface WidgetTextStyle {
 
 interface Widget {
   id: string;
-  // Added "prompt-window" to the type definition
-  type:
-    | "prompt"
-    | "category"
-    | "flow-input"
-    | "flow-text-gen"
-    | "flow-agent"
-    | "flow-state"
-    | "flow-tool"
-    | "text"
-    | "prompt-window";
+  type: "prompt" | "category" | "flow-input" | "flow-text-gen" | "flow-agent" | "flow-state" | "flow-tool" | "text";
   title?: string;
   basePrompt?: string;
   content?: string;
@@ -168,8 +149,6 @@ interface Widget {
   height: number;
   // New style property for text widgets
   style?: WidgetTextStyle;
-  // New property for Prompt Window mode
-  promptMode?: "edit" | "preview";
 }
 
 interface Edge {
@@ -490,38 +469,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }, 600);
   };
 
-  // Helper to generate unique IDs for template nodes to avoid collisions when appending
-  const generateUniqueNodesAndEdges = (templateNodes: Widget[], templateEdges: Edge[], existingNodes: Widget[]) => {
-    const idMap: Record<string, string> = {};
-    const timestamp = Date.now();
-
-    // Map old IDs to new unique IDs
-    const newNodes = templateNodes.map((node, index) => {
-      const newId = `${node.type}-${timestamp}-${index}`;
-      idMap[node.id] = newId;
-
-      // Calculate offset to place new nodes slightly shifted if there are existing nodes
-      const offsetX = existingNodes.length > 0 ? 50 : 0;
-      const offsetY = existingNodes.length > 0 ? 50 : 0;
-
-      return {
-        ...node,
-        id: newId,
-        x: node.x + offsetX,
-        y: node.y + offsetY,
-      };
-    });
-
-    const newEdges = templateEdges.map((edge, index) => ({
-      ...edge,
-      id: `edge-${timestamp}-${index}`,
-      source: idMap[edge.source],
-      target: idMap[edge.target],
-    }));
-
-    return { newNodes, newEdges };
-  };
-
   const handleLoadTemplate = (templateType: "Website" | "App" | "Game") => {
     setIsLoading(true);
     setActiveDomain(templateType);
@@ -532,27 +479,22 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       else if (templateType === "App") presetData = createAppFlowPreset();
       else presetData = createGameFlowPreset();
 
-      const { nodes: rawNodes, edges: rawEdges } = presetData;
+      const { nodes, edges } = presetData;
 
-      // UPDATED: Append nodes instead of replacing, generate unique IDs
-      const { newNodes, newEdges } = generateUniqueNodesAndEdges(rawNodes, rawEdges, widgets);
+      // Calculate center pos
+      const baseX = -100; // Offset slightly
+      const baseY = 100;
 
-      setWidgets((prev) => [...prev, ...newNodes]);
-      setEdges((prev) => [...prev, ...newEdges]);
+      setCanvasTransform({ translateX: 100, translateY: 100, scale: 0.8 }); // Zoom out slightly for flow
+      setWidgets(nodes);
+      setEdges(edges);
 
-      // Only reset view/transform if it's a fresh project
-      if (widgets.length === 0) {
-        setCanvasTransform({ translateX: 100, translateY: 100, scale: 0.8 });
-        setCurrentProjectId(null);
-        setProjectName(`${templateType} Flow Template`);
-      } else {
-        toast.success(`${templateType} Flow added to workspace`);
-      }
-
+      setCurrentProjectId(null); // New project
+      setProjectName(`${templateType} Flow Template`);
       setViewMode("workspace");
       setIsLoading(false);
       setShowCategories(false);
-    }, 300);
+    }, 600);
   };
 
   // Load saved projects on mount (user-specific)
@@ -767,54 +709,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     return sortedSections.map((section) => `### ${section.title}\n\n${section.content}\n\n`).join("");
   };
 
-  // --- Helper to Aggregate Prompt Content Based on Connections ---
-  // UPDATED: Now supports recursive traversal to find all connected upstream nodes for a Prompt Window
-  const getAggregatedPrompt = (promptWindowId: string, allWidgets: Widget[], allEdges: Edge[]) => {
-    // 1. Find all edges connected TO this prompt window
-    const incomingEdges = allEdges.filter((e) => e.target === promptWindowId);
-
-    let targetNodes: Widget[] = [];
-
-    if (incomingEdges.length === 0) {
-      // If no connections, return nothing or all (optional).
-      // Let's go with "Dynamic Mode": if connected, use connection. If not, use nothing/placeholder.
-      // To mimic the request "yhdistää sen kokonaisuuteen", we only want connected content.
-      // But for usability, if the workspace has nodes but no connections to window, maybe show a hint?
-      return null; // Return null to indicate no connections
-    }
-
-    // 2. Perform graph traversal (BFS) backwards to find all upstream nodes
-    const queue = incomingEdges.map((e) => e.source);
-    const visited = new Set<string>();
-    const upstreamNodes: Widget[] = [];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      if (visited.has(currentId)) continue;
-      visited.add(currentId);
-
-      const node = allWidgets.find((w) => w.id === currentId);
-      if (node && node.type !== "prompt-window") {
-        // Avoid cycles including other prompt windows
-        upstreamNodes.push(node);
-
-        // Find edges feeding into this node
-        const inputEdges = allEdges.filter((e) => e.target === currentId);
-        inputEdges.forEach((e) => queue.push(e.source));
-      }
-    }
-
-    // 3. Sort by Y position to maintain logical flow order
-    return upstreamNodes
-      .sort((a, b) => a.y - b.y)
-      .map((w) => {
-        let text = `### ${w.title || "Untitled Node"}`;
-        if (w.content) text += `\n${w.content}`;
-        return text;
-      })
-      .join("\n\n");
-  };
-
   // --- Content Generation Functions (Simplified for brevity) ---
   const generateIdeaSummary = (userInput: string) => ({ generatedText: "Summary...", jsonPayload: {} });
   const generateCleanSummary = (upstreamOutputs: NodeOutputMap) => ({ generatedText: "Clean...", jsonPayload: {} });
@@ -827,7 +721,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Missing Helper Functions ---
   const updateWidget = (widgetId: string, field: string, value: any) => {
-    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, [field]: value } : w)));
+    setWidgets((prev) =>
+      prev.map((w) => (w.id === widgetId ? { ...w, [field]: value } : w))
+    );
   };
 
   const handleCategoryAdd = (category: Category) => {
@@ -845,70 +741,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setWidgets((prev) => [...prev, newWidget]);
   };
 
-  const handleAddPromptWindow = () => {
-    // Calculate center of current view
-    const canvasRefRect = canvasRef.current?.getBoundingClientRect();
-    const centerX = canvasRefRect
-      ? (canvasRefRect.width / 2 - canvasTransform.translateX) / canvasTransform.scale
-      : 100;
-    const centerY = canvasRefRect
-      ? (canvasRefRect.height / 2 - canvasTransform.translateY) / canvasTransform.scale
-      : 100;
-
-    const newWidget: Widget = {
-      id: `prompt-window-${Date.now()}`,
-      type: "prompt-window",
-      title: "Prompt Window",
-      content: "", // Starts empty, fills with aggregation
-      promptMode: "preview", // Default to preview
-      x: centerX - 200, // Centered
-      y: centerY - 150,
-      width: 400,
-      height: 300,
-    };
-    setWidgets((prev) => [...prev, newWidget]);
-    toast.success("Prompt Window Added");
-  };
-
-  const handleCopyPrompt = (text: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        toast.success("Prompt copied to clipboard");
-      })
-      .catch(() => {
-        toast.error("Failed to copy");
-      });
-  };
-
-  // --- Helper Functions for Button Zoom ---
-  const handleZoomIn = () => {
-    setCanvasTransform((prev) => ({
-      ...prev,
-      scale: Math.min(2.0, prev.scale + 0.25),
-    }));
-  };
-
-  const handleZoomOut = () => {
-    setCanvasTransform((prev) => ({
-      ...prev,
-      scale: Math.max(0.25, prev.scale - 0.25),
-    }));
-  };
-
   // --- Flow Preset Creators ---
   const createWebsiteFlowPreset = () => {
     const nodes: Widget[] = [
-      {
-        id: "flow-input-1",
-        type: "flow-input",
-        title: "User Input",
-        x: 50,
-        y: 200,
-        width: 200,
-        height: 120,
-        content: "",
-      },
+      { id: "flow-input-1", type: "flow-input", title: "User Input", x: 50, y: 200, width: 200, height: 120, content: "" },
       { id: "flow-text-1", type: "flow-text-gen", title: "Idea Summary", x: 300, y: 100, width: 220, height: 150 },
       { id: "flow-text-2", type: "flow-text-gen", title: "Page Structure", x: 300, y: 300, width: 220, height: 150 },
       { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
@@ -924,16 +760,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const createAppFlowPreset = () => {
     const nodes: Widget[] = [
-      {
-        id: "flow-input-1",
-        type: "flow-input",
-        title: "App Idea",
-        x: 50,
-        y: 200,
-        width: 200,
-        height: 120,
-        content: "",
-      },
+      { id: "flow-input-1", type: "flow-input", title: "App Idea", x: 50, y: 200, width: 200, height: 120, content: "" },
       { id: "flow-text-1", type: "flow-text-gen", title: "Features", x: 300, y: 100, width: 220, height: 150 },
       { id: "flow-text-2", type: "flow-text-gen", title: "Tech Stack", x: 300, y: 300, width: 220, height: 150 },
       { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
@@ -949,16 +776,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const createGameFlowPreset = () => {
     const nodes: Widget[] = [
-      {
-        id: "flow-input-1",
-        type: "flow-input",
-        title: "Game Concept",
-        x: 50,
-        y: 200,
-        width: 200,
-        height: 120,
-        content: "",
-      },
+      { id: "flow-input-1", type: "flow-input", title: "Game Concept", x: 50, y: 200, width: 200, height: 120, content: "" },
       { id: "flow-text-1", type: "flow-text-gen", title: "Mechanics", x: 300, y: 100, width: 220, height: 150 },
       { id: "flow-text-2", type: "flow-text-gen", title: "Art Style", x: 300, y: 300, width: 220, height: 150 },
       { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
@@ -978,16 +796,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const handleCreateLoginFlowTemplate = () => {
     const nodes: Widget[] = [
-      {
-        id: "flow-input-1",
-        type: "flow-input",
-        title: "User Credentials",
-        x: 50,
-        y: 200,
-        width: 200,
-        height: 120,
-        content: "",
-      },
+      { id: "flow-input-1", type: "flow-input", title: "User Credentials", x: 50, y: 200, width: 200, height: 120, content: "" },
       { id: "flow-agent-1", type: "flow-agent", title: "Auth Agent", x: 300, y: 200, width: 220, height: 150 },
       { id: "flow-state-1", type: "flow-state", title: "Session State", x: 550, y: 200, width: 200, height: 120 },
     ];
@@ -995,47 +804,30 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       { id: "e1", source: "flow-input-1", target: "flow-agent-1" },
       { id: "e2", source: "flow-agent-1", target: "flow-state-1" },
     ];
-    // For manual additions, we can just set them, or use the generator to be safe
-    // For simplicity, manual additions replace for now as per original logic,
-    // BUT the user asked for templates to add. These are "templates" too technically.
-    // Let's use the generator for these too to be consistent.
-    const { newNodes, newEdges } = generateUniqueNodesAndEdges(nodes, edges, widgets);
-    setWidgets((prev) => [...prev, ...newNodes]);
-    setEdges((prev) => [...prev, ...newEdges]);
-    toast.success("Login Flow added");
+    setWidgets(nodes);
+    setEdges(edges);
+    setProjectName("Login Flow");
+    setCurrentProjectId(null);
+    setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+    setViewMode("workspace");
   };
 
   const handleCreateFeedbackFlowTemplate = () => {
     const nodes: Widget[] = [
-      {
-        id: "flow-input-1",
-        type: "flow-input",
-        title: "User Feedback",
-        x: 50,
-        y: 200,
-        width: 200,
-        height: 120,
-        content: "",
-      },
-      {
-        id: "flow-text-1",
-        type: "flow-text-gen",
-        title: "Sentiment Analysis",
-        x: 300,
-        y: 200,
-        width: 220,
-        height: 150,
-      },
+      { id: "flow-input-1", type: "flow-input", title: "User Feedback", x: 50, y: 200, width: 200, height: 120, content: "" },
+      { id: "flow-text-1", type: "flow-text-gen", title: "Sentiment Analysis", x: 300, y: 200, width: 220, height: 150 },
       { id: "flow-state-1", type: "flow-state", title: "Save Result", x: 550, y: 200, width: 200, height: 120 },
     ];
     const edges: Edge[] = [
       { id: "e1", source: "flow-input-1", target: "flow-text-1" },
       { id: "e2", source: "flow-text-1", target: "flow-state-1" },
     ];
-    const { newNodes, newEdges } = generateUniqueNodesAndEdges(nodes, edges, widgets);
-    setWidgets((prev) => [...prev, ...newNodes]);
-    setEdges((prev) => [...prev, ...newEdges]);
-    toast.success("Feedback Loop added");
+    setWidgets(nodes);
+    setEdges(edges);
+    setProjectName("Feedback Loop");
+    setCurrentProjectId(null);
+    setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
+    setViewMode("workspace");
   };
 
   // --- Canvas Logic ---
@@ -1728,7 +1520,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`flex-1 relative w-full h-full flex flex-col bg-[#09090b] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
+            className={`flex-1 relative w-full h-full flex flex-col bg-neutral-900 ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
           >
             {/* Top Bar */}
             <div className="absolute top-0 left-0 right-0 h-14 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-30">
@@ -1879,25 +1671,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 >
                   <Hand size={18} />
                 </button>
-
-                {/* ZOOM CONTROLS (Between Hand and Text) */}
-                <div className="w-px h-6 bg-neutral-700 mx-1" />
-                <button
-                  onClick={handleZoomOut}
-                  className="p-2.5 rounded-full transition-all text-neutral-400 hover:text-white hover:bg-neutral-800"
-                  title="Zoom Out (-)"
-                >
-                  <Minus size={16} />
-                </button>
-                <button
-                  onClick={handleZoomIn}
-                  className="p-2.5 rounded-full transition-all text-neutral-400 hover:text-white hover:bg-neutral-800"
-                  title="Zoom In (+)"
-                >
-                  <Plus size={16} />
-                </button>
-                <div className="w-px h-6 bg-neutral-700 mx-1" />
-
                 <button
                   onClick={() => setActiveTool("text")}
                   className={`p-2.5 rounded-full transition-all ${activeTool === "text" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
@@ -1920,13 +1693,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             >
               {/* Background Grid */}
               <div
-                className="absolute inset-0 pointer-events-none"
+                className="absolute pointer-events-none"
                 style={{
+                  left: "-2000000px",
+                  top: "-2000000px",
+                  width: "4000000px",
+                  height: "4000000px",
                   zIndex: 0,
-                  backgroundColor: "#09090b",
+                  backgroundColor: "#171717",
                   backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                  backgroundSize: `${24 * canvasTransform.scale}px ${24 * canvasTransform.scale}px`,
-                  backgroundPosition: `${canvasTransform.translateX}px ${canvasTransform.translateY}px`,
+                  backgroundSize: "24px 24px",
+                  backgroundRepeat: "repeat",
+                  transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                  transformOrigin: "0 0",
+                  willChange: "transform",
                 }}
               />
 
@@ -2000,125 +1780,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 {widgets.map((widget) => {
                   const isSelected = selectedWidgetIds.has(widget.id);
 
-                  // --- RENDER PROMPT WINDOW ---
-                  if (widget.type === "prompt-window") {
-                    const aggregatedContent = getAggregatedPrompt(widget.id, widgets, edges);
-                    const displayContent =
-                      widget.promptMode === "preview" ? aggregatedContent : widget.content || aggregatedContent;
-
-                    return (
-                      <div
-                        key={widget.id}
-                        className={`absolute bg-[#121214] border rounded-xl flex flex-col font-sans widget-container overflow-hidden shadow-2xl ${
-                          isSelected
-                            ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-30"
-                            : "border-neutral-700 hover:border-neutral-500 z-20"
-                        }`}
-                        style={{ left: widget.x, top: widget.y, width: widget.width, height: widget.height }}
-                        onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
-                      >
-                        {/* Handles - NOW HAS INPUT HANDLE FOR CONNECTIVITY */}
-                        <div
-                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
-                          style={{ left: "-4.5px", pointerEvents: "auto", zIndex: 1000 }}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            handleHandleMouseDown(e, widget.id, "input");
-                          }}
-                        />
-
-                        {/* Prompt Window Header */}
-                        <div className="px-3 py-2 border-b border-neutral-800 bg-[#18181b] flex items-center justify-between handle">
-                          <div className="flex items-center gap-2">
-                            <Sparkles size={14} className="text-yellow-400" />
-                            <span className="text-sm font-semibold text-neutral-200">Prompt Window</span>
-                          </div>
-                          <div className="flex gap-1 bg-neutral-900 rounded-md p-0.5 border border-neutral-800">
-                            {/* Copy Button */}
-                            <button
-                              onClick={() => displayContent && handleCopyPrompt(displayContent)}
-                              className="p-1 rounded text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"
-                              title="Copy Prompt"
-                            >
-                              <Copy size={12} />
-                            </button>
-                            <div className="w-px bg-neutral-800 mx-0.5" />
-                            <button
-                              onClick={() => {
-                                // If switching to Edit, pre-fill if empty
-                                if (widget.promptMode !== "edit" && !widget.content) {
-                                  updateWidget(widget.id, "content", aggregatedContent);
-                                }
-                                updateWidget(widget.id, "promptMode", "edit");
-                              }}
-                              className={`p-1 rounded ${
-                                widget.promptMode === "edit"
-                                  ? "bg-neutral-700 text-white"
-                                  : "text-neutral-500 hover:text-neutral-300"
-                              }`}
-                              title="Edit Mode"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button
-                              onClick={() => updateWidget(widget.id, "promptMode", "preview")}
-                              className={`p-1 rounded ${
-                                widget.promptMode === "preview" || !widget.promptMode
-                                  ? "bg-neutral-700 text-white"
-                                  : "text-neutral-500 hover:text-neutral-300"
-                              }`}
-                              title="Preview Mode"
-                            >
-                              <Eye size={12} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Prompt Window Content */}
-                        <div className="flex-1 bg-[#09090b] relative">
-                          {widget.promptMode === "preview" ? (
-                            <div className="absolute inset-0 p-4 overflow-y-auto custom-scrollbar">
-                              <div className="prose prose-invert prose-sm max-w-none">
-                                {displayContent ? (
-                                  <pre className="whitespace-pre-wrap font-mono text-sm text-neutral-300">
-                                    {displayContent}
-                                  </pre>
-                                ) : (
-                                  <div className="flex flex-col items-center justify-center h-full text-neutral-600 gap-2 p-4 text-center">
-                                    <Link2 size={24} className="opacity-50" />
-                                    <p className="text-xs">Connect nodes to this window to generate a prompt.</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <textarea
-                              className="w-full h-full bg-[#09090b] text-neutral-300 p-4 font-mono text-sm resize-none outline-none"
-                              value={widget.content || ""}
-                              onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                              placeholder="Write your custom prompt here..."
-                              onMouseDown={(e) => e.stopPropagation()}
-                            />
-                          )}
-                        </div>
-
-                        {/* Resize Handle */}
-                        <div
-                          className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1 z-50"
-                          onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
-                        >
-                          <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
-                        </div>
-                      </div>
-                    );
-                  }
-
                   // --- RENDER TEXT WIDGET ---
                   if (widget.type === "text") {
                     return (
                       <div
                         key={widget.id}
-                        className={`absolute flex items-center justify-center p-1 ${isSelected ? "border border-neutral-400" : "border border-transparent hover:border-neutral-700"}`}
+                        className={`absolute flex items-center justify-center p-1 ${isSelected ? "border border-blue-500" : "border border-transparent hover:border-neutral-700"}`}
                         style={{
                           left: widget.x,
                           top: widget.y,
@@ -2143,7 +1810,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           placeholder="Type something..."
                         />
                         {isSelected && (
-                          <div className="absolute -top-6 left-0 bg-neutral-600 text-white text-[10px] px-1 rounded">
+                          <div className="absolute -top-6 left-0 bg-blue-600 text-white text-[10px] px-1 rounded">
                             Text
                           </div>
                         )}
@@ -2177,7 +1844,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   return (
                     <div
                       key={widget.id}
-                      className={`absolute bg-[#121214] border rounded-xl flex flex-col hover:border-neutral-500 transition-colors font-sans widget-container ${isSelected ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-20" : "border-neutral-800 hover:border-neutral-700"}`}
+                      className={`absolute bg-[#121214] border rounded-xl flex flex-col hover:border-neutral-500 transition-colors font-sans widget-container ${isSelected ? "border-blue-500 shadow-[0_0_0_1px_rgba(59,130,246,1)] z-20" : "border-neutral-800 hover:border-neutral-700"}`}
                       style={{ left: widget.x, top: widget.y, width: widget.width, height: widget.height }}
                       onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                     >
@@ -2561,28 +2228,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         )}
                       </AnimatePresence>
                     </div>
-
-                    {/* NEW: Prompt Window (Top Level) */}
-                    <div className="mb-2 border-t border-neutral-800 pt-2 mt-2">
-                      <button
-                        onClick={() => handleAddPromptWindow()}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                      >
-                        <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
-                          <Layout size={14} className="text-yellow-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                            Prompt Window
-                          </span>
-                          <span className="block text-[10px] text-neutral-500 truncate">Prompt preview & editor</span>
-                        </div>
-                        <Plus
-                          size={12}
-                          className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                        />
-                      </button>
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -2596,12 +2241,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
 const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
   return (
-    <BrowserRouter>
-      <MockAuthProvider>
-        <Toaster position="top-center" />
-        <FlowEngineContent {...props} />
-      </MockAuthProvider>
-    </BrowserRouter>
+    <MockAuthProvider>
+      <Toaster position="top-center" />
+      <FlowEngineContent {...props} />
+    </MockAuthProvider>
   );
 };
 
