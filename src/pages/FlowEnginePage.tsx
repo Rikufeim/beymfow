@@ -12,7 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
-import { NodeAnchor } from "@/components/NodeAnchor";
+import { NodeAnchor } from "../components/NodeAnchor";
 
 import {
   ArrowRight,
@@ -70,7 +70,7 @@ import {
   UserJourneyMap,
   AIPromptBlueprint,
   TemplateDefinition,
-} from "@/flowTemplates";
+} from "../flowTemplates";
 
 // --- Types & Interfaces ---
 
@@ -2866,86 +2866,83 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                 />
                               </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
 
-                              {/* Templates Subsection */}
-                              <div className="mt-2 pt-2 border-t border-neutral-800">
-                                <button
-                                  onClick={() => toggleSection("templates")}
-                                  className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <FileStack size={12} className="text-neutral-500" />
-                                    Templates
-                                  </div>
-                                  {expandedSections.templates ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                                </button>
+                    {/* Templates Section */}
+                    <div className="mb-2">
+                      <button
+                        onClick={() => toggleSection("templates")}
+                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileStack size={14} className="text-neutral-500" />
+                          Templates
+                        </div>
 
-                                <AnimatePresence>
-                                  {expandedSections.templates && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      className="overflow-hidden"
-                                    >
-                                      <div className="pl-2 space-y-1 mt-1">
-                                        {/* Prompt Window Button */}
-                                        <button
-                                          onClick={() => handleAddPromptWindow()}
-                                          className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                        >
-                                          <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
-                                            <Square size={14} />
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                              Prompt Window
-                                            </span>
-                                            <span className="block text-[10px] text-neutral-500 truncate">
-                                              Build and preview prompts
-                                            </span>
-                                          </div>
-                                          <Plus
-                                            size={12}
-                                            className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                          />
-                                        </button>
+                        {expandedSections.templates ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
 
-                                        {[
-                                          BusinessModelCanvas,
-                                          LeanCanvas,
-                                          SWOTAnalysis,
-                                          UserJourneyMap,
-                                          AIPromptBlueprint,
-                                        ].map((template) => (
-                                          <button
-                                            key={template.name}
-                                            onClick={() => handleInsertTemplate(template)}
-                                            className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                          >
-                                            <div
-                                              className="flex-shrink-0 w-[60px] h-[30px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
-                                              dangerouslySetInnerHTML={{ __html: template.thumbnail }}
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                              <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                                {template.name}
-                                              </span>
-                                              <span className="block text-[10px] text-neutral-500 truncate">
-                                                {template.nodes.length} nodes
-                                              </span>
-                                            </div>
-                                            <Plus
-                                              size={12}
-                                              className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                            />
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
+                      <AnimatePresence>
+                        {expandedSections.templates && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-2 space-y-1 mt-1">
+                              {/* Prompt Window Button */}
+                              <button
+                                onClick={() => handleAddPromptWindow()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
+                                  <Square size={14} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                                    Prompt Window
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Build and preview prompts
+                                  </span>
+                                </div>
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                />
+                              </button>
+
+                              {[BusinessModelCanvas, LeanCanvas, SWOTAnalysis, UserJourneyMap, AIPromptBlueprint].map(
+                                (template) => (
+                                  <button
+                                    key={template.name}
+                                    onClick={() => handleInsertTemplate(template)}
+                                    className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                                  >
+                                    <div
+                                      className="flex-shrink-0 w-[60px] h-[30px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
+                                      dangerouslySetInnerHTML={{ __html: template.thumbnail }}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
+                                        {template.name}
+                                      </span>
+                                      <span className="block text-[10px] text-neutral-500 truncate">
+                                        {template.nodes.length} nodes
+                                      </span>
+                                    </div>
+                                    <Plus
+                                      size={12}
+                                      className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                    />
+                                  </button>
+                                ),
+                              )}
                             </div>
                           </motion.div>
                         )}
