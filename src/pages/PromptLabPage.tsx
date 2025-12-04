@@ -1,32 +1,63 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
   Copy,
   Sparkles,
-  Zap,
-  FileText,
-  X,
   Home,
-  CheckCircle2,
-  Cpu,
   Search,
+  Wand2,
+  ArrowLeft,
+  X,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Info,
   Tag,
   Lock,
   ShoppingCart,
   Expand,
   Plus,
   Save,
-  Bot,
-  Filter,
-  Wand2,
-  ChevronDown,
+  ArrowRight,
 } from "lucide-react";
+
+const PLACEHOLDERS = [
+  "What is your goal?",
+  "Draft a viral thread...",
+  "Analyze Q3 sales data...",
+  "Create a fitness plan...",
+];
+
+const copyToClipboard = (text: string) => {
+  if (!text) return;
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    });
+  } else {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  }
+};
 
 // --- TYPES ---
 type Domain = "creativity" | "personal" | "business" | "crypto";
-
 type PromptTier = "free" | "premium";
 
 interface LibraryPrompt {
@@ -38,6 +69,19 @@ interface LibraryPrompt {
   tags: string[];
   tier: PromptTier;
   price?: string;
+}
+
+interface AnalysisResult {
+  overallScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  commandBreakdown: {
+    command: string;
+    purpose: string;
+    impact: string;
+    effectiveness: "high" | "medium" | "low";
+  }[];
 }
 
 // --- CONFIGURATION ---
@@ -167,116 +211,6 @@ const INITIAL_PROMPTS: LibraryPrompt[] = [
   },
 ];
 
-const PLACEHOLDERS = [
-  "What is your goal?",
-  "Draft a viral thread...",
-  "Analyze Q3 sales data...",
-  "Create a fitness plan...",
-];
-
-const copyToClipboard = (text: string) => {
-  if (!text) return;
-  if (navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).catch(() => {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-    });
-  } else {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-  }
-};
-
-// --- CUSTOM COMPONENTS ---
-const CustomSelect = memo(
-  ({
-    label,
-    icon: Icon,
-    value,
-    options,
-    onChange,
-  }: {
-    label: string;
-    icon: any;
-    value: string;
-    options: string[];
-    onChange: (val: string) => void;
-  }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    const handleClickOutside = useCallback((event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setIsOpen(false);
-    }, []);
-
-    useEffect(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [handleClickOutside]);
-
-    const handleToggle = useCallback(() => setIsOpen((prev) => !prev), []);
-    const handleOptionClick = useCallback(
-      (opt: string) => {
-        onChange(opt);
-        setIsOpen(false);
-      },
-      [onChange],
-    );
-
-    return (
-      <div className="space-y-1 relative" ref={containerRef}>
-        <label className="text-[10px] uppercase font-bold text-neutral-500 flex items-center gap-1">
-          <Icon size={10} /> {label}
-        </label>
-        <button
-          onClick={handleToggle}
-          className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-3 py-2 text-xs text-white flex items-center justify-between hover:bg-white/10 transition-colors focus:border-white/30 outline-none"
-        >
-          <span>{value}</span>
-          <ChevronDown size={12} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
-        </button>
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="absolute top-full left-0 right-0 mt-1 bg-[#161618]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl"
-            >
-              <div className="max-h-40 overflow-y-auto custom-scrollbar p-1">
-                {options.map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => handleOptionClick(opt)}
-                    className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors ${value === opt ? "text-white bg-white/10 font-bold" : "text-neutral-400 hover:bg-white/10 hover:text-white"}`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  },
-);
-CustomSelect.displayName = "CustomSelect";
-
 // Memoized Prompt Card Component
 const PromptCard = memo(
   ({
@@ -374,25 +308,16 @@ PromptCard.displayName = "PromptCard";
 
 function PromptWorkspaceInner() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // --- STATE ---
-  const [prompts, setPrompts] = useState<LibraryPrompt[]>(INITIAL_PROMPTS);
-
-  // Library State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filterDomain, setFilterDomain] = useState<Domain | "all">("all");
-  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null);
-  const [selectedTier, setSelectedTier] = useState<PromptTier>("free");
-  const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
-
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // Determine current view based on URL
+  const currentView = location.pathname.includes("/generator")
+    ? "generator"
+    : location.pathname.includes("/scanner")
+      ? "scanner"
+      : location.pathname.includes("/library")
+        ? "library"
+        : "landing";
 
   // Landing Input State
   const [landingInput, setLandingInput] = useState("");
@@ -401,7 +326,26 @@ function PromptWorkspaceInner() {
   const [isFocused, setIsFocused] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<{ title: string; prompt: string }[]>([]);
 
-  // Modal & Logic State
+  // Generator State
+  const [generatorInput, setGeneratorInput] = useState("");
+  const [generatorPrompts, setGeneratorPrompts] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Scanner State
+  const [scannerPrompt, setScannerPrompt] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+
+  // Library State
+  const [prompts, setPrompts] = useState<LibraryPrompt[]>(INITIAL_PROMPTS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [filterDomain, setFilterDomain] = useState<Domain | "all">("all");
+  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null);
+  const [selectedTier, setSelectedTier] = useState<PromptTier>("free");
+  const [isPremiumUnlocked, setIsPremiumUnlocked] = useState(false);
   const [activePrompt, setActivePrompt] = useState<LibraryPrompt | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newPromptData, setNewPromptData] = useState({
@@ -412,6 +356,14 @@ function PromptWorkspaceInner() {
   });
 
   // --- EFFECTS ---
+  // Debounce search query for library
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Optimize placeholder animation - only run when needed
   useEffect(() => {
     if (landingInput.length > 0 || isFocused) return;
@@ -420,6 +372,36 @@ function PromptWorkspaceInner() {
     }, 4000);
     return () => clearInterval(interval);
   }, [landingInput, isFocused]);
+
+  // Generator: Auto-generate prompts when user types
+  useEffect(() => {
+    if (currentView !== "generator") return;
+    const timer = setTimeout(() => {
+      generatePromptsForGenerator(generatorInput);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [generatorInput, currentView]);
+
+  // Memoize domain lookup map
+  const domainMap = useMemo(() => {
+    const map = new Map<Domain, (typeof DOMAINS)[0]>();
+    DOMAINS.forEach((d) => map.set(d.key, d));
+    return map;
+  }, []);
+
+  const filteredPrompts = useMemo(() => {
+    const searchLower = debouncedSearchQuery.toLowerCase();
+    return prompts.filter((p) => {
+      const matchesSearch =
+        !searchLower ||
+        p.title.toLowerCase().includes(searchLower) ||
+        p.tags.some((t) => t.toLowerCase().includes(searchLower));
+      const matchesDomain = filterDomain === "all" || p.domain === filterDomain;
+      const matchesSubcategory = activeSubcategory ? p.tags.includes(activeSubcategory) : true;
+      const matchesTier = p.tier === selectedTier;
+      return matchesSearch && matchesDomain && matchesSubcategory && matchesTier;
+    });
+  }, [debouncedSearchQuery, filterDomain, activeSubcategory, selectedTier, prompts]);
 
   // --- HELPERS & HANDLERS ---
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -753,27 +735,131 @@ Before finalizing, verify:
   const handleInputBlur = useCallback(() => setIsFocused(false), []);
   const handleInputContainerClick = useCallback(() => document.getElementById("main-input")?.focus(), []);
 
-  // Memoize domain lookup map
-  const domainMap = useMemo(() => {
-    const map = new Map<Domain, (typeof DOMAINS)[0]>();
-    DOMAINS.forEach((d) => map.set(d.key, d));
-    return map;
+  // Generator Functions
+  const generatePromptsForGenerator = useCallback(async (userInput: string) => {
+    if (!userInput.trim()) {
+      setGeneratorPrompts([]);
+      return;
+    }
+    setIsGenerating(true);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const base = userInput.trim();
+    const prompts = [
+      `**ROLE & PERSONA:**\nYou are an expert AI assistant specialized in ${base}. You have deep knowledge and practical experience in this domain.\n\n**CONTEXT:**\nThe user needs assistance with: ${base}\n\n**TASK:**\nProvide comprehensive, actionable guidance that addresses all aspects of ${base}. Be specific, practical, and solution-oriented.\n\n**OUTPUT FORMAT:**\n1. Overview and key objectives\n2. Step-by-step approach\n3. Best practices and recommendations\n4. Common pitfalls to avoid\n5. Success metrics\n\nEnsure all advice is directly relevant to ${base} and immediately actionable.`,
+      `**SYSTEM PROMPT:**\nYou are a world-class consultant for ${base}. Your expertise spans strategy, execution, and optimization.\n\n**USER REQUEST:**\nHelp me with ${base}\n\n**YOUR APPROACH:**\n- Analyze the core requirements\n- Identify optimal strategies\n- Provide detailed implementation plan\n- Include risk mitigation\n- Offer scalable solutions\n\n**OUTPUT REQUIREMENTS:**\n- Be specific to ${base}\n- Include concrete examples\n- Provide measurable outcomes\n- Address edge cases\n- Enable immediate action`,
+      `**INSTRUCTION:**\nAct as a senior advisor for ${base}. Deliver expert-level guidance that combines theoretical knowledge with practical application.\n\n**OBJECTIVE:**\n${base}\n\n**FRAMEWORK:**\n1. Strategic foundation\n2. Tactical execution\n3. Performance optimization\n4. Continuous improvement\n\n**CONSTRAINTS:**\n- Focus exclusively on ${base}\n- Prioritize actionable insights\n- Include validation methods\n- Consider scalability\n- Address real-world constraints\n\nProvide a complete, ready-to-use framework for ${base}.`,
+    ];
+    setGeneratorPrompts(prompts);
+    setIsGenerating(false);
   }, []);
 
-  const filteredPrompts = useMemo(() => {
-    const searchLower = debouncedSearchQuery.toLowerCase();
-    return prompts.filter((p) => {
-      const matchesSearch =
-        !searchLower ||
-        p.title.toLowerCase().includes(searchLower) ||
-        p.tags.some((t) => t.toLowerCase().includes(searchLower));
-      const matchesDomain = filterDomain === "all" || p.domain === filterDomain;
-      const matchesSubcategory = activeSubcategory ? p.tags.includes(activeSubcategory) : true;
-      const matchesTier = p.tier === selectedTier;
-      return matchesSearch && matchesDomain && matchesSubcategory && matchesTier;
+  // Scanner Functions
+  const analyzePrompt = useCallback(async () => {
+    if (!scannerPrompt.trim()) return;
+    setIsAnalyzing(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const lines = scannerPrompt.split("\n").filter((line) => line.trim());
+    const commands = lines
+      .filter(
+        (line) =>
+          line.includes("**") ||
+          line.includes(":") ||
+          line.match(/^\d+\./) ||
+          line.includes("You are") ||
+          line.includes("Act as") ||
+          line.includes("Provide") ||
+          line.includes("Include") ||
+          line.includes("Ensure"),
+      )
+      .slice(0, 8);
+    const commandBreakdown = commands.map((cmd) => {
+      const cleanCmd = cmd.replace(/\*\*/g, "").trim();
+      let purpose = "",
+        impact = "",
+        effectiveness: "high" | "medium" | "low" = "medium";
+      if (cmd.includes("ROLE") || cmd.includes("You are") || cmd.includes("Act as")) {
+        purpose = "Defines the AI's role and expertise";
+        impact = "Sets context and behavioral framework";
+        effectiveness = "high";
+      } else if (cmd.includes("CONTEXT") || cmd.includes("OBJECTIVE")) {
+        purpose = "Provides context and goals";
+        impact = "Guides the AI's understanding of the task";
+        effectiveness = "high";
+      } else if (cmd.includes("OUTPUT") || cmd.includes("FORMAT") || cmd.includes("STRUCTURE")) {
+        purpose = "Specifies output format and structure";
+        impact = "Ensures consistent, organized responses";
+        effectiveness = "high";
+      } else if (cmd.includes("CONSTRAINTS") || cmd.includes("REQUIREMENTS")) {
+        purpose = "Sets limitations and requirements";
+        impact = "Prevents unwanted outputs and ensures quality";
+        effectiveness = "high";
+      } else if (cmd.includes("INCLUDE") || cmd.includes("Provide")) {
+        purpose = "Requests specific content";
+        impact = "Ensures completeness of response";
+        effectiveness = "medium";
+      } else if (cmd.match(/^\d+\./)) {
+        purpose = "Structured instruction or step";
+        impact = "Organizes the response logically";
+        effectiveness = "medium";
+      } else {
+        purpose = "General instruction or guideline";
+        impact = "Provides additional context";
+        effectiveness = "low";
+      }
+      return {
+        command: cleanCmd.length > 60 ? cleanCmd.substring(0, 60) + "..." : cleanCmd,
+        purpose,
+        impact,
+        effectiveness,
+      };
     });
-  }, [debouncedSearchQuery, filterDomain, activeSubcategory, selectedTier, prompts]);
+    const highCount = commandBreakdown.filter((c) => c.effectiveness === "high").length;
+    const mediumCount = commandBreakdown.filter((c) => c.effectiveness === "medium").length;
+    const totalCommands = commandBreakdown.length;
+    const score = totalCommands > 0 ? Math.round((highCount * 100 + mediumCount * 60) / totalCommands) : 50;
+    const strengths = [];
+    const weaknesses = [];
+    const recommendations = [];
+    if (scannerPrompt.includes("ROLE") || scannerPrompt.includes("You are")) {
+      strengths.push("Clear role definition");
+    } else {
+      weaknesses.push("Missing role definition");
+      recommendations.push("Add a clear role or persona definition (e.g., 'You are an expert...')");
+    }
+    if (scannerPrompt.includes("CONTEXT") || scannerPrompt.includes("OBJECTIVE")) {
+      strengths.push("Context and objectives specified");
+    } else {
+      weaknesses.push("Lacks clear context");
+      recommendations.push("Specify the context and objective of the task");
+    }
+    if (scannerPrompt.includes("OUTPUT") || scannerPrompt.includes("FORMAT")) {
+      strengths.push("Output format defined");
+    } else {
+      weaknesses.push("No output format specified");
+      recommendations.push("Define the desired output format or structure");
+    }
+    if (commandBreakdown.length >= 5) {
+      strengths.push("Comprehensive instruction set");
+    } else {
+      weaknesses.push("Limited instructions");
+      recommendations.push("Add more specific instructions for better results");
+    }
+    if (scannerPrompt.length > 200) {
+      strengths.push("Detailed prompt");
+    } else if (scannerPrompt.length < 100) {
+      weaknesses.push("Prompt may be too brief");
+      recommendations.push("Expand the prompt with more details and context");
+    }
+    if (weaknesses.length === 0) strengths.push("Well-structured prompt");
+    if (recommendations.length === 0) {
+      recommendations.push("Consider adding examples for better clarity");
+      recommendations.push("Include success criteria or validation methods");
+    }
+    setAnalysis({ overallScore: score, strengths, weaknesses, recommendations, commandBreakdown });
+    setIsAnalyzing(false);
+  }, [scannerPrompt]);
 
+  // Library Functions
   const handleCreatePrompt = useCallback(() => {
     if (!newPromptData.title.trim() || !newPromptData.prompt.trim()) return;
     const newEntry: LibraryPrompt = {
@@ -813,448 +899,793 @@ Before finalizing, verify:
         * { scrollbar-width: none; }
       `}</style>
 
-      <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
-        <span className="text-[10px] text-neutral-500 font-mono uppercase">Simulate Subscription</span>
-        <button
-          onClick={() => setIsPremiumUnlocked(!isPremiumUnlocked)}
-          className={`w-10 h-5 rounded-full p-1 transition-colors ${isPremiumUnlocked ? "bg-amber-500" : "bg-neutral-800"}`}
+      {/* Conditional Rendering Based on Current View */}
+      {currentView === "landing" && (
+        <motion.main
+          key="landing"
+          className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white"
         >
-          <div
-            className={`w-3 h-3 bg-white rounded-full transition-transform ${isPremiumUnlocked ? "translate-x-5" : "translate-x-0"}`}
-          />
-        </button>
-      </div>
+          <button
+            onClick={() => navigate("/")}
+            className="absolute top-6 left-6 z-50 p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+          >
+            <Home size={20} />
+            <span className="text-sm font-medium">Home</span>
+          </button>
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full flex flex-col items-center justify-center min-h-[60vh] text-center py-20 px-4"
+          >
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 mt-12">
+              The Most Powerful Prompt{" "}
+              <span className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
+                AI Workflow
+              </span>
+            </h1>
+            <div className="inline-block bg-white/5 backdrop-blur-md rounded-2xl px-8 py-3 mb-8 border border-white/10">
+              <p className="text-lg text-white/90 font-medium text-center">By Beymflow</p>
+            </div>
 
-      <motion.main
-        key="landing"
-        className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white"
-      >
-        <button
-          onClick={() => navigate("/")}
-          className="absolute top-6 left-6 z-50 p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
-        >
-          <Home size={20} />
-          <span className="text-sm font-medium">Home</span>
-        </button>
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full flex flex-col items-center justify-center min-h-[60vh] text-center py-20 px-4"
-        >
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 mt-12">
-            The Most Powerful Prompt{" "}
-            <span className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
-              AI Workflow
-            </span>
-          </h1>
-          <div className="inline-block bg-white/5 backdrop-blur-md rounded-2xl px-8 py-3 mb-12 border border-white/10">
-            <p className="text-lg text-white/90 font-medium text-center">By Beymflow</p>
-          </div>
-        </motion.section>
+            {/* Navigation Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => navigate("/prompt-lab-page/generator")}
+                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
+              >
+                <Wand2 size={24} className="group-hover:rotate-12 transition-transform" />
+                <span>Prompt Generator</span>
+              </button>
+              <button
+                onClick={() => navigate("/prompt-lab-page/scanner")}
+                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30"
+              >
+                <Search size={24} className="group-hover:scale-110 transition-transform" />
+                <span>Prompt Scanner</span>
+              </button>
+              <button
+                onClick={() => navigate("/prompt-lab-page/library")}
+                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+              >
+                <Sparkles size={24} className="group-hover:scale-110 transition-transform" />
+                <span>Prompt Library</span>
+              </button>
+            </div>
+          </motion.section>
 
-        {/* Lowkey Chat Input */}
-        <div className="w-full max-w-4xl mx-auto mb-16 px-4 relative z-20">
-          <div className="relative group flex flex-col items-center justify-center" onClick={handleInputContainerClick}>
-            <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight cursor-text min-h-[60px] w-full text-center">
-              <input
-                id="main-input"
-                type="text"
-                value={landingInput}
-                onChange={handleInputChange}
-                onSelect={handleInputSelect}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-text caret-transparent text-center"
-                autoComplete="off"
-              />
-              {landingInput.length === 0 && !isFocused ? (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-                  <AnimatePresence mode="popLayout">
-                    <motion.span
-                      key={placeholderIndex}
-                      initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          {/* Lowkey Chat Input */}
+          <div className="w-full max-w-4xl mx-auto mb-16 px-4 relative z-20">
+            <div
+              className="relative group flex flex-col items-center justify-center"
+              onClick={handleInputContainerClick}
+            >
+              <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight cursor-text min-h-[60px] w-full text-center">
+                <input
+                  id="main-input"
+                  type="text"
+                  value={landingInput}
+                  onChange={handleInputChange}
+                  onSelect={handleInputSelect}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-text caret-transparent text-center"
+                  autoComplete="off"
+                />
+                {landingInput.length === 0 && !isFocused ? (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+                    <AnimatePresence mode="popLayout">
+                      <motion.span
+                        key={placeholderIndex}
+                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                          filter: "blur(0px)",
+                          backgroundPosition: ["0% center", "-200% center"],
+                        }}
+                        exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                        transition={{
+                          opacity: { duration: 0.5 },
+                          y: { duration: 0.5 },
+                          backgroundPosition: { duration: 2.5, ease: "linear", repeat: 0 },
+                        }}
+                        className="text-transparent bg-clip-text bg-[length:200%_auto]"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
+                        }}
+                      >
+                        {PLACEHOLDERS[placeholderIndex]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <div className="relative z-0 flex items-center justify-center break-all">
+                    <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(0, cursorPos)}</span>
+                    <motion.div
                       animate={{
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                        backgroundPosition: ["0% center", "-200% center"],
+                        opacity: [1, 0.5, 1],
+                        height: ["1.2em", "1em", "1.2em"],
+                        backgroundColor: ["#a855f7", "#d8b4fe", "#a855f7"],
                       }}
-                      exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                      transition={{
-                        opacity: { duration: 0.5 },
-                        y: { duration: 0.5 },
-                        backgroundPosition: { duration: 2.5, ease: "linear", repeat: 0 },
-                      }}
-                      className="text-transparent bg-clip-text bg-[length:200%_auto]"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
-                      }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-[3px] h-[1.2em] bg-purple-500 rounded-full mx-[2px] inline-block align-middle"
+                    />
+                    <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(cursorPos)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* --- PROMPT ALTERNATIVES SECTION --- */}
+          <AnimatePresence>
+            {generatedPrompts.length > 0 && (
+              <motion.section
+                id="prompt-alternatives"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="w-full max-w-7xl mx-auto px-4 mb-16"
+              >
+                <div className="mb-8 text-center">
+                  <h2 className="text-3xl font-bold text-white mb-3">Generated Prompt Alternatives</h2>
+                  <p className="text-neutral-400 text-base">Choose the prompt style that best fits your needs</p>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {generatedPrompts.map((alt, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6 flex flex-col hover:border-white/20 hover:shadow-xl hover:shadow-purple-500/10 transition-all"
                     >
-                      {PLACEHOLDERS[placeholderIndex]}
-                    </motion.span>
-                  </AnimatePresence>
+                      <h3 className="text-xl font-bold text-white mb-4">{alt.title}</h3>
+                      <div className="bg-black/40 border border-white/10 rounded-lg p-5 mb-5 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        <pre className="text-xs text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed">
+                          {alt.prompt}
+                        </pre>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(alt.prompt)}
+                        className="w-full py-3.5 bg-white/10 border border-white/20 rounded-lg text-white font-semibold text-sm hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/10"
+                      >
+                        <Copy size={18} />
+                        <span>Copy Prompt</span>
+                      </button>
+                    </motion.div>
+                  ))}
                 </div>
-              ) : (
-                <div className="relative z-0 flex items-center justify-center break-all">
-                  <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(0, cursorPos)}</span>
-                  <motion.div
-                    animate={{
-                      opacity: [1, 0.5, 1],
-                      height: ["1.2em", "1em", "1.2em"],
-                      backgroundColor: ["#a855f7", "#d8b4fe", "#a855f7"],
-                    }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-[3px] h-[1.2em] bg-purple-500 rounded-full mx-[2px] inline-block align-middle"
+              </motion.section>
+            )}
+          </AnimatePresence>
+        </motion.main>
+      )}
+
+      {/* Generator View */}
+      {currentView === "generator" && (
+        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+          <div className="absolute top-4 left-4 z-30">
+            <button
+              onClick={() => navigate("/prompt-lab-page")}
+              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
+            >
+              <ArrowLeft size={18} />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          </div>
+          <div className="absolute top-4 right-4 z-30">
+            <div className="flex items-center gap-2">
+              <Wand2 className="text-purple-400" size={24} />
+              <h1 className="text-xl font-bold">Prompt Generator</h1>
+            </div>
+          </div>
+          <div ref={canvasRef} className="flex-1 relative overflow-auto z-0 mt-20">
+            <div
+              className="absolute inset-0 pointer-events-none opacity-10"
+              style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl px-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-2xl"
+              >
+                <div className="mb-6">
+                  <label className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3 block">
+                    Describe what you want to create
+                  </label>
+                  <textarea
+                    value={generatorInput}
+                    onChange={(e) => setGeneratorInput(e.target.value)}
+                    placeholder="e.g., A prompt for writing viral social media content..."
+                    className="w-full h-32 bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder:text-neutral-600 focus:outline-none focus:border-purple-500/50 resize-none font-sans text-base"
                   />
-                  <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(cursorPos)}</span>
                 </div>
-              )}
+                {isGenerating && (
+                  <div className="flex items-center justify-center gap-3 py-8">
+                    <Loader2 size={20} className="animate-spin text-purple-400" />
+                    <span className="text-neutral-400">Generating prompts...</span>
+                  </div>
+                )}
+                {generatorPrompts.length > 0 && !isGenerating && (
+                  <div className="space-y-4 mt-6">
+                    <h3 className="text-lg font-bold text-white mb-4">Generated Prompts:</h3>
+                    {generatorPrompts.map((prompt, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-black/40 border border-white/10 rounded-xl p-5 hover:border-purple-500/50 transition-all cursor-pointer group"
+                        onClick={() => setSelectedPrompt(prompt)}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Sparkles size={16} className="text-purple-400" />
+                              <span className="text-sm font-bold text-purple-400">Prompt {index + 1}</span>
+                            </div>
+                            <p className="text-sm text-neutral-300 font-mono line-clamp-3">{prompt}</p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(prompt);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/10 rounded-lg"
+                          >
+                            <Copy size={18} className="text-neutral-400" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          </div>
+          <AnimatePresence>
+            {selectedPrompt && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSelectedPrompt(null)}
+                  className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+                />
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="w-full max-w-3xl bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
+                >
+                  <button
+                    onClick={() => setSelectedPrompt(null)}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors z-20"
+                  >
+                    <X size={20} />
+                  </button>
+                  <h3 className="text-2xl font-bold text-white mb-4">Generated Prompt</h3>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <pre className="text-sm text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed bg-black/30 rounded-xl p-6 border border-white/10">
+                      {selectedPrompt}
+                    </pre>
+                  </div>
+                  <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
+                    <button
+                      onClick={() => {
+                        copyToClipboard(selectedPrompt);
+                        setSelectedPrompt(null);
+                      }}
+                      className="flex-1 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Copy size={16} />
+                      <span>Copy Prompt</span>
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Scanner View */}
+      {currentView === "scanner" && (
+        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+          <div className="absolute top-4 left-4 z-30">
+            <button
+              onClick={() => navigate("/prompt-lab-page")}
+              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
+            >
+              <ArrowLeft size={18} />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          </div>
+          <div className="absolute top-4 right-4 z-30">
+            <div className="flex items-center gap-2">
+              <Search className="text-cyan-400" size={24} />
+              <h1 className="text-xl font-bold">Prompt Scanner</h1>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center p-8 mt-20 overflow-y-auto">
+            <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3 block">
+                    Enter Prompt to Analyze
+                  </label>
+                  <textarea
+                    value={scannerPrompt}
+                    onChange={(e) => setScannerPrompt(e.target.value)}
+                    placeholder="Paste or type your prompt here..."
+                    className="w-full h-96 bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-500/50 resize-none font-mono text-sm"
+                  />
+                </div>
+                <button
+                  onClick={analyzePrompt}
+                  disabled={!scannerPrompt.trim() || isAnalyzing}
+                  className="w-full py-4 bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-cyan-300 font-bold text-sm hover:bg-cyan-500/30 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Search size={18} />
+                      <span>Analyze Prompt</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="space-y-4">
+                {analysis && (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-white">Overall Score</h3>
+                        <div
+                          className={`text-3xl font-bold ${analysis.overallScore >= 80 ? "text-green-400" : analysis.overallScore >= 60 ? "text-yellow-400" : "text-red-400"}`}
+                        >
+                          {analysis.overallScore}/100
+                        </div>
+                      </div>
+                      <div className="w-full bg-black/30 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${analysis.overallScore >= 80 ? "bg-green-400" : analysis.overallScore >= 60 ? "bg-yellow-400" : "bg-red-400"}`}
+                          style={{ width: `${analysis.overallScore}%` }}
+                        />
+                      </div>
+                    </div>
+                    {analysis.strengths.length > 0 && (
+                      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <CheckCircle2 className="text-green-400" size={20} />
+                          <h3 className="text-lg font-bold text-white">Strengths</h3>
+                        </div>
+                        <ul className="space-y-2">
+                          {analysis.strengths.map((strength, idx) => (
+                            <li key={idx} className="text-sm text-neutral-300 flex items-start gap-2">
+                              <span className="text-green-400 mt-1">✓</span>
+                              <span>{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {analysis.weaknesses.length > 0 && (
+                      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <AlertCircle className="text-red-400" size={20} />
+                          <h3 className="text-lg font-bold text-white">Weaknesses</h3>
+                        </div>
+                        <ul className="space-y-2">
+                          {analysis.weaknesses.map((weakness, idx) => (
+                            <li key={idx} className="text-sm text-neutral-300 flex items-start gap-2">
+                              <span className="text-red-400 mt-1">✗</span>
+                              <span>{weakness}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {analysis.recommendations.length > 0 && (
+                      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Info className="text-cyan-400" size={20} />
+                          <h3 className="text-lg font-bold text-white">Recommendations</h3>
+                        </div>
+                        <ul className="space-y-2">
+                          {analysis.recommendations.map((rec, idx) => (
+                            <li key={idx} className="text-sm text-neutral-300 flex items-start gap-2">
+                              <span className="text-cyan-400 mt-1">→</span>
+                              <span>{rec}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {analysis.commandBreakdown.length > 0 && (
+                      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+                        <h3 className="text-lg font-bold text-white mb-4">Command Breakdown</h3>
+                        <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+                          {analysis.commandBreakdown.map((cmd, idx) => (
+                            <div key={idx} className="bg-black/30 border border-white/5 rounded-lg p-4">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <code className="text-xs text-purple-300 font-mono flex-1">{cmd.command}</code>
+                                <span
+                                  className={`text-xs font-bold px-2 py-1 rounded ${
+                                    cmd.effectiveness === "high"
+                                      ? "bg-green-500/20 text-green-400"
+                                      : cmd.effectiveness === "medium"
+                                        ? "bg-yellow-500/20 text-yellow-400"
+                                        : "bg-red-500/20 text-red-400"
+                                  }`}
+                                >
+                                  {cmd.effectiveness.toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="text-xs text-neutral-400 space-y-1">
+                                <div>
+                                  <span className="font-bold">Purpose:</span> {cmd.purpose}
+                                </div>
+                                <div>
+                                  <span className="font-bold">Impact:</span> {cmd.impact}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+                {!analysis && !isAnalyzing && (
+                  <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-12 text-center">
+                    <Search className="text-neutral-600 mx-auto mb-4" size={48} />
+                    <p className="text-neutral-500">Enter a prompt and click Analyze to get started</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* --- PROMPT ALTERNATIVES SECTION --- */}
-        <AnimatePresence>
-          {generatedPrompts.length > 0 && (
-            <motion.section
-              id="prompt-alternatives"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-7xl mx-auto px-4 mb-16"
+      {/* Library View */}
+      {currentView === "library" && (
+        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
+          <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
+            <span className="text-[10px] text-neutral-500 font-mono uppercase">Simulate Subscription</span>
+            <button
+              onClick={() => setIsPremiumUnlocked(!isPremiumUnlocked)}
+              className={`w-10 h-5 rounded-full p-1 transition-colors ${isPremiumUnlocked ? "bg-amber-500" : "bg-neutral-800"}`}
             >
-              <div className="mb-8 text-center">
-                <h2 className="text-3xl font-bold text-white mb-3">Generated Prompt Alternatives</h2>
-                <p className="text-neutral-400 text-base">Choose the prompt style that best fits your needs</p>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {generatedPrompts.map((alt, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6 flex flex-col hover:border-white/20 hover:shadow-xl hover:shadow-purple-500/10 transition-all"
-                  >
-                    <h3 className="text-xl font-bold text-white mb-4">{alt.title}</h3>
-                    <div className="bg-black/40 border border-white/10 rounded-lg p-5 mb-5 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
-                      <pre className="text-xs text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed">
-                        {alt.prompt}
-                      </pre>
-                    </div>
-                    <button
-                      onClick={() => copyToClipboard(alt.prompt)}
-                      className="w-full py-3.5 bg-white/10 border border-white/20 rounded-lg text-white font-semibold text-sm hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/10"
-                    >
-                      <Copy size={18} />
-                      <span>Copy Prompt</span>
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
-
-        {/* --- PROMPT LIBRARY SECTION --- */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="w-full py-12 px-4"
-        >
-          <div className="max-w-6xl mx-auto flex flex-col gap-8">
-            <div className="flex flex-col items-center justify-center text-center gap-6 mb-8 relative">
-              <div className="space-y-3">
-                <h2 className="text-3xl font-bold text-white flex items-center justify-center gap-3">
-                  <Sparkles className="text-amber-400" /> Prompt Library
-                </h2>
-                <p className="text-neutral-400 max-w-xl mx-auto">
-                  Choose between our curated free collection or advanced premium systems designed for scale.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 p-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full shadow-inner">
-                <button
-                  onClick={() => setSelectedTier("free")}
-                  className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${selectedTier === "free" ? "bg-white text-black shadow-lg" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
-                >
-                  Free
-                </button>
-                <button
-                  onClick={() => setSelectedTier("premium")}
-                  className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${selectedTier === "premium" ? "bg-gradient-to-r from-amber-200 to-amber-500 text-black shadow-lg" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
-                >
-                  Premium
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-col gap-6 border-b border-white/10 pb-8">
-              <div className="flex flex-wrap gap-2 justify-center">
-                <button
-                  onClick={() => setFilterDomain("all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all border backdrop-blur-md ${filterDomain === "all" ? "bg-white/10 text-white border-white/30" : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/10"}`}
-                >
-                  All
-                </button>
-                {DOMAINS.map((d) => (
-                  <button
-                    key={d.key}
-                    onClick={() => setFilterDomain(d.key)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all border flex items-center gap-2 backdrop-blur-md ${filterDomain === d.key ? `${d.color} bg-white/10 border-current shadow-[0_0_10px_rgba(255,255,255,0.05)]` : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/10"}`}
-                  >
-                    <span>{d.emoji}</span>
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-              <AnimatePresence>
-                {filterDomain !== "all" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: "auto" }}
-                    exit={{ opacity: 0, y: -10, height: 0 }}
-                    className="flex flex-wrap gap-2 justify-center overflow-hidden"
-                  >
-                    {domainMap.get(filterDomain)?.subcategories.map((sub) => (
-                      <button
-                        key={sub}
-                        onClick={() => setActiveSubcategory(activeSubcategory === sub ? null : sub)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border backdrop-blur-md ${activeSubcategory === sub ? "bg-white text-black border-white" : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white"}`}
-                      >
-                        {sub}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <div className="flex items-center justify-center gap-4 w-full pt-4 border-t border-white/5">
-                <div className="relative w-full max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
-                  <input
-                    type="text"
-                    placeholder={selectedTier === "premium" ? "Search premium..." : "Search free..."}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-neutral-600"
-                  />
-                </div>
-                {selectedTier === "premium" && isPremiumUnlocked && (
-                  <button
-                    onClick={() => setIsCreating(true)}
-                    className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl text-sm font-bold hover:bg-white/20 hover:text-white text-neutral-200 transition-all whitespace-nowrap"
-                  >
-                    <Plus size={18} />
-                    <span>Create New</span>
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[400px]">
-              {filteredPrompts.length > 0 ? (
-                filteredPrompts.map((prompt) => {
-                  const domainConfig = domainMap.get(prompt.domain);
-                  return (
-                    <PromptCard
-                      key={prompt.id}
-                      prompt={prompt}
-                      domainConfig={domainConfig}
-                      isPremiumUnlocked={isPremiumUnlocked}
-                      onClick={() => setActivePrompt(prompt)}
-                    />
-                  );
-                })
-              ) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-20 text-neutral-500">
-                  {selectedTier === "premium" ? (
-                    <Lock size={48} className="mb-4 opacity-20" />
-                  ) : (
-                    <Search size={48} className="mb-4 opacity-20" />
-                  )}
-                  <p className="text-lg font-medium">No {selectedTier} prompts found</p>
-                  <p className="text-sm">Try adjusting your filters.</p>
-                </div>
-              )}
+              <div
+                className={`w-3 h-3 bg-white rounded-full transition-transform ${isPremiumUnlocked ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+          </div>
+          <div className="absolute top-4 left-4 z-30">
+            <button
+              onClick={() => navigate("/prompt-lab-page")}
+              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
+            >
+              <ArrowLeft size={18} />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+          </div>
+          <div className="absolute top-4 right-20 z-30">
+            <div className="flex items-center gap-2">
+              <Sparkles className="text-amber-400" size={24} />
+              <h1 className="text-xl font-bold">Prompt Library</h1>
             </div>
           </div>
-        </motion.section>
+          <motion.main className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar mt-20">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full py-12 px-4"
+            >
+              <div className="max-w-6xl mx-auto flex flex-col gap-8">
+                <div className="flex flex-col items-center justify-center text-center gap-6 mb-8 relative">
+                  <div className="space-y-3">
+                    <h2 className="text-3xl font-bold text-white flex items-center justify-center gap-3">
+                      <Sparkles className="text-amber-400" /> Prompt Library
+                    </h2>
+                    <p className="text-neutral-400 max-w-xl mx-auto">
+                      Choose between our curated free collection or advanced premium systems designed for scale.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 p-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full shadow-inner">
+                    <button
+                      onClick={() => setSelectedTier("free")}
+                      className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${selectedTier === "free" ? "bg-white text-black shadow-lg" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
+                    >
+                      Free
+                    </button>
+                    <button
+                      onClick={() => setSelectedTier("premium")}
+                      className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${selectedTier === "premium" ? "bg-gradient-to-r from-amber-200 to-amber-500 text-black shadow-lg" : "text-neutral-500 hover:text-white hover:bg-white/5"}`}
+                    >
+                      Premium
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-6 border-b border-white/10 pb-8">
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <button
+                      onClick={() => setFilterDomain("all")}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all border backdrop-blur-md ${filterDomain === "all" ? "bg-white/10 text-white border-white/30" : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/10"}`}
+                    >
+                      All
+                    </button>
+                    {DOMAINS.map((d) => (
+                      <button
+                        key={d.key}
+                        onClick={() => setFilterDomain(d.key)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border flex items-center gap-2 backdrop-blur-md ${filterDomain === d.key ? `${d.color} bg-white/10 border-current shadow-[0_0_10px_rgba(255,255,255,0.05)]` : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/10"}`}
+                      >
+                        <span>{d.emoji}</span>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                  <AnimatePresence>
+                    {filterDomain !== "all" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
+                        exit={{ opacity: 0, y: -10, height: 0 }}
+                        className="flex flex-wrap gap-2 justify-center overflow-hidden"
+                      >
+                        {domainMap.get(filterDomain)?.subcategories.map((sub) => (
+                          <button
+                            key={sub}
+                            onClick={() => setActiveSubcategory(activeSubcategory === sub ? null : sub)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border backdrop-blur-md ${activeSubcategory === sub ? "bg-white text-black border-white" : "bg-white/5 text-neutral-400 border-white/5 hover:border-white/20 hover:text-white"}`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="flex items-center justify-center gap-4 w-full pt-4 border-t border-white/5">
+                    <div className="relative w-full max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+                      <input
+                        type="text"
+                        placeholder={selectedTier === "premium" ? "Search premium..." : "Search free..."}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors placeholder:text-neutral-600"
+                      />
+                    </div>
+                    {selectedTier === "premium" && isPremiumUnlocked && (
+                      <button
+                        onClick={() => setIsCreating(true)}
+                        className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md border border-white/10 rounded-xl text-sm font-bold hover:bg-white/20 hover:text-white text-neutral-200 transition-all whitespace-nowrap"
+                      >
+                        <Plus size={18} />
+                        <span>Create New</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-[400px]">
+                  {filteredPrompts.length > 0 ? (
+                    filteredPrompts.map((prompt) => {
+                      const domainConfig = domainMap.get(prompt.domain);
+                      return (
+                        <PromptCard
+                          key={prompt.id}
+                          prompt={prompt}
+                          domainConfig={domainConfig}
+                          isPremiumUnlocked={isPremiumUnlocked}
+                          onClick={() => setActivePrompt(prompt)}
+                        />
+                      );
+                    })
+                  ) : (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-neutral-500">
+                      {selectedTier === "premium" ? (
+                        <Lock size={48} className="mb-4 opacity-20" />
+                      ) : (
+                        <Search size={48} className="mb-4 opacity-20" />
+                      )}
+                      <p className="text-lg font-medium">No {selectedTier} prompts found</p>
+                      <p className="text-sm">Try adjusting your filters.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.section>
 
-        {/* MODAL AND CREATE OVERLAYS PRESERVED ... */}
-        {/* ... (Rest of the code for modals remains same, just ensuring wrapper correct) */}
-        <AnimatePresence>
-          {activePrompt &&
-            (() => {
-              const activeDomainConfig = domainMap.get(activePrompt.domain);
-              return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+            {/* Modal */}
+            <AnimatePresence>
+              {activePrompt &&
+                (() => {
+                  const activeDomainConfig = domainMap.get(activePrompt.domain);
+                  return (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setActivePrompt(null)}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+                      />
+                      <motion.div
+                        layoutId={`card-${activePrompt.id}`}
+                        className={`w-full max-w-2xl bg-white/5 backdrop-blur-md border rounded-2xl p-6 sm:p-8 relative z-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${activePrompt.tier === "premium" ? "border-amber-500/30" : "border-white/20"}`}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePrompt(null);
+                          }}
+                          className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors z-20"
+                        >
+                          <X size={20} />
+                        </button>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                          <div className="flex items-center gap-2 mb-4">
+                            <span className={`text-xs font-bold uppercase tracking-wider ${activeDomainConfig?.color}`}>
+                              {activeDomainConfig?.label}
+                            </span>
+                            {activePrompt.tier === "premium" && (
+                              <span
+                                className={`text-xs font-bold uppercase border px-2 py-0.5 rounded-full ${isPremiumUnlocked ? "text-green-400 border-green-500/30 bg-green-900/20" : "text-amber-400 border-amber-500/30 bg-amber-900/20"}`}
+                              >
+                                {isPremiumUnlocked ? "Unlocked" : "Premium"}
+                              </span>
+                            )}
+                          </div>
+                          <motion.h3
+                            layoutId={`title-${activePrompt.id}`}
+                            className="text-2xl sm:text-3xl font-bold text-white mb-3"
+                          >
+                            {activePrompt.title}
+                          </motion.h3>
+                          <motion.p layoutId={`desc-${activePrompt.id}`} className="text-neutral-400 text-base mb-8">
+                            {activePrompt.description}
+                          </motion.p>
+                          <div className="relative">
+                            <div
+                              className={`rounded-xl border p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap ${activePrompt.tier === "premium" ? "bg-amber-900/10 border-amber-500/20 text-neutral-300" : "bg-white/5 backdrop-blur-md border-white/10 text-neutral-200"}`}
+                            >
+                              {activePrompt.tier === "premium" && !isPremiumUnlocked ? (
+                                <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+                                  <Lock size={32} className="text-amber-500 opacity-60" />
+                                  <div className="space-y-1">
+                                    <p className="text-white font-bold text-lg">Premium Content Locked</p>
+                                    <p className="text-neutral-500 text-sm max-w-xs mx-auto">
+                                      This advanced system is part of our premium collection.
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={() => setIsPremiumUnlocked(true)}
+                                    className="mt-2 bg-white text-black px-6 py-2.5 rounded-full font-bold hover:bg-amber-50 transition-colors flex items-center gap-2"
+                                  >
+                                    <span>Unlock for {activePrompt.price}</span>
+                                    <ArrowRight size={14} />
+                                  </button>
+                                </div>
+                              ) : (
+                                activePrompt.prompt
+                              )}
+                            </div>
+                            {(activePrompt.tier === "free" || isPremiumUnlocked) && (
+                              <div className="flex items-center gap-3 mt-4">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(activePrompt.prompt);
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
+                                >
+                                  <Copy size={16} />
+                                  <span>Copy</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(activePrompt.prompt);
+                                  }}
+                                  className="flex-[2] flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-colors shadow-lg shadow-white/10"
+                                >
+                                  <Copy size={16} fill="black" />
+                                  <span>Copy Prompt</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  );
+                })()}
+            </AnimatePresence>
+
+            {/* Create Modal */}
+            <AnimatePresence>
+              {isCreating && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={() => setActivePrompt(null)}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+                    onClick={() => setIsCreating(false)}
+                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                   />
                   <motion.div
-                    layoutId={`card-${activePrompt.id}`}
-                    className={`w-full max-w-2xl bg-white/5 backdrop-blur-md border rounded-2xl p-6 sm:p-8 relative z-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${activePrompt.tier === "premium" ? "border-amber-500/30" : "border-white/20"}`}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="w-full max-w-lg bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl flex flex-col gap-4"
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActivePrompt(null);
-                      }}
-                      className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors z-20"
-                    >
-                      <X size={20} />
-                    </button>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className={`text-xs font-bold uppercase tracking-wider ${activeDomainConfig?.color}`}>
-                          {activeDomainConfig?.label}
-                        </span>
-                        {activePrompt.tier === "premium" && (
-                          <span
-                            className={`text-xs font-bold uppercase border px-2 py-0.5 rounded-full ${isPremiumUnlocked ? "text-green-400 border-green-500/30 bg-green-900/20" : "text-amber-400 border-amber-500/30 bg-amber-900/20"}`}
+                    <h3 className="text-2xl font-bold text-white mb-2">Create New Prompt</h3>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Title</label>
+                      <input
+                        type="text"
+                        value={newPromptData.title}
+                        onChange={(e) => setNewPromptData({ ...newPromptData, title: e.target.value })}
+                        className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/40 outline-none"
+                        placeholder="e.g., Q4 Marketing Strategy"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Domain</label>
+                      <div className="flex gap-2">
+                        {DOMAINS.map((d) => (
+                          <button
+                            key={d.key}
+                            onClick={() => setNewPromptData({ ...newPromptData, domain: d.key })}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${newPromptData.domain === d.key ? `${d.color} bg-white/10 border-white/20` : "text-neutral-500 border-transparent hover:bg-white/5"}`}
                           >
-                            {isPremiumUnlocked ? "Unlocked" : "Premium"}
-                          </span>
-                        )}
+                            {d.emoji} {d.label}
+                          </button>
+                        ))}
                       </div>
-                      <motion.h3
-                        layoutId={`title-${activePrompt.id}`}
-                        className="text-2xl sm:text-3xl font-bold text-white mb-3"
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Prompt Content</label>
+                      <textarea
+                        value={newPromptData.prompt}
+                        onChange={(e) => setNewPromptData({ ...newPromptData, prompt: e.target.value })}
+                        className="w-full h-32 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/40 outline-none font-mono text-sm resize-none"
+                        placeholder="Enter the detailed system prompt here..."
+                      />
+                    </div>
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => setIsCreating(false)}
+                        className="flex-1 py-3 rounded-xl border border-white/10 text-neutral-400 hover:text-white transition-colors font-bold text-sm"
                       >
-                        {activePrompt.title}
-                      </motion.h3>
-                      <motion.p layoutId={`desc-${activePrompt.id}`} className="text-neutral-400 text-base mb-8">
-                        {activePrompt.description}
-                      </motion.p>
-                      <div className="relative">
-                        <div
-                          className={`rounded-xl border p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap ${activePrompt.tier === "premium" ? "bg-amber-900/10 border-amber-500/20 text-neutral-300" : "bg-white/5 backdrop-blur-md border-white/10 text-neutral-200"}`}
-                        >
-                          {activePrompt.tier === "premium" && !isPremiumUnlocked ? (
-                            <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
-                              <Lock size={32} className="text-amber-500 opacity-60" />
-                              <div className="space-y-1">
-                                <p className="text-white font-bold text-lg">Premium Content Locked</p>
-                                <p className="text-neutral-500 text-sm max-w-xs mx-auto">
-                                  This advanced system is part of our premium collection.
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => setIsPremiumUnlocked(true)}
-                                className="mt-2 bg-white text-black px-6 py-2.5 rounded-full font-bold hover:bg-amber-50 transition-colors flex items-center gap-2"
-                              >
-                                <span>Unlock for {activePrompt.price}</span>
-                                <ArrowRight size={14} />
-                              </button>
-                            </div>
-                          ) : (
-                            activePrompt.prompt
-                          )}
-                        </div>
-                        {(activePrompt.tier === "free" || isPremiumUnlocked) && (
-                          <div className="flex items-center gap-3 mt-4">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                copyToClipboard(activePrompt.prompt);
-                              }}
-                              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-semibold text-sm hover:bg-white/10 transition-colors"
-                            >
-                              <Copy size={16} />
-                              <span>Copy</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                copyToClipboard(activePrompt.prompt);
-                              }}
-                              className="flex-[2] flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-colors shadow-lg shadow-white/10"
-                            >
-                              <Copy size={16} fill="black" />
-                              <span>Copy Prompt</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCreatePrompt}
+                        className="flex-1 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Save size={16} />
+                        Save to Library
+                      </button>
                     </div>
                   </motion.div>
                 </div>
-              );
-            })()}
-        </AnimatePresence>
-        <AnimatePresence>
-          {isCreating && (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center px-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsCreating(false)}
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-              />
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-lg bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl flex flex-col gap-4"
-              >
-                <h3 className="text-2xl font-bold text-white mb-2">Create New Prompt</h3>
-                <div>
-                  <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={newPromptData.title}
-                    onChange={(e) => setNewPromptData({ ...newPromptData, title: e.target.value })}
-                    className="w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/40 outline-none"
-                    placeholder="e.g., Q4 Marketing Strategy"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Domain</label>
-                  <div className="flex gap-2">
-                    {DOMAINS.map((d) => (
-                      <button
-                        key={d.key}
-                        onClick={() => setNewPromptData({ ...newPromptData, domain: d.key })}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${newPromptData.domain === d.key ? `${d.color} bg-white/10 border-white/20` : "text-neutral-500 border-transparent hover:bg-white/5"}`}
-                      >
-                        {d.emoji} {d.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-neutral-500 uppercase block mb-1">Prompt Content</label>
-                  <textarea
-                    value={newPromptData.prompt}
-                    onChange={(e) => setNewPromptData({ ...newPromptData, prompt: e.target.value })}
-                    className="w-full h-32 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/40 outline-none font-mono text-sm resize-none"
-                    placeholder="Enter the detailed system prompt here..."
-                  />
-                </div>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => setIsCreating(false)}
-                    className="flex-1 py-3 rounded-xl border border-white/10 text-neutral-400 hover:text-white transition-colors font-bold text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreatePrompt}
-                    className="flex-1 py-3 rounded-xl bg-white text-black font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Save size={16} />
-                    Save to Library
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      </motion.main>
+              )}
+            </AnimatePresence>
+          </motion.main>
+        </div>
+      )}
     </div>
   );
 }
