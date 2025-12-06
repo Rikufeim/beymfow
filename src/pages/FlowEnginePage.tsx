@@ -9,7 +9,7 @@
 // UPDATED: Changed selection highlight color from Blue to Gray (Neutral).
 // UPDATED: Added Zoom In (+) and Zoom Out (-) buttons to the bottom toolbar between Hand and Text tools.
 // UPDATED: Fixed background grid logic to use CSS background properties for stable zooming/panning.
-// UPDATED: Unified background color to #0a0a0a.
+// UPDATED: Unified background color to #050509.
 // UPDATED: Made Prompt Window dynamic (connectable), added Copy functionality, and fixed template loading to append instead of replace.
 // UPDATED (FIX): Removed usage of deprecated `window.event` in handleMouseUp to fix cross-browser/environment issues.
 
@@ -1465,7 +1465,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- RENDER ---
   return (
-    <div className="h-screen bg-[#0b0b0d] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
+    <div className="h-screen bg-[#050509] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
           // --- LANDING VIEW ---
@@ -1727,7 +1727,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`flex-1 relative w-full h-full flex flex-col bg-[#0a0a0a] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
+            className={`flex-1 relative w-full h-full flex flex-col bg-[#050509] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
           >
             {/* Top Bar */}
             <div className="absolute top-0 left-0 right-0 h-14 bg-[#1a1a1d] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
@@ -1920,7 +1920,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen outline-none"
-              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#0a0a0a" }}
+              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#050509" }}
               tabIndex={0}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
@@ -1931,7 +1931,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   zIndex: 0,
-                  backgroundColor: showBackgroundPattern ? "#0a0a0a" : "#0c0c0e",
+                  backgroundColor: "#050509",
                   backgroundImage: showBackgroundPattern
                     ? "radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px)"
                     : "none",
