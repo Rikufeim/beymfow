@@ -74,6 +74,7 @@ import {
   UserCheck,
   MessageCircle,
   Eye,
+  EyeOff,
   Edit3,
   Clipboard,
 } from "lucide-react";
@@ -444,6 +445,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const [showSettings, setShowSettings] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showBackgroundPattern, setShowBackgroundPattern] = useState(true);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -1902,6 +1904,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 >
                   <Type size={18} />
                 </button>
+                <button
+                  onClick={() => setShowBackgroundPattern((prev) => !prev)}
+                  className={`p-2.5 rounded-full transition-all ${
+                    !showBackgroundPattern ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"
+                  }`}
+                  title={showBackgroundPattern ? "Hide Background Pattern" : "Show Background Pattern"}
+                >
+                  {showBackgroundPattern ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
@@ -1920,10 +1931,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   zIndex: 0,
-                  backgroundColor: "#09090b",
-                  backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                  backgroundSize: `${24 * canvasTransform.scale}px ${24 * canvasTransform.scale}px`,
-                  backgroundPosition: `${canvasTransform.translateX}px ${canvasTransform.translateY}px`,
+                  backgroundColor: showBackgroundPattern ? "#09090b" : "#2d2d2e",
+                  backgroundImage: showBackgroundPattern
+                    ? "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)"
+                    : "none",
+                  backgroundSize: showBackgroundPattern
+                    ? `${24 * canvasTransform.scale}px ${24 * canvasTransform.scale}px`
+                    : undefined,
+                  backgroundPosition: showBackgroundPattern
+                    ? `${canvasTransform.translateX}px ${canvasTransform.translateY}px`
+                    : undefined,
                 }}
               />
 
