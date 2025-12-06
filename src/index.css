@@ -39,6 +39,14 @@
   }
 }
 
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .animate-fade-in {
   animation: fadeIn 1s ease-out;
 }
