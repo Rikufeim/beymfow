@@ -9,7 +9,7 @@
 // UPDATED: Changed selection highlight color from Blue to Gray (Neutral).
 // UPDATED: Added Zoom In (+) and Zoom Out (-) buttons to the bottom toolbar between Hand and Text tools.
 // UPDATED: Fixed background grid logic to use CSS background properties for stable zooming/panning.
-// UPDATED: Unified background color to #09090b.
+// UPDATED: Unified background color to #0a0a0a.
 // UPDATED: Made Prompt Window dynamic (connectable), added Copy functionality, and fixed template loading to append instead of replace.
 // UPDATED (FIX): Removed usage of deprecated `window.event` in handleMouseUp to fix cross-browser/environment issues.
 
@@ -1465,7 +1465,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- RENDER ---
   return (
-    <div className="h-screen bg-[#09090b] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
+    <div className="h-screen bg-[#0b0b0d] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
           // --- LANDING VIEW ---
@@ -1727,10 +1727,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             key="workspace"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`flex-1 relative w-full h-full flex flex-col bg-[#09090b] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
+            className={`flex-1 relative w-full h-full flex flex-col bg-[#0a0a0a] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
           >
             {/* Top Bar */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-30">
+            <div className="absolute top-0 left-0 right-0 h-14 bg-[#1a1a1d] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
                   onClick={() => setViewMode("landing")}
@@ -1777,7 +1777,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="flex items-center gap-2 p-2 bg-[#1e1e20] border border-neutral-700 rounded-xl shadow-2xl mb-2"
+                    className="flex items-center gap-2 p-2 bg-[#1b1b1f] border border-neutral-800 rounded-xl shadow-2xl mb-2"
                   >
                     {/* Font Family */}
                     <select
@@ -1863,7 +1863,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </AnimatePresence>
 
               {/* Main Toolbar */}
-              <div className="flex items-center gap-1 p-1.5 bg-[#1e1e20] border border-neutral-700 rounded-full shadow-xl">
+              <div className="flex items-center gap-1 p-1.5 bg-[#1b1b1f] border border-neutral-800 rounded-full shadow-xl">
                 <button
                   onClick={() => setActiveTool("select")}
                   className={`p-2.5 rounded-full transition-all ${activeTool === "select" ? "bg-neutral-600 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
@@ -1919,8 +1919,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {/* Canvas */}
             <div
               ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen bg-neutral-900 outline-none"
-              style={{ marginTop: "56px", width: "100%", height: "100%" }}
+              className="flex-1 relative overflow-hidden z-0 min-h-screen outline-none"
+              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#0a0a0a" }}
               tabIndex={0}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
@@ -1931,12 +1931,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   zIndex: 0,
-                  backgroundColor: showBackgroundPattern ? "#09090b" : "#2d2d2e",
+                  backgroundColor: showBackgroundPattern ? "#0a0a0a" : "#0c0c0e",
                   backgroundImage: showBackgroundPattern
-                    ? "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)"
+                    ? "radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px)"
                     : "none",
                   backgroundSize: showBackgroundPattern
-                    ? `${24 * canvasTransform.scale}px ${24 * canvasTransform.scale}px`
+                    ? `${26 * canvasTransform.scale}px ${26 * canvasTransform.scale}px`
                     : undefined,
                   backgroundPosition: showBackgroundPattern
                     ? `${canvasTransform.translateX}px ${canvasTransform.translateY}px`
@@ -2023,7 +2023,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     return (
                       <div
                         key={widget.id}
-                        className={`absolute bg-[#121214] border rounded-xl flex flex-col font-sans widget-container overflow-hidden shadow-2xl ${
+                        className={`absolute bg-[#1b1b1e] border rounded-xl flex flex-col font-sans widget-container overflow-hidden shadow-2xl ${
                           isSelected
                             ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-30"
                             : "border-neutral-700 hover:border-neutral-500 z-20"
@@ -2042,7 +2042,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         />
 
                         {/* Prompt Window Header */}
-                        <div className="px-3 py-2 border-b border-neutral-800 bg-[#18181b] flex items-center justify-between handle">
+                        <div className="px-3 py-2 border-b border-neutral-800 bg-[#202022] flex items-center justify-between handle">
                           <div className="flex items-center gap-2">
                             <Sparkles size={14} className="text-yellow-400" />
                             <span className="text-sm font-semibold text-neutral-200">Prompt Window</span>
@@ -2089,7 +2089,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         </div>
 
                         {/* Prompt Window Content */}
-                        <div className="flex-1 bg-[#09090b] relative">
+                        <div className="flex-1 bg-[#0a0a0a] relative">
                           {widget.promptMode === "preview" ? (
                             <div className="absolute inset-0 p-4 overflow-y-auto custom-scrollbar">
                               <div className="prose prose-invert prose-sm max-w-none">
@@ -2107,7 +2107,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             </div>
                           ) : (
                             <textarea
-                              className="w-full h-full bg-[#09090b] text-neutral-300 p-4 font-mono text-sm resize-none outline-none"
+                              className="w-full h-full bg-[#0a0a0a] text-neutral-300 p-4 font-mono text-sm resize-none outline-none"
                               value={widget.content || ""}
                               onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                               placeholder="Write your custom prompt here..."
@@ -2191,7 +2191,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   return (
                     <div
                       key={widget.id}
-                      className={`absolute bg-[#121214] border rounded-xl flex flex-col hover:border-neutral-500 transition-colors font-sans widget-container ${isSelected ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-20" : "border-neutral-800 hover:border-neutral-700"}`}
+                      className={`absolute bg-[#1b1b1e] border rounded-xl flex flex-col hover:border-neutral-500 transition-colors font-sans widget-container ${isSelected ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-20" : "border-neutral-800 hover:border-neutral-700"}`}
                       style={{ left: widget.x, top: widget.y, width: widget.width, height: widget.height }}
                       onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                     >
@@ -2214,13 +2214,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       />
 
                       {/* Content */}
-                      <div className="px-3 py-2 border-b border-neutral-800 bg-[#121214] flex items-center gap-2">
+                      <div className="px-3 py-2 border-b border-neutral-800 bg-[#1b1b1e] flex items-center gap-2">
                         <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor}`}>
                           <Icon size={14} />
                         </div>
                         <span className="text-sm font-semibold text-neutral-200">{widget.title || "Node"}</span>
                       </div>
-                      <div className="flex-1 bg-[#121214] p-4 overflow-hidden">
+                      <div className="flex-1 bg-[#1b1b1e] p-4 overflow-hidden">
                         <pre className="font-mono text-xs text-neutral-300 whitespace-pre-wrap">
                           {widget.content || "Content..."}
                         </pre>
@@ -2247,10 +2247,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 320, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
+                  className="absolute top-20 right-4 w-80 bg-[#1b1b1e] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
                 >
                   {/* Drawer Header */}
-                  <div className="p-4 border-b border-neutral-800 bg-[#121214]">
+                  <div className="p-4 border-b border-neutral-800 bg-[#1b1b1e]">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Nodes</h3>
 
                     {/* Domain Switcher */}
@@ -2289,7 +2289,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   </div>
 
                   {/* Drawer Content */}
-                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#121214]">
+                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#1b1b1e]">
                     {/* Section 1 */}
                     <div className="mb-2">
                       <button
