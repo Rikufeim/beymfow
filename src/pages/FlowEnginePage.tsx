@@ -1470,7 +1470,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-            className="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto z-10 pt-24 text-center min-h-screen overflow-y-auto"
+            className="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto z-10 pt-24 text-center min-h-screen overflow-y-auto no-scrollbar"
           >
             {/* Home Button - Top Left */}
             <button
