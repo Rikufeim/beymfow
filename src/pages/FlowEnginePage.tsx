@@ -4,7 +4,7 @@
 // Fixed zoom range: 0.25 to 2.0 (Flowise-like range)
 // Background grid: CSS-based radial-gradient pattern, always visible, covers full viewport
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
-// UPDATED: Added BrowserRouter to fix useNavigate error.
+// UPDATED: Removed nested BrowserRouter to avoid conflicts with app-level routing.
 // UPDATED: Moved "Prompt Window" button to be a top-level item BELOW "Templates" for better visibility.
 // UPDATED: Changed selection highlight color from Blue to Gray (Neutral).
 // UPDATED: Added Zoom In (+) and Zoom Out (-) buttons to the bottom toolbar between Hand and Text tools.
@@ -15,7 +15,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, BrowserRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import { HexColorPicker } from "react-colorful";
 
@@ -2593,12 +2593,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
 const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
   return (
-    <BrowserRouter>
-      <MockAuthProvider>
-        <Toaster position="top-center" />
-        <FlowEngineContent {...props} />
-      </MockAuthProvider>
-    </BrowserRouter>
+    <MockAuthProvider>
+      <Toaster position="top-center" />
+      <FlowEngineContent {...props} />
+    </MockAuthProvider>
   );
 };
 
