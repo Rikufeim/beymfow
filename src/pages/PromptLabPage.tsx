@@ -953,67 +953,37 @@ Before finalizing, verify:
             </div>
           </motion.section>
 
-          {/* Lowkey Chat Input */}
+          {/* Animated Text Display */}
           <div className="w-full max-w-4xl mx-auto mb-16 px-4 relative z-20">
-            <div
-              className="relative group flex flex-col items-center justify-center"
-              onClick={handleInputContainerClick}
-            >
-              <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight cursor-text min-h-[60px] w-full text-center">
-                <input
-                  id="main-input"
-                  type="text"
-                  value={landingInput}
-                  onChange={handleInputChange}
-                  onSelect={handleInputSelect}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-text caret-transparent text-center"
-                  autoComplete="off"
-                />
-                {landingInput.length === 0 && !isFocused ? (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-                    <AnimatePresence mode="popLayout">
-                      <motion.span
-                        key={placeholderIndex}
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={{
-                          opacity: 1,
-                          y: 0,
-                          filter: "blur(0px)",
-                          backgroundPosition: ["0% center", "-200% center"],
-                        }}
-                        exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                        transition={{
-                          opacity: { duration: 0.5 },
-                          y: { duration: 0.5 },
-                          backgroundPosition: { duration: 2.5, ease: "linear", repeat: 0 },
-                        }}
-                        className="text-transparent bg-clip-text bg-[length:200%_auto]"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
-                        }}
-                      >
-                        {PLACEHOLDERS[placeholderIndex]}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <div className="relative z-0 flex items-center justify-center break-all">
-                    <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(0, cursorPos)}</span>
-                    <motion.div
+            <div className="relative flex flex-col items-center justify-center">
+              <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight min-h-[60px] w-full text-center">
+                <div className="flex items-center justify-center overflow-hidden">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={placeholderIndex}
+                      initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                       animate={{
-                        opacity: [1, 0.5, 1],
-                        height: ["1.2em", "1em", "1.2em"],
-                        backgroundColor: ["#a855f7", "#d8b4fe", "#a855f7"],
+                        opacity: 1,
+                        y: 0,
+                        filter: "blur(0px)",
+                        backgroundPosition: ["0% center", "-200% center"],
                       }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-[3px] h-[1.2em] bg-purple-500 rounded-full mx-[2px] inline-block align-middle"
-                    />
-                    <span className="text-white whitespace-pre-wrap relative">{landingInput.slice(cursorPos)}</span>
-                  </div>
-                )}
+                      exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+                      transition={{
+                        opacity: { duration: 0.5 },
+                        y: { duration: 0.5 },
+                        backgroundPosition: { duration: 2.5, ease: "linear", repeat: 0 },
+                      }}
+                      className="text-transparent bg-clip-text bg-[length:200%_auto]"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
+                      }}
+                    >
+                      {PLACEHOLDERS[placeholderIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>
