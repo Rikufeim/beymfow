@@ -69,6 +69,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  RefreshCcw,
   Minus,
   Trash2,
   UserCheck,
@@ -172,6 +173,8 @@ interface Widget {
   style?: WidgetTextStyle;
   // New property for Prompt Window mode
   promptMode?: "edit" | "preview";
+  // Flag to mark the special Prompt Output node
+  isPromptNode?: boolean;
 }
 
 interface Edge {
@@ -329,6 +332,8 @@ const AVAILABLE_FONTS = [
   "Nunito",
   "Ubuntu",
 ];
+
+const PROMPT_PLACEHOLDER = "Prompt will be generated here...";
 
 // --- Saved Project Types ---
 interface SavedFlowProject {
@@ -749,8 +754,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   const getMainPromptNodeId = (): string | null => {
-    const finalNode = widgets.find((w) => w.id === "flow-text-final");
-    return finalNode ? finalNode.id : null;
+    const promptNode = widgets.find((w) => w.isPromptNode);
+    return promptNode ? promptNode.id : null;
   };
 
   const getUpstreamNodes = (nodeId: string, nodes: Widget[], edges: Edge[]): Widget[] => {
@@ -769,6 +774,30 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const sortedSections = [...sections].sort((a, b) => a.order - b.order);
     return sortedSections.map((section) => `### ${section.title}\n\n${section.content}\n\n`).join("");
   };
+
+  const buildPromptForPromptNode = useCallback(
+    (promptNodeId: string, allWidgets: Widget[], allEdges: Edge[]): string => {
+      const incomingEdges = allEdges.filter((edge) => edge.target === promptNodeId);
+      const connectedNodes = incomingEdges
+        .map((edge) => allWidgets.find((widget) => widget.id === edge.source))
+        .filter((widget): widget is Widget => Boolean(widget));
+
+      const sortedNodes = [...connectedNodes].sort((a, b) => {
+        if (a.x === b.x) return a.y - b.y;
+        return a.x - b.x;
+      });
+
+      return sortedNodes
+        .map((node) => {
+          const title = node.title || "Untitled Node";
+          const content = node.content || "";
+          return `[${title}]\n${content}`.trimEnd();
+        })
+        .filter(Boolean)
+        .join("\n\n");
+    },
+    [],
+  );
 
   // --- Helper to Aggregate Prompt Content Based on Connections ---
   // UPDATED: Now supports recursive traversal to find all connected upstream nodes for a Prompt Window
@@ -817,6 +846,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       })
       .join("\n\n");
   };
+
+  useEffect(() => {
+    const promptNodes = widgets.filter((widget) => widget.isPromptNode);
+    if (promptNodes.length === 0) return;
+
+    let changed = false;
+    const updatedWidgets = widgets.map((widget) => {
+      if (!widget.isPromptNode) return widget;
+
+      const builtPrompt = buildPromptForPromptNode(widget.id, widgets, edges);
+      const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
+
+      if (widget.content === finalContent) return widget;
+      changed = true;
+      return { ...widget, content: finalContent };
+    });
+
+    if (changed) {
+      setWidgets(updatedWidgets);
+    }
+  }, [widgets, edges, buildPromptForPromptNode]);
 
   // --- Content Generation Functions (Simplified for brevity) ---
   const generateIdeaSummary = (userInput: string) => ({ generatedText: "Summary...", jsonPayload: {} });
@@ -884,6 +934,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       });
   };
 
+  const refreshPromptNode = (promptNodeId: string) => {
+    const builtPrompt = buildPromptForPromptNode(promptNodeId, widgets, edges);
+    const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
+
+    setWidgets((prev) => prev.map((widget) => (widget.id === promptNodeId ? { ...widget, content: finalContent } : widget)));
+  };
+
   // --- Helper Functions for Button Zoom ---
   const handleZoomIn = () => {
     setCanvasTransform((prev) => ({
@@ -901,123 +958,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Flow Preset Creators ---
   const createWebsiteFlowPreset = () => {
-    const userInputTemplate = [
-      "COMPANY NAME:",
-      "[Type the company or project name here]",
-      "",
-      "INDUSTRY / NICHE:",
-      "[What field is the business in?]",
-      "",
-      "TARGET AUDIENCE:",
-      "[Who is this website for? Be specific.]",
-      "",
-      "MAIN OFFER / VALUE:",
-      "[What is the main product, service, or value?]",
-      "",
-      "BRAND VIBE:",
-      "[3–5 keywords, e.g. \"luxury, dark, minimal, futuristic\"]",
-      "",
-      "WEBSITE GOALS:",
-      "[What should this website achieve? e.g. \"generate leads\", \"sell products\", \"book calls\"]",
-      "",
-      "REQUIRED PAGES:",
-      "[List pages, e.g. Home, About, Services, Pricing, Contact, Blog]",
-      "",
-      "SPECIAL FEATURES:",
-      "[Anything extra? e.g. booking form, product gallery, FAQ, testimonials, newsletter signup]",
-    ].join("\n");
-
-    const ideaSummaryTemplate = [
-      "WEBSITE IDEA SUMMARY",
-      "",
-      "1. Project Name:",
-      "   [Pull or rewrite from COMPANY NAME]",
-      "",
-      "2. Business & Industry:",
-      "   [Short explanation of what the business does and in which industry]",
-      "",
-      "3. Target Audience:",
-      "   [1–2 sentences describing the ideal visitor]",
-      "",
-      "4. Core Value Proposition:",
-      "   [What makes this offer unique or valuable?]",
-      "",
-      "5. Main Website Goal:",
-      "   [Primary outcome we want from visitors]",
-      "",
-      "6. Brand Vibe:",
-      "   [Keywords translated into a short mood description]",
-    ].join("\n");
-
-    const pageStructureTemplate = [
-      "PAGE STRUCTURE",
-      "",
-      "HOME",
-      "- Hero section (headline, subheadline, CTA)",
-      "- Key benefits / value",
-      "- Featured services or products",
-      "- Social proof (logos, testimonials)",
-      "- Final CTA",
-      "",
-      "ABOUT",
-      "- Brand story",
-      "- Mission & values",
-      "- Team or founder highlight",
-      "",
-      "SERVICES / PRODUCTS",
-      "- Overview section",
-      "- Individual service/product blocks (title, short description, CTA)",
-      "",
-      "PRICING (optional)",
-      "- Pricing tiers or plans",
-      "- What’s included",
-      "- Guarantee or reassurance",
-      "",
-      "CONTACT",
-      "- Contact form",
-      "- Key contact details",
-      "- Location / map (if relevant)",
-      "",
-      "EXTRA PAGES (optional)",
-      "- Blog / Resources",
-      "- FAQ",
-      "- Case studies or portfolio",
-    ].join("\n");
-
-    const finalBriefTemplate = [
-      "FINAL WEBSITE BRIEF",
-      "",
-      "1. PROJECT OVERVIEW",
-      "   - Company name:",
-      "   - Industry:",
-      "   - Short description:",
-      "   - Main website goal:",
-      "",
-      "2. TARGET AUDIENCE",
-      "   - Who they are:",
-      "   - Their main problem:",
-      "   - Why they would visit this site:",
-      "",
-      "3. BRAND VIBE & STYLE",
-      "   - Keywords:",
-      "   - Visual direction:",
-      "   - Preferred colors / fonts (if any):",
-      "",
-      "4. SITEMAP & PAGE STRUCTURE",
-      "   [Summarize the pages and their sections here, based on the Page Structure node]",
-      "",
-      "5. CONTENT NOTES",
-      "   - Key messages to highlight:",
-      "   - Words or topics to avoid:",
-      "   - Call-to-action examples:",
-      "",
-      "6. SPECIAL FEATURES",
-      "   - Forms, integrations, booking, e-commerce, etc.",
-      "",
-      "7. TECHNICAL NOTES",
-      "   - Any platform / framework preferences (e.g. \"Next.js + Tailwind on Lovable\")",
-    ].join("\n");
-
     const nodes: Widget[] = [
       {
         id: "flow-input-1",
@@ -1027,7 +967,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         y: 200,
         width: 320,
         height: 420,
-        content: userInputTemplate,
+        content: "",
       },
       {
         id: "flow-text-1",
@@ -1037,7 +977,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         y: 80,
         width: 320,
         height: 300,
-        content: ideaSummaryTemplate,
+        content: "",
       },
       {
         id: "flow-text-2",
@@ -1047,17 +987,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         y: 340,
         width: 320,
         height: 380,
-        content: pageStructureTemplate,
+        content: "",
       },
       {
         id: "flow-text-final",
         type: "flow-text-gen",
-        title: "Final Output",
+        title: "Prompt Output",
         x: 780,
         y: 200,
         width: 360,
         height: 440,
-        content: finalBriefTemplate,
+        content: PROMPT_PLACEHOLDER,
+        isPromptNode: true,
       },
     ];
     const edges: Edge[] = [
@@ -1083,7 +1024,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       },
       { id: "flow-text-1", type: "flow-text-gen", title: "Features", x: 300, y: 100, width: 220, height: 150 },
       { id: "flow-text-2", type: "flow-text-gen", title: "Tech Stack", x: 300, y: 300, width: 220, height: 150 },
-      { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
+      {
+        id: "flow-text-final",
+        type: "flow-text-gen",
+        title: "Prompt Output",
+        x: 600,
+        y: 200,
+        width: 260,
+        height: 200,
+        content: PROMPT_PLACEHOLDER,
+        isPromptNode: true,
+      },
     ];
     const edges: Edge[] = [
       { id: "e1", source: "flow-input-1", target: "flow-text-1" },
@@ -1108,7 +1059,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       },
       { id: "flow-text-1", type: "flow-text-gen", title: "Mechanics", x: 300, y: 100, width: 220, height: 150 },
       { id: "flow-text-2", type: "flow-text-gen", title: "Art Style", x: 300, y: 300, width: 220, height: 150 },
-      { id: "flow-text-final", type: "flow-text-gen", title: "Final Output", x: 600, y: 200, width: 260, height: 200 },
+      {
+        id: "flow-text-final",
+        type: "flow-text-gen",
+        title: "Prompt Output",
+        x: 600,
+        y: 200,
+        width: 260,
+        height: 200,
+        content: PROMPT_PLACEHOLDER,
+        isPromptNode: true,
+      },
     ];
     const edges: Edge[] = [
       { id: "e1", source: "flow-input-1", target: "flow-text-1" },
@@ -2332,6 +2293,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     accentColor = "text-cyan-400";
                   }
 
+                  const isPromptNode = widget.isPromptNode;
+
                   return (
                     <div
                       key={widget.id}
@@ -2363,11 +2326,48 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           <Icon size={14} />
                         </div>
                         <span className="text-sm font-semibold text-neutral-200">{widget.title || "Node"}</span>
+                        {isPromptNode && (
+                          <div className="ml-auto flex items-center gap-1 text-neutral-400">
+                            <button
+                              className="p-1 rounded hover:bg-neutral-800"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                refreshPromptNode(widget.id);
+                              }}
+                              title="Regenerate prompt"
+                            >
+                              <RefreshCcw size={14} />
+                            </button>
+                            <button
+                              className="p-1 rounded hover:bg-neutral-800"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyPrompt(widget.content || "");
+                              }}
+                              title="Copy prompt"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 bg-[#1b1b1e] p-4 overflow-hidden">
-                        <pre className="font-mono text-xs text-neutral-300 whitespace-pre-wrap">
-                          {widget.content || "Content..."}
-                        </pre>
+                        {isPromptNode ? (
+                          <textarea
+                            readOnly
+                            className="w-full h-full bg-[#0f0f12] text-neutral-200 text-sm font-mono resize-none outline-none custom-scrollbar"
+                            value={widget.content || PROMPT_PLACEHOLDER}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <textarea
+                            className="w-full h-full bg-[#0f0f12] text-neutral-200 text-sm font-mono resize-none outline-none custom-scrollbar"
+                            value={widget.content || ""}
+                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            placeholder="Content..."
+                          />
+                        )}
                       </div>
 
                       {/* Resize Handle */}
