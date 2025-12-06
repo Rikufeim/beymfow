@@ -6,15 +6,13 @@
 // Grid uses large fixed size (200000px) positioned to cover entire workspace at all zoom/pan levels
 // Grid rendered as absolute positioned layer with z-index: 0, behind all content (z-index: 1+)
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useNavigate } from "react-router-dom";
 
 import { toast, Toaster } from "sonner";
-
-import { HexColorPicker } from "react-colorful";
 
 import { NodeAnchor } from "../components/NodeAnchor";
 
@@ -1597,7 +1595,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
       // Check if handle was dragged away to disconnect
       if (draggingHandle) {
         const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
@@ -1605,13 +1603,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         const canvasX = (draggingHandle.startX - canvasTransform.translateX) / canvasTransform.scale;
         const canvasY = (draggingHandle.startY - canvasTransform.translateY) / canvasTransform.scale;
 
-        const endX =
-          (window.event ? (window.event as MouseEvent).clientX : draggingHandle.startX - canvasTransform.translateX) /
-          canvasTransform.scale;
-
-        const endY =
-          (window.event ? (window.event as MouseEvent).clientY : draggingHandle.startY - canvasTransform.translateY) /
-          canvasTransform.scale;
+        const endX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
+        const endY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
 
         // Use a simpler approach: check if mouse moved significantly
         const deltaX = Math.abs(endX - canvasX);
