@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 
-import { NodeAnchor } from "../components/NodeAnchor";
+import { NodeAnchor } from "@/components/NodeAnchor";
 
 import {
   ArrowRight,
