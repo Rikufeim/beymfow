@@ -13,7 +13,7 @@
 // UPDATED: Made Prompt Window dynamic (connectable), added Copy functionality, and fixed template loading to append instead of replace.
 // UPDATED (FIX): Removed usage of deprecated `window.event` in handleMouseUp to fix cross-browser/environment issues.
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
@@ -335,6 +335,157 @@ const AVAILABLE_FONTS = [
 
 const PROMPT_PLACEHOLDER = "Prompt will be generated here...";
 
+const DEFAULT_PROMPT_WINDOW_SIZE = {
+  width: 420,
+  height: 360,
+};
+
+const orderByCanvasPosition = (a: Widget, b: Widget) => {
+  if (a.y === b.y) return a.x - b.x;
+  return a.y - b.y;
+};
+
+const getPromptWindowPosition = (widgets: Widget[]) => {
+  if (widgets.length === 0) {
+    return { x: 820, y: 200 };
+  }
+
+  const maxX = Math.max(...widgets.map((w) => w.x + (w.width || 0)));
+  const avgY = widgets.reduce((sum, w) => sum + w.y, 0) / widgets.length;
+
+  return {
+    x: maxX + 140,
+    y: avgY - DEFAULT_PROMPT_WINDOW_SIZE.height / 2,
+  };
+};
+
+const createPromptWindowWidget = (widgets: Widget[] = []): Widget => {
+  const position = getPromptWindowPosition(widgets);
+
+  return {
+    id: `prompt-window-${Date.now()}`,
+    type: "prompt-window",
+    title: "Prompt Window",
+    content: "",
+    promptMode: "preview",
+    x: position.x,
+    y: position.y,
+    width: DEFAULT_PROMPT_WINDOW_SIZE.width,
+    height: DEFAULT_PROMPT_WINDOW_SIZE.height,
+  };
+};
+
+const ensurePromptWindowPresence = (widgets: Widget[]): Widget[] => {
+  const promptWindows = widgets.filter((w) => w.type === "prompt-window");
+
+  if (promptWindows.length === 0) {
+    return [...widgets, createPromptWindowWidget(widgets)];
+  }
+
+  if (promptWindows.length === 1) return widgets;
+
+  const [primaryPromptWindow] = promptWindows;
+  const filtered = widgets.filter((w) => w.type !== "prompt-window");
+  return [...filtered, primaryPromptWindow];
+};
+
+const generatePromptFromGraph = (nodes: Widget[], edges: Edge[]): string => {
+  const promptWindow = nodes.find((node) => node.type === "prompt-window");
+  if (!promptWindow) return "";
+
+  const upstreamIds = new Set<string>();
+  const queue: string[] = [promptWindow.id];
+
+  while (queue.length > 0) {
+    const currentTarget = queue.shift()!;
+    const incomingEdges = edges.filter((edge) => edge.target === currentTarget);
+
+    incomingEdges.forEach((edge) => {
+      if (!upstreamIds.has(edge.source)) {
+        upstreamIds.add(edge.source);
+        queue.push(edge.source);
+      }
+    });
+  }
+
+  const connectedNodes = nodes.filter(
+    (node) => upstreamIds.has(node.id) && node.type !== "prompt-window",
+  );
+
+  if (connectedNodes.length === 0) return "";
+
+  const relevantEdges = edges.filter(
+    (edge) => upstreamIds.has(edge.source) && upstreamIds.has(edge.target),
+  );
+
+  const nodeMap = new Map<string, Widget>();
+  const indegree = new Map<string, number>();
+  const adjacency = new Map<string, string[]>();
+
+  connectedNodes.forEach((node) => {
+    nodeMap.set(node.id, node);
+    indegree.set(node.id, 0);
+    adjacency.set(node.id, []);
+  });
+
+  relevantEdges.forEach((edge) => {
+    if (!adjacency.has(edge.source) || !indegree.has(edge.target)) return;
+    adjacency.get(edge.source)!.push(edge.target);
+    indegree.set(edge.target, (indegree.get(edge.target) || 0) + 1);
+  });
+
+  const queueIds = connectedNodes
+    .filter((node) => (indegree.get(node.id) || 0) === 0)
+    .sort(orderByCanvasPosition)
+    .map((node) => node.id);
+
+  const orderedNodes: Widget[] = [];
+  const visited = new Set<string>();
+
+  while (queueIds.length > 0) {
+    const nodeId = queueIds.shift()!;
+    const node = nodeMap.get(nodeId);
+    if (!node || visited.has(nodeId)) continue;
+
+    orderedNodes.push(node);
+    visited.add(nodeId);
+
+    const neighbors = adjacency.get(nodeId) || [];
+    neighbors.forEach((neighborId) => {
+      if (!indegree.has(neighborId)) return;
+      const nextIndegree = (indegree.get(neighborId) || 0) - 1;
+      indegree.set(neighborId, nextIndegree);
+      if (nextIndegree === 0) {
+        queueIds.push(neighborId);
+      }
+    });
+
+    queueIds.sort((aId, bId) => {
+      const aNode = nodeMap.get(aId);
+      const bNode = nodeMap.get(bId);
+      if (!aNode || !bNode) return 0;
+      return orderByCanvasPosition(aNode, bNode);
+    });
+  }
+
+  const remaining = connectedNodes.filter((node) => !visited.has(node.id)).sort(orderByCanvasPosition);
+  orderedNodes.push(...remaining);
+
+  const promptSections = orderedNodes.map((node, index) => {
+    const title = node.title || `Step ${index + 1}`;
+    const parts: string[] = [`### ${title}`];
+
+    const bodySegments = [node.content, node.basePrompt].filter(Boolean) as string[];
+    if (bodySegments.length > 0) {
+      parts.push(bodySegments.join("\n\n"));
+    }
+
+    return parts.join("\n");
+  });
+
+  return promptSections.filter(Boolean).join("\n\n");
+};
+
 // --- Saved Project Types ---
 interface SavedFlowProject {
   id: string;
@@ -393,6 +544,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [showCategories, setShowCategories] = useState(false);
+  const livePrompt = useMemo(() => generatePromptFromGraph(widgets, edges), [widgets, edges]);
+  const hasPromptWindow = useMemo(() => widgets.some((widget) => widget.type === "prompt-window"), [widgets]);
 
   // Selection & Manipulation State
   const [selectedWidgetIds, setSelectedWidgetIds] = useState<Set<string>>(new Set());
@@ -452,6 +605,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showBackgroundPattern, setShowBackgroundPattern] = useState(true);
 
+  useEffect(() => {
+    if (viewMode !== "workspace") return;
+    const promptWindows = widgets.filter((widget) => widget.type === "prompt-window");
+    if (promptWindows.length !== 1) {
+      setWidgets((prev) => ensurePromptWindowPresence(prev));
+    }
+  }, [viewMode, widgets]);
+
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // --- Shared State for Node Data Flow ---
@@ -489,7 +650,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       // Reset canvas transform when entering workspace
       setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
-      setWidgets([]); // Start with empty workspace
+      setWidgets(ensurePromptWindowPresence([])); // Start with prompt window in workspace
       setEdges([]);
       setViewMode("workspace");
       setIsLoading(false);
@@ -545,7 +706,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       // UPDATED: Append nodes instead of replacing, generate unique IDs
       const { newNodes, newEdges } = generateUniqueNodesAndEdges(rawNodes, rawEdges, widgets);
 
-      setWidgets((prev) => [...prev, ...newNodes]);
+      setWidgets((prev) => ensurePromptWindowPresence([...prev, ...newNodes]));
       setEdges((prev) => [...prev, ...newEdges]);
 
       // Only reset view/transform if it's a fresh project
@@ -727,7 +888,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setCurrentProjectId(project.id);
     setProjectName(project.name);
     setActiveDomain(project.domain);
-    setWidgets(project.widgets);
+    setWidgets(ensurePromptWindowPresence(project.widgets));
     setEdges(project.edges);
     if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
     if (project.mainPromptState) setMainPromptState(project.mainPromptState);
@@ -746,7 +907,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createNewProject = () => {
     setCurrentProjectId(null);
     setProjectName("Untitled Project");
-    setWidgets([]);
+    setWidgets(ensurePromptWindowPresence([]));
     setEdges([]);
     setNodeOutputMap({});
     setMainPromptState({ sections: [], combinedPrompt: "" });
@@ -798,54 +959,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     },
     [],
   );
-
-  // --- Helper to Aggregate Prompt Content Based on Connections ---
-  // UPDATED: Now supports recursive traversal to find all connected upstream nodes for a Prompt Window
-  const getAggregatedPrompt = (promptWindowId: string, allWidgets: Widget[], allEdges: Edge[]) => {
-    // 1. Find all edges connected TO this prompt window
-    const incomingEdges = allEdges.filter((e) => e.target === promptWindowId);
-
-    let targetNodes: Widget[] = [];
-
-    if (incomingEdges.length === 0) {
-      // If no connections, return nothing or all (optional).
-      // Let's go with "Dynamic Mode": if connected, use connection. If not, use nothing/placeholder.
-      // To mimic the request "yhdistää sen kokonaisuuteen", we only want connected content.
-      // But for usability, if the workspace has nodes but no connections to window, maybe show a hint?
-      return null; // Return null to indicate no connections
-    }
-
-    // 2. Perform graph traversal (BFS) backwards to find all upstream nodes
-    const queue = incomingEdges.map((e) => e.source);
-    const visited = new Set<string>();
-    const upstreamNodes: Widget[] = [];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      if (visited.has(currentId)) continue;
-      visited.add(currentId);
-
-      const node = allWidgets.find((w) => w.id === currentId);
-      if (node && node.type !== "prompt-window") {
-        // Avoid cycles including other prompt windows
-        upstreamNodes.push(node);
-
-        // Find edges feeding into this node
-        const inputEdges = allEdges.filter((e) => e.target === currentId);
-        inputEdges.forEach((e) => queue.push(e.source));
-      }
-    }
-
-    // 3. Sort by Y position to maintain logical flow order
-    return upstreamNodes
-      .sort((a, b) => a.y - b.y)
-      .map((w) => {
-        let text = `### ${w.title || "Untitled Node"}`;
-        if (w.content) text += `\n${w.content}`;
-        return text;
-      })
-      .join("\n\n");
-  };
 
   useEffect(() => {
     const promptNodes = widgets.filter((widget) => widget.isPromptNode);
@@ -899,26 +1012,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   const handleAddPromptWindow = () => {
-    // Calculate center of current view
-    const canvasRefRect = canvasRef.current?.getBoundingClientRect();
-    const centerX = canvasRefRect
-      ? (canvasRefRect.width / 2 - canvasTransform.translateX) / canvasTransform.scale
-      : 100;
-    const centerY = canvasRefRect
-      ? (canvasRefRect.height / 2 - canvasTransform.translateY) / canvasTransform.scale
-      : 100;
+    if (widgets.some((w) => w.type === "prompt-window")) {
+      toast.info("Prompt Window is already in this workspace");
+      return;
+    }
 
-    const newWidget: Widget = {
-      id: `prompt-window-${Date.now()}`,
-      type: "prompt-window",
-      title: "Prompt Window",
-      content: "", // Starts empty, fills with aggregation
-      promptMode: "preview", // Default to preview
-      x: centerX - 200, // Centered
-      y: centerY - 150,
-      width: 400,
-      height: 300,
-    };
+    const newWidget = createPromptWindowWidget(widgets);
     setWidgets((prev) => [...prev, newWidget]);
     toast.success("Prompt Window Added");
   };
@@ -2121,9 +2220,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   // --- RENDER PROMPT WINDOW ---
                   if (widget.type === "prompt-window") {
-                    const aggregatedContent = getAggregatedPrompt(widget.id, widgets, edges);
-                    const displayContent =
-                      widget.promptMode === "preview" ? aggregatedContent : widget.content || aggregatedContent;
+                    const promptContent = livePrompt || "";
+                    const displayContent = widget.promptMode === "preview" ? promptContent : widget.content || promptContent;
 
                     return (
                       <div
@@ -2166,7 +2264,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               onClick={() => {
                                 // If switching to Edit, pre-fill if empty
                                 if (widget.promptMode !== "edit" && !widget.content) {
-                                  updateWidget(widget.id, "content", aggregatedContent);
+                                  updateWidget(widget.id, "content", promptContent);
                                 }
                                 updateWidget(widget.id, "promptMode", "edit");
                               }}
@@ -2723,8 +2821,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     {/* NEW: Prompt Window (Top Level) */}
                     <div className="mb-2 border-t border-neutral-800 pt-2 mt-2">
                       <button
-                        onClick={() => handleAddPromptWindow()}
-                        className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                        onClick={() => !hasPromptWindow && handleAddPromptWindow()}
+                        disabled={hasPromptWindow}
+                        className={`w-full flex items-center gap-3 p-2 rounded-lg group transition-colors text-left cursor-pointer ${
+                          hasPromptWindow
+                            ? "opacity-60 cursor-not-allowed"
+                            : "hover:bg-neutral-800/50"
+                        }`}
                       >
                         <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
                           <Layout size={14} className="text-yellow-500" />
@@ -2737,7 +2840,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         </div>
                         <Plus
                           size={12}
-                          className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          className={`text-neutral-500 transition-opacity flex-shrink-0 ${
+                            hasPromptWindow ? "opacity-40" : "opacity-0 group-hover:opacity-100"
+                          }`}
                         />
                       </button>
                     </div>
