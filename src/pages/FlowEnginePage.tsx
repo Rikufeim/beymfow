@@ -16,7 +16,7 @@ import { toast, Toaster } from "sonner";
 
 import { HexColorPicker } from "react-colorful";
 
-import { NodeAnchor } from "../components/NodeAnchor.tsx";
+import { NodeAnchor } from "../components/NodeAnchor";
 
 import {
   ArrowRight,
@@ -74,7 +74,7 @@ import {
   UserJourneyMap,
   AIPromptBlueprint,
   TemplateDefinition,
-} from "../flowTemplates/index.ts";
+} from "../flowTemplates/index";
 
 // --- Types & Interfaces ---
 
