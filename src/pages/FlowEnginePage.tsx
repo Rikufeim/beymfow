@@ -72,7 +72,7 @@ import {
   UserJourneyMap,
   AIPromptBlueprint,
   TemplateDefinition,
-} from "../flowTemplates/index";
+} from "@/flowTemplates/index";
 
 // --- Types & Interfaces ---
 
@@ -86,15 +86,7 @@ interface Category {
 
 interface Widget {
   id: string;
-  type:
-    | "prompt"
-    | "category"
-    | "flow-input"
-    | "flow-text-gen"
-    | "flow-agent"
-    | "flow-state"
-    | "flow-tool"
-    | "prompt-window";
+  type: "prompt" | "category" | "flow-input" | "flow-text-gen" | "flow-agent" | "flow-state" | "flow-tool" | "prompt-window";
   title?: string;
   basePrompt?: string;
   content?: string;
@@ -492,8 +484,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const seoPlan = {
       primary_keyword: "website development services",
       secondary_keywords: ["web design", "digital solutions", "online presence", "business website"],
-      meta_description:
-        "Professional website development services to help your business establish a strong online presence.",
+      meta_description: "Professional website development services to help your business establish a strong online presence.",
       tone_of_voice: "Professional, approachable, solution-focused",
       schema_markup: "Organization, Service, LocalBusiness",
     };
@@ -811,7 +802,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Build prompt content from all nodes in workspace
   const buildPromptFromNodes = (): string => {
     let promptContent = "";
-
+    
     // Collect content from category nodes
     const categoryNodes = widgets.filter((w) => w.type === "category" && w.content?.trim());
     if (categoryNodes.length > 0) {
@@ -822,7 +813,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         }
       });
     }
-
+    
     // Collect content from flow nodes
     const flowNodes = widgets.filter((w) => w.type.startsWith("flow-"));
     if (flowNodes.length > 0) {
@@ -836,18 +827,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         }
       });
     }
-
+    
     // Use mainPromptState if available (from integrated nodes)
     if (mainPromptState.combinedPrompt) {
       promptContent += "## Integrated Prompt\n\n";
       promptContent += mainPromptState.combinedPrompt;
     }
-
+    
     // If no content found, show placeholder
     if (!promptContent.trim()) {
       promptContent = "No content available. Add nodes to the workspace to build your prompt.";
     }
-
+    
     return promptContent.trim();
   };
 
@@ -1464,7 +1455,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // --- Drag & Resize Logic ---
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
     if ((e.target as HTMLElement).closest("textarea, input, button")) return;
-
+    
     // Prevent dragging if widgets are locked
     if (widgetsLocked && action === "move") return;
 
@@ -1624,16 +1615,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       window.removeEventListener("mouseup", handleMouseUp);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [
-    panning,
-    dragging,
-    resizing,
-    draggingHandle,
-    widgets,
-    canvasTransform.scale,
-    canvasTransform.translateX,
-    canvasTransform.translateY,
-  ]);
+  }, [panning, dragging, resizing, draggingHandle, widgets, canvasTransform.scale, canvasTransform.translateX, canvasTransform.translateY]);
 
   // --- Drawer Helper Components ---
   const toggleSection = (section: string) => {
@@ -1734,8 +1716,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <motion.h1
                 className="text-3xl md:text-4xl font-bold tracking-tight text-white pb-6"
                 style={{
-                  fontFamily:
-                    '"SF Pro Display", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: '"SF Pro Display", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 }}
               >
                 What are we building today?
@@ -1789,10 +1770,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <ArrowLeft size={16} />
                   <span>Back</span>
                 </button>
-
+                
                 {/* Project Name - Static */}
                 <div className="flex items-center min-w-0 flex-1">
-                  <span className="text-base font-medium text-neutral-300 px-2 py-1 truncate">Your flow</span>
+                  <span className="text-base font-medium text-neutral-300 px-2 py-1 truncate">
+                    Your flow
+                  </span>
                 </div>
               </div>
 
@@ -1801,10 +1784,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   onClick={() => setShowCategories(!showCategories)}
                   className={`h-10 w-10 rounded-lg border border-neutral-800 flex items-center justify-center transition-all shadow-lg cursor-pointer backdrop-blur-md ${showCategories ? "bg-neutral-800 text-white" : "bg-neutral-900/80 text-neutral-400 hover:bg-neutral-800 hover:text-white"}`}
                 >
-                  <Plus
-                    size={20}
-                    className={showCategories ? "rotate-45 transition-transform" : "transition-transform"}
-                  />
+                  <Plus size={20} className={showCategories ? "rotate-45 transition-transform" : "transition-transform"} />
                 </button>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
@@ -1920,50 +1900,32 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen cursor-grab active:cursor-grabbing bg-neutral-900"
-              style={{
-                marginTop: "56px",
-                width: "100%",
-                height: "100%",
-                position: "relative",
+              style={{ 
+                marginTop: '56px',
+                width: '100%',
+                height: '100%',
+                position: 'relative'
               }}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
               onClick={handleCanvasClick}
             >
               {/* Background Grid - Always visible, full-screen coverage, synced with canvas transform */}
-              {/* 
-                Grid implementation: CSS radial-gradient pattern creating dot grid
-                Alignment: Uses same transform (translate + scale) as nodes for perfect sync
-                Coverage: Very large fixed size (1000000px x 1000000px) positioned to cover entire viewport at all zoom/pan levels
-                Visibility: Always rendered, never conditionally hidden, z-index: 0 (behind content)
-                The large size ensures grid is always visible even when zoomed out to 0.25x and panned far
-              */}
               {backgroundVisible && (
                 <div
                   className="absolute pointer-events-none"
                   style={{
                     // Extremely large fixed size to cover entire workspace at all zoom/pan levels
-                    // Positioned to cover massive area: from -2000000 to +2000000 in canvas coordinates
-                    // This ensures dots are always visible even when zoomed out to 0.25x and panned extensively
                     left: "-2000000px",
                     top: "-2000000px",
                     width: "4000000px",
                     height: "4000000px",
                     zIndex: 0,
-                    // Dark gray base (neutral-900) - professional workspace background
                     backgroundColor: "#171717",
-                    // Clean dot pattern only - no grid lines, classic canvas style
-                    // Consistent rendering: all dots look identical at all zoom levels
-                    // Using precise pixel values to ensure uniform appearance
                     backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-                    // Fixed spacing: 24px ensures all dots are identical and evenly spaced
-                    // backgroundSize scales with transform, keeping dots uniform
                     backgroundSize: "24px 24px",
                     backgroundRepeat: "repeat",
-                    // Ensure consistent rendering quality
                     imageRendering: "auto",
-                    // Same transform as nodes - single source of truth for zoom/pan synchronization
-                    // The massive size ensures background always covers viewport even when zoomed out far
                     transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
                     transformOrigin: "0 0",
                     willChange: "transform",
@@ -1989,7 +1951,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     const sourceWidget = widgets.find((w) => w.id === connecting.sourceId);
                     if (!sourceWidget) return null;
 
-                    // Use mouse position for smooth connection line
                     const targetX = mousePosition.x;
                     const targetY = mousePosition.y;
 
@@ -2011,13 +1972,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   if (!sourceWidget || !targetWidget) return null;
 
-                  // Connect handle to handle
                   const sourcePos = getHandlePosition(edge.source, "output", widgets);
                   const targetPos = getHandlePosition(edge.target, "input", widgets);
 
                   return (
                     <g key={edge.id} style={{ pointerEvents: "none" }}>
-                      {/* Visible edge line - simple and clean */}
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
                         stroke="rgba(148, 163, 184, 0.6)"
@@ -2075,11 +2034,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         width: widget.width,
                         height: widget.height,
                         overflow: "visible",
-                        writingMode: "horizontal-tb",
-                        textOrientation: "mixed",
+                        writingMode: 'horizontal-tb',
+                        textOrientation: 'mixed',
                       }}
                       onMouseDown={(e) => {
-                        // Don't start dragging if clicking on anchor
                         if (!(e.target as HTMLElement).closest(".node-anchor")) {
                           handleMouseDown(e, widget.id, "move");
                         }
@@ -2091,7 +2049,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         nodeId={widget.id}
                         onMouseDown={handleHandleMouseDown}
                         onDoubleClick={(e) => {
-                          // Double-click to disconnect all edges from this anchor
                           setEdges((prev) => {
                             const edgesToRemove = prev.filter((ed) => ed.target === widget.id);
 
@@ -2108,11 +2065,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               });
                             }
 
-                            return prev.filter((ed) => ed.target !== widget.id);
+                            return prev.filter((ed) => ed.target === widget.id);
                           });
                         }}
                         onClick={(e) => {
-                          // Complete connection if connecting is active
                           if (connecting && connecting.sourceId !== widget.id) {
                             const newEdge: Edge = {
                               id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
@@ -2121,10 +2077,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             };
 
                             setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
+                              const exists = prev.some((e) => e.source === connecting.sourceId && e.target === widget.id);
                               if (exists) return prev;
                               return [...prev, newEdge];
                             });
@@ -2134,7 +2087,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           }
                         }}
                         onMouseUp={(e) => {
-                          // Complete connection if connecting is active (when releasing mouse)
                           if (connecting && connecting.sourceId !== widget.id) {
                             const newEdge: Edge = {
                               id: `edge-${connecting.sourceId}-${widget.id}-${Date.now()}`,
@@ -2143,10 +2095,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             };
 
                             setEdges((prev) => {
-                              // Check if edge already exists
-                              const exists = prev.some(
-                                (e) => e.source === connecting.sourceId && e.target === widget.id,
-                              );
+                              const exists = prev.some((e) => e.source === connecting.sourceId && e.target === widget.id);
                               if (exists) return prev;
                               return [...prev, newEdge];
                             });
@@ -2158,35 +2107,34 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       />
 
                       {/* Output Anchor (Right) - Automatically included on ALL nodes (except final nodes and prompt-window) */}
-                      {widget.id !== "flow-text-final" &&
-                        widget.id !== "flow-text-final-app" &&
-                        widget.id !== "flow-text-final-game" &&
-                        widget.type !== "prompt-window" && (
-                          <NodeAnchor
-                            type="output"
-                            nodeId={widget.id}
-                            onMouseDown={handleHandleMouseDown}
-                            onDoubleClick={(e) => {
-                              // Double-click to disconnect all edges from this anchor
-                              setEdges((prev) => {
-                                const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
+                      {widget.id !== "flow-text-final" && 
+                       widget.id !== "flow-text-final-app" && 
+                       widget.id !== "flow-text-final-game" && 
+                       widget.type !== "prompt-window" && (
+                        <NodeAnchor
+                          type="output"
+                          nodeId={widget.id}
+                          onMouseDown={handleHandleMouseDown}
+                          onDoubleClick={(e) => {
+                            setEdges((prev) => {
+                              const edgesToRemove = prev.filter((ed) => ed.source === widget.id);
 
-                                if (edgesToRemove.length > 0) {
-                                  setMainPromptState((prevState) => {
-                                    const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
+                              if (edgesToRemove.length > 0) {
+                                setMainPromptState((prevState) => {
+                                  const newSections = prevState.sections.filter((s) => s.nodeId !== widget.id);
 
-                                    return {
-                                      sections: newSections,
-                                      combinedPrompt: buildCombinedPrompt(newSections),
-                                    };
-                                  });
-                                }
+                                  return {
+                                    sections: newSections,
+                                    combinedPrompt: buildCombinedPrompt(newSections),
+                                  };
+                                });
+                              }
 
-                                return prev.filter((ed) => ed.source !== widget.id);
-                              });
-                            }}
-                          />
-                        )}
+                              return prev.filter((ed) => ed.source === widget.id);
+                            });
+                          }}
+                        />
+                      )}
 
                       {/* Header */}
                       <div className="px-3 py-2 border-b border-neutral-800 bg-[#121214] flex items-center justify-between cursor-move select-none gap-2">
@@ -2194,17 +2142,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor} flex-shrink-0`}>
                             <Icon size={14} />
                           </div>
-                          <span
-                            className="text-sm font-semibold text-neutral-200 leading-tight font-sans"
-                            style={{
-                              writingMode: "horizontal-tb",
-                              textOrientation: "mixed",
-                              letterSpacing: "0",
-                              wordSpacing: "normal",
-                              whiteSpace: "nowrap",
-                              overflow: "visible",
-                              flex: "1",
-                              minWidth: 0,
+                          <span 
+                            className="text-sm font-semibold text-neutral-200 leading-tight font-sans" 
+                            style={{ 
+                              writingMode: 'horizontal-tb', 
+                              textOrientation: 'mixed', 
+                              letterSpacing: '0',
+                              wordSpacing: 'normal',
+                              whiteSpace: 'nowrap',
+                              overflow: 'visible',
+                              flex: '1',
+                              minWidth: 0
                             }}
                           >
                             {widget.type === "category" && widget.category ? widget.category.name : widget.title}
@@ -2240,19 +2188,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             <Copy size={12} />
                           </button>
 
-                          {widget.type !== "prompt" &&
-                            !widget.type.startsWith("flow-") &&
-                            widget.type !== "prompt-window" && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteWidget(widget.id);
-                                }}
-                                className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
-                              >
-                                <X size={14} />
-                              </button>
-                            )}
+                          {widget.type !== "prompt" && !widget.type.startsWith("flow-") && widget.type !== "prompt-window" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteWidget(widget.id);
+                              }}
+                              className="p-1.5 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
 
                           {widget.type === "prompt-window" && (
                             <button
@@ -2266,80 +2212,68 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             </button>
                           )}
 
-                          {widget.type.startsWith("flow-") &&
-                            widget.id !== "flow-text-final" &&
-                            widget.id !== "flow-text-final-app" &&
-                            widget.id !== "flow-text-final-game" && (
-                              <>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGenerateNode(widget.id);
-                                  }}
-                                  className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
-                                  title="Generate content for this node"
-                                >
-                                  <Sparkles size={10} />
-                                  <span className="hidden sm:inline">Generate</span>
-                                </button>
+                          {widget.type.startsWith("flow-") && widget.id !== "flow-text-final" && widget.id !== "flow-text-final-app" && widget.id !== "flow-text-final-game" && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleGenerateNode(widget.id);
+                                }}
+                                className="px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                                title="Generate content for this node"
+                              >
+                                <Sparkles size={10} />
+                                <span className="hidden sm:inline">Generate</span>
+                              </button>
 
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleIntegrateToMainPrompt(widget.id);
-                                  }}
-                                  disabled={
-                                    !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
-                                    !nodeOutputMap[widget.id]?.generatedText
-                                  }
-                                  className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
-                                    nodeOutputMap[widget.id]?.integrated
-                                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                                      : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                  }`}
-                                  title={
-                                    !isConnectedToMain(widget.id, getMainPromptNodeId(), edges)
-                                      ? "Connect this node to Main Prompt to integrate"
-                                      : "Integrate to Main Prompt"
-                                  }
-                                >
-                                  {nodeOutputMap[widget.id]?.integrated ? <Check size={10} /> : <Plus size={10} />}
-                                  <span className="hidden sm:inline">
-                                    {nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}
-                                  </span>
-                                </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleIntegrateToMainPrompt(widget.id);
+                                }}
+                                disabled={
+                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges) ||
+                                  !nodeOutputMap[widget.id]?.generatedText
+                                }
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-0.5 transition-all font-sans ${
+                                  nodeOutputMap[widget.id]?.integrated
+                                    ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                                    : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                }`}
+                                title={
+                                  !isConnectedToMain(widget.id, getMainPromptNodeId(), edges)
+                                    ? "Connect this node to Main Prompt to integrate"
+                                    : "Integrate to Main Prompt"
+                                }
+                              >
+                                {nodeOutputMap[widget.id]?.integrated ? <Check size={10} /> : <Plus size={10} />}
+                                <span className="hidden sm:inline">{nodeOutputMap[widget.id]?.integrated ? "Integrated" : "Integrate"}</span>
+                              </button>
 
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteWidget(widget.id);
-                                    // Also delete connected edges and remove from state
-                                    setEdges((prev) =>
-                                      prev.filter((e) => e.source !== widget.id && e.target !== widget.id),
-                                    );
-                                    setNodeOutputMap((prev) => {
-                                      const newMap = { ...prev };
-                                      delete newMap[widget.id];
-                                      return newMap;
-                                    });
-                                    setMainPromptState((prev) => ({
-                                      ...prev,
-                                      sections: prev.sections.filter((s) => s.nodeId !== widget.id),
-                                      combinedPrompt: buildCombinedPrompt(
-                                        prev.sections.filter((s) => s.nodeId !== widget.id),
-                                      ),
-                                    }));
-                                  }}
-                                  className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
-                                >
-                                  <X size={12} />
-                                </button>
-                              </>
-                            )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteWidget(widget.id);
+                                  setEdges((prev) => prev.filter((e) => e.source !== widget.id && e.target !== widget.id));
+                                  setNodeOutputMap((prev) => {
+                                    const newMap = { ...prev };
+                                    delete newMap[widget.id];
+                                    return newMap;
+                                  });
+                                  setMainPromptState((prev) => ({
+                                    ...prev,
+                                    sections: prev.sections.filter((s) => s.nodeId !== widget.id),
+                                    combinedPrompt: buildCombinedPrompt(prev.sections.filter((s) => s.nodeId !== widget.id)),
+                                  }));
+                                }}
+                                className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                            </>
+                          )}
 
-                          {(widget.id === "flow-text-final" ||
-                            widget.id === "flow-text-final-app" ||
-                            widget.id === "flow-text-final-game") && (
+                          {(widget.id === "flow-text-final" || widget.id === "flow-text-final-app" || widget.id === "flow-text-final-game") && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -2359,614 +2293,4 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                       {/* Content */}
                       <div className="flex-1 bg-[#121214] flex flex-col relative" style={{ overflow: "visible" }}>
-                        {widget.type === "prompt" && (
-                          <div
-                            className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
-                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
-                          >
-                            <pre
-                              className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
-                              style={{
-                                writingMode: "horizontal-tb",
-                                textOrientation: "mixed",
-                                letterSpacing: "0",
-                                wordSpacing: "normal",
-                                whiteSpace: "pre-wrap",
-                              }}
-                            >
-                              {widget.content}
-                            </pre>
-                          </div>
-                        )}
-
-                        {widget.type === "category" && (
-                          <textarea
-                            className="w-full h-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
-                            style={{
-                              writingMode: "horizontal-tb",
-                              textOrientation: "mixed",
-                              letterSpacing: "0",
-                              wordSpacing: "normal",
-                              whiteSpace: "pre-wrap",
-                            }}
-                            value={widget.content}
-                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                            placeholder={widget.placeholder}
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        )}
-
-                        {widget.type === "prompt-window" && (
-                          <div className="flex flex-col h-full">
-                            {/* Mode Toggle */}
-                            <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800 bg-neutral-900/50">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-neutral-400">Mode:</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateWidget(widget.id, "promptMode", "edit");
-                                  }}
-                                  className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                                    widget.promptMode === "edit"
-                                      ? "bg-indigo-500/20 text-indigo-400"
-                                      : "bg-neutral-800 text-neutral-500 hover:text-neutral-300"
-                                  }`}
-                                >
-                                  Prompt
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateWidget(widget.id, "promptMode", "preview");
-                                    // Update content from nodes when switching to preview
-                                    const updatedContent = buildPromptFromNodes();
-                                    updateWidget(widget.id, "content", updatedContent);
-                                  }}
-                                  className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                                    widget.promptMode === "preview"
-                                      ? "bg-indigo-500/20 text-indigo-400"
-                                      : "bg-neutral-800 text-neutral-500 hover:text-neutral-300"
-                                  }`}
-                                >
-                                  Preview
-                                </button>
-                              </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (widget.content) {
-                                    navigator.clipboard.writeText(widget.content);
-                                  }
-                                }}
-                                className="p-1 text-neutral-500 hover:text-white hover:bg-neutral-800 rounded transition-colors"
-                                title="Copy prompt"
-                              >
-                                <Copy size={12} />
-                              </button>
-                            </div>
-
-                            {/* Content Area */}
-                            {widget.promptMode === "edit" ? (
-                              <textarea
-                                className="flex-1 w-full bg-transparent p-4 text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono custom-scrollbar"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "0",
-                                  wordSpacing: "normal",
-                                  whiteSpace: "pre-wrap",
-                                }}
-                                value={widget.content || ""}
-                                onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                                placeholder="Edit your prompt here..."
-                                onMouseDown={(e) => e.stopPropagation()}
-                              />
-                            ) : (
-                              <div
-                                className="flex-1 p-4 overflow-y-auto overflow-x-auto custom-scrollbar"
-                                style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
-                              >
-                                <pre
-                                  className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
-                                  style={{
-                                    writingMode: "horizontal-tb",
-                                    textOrientation: "mixed",
-                                    letterSpacing: "0",
-                                    wordSpacing: "normal",
-                                    whiteSpace: "pre-wrap",
-                                  }}
-                                >
-                                  {widget.content ||
-                                    "No content available. Add nodes to the workspace to build your prompt."}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {widget.type.startsWith("flow-") && (
-                          <div
-                            className="p-4 overflow-y-auto overflow-x-auto h-full custom-scrollbar"
-                            style={{ writingMode: "horizontal-tb", textOrientation: "mixed" }}
-                          >
-                            {widget.id === "flow-input-idea" ||
-                            widget.id === "flow-input-idea-app" ||
-                            widget.id === "flow-input-idea-game" ? (
-                              <textarea
-                                className="w-full h-full bg-transparent text-sm text-neutral-300 resize-none focus:outline-none placeholder:text-neutral-600 font-mono whitespace-pre-wrap break-words"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "0",
-                                  wordSpacing: "normal",
-                                  whiteSpace: "pre-wrap",
-                                }}
-                                value={widget.content || ""}
-                                onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                                placeholder={widget.placeholder}
-                                onMouseDown={(e) => e.stopPropagation()}
-                              />
-                            ) : (
-                              <pre
-                                className="font-mono text-xs md:text-sm text-neutral-300 whitespace-pre-wrap break-words leading-relaxed"
-                                style={{
-                                  writingMode: "horizontal-tb",
-                                  textOrientation: "mixed",
-                                  letterSpacing: "0",
-                                  wordSpacing: "normal",
-                                  whiteSpace: "pre-wrap",
-                                }}
-                              >
-                                {nodeOutputMap[widget.id]?.generatedText ||
-                                  widget.content ||
-                                  widget.placeholder ||
-                                  "Click 'Generate' to create content..."}
-                              </pre>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Resize Handle */}
-                      <div
-                        className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-0 hover:opacity-100 transition-opacity z-20 flex items-end justify-end p-1"
-                        onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
-                      >
-                        <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Control Panel Banner - Bottom Center */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-                <div className="bg-[#121214] border border-neutral-800 rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg pointer-events-auto">
-                  {/* Zoom Out */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.max(0.25, canvasTransform.scale - 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom out"
-                  >
-                    <Minus size={16} />
-                  </button>
-
-                  {/* Zoom In */}
-                  <button
-                    onClick={() => {
-                      const newScale = Math.min(2.0, canvasTransform.scale + 0.1);
-                      setCanvasTransform((prev) => ({
-                        ...prev,
-                        scale: newScale,
-                      }));
-                    }}
-                    className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white"
-                    title="Zoom in"
-                  >
-                    <Plus size={16} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Lock/Unlock Widgets */}
-                  <button
-                    onClick={() => setWidgetsLocked(!widgetsLocked)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors ${
-                      widgetsLocked ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={widgetsLocked ? "Unlock widgets" : "Lock widgets"}
-                  >
-                    <Lock size={16} className={widgetsLocked ? "fill-current" : ""} />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="w-px h-6 bg-neutral-800" />
-
-                  {/* Toggle Background */}
-                  <button
-                    onClick={() => setBackgroundVisible(!backgroundVisible)}
-                    className={`p-2 hover:bg-neutral-800 rounded-lg transition-colors relative ${
-                      !backgroundVisible ? "text-amber-400" : "text-neutral-400 hover:text-white"
-                    }`}
-                    title={backgroundVisible ? "Hide background" : "Show background"}
-                  >
-                    <Sun size={16} />
-                    {!backgroundVisible && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-4 h-0.5 bg-amber-400 rotate-45 absolute" />
-                        <div className="w-4 h-0.5 bg-amber-400 -rotate-45 absolute" />
-                      </div>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* NEW: Node Drawer (Side Menu) */}
-            <AnimatePresence>
-              {showCategories && (
-                <motion.div
-                  initial={{ x: 320, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: 320, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute top-20 right-4 w-80 bg-[#121214] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
-                >
-                  {/* Drawer Header */}
-                  <div className="p-4 border-b border-neutral-800 bg-[#121214]">
-                    <h3 className="text-sm font-semibold text-white mb-3">Add Nodes</h3>
-
-                    {/* Domain Switcher */}
-                    <div className="flex p-1 bg-neutral-900 rounded-lg mb-3">
-                      {suggestionChips.map((chip) => {
-                        const Icon = chip.icon;
-                        const isActive = activeDomain === chip.label;
-
-                        return (
-                          <button
-                            key={chip.label}
-                            onClick={() => setActiveDomain(chip.label)}
-                            className={`flex-1 flex items-center justify-center py-1.5 rounded-md transition-all ${
-                              isActive
-                                ? "bg-neutral-800 text-white shadow-sm"
-                                : "text-neutral-500 hover:text-neutral-300"
-                            }`}
-                            title={chip.label}
-                          >
-                            <Icon size={14} />
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
-                      <input
-                        type="text"
-                        placeholder="Search nodes..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Drawer Content */}
-                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#121214]">
-                    {/* Section 1 */}
-                    <div className="mb-2">
-                      <button
-                        onClick={() => toggleSection("domain")}
-                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Box size={14} className="text-neutral-500" />
-                          {activeDomain} Modules
-                        </div>
-
-                        {expandedSections.domain ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-
-                      <AnimatePresence>
-                        {expandedSections.domain && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-2 space-y-1 mt-1">
-                              {filterCategories(domainConfig[activeDomain] || []).map((cat) => (
-                                <button
-                                  key={cat.id}
-                                  onClick={() => handleCategoryAdd(cat)}
-                                  className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                >
-                                  <div
-                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800 flex-shrink-0`}
-                                  >
-                                    <cat.icon size={14} />
-                                  </div>
-
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-medium text-neutral-300 group-hover:text-white whitespace-nowrap flex-shrink-0">
-                                        {cat.name}
-                                      </span>
-                                      {cat.description && (
-                                        <span className="text-[10px] text-neutral-500 truncate flex-1 min-w-0">
-                                          {cat.description}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <Plus
-                                    size={12}
-                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Section 2 */}
-                    <div className="mb-2">
-                      <button
-                        onClick={() => toggleSection("general")}
-                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Wrench size={14} className="text-neutral-500" />
-                          Utilities & General
-                        </div>
-
-                        {expandedSections.general ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-
-                      <AnimatePresence>
-                        {expandedSections.general && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-2 space-y-1 mt-1">
-                              {filterCategories(domainConfig["General"] || []).map((cat) => (
-                                <button
-                                  key={cat.id}
-                                  onClick={() => handleCategoryAdd(cat)}
-                                  className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                >
-                                  <div
-                                    className={`p-1.5 rounded-md bg-neutral-900 ${cat.color} group-hover:bg-neutral-800 flex-shrink-0`}
-                                  >
-                                    <cat.icon size={14} />
-                                  </div>
-
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs font-medium text-neutral-300 group-hover:text-white whitespace-nowrap flex-shrink-0">
-                                        {cat.name}
-                                      </span>
-                                      {cat.description && (
-                                        <span className="text-[10px] text-neutral-500 truncate flex-1 min-w-0">
-                                          {cat.description}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <Plus
-                                    size={12}
-                                    className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Flows Subsection */}
-                    <div className="mb-2">
-                      <button
-                        onClick={() => toggleSection("flows")}
-                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Sparkles size={14} className="text-neutral-500" />
-                          Flows
-                        </div>
-
-                        {expandedSections.flows ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-
-                      <AnimatePresence>
-                        {expandedSections.flows && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-2 space-y-1 mt-1">
-                              <button
-                                onClick={() => handleCreateWebsiteFlowPreset()}
-                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                              >
-                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
-                                  <Globe size={14} />
-                                </div>
-
-                                <div className="flex-1">
-                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                                    Website
-                                  </span>
-                                  <span className="block text-[10px] text-neutral-500 truncate">
-                                    Complete website flow preset
-                                  </span>
-                                </div>
-
-                                <Plus
-                                  size={12}
-                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                              </button>
-
-                              <button
-                                onClick={() => handleCreateAppFlowPreset()}
-                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                              >
-                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
-                                  <Smartphone size={14} />
-                                </div>
-
-                                <div className="flex-1">
-                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                                    App
-                                  </span>
-                                  <span className="block text-[10px] text-neutral-500 truncate">
-                                    Complete app flow preset
-                                  </span>
-                                </div>
-
-                                <Plus
-                                  size={12}
-                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                              </button>
-
-                              <button
-                                onClick={() => handleCreateGameFlowPreset()}
-                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                              >
-                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800">
-                                  <Gamepad2 size={14} />
-                                </div>
-
-                                <div className="flex-1">
-                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
-                                    Game
-                                  </span>
-                                  <span className="block text-[10px] text-neutral-500 truncate">
-                                    Complete game flow preset
-                                  </span>
-                                </div>
-
-                                <Plus
-                                  size={12}
-                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                              </button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Templates Section */}
-                    <div className="mb-2">
-                      <button
-                        onClick={() => toggleSection("templates")}
-                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <FileStack size={14} className="text-neutral-500" />
-                          Templates
-                        </div>
-
-                        {expandedSections.templates ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      </button>
-
-                      <AnimatePresence>
-                        {expandedSections.templates && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-2 space-y-1 mt-1">
-                              {/* Prompt Window Button */}
-                              <button
-                                onClick={() => handleAddPromptWindow()}
-                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                              >
-                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
-                                  <Square size={14} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                    Prompt Window
-                                  </span>
-                                  <span className="block text-[10px] text-neutral-500 truncate">
-                                    Build and preview prompts
-                                  </span>
-                                </div>
-                                <Plus
-                                  size={12}
-                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                />
-                              </button>
-
-                              {[BusinessModelCanvas, LeanCanvas, SWOTAnalysis, UserJourneyMap, AIPromptBlueprint].map(
-                                (template) => (
-                                  <button
-                                    key={template.name}
-                                    onClick={() => handleInsertTemplate(template)}
-                                    className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
-                                  >
-                                    <div
-                                      className="flex-shrink-0 w-[60px] h-[30px] rounded border border-neutral-700 bg-neutral-900 overflow-hidden"
-                                      dangerouslySetInnerHTML={{ __html: template.thumbnail }}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <span className="block text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                        {template.name}
-                                      </span>
-                                      <span className="block text-[10px] text-neutral-500 truncate">
-                                        {template.nodes.length} nodes
-                                      </span>
-                                    </div>
-                                    <Plus
-                                      size={12}
-                                      className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                    />
-                                  </button>
-                                ),
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
-  return <FlowEngineContent {...props} />;
-};
-
-export default FlowEngineUnified;
+      
