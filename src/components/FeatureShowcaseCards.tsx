@@ -1,6 +1,7 @@
 import { Terminal, Cloud, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 const FeatureShowcaseCards = () => {
   const navigate = useNavigate();
@@ -100,8 +101,8 @@ const FeatureShowcaseCards = () => {
   };
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-0">
+      <div className="w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {cards.map((card) => {
             const colors = getColorClasses(card.color);
