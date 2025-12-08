@@ -358,9 +358,9 @@ const domainConfig: Record<string, Category[]> = {
 };
 
 const suggestionChips = [
-  { label: "Website", icon: Globe },
-  { label: "App", icon: Smartphone },
-  { label: "Game", icon: Gamepad2 },
+  { label: "Website" as const, icon: Globe },
+  { label: "App" as const, icon: Smartphone },
+  { label: "Game" as const, icon: Gamepad2 },
 ];
 
 type ModeId = "website" | "app" | "game" | null;
@@ -1499,7 +1499,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const loadProject = (project: SavedFlowProject) => {
     setCurrentProjectId(project.id);
     setProjectName(project.name);
-    setActiveDomain(project.domain);
+    setActiveDomain(project.domain as "Website" | "App" | "Game");
     setWidgets(project.widgets); // Load project widgets as-is, don't force prompt window
     setEdges(project.edges);
     if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
@@ -2839,7 +2839,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                           setReferenceProject(project);
                                           setCurrentProjectId(project.id);
                                           setProjectName(project.name);
-                                          setActiveDomain(project.domain);
+                                          setActiveDomain(project.domain as "Website" | "App" | "Game");
                                           const modeMap: Record<"Website" | "App" | "Game", "website" | "app" | "game"> = {
                                             Website: "website",
                                             App: "app",
@@ -3935,12 +3935,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   } else if (widget.type === "flow-tool") {
                     Icon = Link2;
                     accentColor = "text-cyan-400";
-                  } else if (widget.type === "website-section") {
-                    Icon = FileText;
-                    accentColor = "text-purple-400";
-                  } else if (widget.type === "brandIdentity") {
-                    Icon = Palette;
-                    accentColor = "text-purple-400";
                   }
 
                   const isPromptNode = widget.isPromptNode;
