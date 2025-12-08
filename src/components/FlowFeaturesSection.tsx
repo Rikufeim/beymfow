@@ -45,8 +45,8 @@ export const FlowFeaturesSection = ({
   const sharedImageClasses = "relative min-h-[320px] md:min-h-[420px] overflow-hidden w-full h-full cursor-pointer";
 
   return (
-    <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`} style={{ minHeight: '400px' }}>
-      <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
+    <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-0 ${className}`} style={{ minHeight: '400px' }}>
+      <div className="w-full space-y-16 md:space-y-24">
         {/* Your vibe coding flow text */}
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 lg:mb-8">
