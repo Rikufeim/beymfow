@@ -273,8 +273,8 @@ export function PromptSidebar({ className }: { className?: string }) {
         </div>
 
         {/* Gradient fades on sides */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/6 bg-gradient-to-r from-black via-black/50 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/6 bg-gradient-to-l from-black via-black/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 sm:w-32 md:w-40 bg-gradient-to-r from-[#000000] via-[#000000]/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 sm:w-32 md:w-40 bg-gradient-to-l from-[#000000] via-[#000000]/80 to-transparent" />
       </div>
 
       {/* Modal for full prompt */}
