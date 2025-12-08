@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GeneratedPromptDisplay } from "./GeneratedPromptDisplay";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 export const QuickPromptGenerator = () => {
   const { user, usageInfo } = useAuth();
@@ -36,10 +37,25 @@ export const QuickPromptGenerator = () => {
 
   const categoryColors = {
     all: "border-white/20 hover:border-white/30",
-    crypto: "border-green-500/40 hover:border-green-500/60",
-    business: "border-cyan-500/40 hover:border-cyan-500/60",
-    personal: "border-red-500/40 hover:border-red-500/60",
-    creativity: "border-purple-500/40 hover:border-purple-500/60",
+    crypto: "border-neutral-500/40 hover:border-neutral-500/60",
+    business: "border-neutral-500/40 hover:border-neutral-500/60",
+    personal: "border-neutral-500/40 hover:border-neutral-500/60",
+    creativity: "border-neutral-500/40 hover:border-neutral-500/60",
+  };
+
+  const getCategoryGradient = (category: typeof selectedCategory) => {
+    // Kaikki kategoriat käyttävät nyt harmaata gradienttia
+    return `radial-gradient(circle at 10% 0%, #737373 0%, #73737300 30%),
+            radial-gradient(circle at 80% 20%, #a3a3a3 0%, #a3a3a300 35%),
+            radial-gradient(circle at 20% 80%, #737373 0%, #73737300 35%), 
+            radial-gradient(circle at 90% 90%, #737373 0%, #73737300 40%),
+            repeating-conic-gradient(
+              from 236.84deg at 50% 50%,
+              #737373 0%,
+              #a3a3a3 calc(33.33% / 5),
+              #737373 calc(66.66% / 5), 
+              #737373 calc(100% / 5)
+            )`;
   };
 
   useEffect(() => {
@@ -175,12 +191,33 @@ export const QuickPromptGenerator = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      <div className="text-center space-y-2"></div>
+    <div className="w-full max-w-4xl mx-auto space-y-6 relative p-6 rounded-3xl">
+      <GlowingEffect
+        variant="white"
+        glow={true}
+        disabled={false}
+        className="absolute inset-0 rounded-3xl"
+        borderWidth={1}
+        spread={40}
+        movementDuration={3}
+      />
+      <div className="relative z-10">
+        <div className="text-center space-y-2"></div>
 
       <div className="relative">
+        <GlowingEffect
+          spread={60}
+          glow
+          disabled={false}
+          proximity={40}
+          inactiveZone={0.2}
+          borderWidth={3}
+          className="opacity-70 rounded-[2rem]"
+          variant="default"
+          customGradient={getCategoryGradient(selectedCategory)}
+        />
         <div
-          className={`flex items-start gap-2 sm:gap-3 bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 border transition-all duration-300 ${categoryColors[selectedCategory]}`}
+          className={`relative flex items-start gap-2 sm:gap-3 bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 border transition-all duration-300 ${categoryColors[selectedCategory]}`}
         >
           <div className="pt-2">
             <DropdownMenu>
@@ -240,43 +277,44 @@ export const QuickPromptGenerator = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-        <GlassButton
-          size="sm"
-          onClick={() => setSelectedModel("fast")}
-          contentClassName="flex items-center gap-1.5"
-          className={selectedModel === "fast" ? "ring-2 ring-white/40" : ""}
-        >
-          <Zap className="w-3 h-3" />
-          Fast Model
-        </GlassButton>
-        <GlassButton
-          size="sm"
-          onClick={() => setSelectedModel("advanced")}
-          contentClassName="flex items-center gap-1.5"
-          className={selectedModel === "advanced" ? "ring-2 ring-white/40" : ""}
-        >
-          <Settings className="w-3 h-3" />
-          Advanced Model
-        </GlassButton>
-        <GlassButton
-          size="sm"
-          onClick={() => setSelectedModel("premium")}
-          contentClassName="flex items-center gap-1.5"
-          className={selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}
-        >
-          <Crown className="w-3 h-3" />
-          Beymflow Premium
-        </GlassButton>
-      </div>
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
+          <GlassButton
+            size="sm"
+            onClick={() => setSelectedModel("fast")}
+            contentClassName="flex items-center gap-1.5"
+            isSelected={selectedModel === "fast"}
+          >
+            <Zap className="w-3 h-3" />
+            Fast Model
+          </GlassButton>
+          <GlassButton
+            size="sm"
+            onClick={() => setSelectedModel("advanced")}
+            contentClassName="flex items-center gap-1.5"
+            isSelected={selectedModel === "advanced"}
+          >
+            <Settings className="w-3 h-3" />
+            Advanced Model
+          </GlassButton>
+          <GlassButton
+            size="sm"
+            onClick={() => setSelectedModel("premium")}
+            contentClassName="flex items-center gap-1.5"
+            isSelected={selectedModel === "premium"}
+          >
+            <Crown className="w-3 h-3" />
+            Beymflow Premium
+          </GlassButton>
+        </div>
 
-      <GeneratedPromptDisplay
-        prompt={generatedPrompt}
-        selectedModel={selectedModel}
-        selectedCategory={selectedCategory}
-        onPromptUpdate={setGeneratedPrompt}
-        onClear={clearPrompt}
-      />
+        <GeneratedPromptDisplay
+          prompt={generatedPrompt}
+          selectedModel={selectedModel}
+          selectedCategory={selectedCategory}
+          onPromptUpdate={setGeneratedPrompt}
+          onClear={clearPrompt}
+        />
+      </div>
     </div>
   );
 };

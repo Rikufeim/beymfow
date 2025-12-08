@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 import {
   Copy,
   Sparkles,
@@ -915,46 +917,67 @@ Before finalizing, verify:
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full flex flex-col items-center justify-center min-h-[60vh] text-center py-20 px-4"
+            className="w-full flex flex-col items-center justify-center text-center px-4 pt-16 pb-8"
           >
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 mt-12">
-              The Most Powerful Prompt{" "}
-              <span className="inline-block bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+              <span className="block text-white mb-2">The Most Powerful Prompt</span>
+              <span className="block bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
                 AI Workflow
               </span>
             </h1>
-            <div className="inline-block bg-white/5 backdrop-blur-md rounded-2xl px-8 py-3 mb-8 border border-white/10">
-              <p className="text-lg text-white/90 font-medium text-center">By Beymflow</p>
+            <div className="inline-block bg-white/5 backdrop-blur-md rounded-2xl px-6 py-2 mb-12 border border-white/10">
+              <p className="text-sm text-white/90 font-medium text-center">By Beymflow</p>
             </div>
 
             {/* Navigation Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-              <button
-                onClick={() => navigate("/prompt-lab-page/generator")}
-                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
-              >
-                <Wand2 size={24} className="group-hover:rotate-12 transition-transform" />
-                <span>Prompt Generator</span>
-              </button>
-              <button
-                onClick={() => navigate("/prompt-lab-page/scanner")}
-                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30"
-              >
-                <Search size={24} className="group-hover:scale-110 transition-transform" />
-                <span>Prompt Scanner</span>
-              </button>
-              <button
-                onClick={() => navigate("/prompt-lab-page/library")}
-                className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white font-bold text-lg hover:bg-white/20 hover:border-white/30 transition-all flex items-center gap-3 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
-              >
-                <Sparkles size={24} className="group-hover:scale-110 transition-transform" />
-                <span>Prompt Library</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-center gap-6 mb-12">
+              <div className="min-h-[11rem] min-w-[200px]">
+                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
+                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                  <button
+                    onClick={() => navigate("/prompt-lab-page/generator")}
+                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
+                  >
+                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                      <Wand2 size={24} className="text-white group-hover:rotate-12 transition-transform" />
+                    </div>
+                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Generator</span>
+                  </button>
+                </div>
+              </div>
+              <div className="min-h-[11rem] min-w-[200px]">
+                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
+                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                  <button
+                    onClick={() => navigate("/prompt-lab-page/scanner")}
+                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
+                  >
+                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                      <Search size={24} className="text-white group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Scanner</span>
+                  </button>
+                </div>
+              </div>
+              <div className="min-h-[11rem] min-w-[200px]">
+                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
+                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                  <button
+                    onClick={() => navigate("/prompt-lab-page/library")}
+                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
+                  >
+                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                      <Sparkles size={24} className="text-white group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Library</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.section>
 
           {/* Animated Text Display */}
-          <div className="w-full max-w-4xl mx-auto mb-16 px-4 relative z-20">
+          <div className="w-full max-w-4xl mx-auto mb-12 px-4 relative z-20">
             <div className="relative flex flex-col items-center justify-center">
               <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight min-h-[60px] w-full text-center">
                 <div className="flex items-center justify-center overflow-hidden">

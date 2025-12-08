@@ -1,7 +1,8 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import beymflowBg from "@/assets/beymflow-background.png";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 // Määritellään yksinkertainen Button-komponentti tässä tiedostossa,
 // koska emme voi tuoda sitä ulkoisesta tiedostosta esikatselussa.
@@ -39,86 +40,126 @@ export const FlowFeaturesSection = ({
     navigate = path => console.log(`Navigating to ${path}`);
   }
 
-  const sharedCardClasses = "grid md:grid-cols-2 items-stretch gap-6 md:gap-8";
-  const sharedTextClasses = "flex flex-col justify-center gap-6 p-8 md:p-12 lg:p-16 relative overflow-hidden bg-black rounded-3xl w-full h-full z-10";
-  const sharedImageClasses = "relative min-h-[320px] md:min-h-[420px] overflow-hidden w-full h-full rounded-3xl cursor-pointer";
+  const sharedCardClasses = "grid md:grid-cols-2 items-stretch gap-0";
+  const sharedTextClasses = "flex flex-col justify-center gap-6 p-8 md:p-12 lg:p-16 relative overflow-hidden w-full h-full z-10";
+  const sharedImageClasses = "relative min-h-[320px] md:min-h-[420px] overflow-hidden w-full h-full cursor-pointer";
 
   return (
-    <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`}>
-      {/* MUUTOS: Vaihdettu max-w-7xl -> w-full, jotta kortit ovat leveämpiä */}
-      <div className="w-full mx-auto space-y-16 md:space-y-24">
+    <section className={`py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 ${className}`} style={{ minHeight: '400px' }}>
+      <div className="max-w-7xl mx-auto space-y-16 md:space-y-24">
+        {/* Your vibe coding flow text */}
+        <div className="text-center mb-12 lg:mb-16">
+          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 lg:mb-8">
+            <span className="text-white/85 font-semibold">Your </span>
+            <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium">vibe coding flow</span>
+          </h2>
+          <p className="mx-auto max-w-3xl text-lg md:text-xl text-gray-400 tracking-tight leading-relaxed">
+            Build and control your whole creative workflow — no clutter, no complexity, just clean, intuitive tools that build prompts as fast as you think.
+          </p>
+        </div>
+        
         {/* Flow Engine Section - Image Right, Text Left (mirrored from Prompt Lab) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-          className={sharedCardClasses}
-        >
+        <div className={sharedCardClasses}>
           {/* Text Content - Left */}
-          <div className={`${sharedTextClasses} order-1 md:order-1`}>
-            {/* Purple glow - right corner */}
-            <span
-              className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
-              aria-hidden="true"
-            />
+          <div className="order-1 md:order-1">
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                {/* Soft warm glow - right corner */}
+                <span
+                  className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full blur-3xl"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(212,212,212,0.12) 0%, rgba(163,163,163,0.08) 40%, rgba(115,115,115,0.04) 70%, transparent 100%)'
+                  }}
+                  aria-hidden="true"
+                />
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-              Flow Engine
-            </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
-              The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe
-              coding and sharpens the way you build, and it works with all major AI models.
-            </p>
-            <div
-              className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
-              onClick={() => navigate("/flow-engine")}
-            >
-              Click to explore <span>→</span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
+                  Flow Engine
+                </h2>
+                <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">
+                  The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe
+                  coding and sharpens the way you build, and it works with all major AI models.
+                </p>
+                <div
+                  className="text-sm font-semibold relative z-10 cursor-pointer inline-flex items-center gap-2 transition-all duration-200 group"
+                  style={{
+                    color: '#ffffff',
+                    letterSpacing: '0.01em',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
+                    textRendering: 'optimizeLegibility',
+                  }}
+                  onClick={() => navigate("/flow-engine")}
+                >
+                  <span className="text-white group-hover:text-white transition-opacity duration-200">Click to explore</span>
+                  <span className="text-white transition-transform duration-200 group-hover:translate-x-1">→</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Image - Right */}
-          <div className={`${sharedImageClasses} order-2 md:order-2`} onClick={() => navigate("/flow-engine")}>
-            <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="order-2 md:order-2">
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} onClick={() => navigate("/flow-engine")}>
+                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" />
+              </div>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Prompt Lab Section - Image Left, Text Right */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className={sharedCardClasses}
-        >
+        <div className={sharedCardClasses}>
           {/* Image - Left */}
-          <div className={`${sharedImageClasses} order-2 md:order-1`} onClick={() => navigate("/prompt-lab-page")}>
-            <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="order-2 md:order-1">
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} onClick={() => navigate("/prompt-lab-page")}>
+                <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" />
+              </div>
+            </div>
           </div>
 
           {/* Text Content - Right */}
-          <div className={`${sharedTextClasses} order-1 md:order-2`}>
-            {/* Purple glow - left corner */}
-            <span
-              className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full bg-purple-500/25 blur-3xl"
-              aria-hidden="true"
-            />
+          <div className="order-1 md:order-2">
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                {/* Soft warm glow - left corner */}
+                <span
+                  className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full blur-3xl"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(212,212,212,0.12) 0%, rgba(163,163,163,0.08) 40%, rgba(115,115,115,0.04) 70%, transparent 100%)'
+                  }}
+                  aria-hidden="true"
+                />
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-              Prompt Lab
-            </h2>
-            <p className="text-base sm:text-lg text-neutral-400 mb-6 lg:mb-8 max-w-lg relative z-10">
-              Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools.
-            </p>
-            <div
-              className="text-sm text-purple-400 hover:text-purple-300 font-medium relative z-10 cursor-pointer inline-flex items-center gap-2"
-              onClick={() => navigate("/prompt-lab-page")}
-            >
-              Click to explore <span>→</span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
+                  Prompt Lab
+                </h2>
+                <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">
+                  Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools.
+                </p>
+                <div
+                  className="text-sm font-semibold relative z-10 cursor-pointer inline-flex items-center gap-2 transition-all duration-200 group"
+                  style={{
+                    color: '#ffffff',
+                    letterSpacing: '0.01em',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale',
+                    textRendering: 'optimizeLegibility',
+                  }}
+                  onClick={() => navigate("/prompt-lab-page")}
+                >
+                  <span className="text-white group-hover:text-white transition-opacity duration-200">Click to explore</span>
+                  <span className="text-white transition-transform duration-200 group-hover:translate-x-1">→</span>
+                </div>
+              </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

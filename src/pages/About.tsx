@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassButton } from "@/components/ui/glass-button";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 // --- TYPES ---
 type InfoCard = {
@@ -96,26 +98,22 @@ const FlowCard = ({
 
       {/* Content Card Wrapper */}
       <div className="group relative w-full md:w-5/12">
-        {/* DYNAMIC BORDER WRAPPER */}
-        <div className={`relative rounded-3xl p-[1px] transition-all duration-500 overflow-hidden ${isActive ? "shadow-[0_0_20px_rgba(255,255,255,0.05)]" : ""}`}>
-          {/* Animated Gradient Background for the Border */}
-          <div className={`absolute inset-0 bg-gradient-to-r transition-all duration-1000 ease-in-out ${isActive ? "from-gray-800 via-white/40 to-gray-800 animate-border-shine bg-[length:200%_100%]" : "from-gray-900 via-gray-800 to-gray-900 opacity-60"}`} />
-
-          {/* Inner Card Content (Black background) */}
-          <div className="relative h-full w-full rounded-3xl bg-black p-8 backdrop-blur-xl">
+        <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
+          <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+          <div className="relative flex h-full flex-col gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-8">
             <div className="relative z-10 flex flex-col gap-4">
-              <div className="flex items-center gap-4 border-b border-gray-800 pb-4">
+              <div className="flex items-center gap-4 border-b border-white/10 pb-4">
                 {/* Mobile Index Indicator */}
-                <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-cyan-300 ring-1 ring-white/10">
+                <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white ring-1 ring-white/10">
                   0{index + 1}
                 </span>
 
-                <h3 className={`text-lg font-bold uppercase tracking-widest transition-colors duration-300 ${isActive ? "text-white" : "text-gray-400"}`}>
+                <h3 className="text-lg font-semibold uppercase tracking-widest text-white">
                   {card.question}
                 </h3>
               </div>
 
-              <p className="text-base leading-relaxed text-gray-300/90">{card.answer}</p>
+              <p className="text-base leading-relaxed text-white/70">{card.answer}</p>
             </div>
           </div>
         </div>

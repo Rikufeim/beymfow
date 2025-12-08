@@ -1,5 +1,6 @@
 import { Terminal, Cloud, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 const FeatureShowcaseCards = () => {
   const navigate = useNavigate();
@@ -112,12 +113,11 @@ const FeatureShowcaseCards = () => {
                 </h3>
 
                 {/* Card */}
-                <div
-                  className={`group relative bg-black/30 backdrop-blur-sm border rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-500 ${colors.glow}
-                    ${card.color === 'green' ? 'border-white/10 hover:border-green-500/30' : ''}
-                    ${card.color === 'purple' ? 'border-white/10 hover:border-purple-500/30' : ''}
-                    ${card.color === 'cyan' ? 'border-white/10 hover:border-cyan-500/30' : ''}`}
-                >
+                <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
+                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                  <div
+                    className={`group relative flex h-full flex-col justify-between rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden transition-all duration-500 ${colors.glow}`}
+                  >
                   {/* Visual Content Area */}
                   <div className="aspect-[4/3] relative grayscale group-hover:grayscale-0 transition-all duration-500">
                     {card.visual}
@@ -125,22 +125,45 @@ const FeatureShowcaseCards = () => {
 
                   {/* Bottom Action Bar */}
                   <div className="p-3 sm:p-4 border-t border-white/5 flex items-center justify-between gap-3 sm:gap-4">
-                    <button
-                      className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-500 font-medium text-xs sm:text-sm
-                        border-white/10 bg-white/5 text-white/50
-                        ${card.color === 'green' ? 'group-hover:bg-green-500/20 group-hover:text-green-400 group-hover:border-green-500/30' : ''}
-                        ${card.color === 'purple' ? 'group-hover:bg-purple-500/20 group-hover:text-purple-400 group-hover:border-purple-500/30' : ''}
-                        ${card.color === 'cyan' ? 'group-hover:bg-cyan-500/20 group-hover:text-cyan-400 group-hover:border-cyan-500/30' : ''}`}
-                    >
-                      <card.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span className="hidden xs:inline">{card.title}</span>
-                    </button>
-                    <button 
-                      onClick={() => navigate(`/features?active=${cards.findIndex(c => c.title === card.title)}`)}
-                      className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white transition-all duration-300 text-xs sm:text-sm font-medium"
-                    >
-                      Learn More
-                    </button>
+                    <div className="relative flex-1">
+                      <GlowingEffect 
+                        spread={40} 
+                        glow 
+                        disabled={false} 
+                        proximity={0} 
+                        inactiveZone={1} 
+                        borderWidth={2} 
+                        className="opacity-30 rounded-xl" 
+                      />
+                      <button
+                        className={`relative z-10 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-transparent transition-all duration-500 font-medium text-xs sm:text-sm
+                          bg-white/5 text-white/50
+                          ${card.color === 'green' ? 'group-hover:bg-green-500/20 group-hover:text-green-400' : ''}
+                          ${card.color === 'purple' ? 'group-hover:bg-purple-500/20 group-hover:text-purple-400' : ''}
+                          ${card.color === 'cyan' ? 'group-hover:bg-cyan-500/20 group-hover:text-cyan-400' : ''}`}
+                      >
+                        <card.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden xs:inline">{card.title}</span>
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <GlowingEffect 
+                        spread={40} 
+                        glow 
+                        disabled={false} 
+                        proximity={0} 
+                        inactiveZone={1} 
+                        borderWidth={2} 
+                        className="opacity-30 rounded-xl" 
+                      />
+                      <button 
+                        onClick={() => navigate(`/features?active=${cards.findIndex(c => c.title === card.title)}`)}
+                        className="relative z-10 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-transparent bg-white/5 text-white/50 hover:bg-white/10 hover:text-white transition-all duration-300 text-xs sm:text-sm font-medium"
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -159,7 +182,7 @@ const FeatureShowcaseCards = () => {
           <p className="text-sm sm:text-base md:text-lg text-white/70 mb-1">
             Integrate into real workflows.
           </p>
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mt-3 sm:mt-4">
+          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white/85 mt-3 sm:mt-4">
             Build. Optimize. Deploy.
           </p>
         </div>

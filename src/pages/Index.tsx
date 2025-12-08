@@ -2,7 +2,7 @@ import Products from "@/components/Products";
 import Footer from "@/components/Footer";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
 import promptLabLogo from "@/assets/prompt-lab-logo.jpg";
@@ -12,11 +12,22 @@ import BeymflowPremiumSection from "@/components/ui/beymflow-premium-section";
 import { FlowFeaturesSection } from "@/components/FlowFeaturesSection";
 import PricingCarousel from "@/components/PricingCarousel";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle } from "lucide-react";
+import { useRef } from "react";
+
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Transform scroll progress to darken background - page gets darker as you scroll
+  const backgroundOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.5, 1]);
 
   // Preload all homepage images for instant loading
   const homepageImages = [
@@ -30,7 +41,14 @@ const Index = () => {
   });
   return <>
       <Layout>
-        <main className="relative overflow-hidden bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
+        <main ref={containerRef} className="relative overflow-hidden bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
+          {/* Darkening overlay - page gets darker as you scroll */}
+          <motion.div
+            className="fixed inset-0 pointer-events-none z-0 bg-black"
+            style={{
+              opacity: backgroundOpacity,
+            }}
+          />
           <div className="relative z-10">
             {/* Hero Section */}
             <Hero />
@@ -70,7 +88,7 @@ const Index = () => {
 
 
             {/* How It Works Section */}
-            <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-[#000a00]/0">
+            <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
               <div className="max-w-7xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -104,20 +122,22 @@ const Index = () => {
                   title: "Usage and Refinement",
                   description: "You can instantly view the generated prompt. Copy and paste it directly into ChatGPT, Claude, Gemini, or any other AI model."
                 }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                         <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
-                          <div className="flex flex-col gap-3">
-                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                              {item.icon}
-                            </div>
-                            <div className="space-y-2">
-                              <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-white">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs sm:text-sm leading-relaxed text-white/70 md:text-lg">
-                                {item.description}
-                              </p>
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                {item.icon}
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-white">
+                                  {item.title}
+                                </h3>
+                                <p className="text-xs sm:text-sm leading-relaxed text-white/70 md:text-lg">
+                                  {item.description}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -128,7 +148,7 @@ const Index = () => {
             </section>
 
             {/* Essential Steps Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-[#000a00]/0">
+            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
               <div className="max-w-6xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -170,23 +190,25 @@ const Index = () => {
                   title: "Refine and Test",
                   description: "Iterate and improve your prompt based on the results"
                 }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                         <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center justify-between">
-                              <div className="text-4xl font-bold text-gray-400">{item.number}</div>
-                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                {item.icon}
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center justify-between">
+                                <div className="text-4xl font-bold text-gray-400">{item.number}</div>
+                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                  {item.icon}
+                                </div>
                               </div>
-                            </div>
-                            <div className="space-y-2">
-                              <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs leading-relaxed text-white/70 md:text-lg">
-                                {item.description}
-                              </p>
+                              <div className="space-y-2">
+                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
+                                  {item.title}
+                                </h3>
+                                <p className="text-xs leading-relaxed text-white/70 md:text-lg">
+                                  {item.description}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -197,7 +219,7 @@ const Index = () => {
             </section>
 
             {/* Why Choose Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-[#000a00]/0">
+            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
               <div className="max-w-6xl mx-auto">
                 <motion.div initial={{
                 opacity: 0
@@ -242,20 +264,22 @@ const Index = () => {
                   duration: 0.6,
                   delay: idx * 0.1
                 }} className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                         <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 sm:p-6 md:p-8 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
-                          <div className="flex flex-col gap-3">
-                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                              {item.icon}
-                            </div>
-                            <div className="space-y-2">
-                              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-white">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs leading-relaxed text-white/70 sm:text-lg">
-                                {item.description}
-                              </p>
+                        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                {item.icon}
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-white/85">
+                                  {item.title}
+                                </h3>
+                                <p className="text-xs leading-relaxed text-white/70 sm:text-lg">
+                                  {item.description}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -266,6 +290,63 @@ const Index = () => {
             </section>
 
             <Products />
+
+            {/* CTA Section Before Footer */}
+            <section className="py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
+              <div className="max-w-4xl mx-auto text-center">
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 tracking-tight"
+                >
+                  <motion.span
+                    animate={{
+                      backgroundPosition: ["0% center", "-200% center"],
+                    }}
+                    transition={{
+                      backgroundPosition: { duration: 6, ease: "easeInOut", repeat: Infinity },
+                    }}
+                    className="text-transparent bg-clip-text bg-[length:200%_auto] inline-block"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(to right, #a855f7 0%, #06b6d4 25%, #a855f7 50%, #06b6d4 75%, #a855f7 100%)",
+                    }}
+                  >
+                    IT'S ALL ABOUT THE PROMPT
+                  </motion.span>
+                </motion.h2>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                >
+                  <div className="relative w-full sm:w-auto">
+                    <GlassButton
+                      size="default"
+                      onClick={() => navigate("/auth")}
+                      contentClassName="flex items-center gap-1.5"
+                      isSelected={false}
+                    >
+                      Start for free
+                    </GlassButton>
+                  </div>
+                  <div className="relative w-full sm:w-auto">
+                    <GlassButton
+                      size="default"
+                      onClick={() => navigate("/premium")}
+                      contentClassName="flex items-center gap-1.5"
+                      isSelected={false}
+                    >
+                      Beymflow Premium
+                    </GlassButton>
+                  </div>
+                </motion.div>
+              </div>
+            </section>
           </div>
         </main>
       </Layout>

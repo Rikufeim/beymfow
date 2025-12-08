@@ -66,14 +66,14 @@ const CardImage: React.FC<CardImageProps> = ({
 
   // Outer container with optimized loading
   return (
-    <div className={`relative overflow-hidden rounded-lg ${className}`} style={style}>
+    <div className={`relative overflow-hidden rounded-lg group ${className}`} style={style}>
       {!imageLoaded && (
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
       <img
         src={src}
         alt={alt}
-        className={`w-full h-full object-cover object-center rounded-lg transition-opacity duration-200 ${
+        className={`w-full h-full object-cover object-center rounded-lg transition-all duration-500 grayscale group-hover:grayscale-0 ${
           imageLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         draggable={false}
@@ -87,7 +87,7 @@ const CardImage: React.FC<CardImageProps> = ({
           height: 'auto',
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
-          willChange: 'opacity'
+          willChange: 'opacity, filter'
         }}
       />
     </div>

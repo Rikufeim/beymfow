@@ -13,9 +13,7 @@ const fadeUp = {
 
 const Footer = () => {
   return (
-    <footer className="relative py-16 px-4 bg-zinc-950 overflow-hidden">
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent pointer-events-none" />
+    <footer className="relative py-16 px-4 bg-neutral-950 overflow-hidden">
 
       <div className="relative max-w-7xl mx-auto">
         {/* Main Footer Content */}
@@ -28,7 +26,7 @@ const Footer = () => {
         >
           {/* Brand Section */}
           <div className="space-y-6">
-            <h3 className="text-3xl font-bold text-white tracking-tight">BEYMFLOW</h3>
+            <h3 className="text-3xl font-bold text-white/80 tracking-tight">BEYMFLOW</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Your AI-powered prompt generation platform. Create perfect prompts for any AI model with our advanced
               tools and generators.

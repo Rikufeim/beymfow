@@ -36,9 +36,9 @@ const GridItem = ({
   description
 }: GridItemProps) => {
   return <li className="min-h-[11rem] list-none">
-      <div className={cn("relative h-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-purple-500/10 p-[1px]")}>
+      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
         <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-black/80 p-5 shadow-[0_0_40px_rgba(0,0,0,0.75)] backdrop-blur">
+        <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5">
           <div className="flex flex-col gap-3">
             <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
               {icon}

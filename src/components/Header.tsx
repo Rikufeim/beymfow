@@ -17,11 +17,11 @@ const Header = () => {
 
   return (
     <header
-      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black/20 backdrop-blur-sm transition-all duration-500"
+      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black transition-all duration-500"
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
-        <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
+        <Link to="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
           <img
             src="/images/BeymflowlogoREAL.png"
             alt="Beymflow Logo"
@@ -29,7 +29,7 @@ const Header = () => {
           />
           <span className="relative text-lg sm:text-xl font-semibold tracking-[0.35em] text-white uppercase hidden sm:block">
             Beymflow
-            <span className="absolute -top-2 -right-8 text-[10px] tracking-normal text-white/60 lowercase font-normal">
+            <span className="absolute -top-2 -right-6 text-[10px] tracking-normal text-white/60 lowercase font-normal">
               beta
             </span>
           </span>
@@ -38,64 +38,64 @@ const Header = () => {
 
       {/* ================= KESKI: NAVIGAATIO (Desktop) ================= */}
       {isHomePage && (
-        <nav className="hidden md:flex items-center justify-center gap-8 flex-1 font-medium">
+        <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 font-medium">
           {/* 1. Pricing */}
-          <Link to="/premium" className="text-gray-300 hover:text-white transition-colors duration-300 text-sm">
+          <Link to="/premium" className="text-white hover:text-white transition-colors duration-300 text-sm">
             Pricing
           </Link>
 
           {/* 2. About Us */}
-          <Link to="/about" className="text-gray-300 hover:text-white transition-colors duration-300 text-sm">
+          <Link to="/about" className="text-white hover:text-white transition-colors duration-300 text-sm">
             About Us
           </Link>
 
           {/* 3. Community Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
+            <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-white transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
               Community
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-2 min-w-[180px] z-[1000]"
+              className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
               align="center"
             >
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
                 <a
                   href="https://github.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
                 >
-                  <Github className="h-4 w-4" /> <span>GitHub</span>
+                  <Github className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">GitHub</span>
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
                 <a
                   href="https://x.com/beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
                 >
-                  <Twitter className="h-4 w-4" /> <span>X</span>
+                  <Twitter className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">X</span>
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
                 <a
                   href="https://www.youtube.com/@Beymflow"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
                 >
-                  <Youtube className="h-4 w-4" /> <span>YouTube</span>
+                  <Youtube className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">YouTube</span>
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
                 <a
                   href="https://www.instagram.com/beymflow/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
                 >
-                  <Instagram className="h-4 w-4" /> <span>Instagram</span>
+                  <Instagram className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Instagram</span>
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -114,7 +114,7 @@ const Header = () => {
           </SheetTrigger>
 
           {/* Mobiili Menu Sisältö */}
-          <SheetContent side="right" className="bg-black/95 backdrop-blur-xl border-white/10 w-[300px] z-[1000]">
+          <SheetContent side="right" className="bg-black border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
               {user ? (
                 <GlassButton

@@ -18,6 +18,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import { HexColorPicker } from "react-colorful";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { GlassButton } from "@/components/ui/glass-button";
+import { cn } from "@/lib/utils";
+import BrandIdentityNode, { BrandIdentityFields } from "@/components/flow-nodes/BrandIdentityNode";
+import { AVAILABLE_FONTS } from "@/components/flow-nodes/FontSelect";
+// import ResizableNode from "@/components/flow-nodes/ResizableNode"; // Temporarily disabled - react-rnd not installed
+import { getLayoutedElements } from "@/lib/flowLayout";
+import { ResizableNodeWrapper } from "@/components/flow-nodes/ResizableNodeWrapper";
 
 import {
   ArrowRight,
@@ -38,6 +46,8 @@ import {
   Globe,
   Smartphone,
   Gamepad2,
+  Send,
+  SquareStack,
   Palette,
   Code,
   Layout,
@@ -78,6 +88,7 @@ import {
   EyeOff,
   Edit3,
   Clipboard,
+  Paperclip,
 } from "lucide-react";
 
 // --- Mock Auth Context (Local Implementation) ---
@@ -145,9 +156,25 @@ interface WidgetTextStyle {
   fontFamily: string;
 }
 
+// Website module data structure
+type WebsiteModuleData = {
+  title: string;
+  fields: Record<string, string>; // key = field id, value = user text
+};
+
+// Website specification collected from all website nodes
+type WebsiteSpec = {
+  userInput?: string;
+  brandIdentity?: WebsiteModuleData;
+  websitePurpose?: WebsiteModuleData;
+  seoStructure?: WebsiteModuleData;
+  functionalRequirements?: WebsiteModuleData;
+  contentInputs?: WebsiteModuleData;
+};
+
 interface Widget {
   id: string;
-  // Added "prompt-window" to the type definition
+  // Added "prompt-window", "website-section", and "brandIdentity" to the type definition
   type:
     | "prompt"
     | "category"
@@ -157,7 +184,9 @@ interface Widget {
     | "flow-state"
     | "flow-tool"
     | "text"
-    | "prompt-window";
+    | "prompt-window"
+    | "website-section"
+    | "brandIdentity";
   title?: string;
   basePrompt?: string;
   content?: string;
@@ -175,6 +204,20 @@ interface Widget {
   promptMode?: "edit" | "preview";
   // Flag to mark the special Prompt Output node
   isPromptNode?: boolean;
+  // Website section data (for website-section nodes)
+  websiteData?: WebsiteModuleData;
+  // Brand identity data (for brandIdentity nodes)
+  brandIdentityData?: {
+    title: string;
+    fields: {
+      primaryColor: string;
+      secondaryColor: string;
+      accentColor: string;
+      fontFamily: string;
+      styleMood: string;
+      toneOfVoice: string;
+    };
+  };
 }
 
 interface Edge {
@@ -320,17 +363,12 @@ const suggestionChips = [
   { label: "Game", icon: Gamepad2 },
 ];
 
-const AVAILABLE_FONTS = [
-  "Inter",
-  "Roboto",
-  "Open Sans",
-  "Lato",
-  "Montserrat",
-  "Poppins",
-  "Playfair Display",
-  "Merriweather",
-  "Nunito",
-  "Ubuntu",
+type ModeId = "website" | "app" | "game" | null;
+
+const MODES = [
+  { id: "website", label: "Website", icon: Globe },
+  { id: "app", label: "App", icon: Smartphone },
+  { id: "game", label: "Game", icon: Gamepad2 },
 ];
 
 const PROMPT_PLACEHOLDER = "Prompt will be generated here...";
@@ -382,14 +420,199 @@ const ensurePromptWindowPresence = (widgets: Widget[]): Widget[] => {
     return [...widgets, createPromptWindowWidget(widgets)];
   }
 
-  if (promptWindows.length === 1) return widgets;
+  // ENSURE ONLY ONE PROMPT WINDOW - Remove duplicates
+  if (promptWindows.length > 1) {
+    // Keep the first one (or the one with specific ID if exists)
+    const primaryPromptWindow = promptWindows.find(w => w.id === "website-prompt-window") || promptWindows[0];
+    const filtered = widgets.filter((w) => w.type !== "prompt-window");
+    return [...filtered, primaryPromptWindow];
+  }
 
-  const [primaryPromptWindow] = promptWindows;
-  const filtered = widgets.filter((w) => w.type !== "prompt-window");
-  return [...filtered, primaryPromptWindow];
+  return widgets;
+};
+
+// --- GLOBAL FLOW STATE CONTEXT (Flowise-like node communication) ---
+interface FlowNodeData {
+  // User Input
+  userInput?: string;
+  // Brand Identity
+  brandIdentity?: {
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    fontFamily: string;
+    styleMood: string;
+    toneOfVoice: string;
+  };
+  // Website Purpose
+  websitePurpose?: {
+    problem: string;
+    targetAudience: string;
+    goals?: string;
+  };
+  // SEO & Structure
+  seoStructure?: {
+    keywords: string;
+    metaDescriptions: string;
+    pageStructure?: string;
+  };
+  // Functional Requirements
+  functionalRequirements?: {
+    ctas: string;
+    animations: string;
+    layouts?: string;
+  };
+  // Content Inputs
+  contentInputs?: {
+    copy: string;
+    offers: string;
+    references?: string;
+  };
+}
+
+interface FlowStateContextType {
+  nodeData: FlowNodeData;
+  updateNodeData: (nodeId: string, data: Partial<FlowNodeData>) => void;
+  getNodeData: (nodeId: string) => any;
+}
+
+const FlowStateContext = React.createContext<FlowStateContextType>({
+  nodeData: {},
+  updateNodeData: () => {},
+  getNodeData: () => null,
+});
+
+const useFlowState = () => React.useContext(FlowStateContext);
+
+// Build website specification from all website nodes (independent of edges)
+const buildWebsiteSpec = (nodes: Widget[]): WebsiteSpec => {
+  const spec: WebsiteSpec = {};
+
+  // Find user input node
+  const userInputNode = nodes.find((n) => n.id === "website-user-input" && n.type === "flow-input");
+  if (userInputNode) {
+    spec.userInput = userInputNode.content || "";
+  }
+
+  // Find brand identity node
+  const brandIdentityNode = nodes.find((n) => n.id === "website-brand-identity" && n.type === "brandIdentity");
+  if (brandIdentityNode?.brandIdentityData) {
+    // Convert brandIdentityData to WebsiteModuleData format for compatibility
+    spec.brandIdentity = {
+      title: brandIdentityNode.brandIdentityData.title,
+      fields: {
+        primaryColor: brandIdentityNode.brandIdentityData.fields.primaryColor || "",
+        secondaryColor: brandIdentityNode.brandIdentityData.fields.secondaryColor || "",
+        accentColor: brandIdentityNode.brandIdentityData.fields.accentColor || "",
+        fontFamily: brandIdentityNode.brandIdentityData.fields.fontFamily || "",
+        styleMood: brandIdentityNode.brandIdentityData.fields.styleMood || "",
+        toneOfVoice: brandIdentityNode.brandIdentityData.fields.toneOfVoice || "",
+      },
+    };
+  }
+
+  // Find website purpose node
+  const purposeNode = nodes.find((n) => n.id === "website-purpose" && n.type === "website-section");
+  if (purposeNode?.websiteData) {
+    spec.websitePurpose = purposeNode.websiteData;
+  }
+
+  // Find SEO & structure node
+  const seoNode = nodes.find((n) => n.id === "website-seo-structure" && n.type === "website-section");
+  if (seoNode?.websiteData) {
+    spec.seoStructure = seoNode.websiteData;
+  }
+
+  // Find functional requirements node
+  const functionalNode = nodes.find((n) => n.id === "website-functional-requirements" && n.type === "website-section");
+  if (functionalNode?.websiteData) {
+    spec.functionalRequirements = functionalNode.websiteData;
+  }
+
+  // Find content inputs node
+  const contentNode = nodes.find((n) => n.id === "website-content-inputs" && n.type === "website-section");
+  if (contentNode?.websiteData) {
+    spec.contentInputs = contentNode.websiteData;
+  }
+
+  return spec;
+};
+
+// Generate website prompt from specification
+const generateWebsitePrompt = (spec: WebsiteSpec): string => {
+  let prompt = `You are an expert web designer, copywriter, and UX strategist.
+Use the following project specification to create a complete website prompt.
+
+### Project Overview
+${spec.userInput || "[No user input provided]"}
+
+`;
+
+  if (spec.brandIdentity) {
+    prompt += `### Brand Identity
+- Primary Color: ${spec.brandIdentity.fields.primaryColor || "[Not specified]"}
+- Secondary Color: ${spec.brandIdentity.fields.secondaryColor || "[Not specified]"}
+- Accent Color: ${spec.brandIdentity.fields.accentColor || "[Not specified]"}
+- Font Family: ${spec.brandIdentity.fields.fontFamily || "[Not specified]"}
+- Style / Mood: ${spec.brandIdentity.fields.styleMood || "[Not specified]"}
+- Tone of Voice: ${spec.brandIdentity.fields.toneOfVoice || "[Not specified]"}
+
+`;
+  }
+
+  if (spec.websitePurpose) {
+    prompt += `### Website Purpose
+- Problem to Solve: ${spec.websitePurpose.fields.problem || "[Not specified]"}
+- Target Audience: ${spec.websitePurpose.fields.targetAudience || "[Not specified]"}
+- Goals: ${spec.websitePurpose.fields.goals || "[Not specified]"}
+
+`;
+  }
+
+  if (spec.seoStructure) {
+    prompt += `### SEO & Structure
+- Primary Keywords: ${spec.seoStructure.fields.keywords || "[Not specified]"}
+- Meta Descriptions: ${spec.seoStructure.fields.metaDescriptions || "[Not specified]"}
+- Page Structure: ${spec.seoStructure.fields.pageStructure || "[Not specified]"}
+
+`;
+  }
+
+  if (spec.functionalRequirements) {
+    prompt += `### Functional Requirements
+- CTAs: ${spec.functionalRequirements.fields.ctas || "[Not specified]"}
+- Animations & Interactions: ${spec.functionalRequirements.fields.animations || "[Not specified]"}
+- Layout Preferences: ${spec.functionalRequirements.fields.layouts || "[Not specified]"}
+
+`;
+  }
+
+  if (spec.contentInputs) {
+    prompt += `### Content Inputs
+- Core Messaging and Copy Ideas: ${spec.contentInputs.fields.copy || "[Not specified]"}
+- Offers / Pricing: ${spec.contentInputs.fields.offers || "[Not specified]"}
+- References / Case Studies: ${spec.contentInputs.fields.references || "[Not specified]"}
+
+`;
+  }
+
+  prompt += `### Task
+Using all the information above, generate a high-quality website prompt I can use in Lovable (or any other AI website builder) to design and implement this website.`;
+
+  return prompt;
 };
 
 const generatePromptFromGraph = (nodes: Widget[], edges: Edge[]): string => {
+  // Check if this is a Website Flow (has website-section nodes)
+  const hasWebsiteSections = nodes.some((n) => n.type === "website-section");
+  
+  if (hasWebsiteSections) {
+    // Use website spec builder instead of edge-based logic
+    const spec = buildWebsiteSpec(nodes);
+    return generateWebsitePrompt(spec);
+  }
+
+  // Fallback to original edge-based logic for other flow types
   const promptWindow = nodes.find((node) => node.type === "prompt-window");
   if (!promptWindow) return "";
 
@@ -502,8 +725,12 @@ interface SavedFlowProject {
 
 const FLOW_PROJECTS_KEY = "beymflow.flow-engine.projects";
 
-const loadSavedProjects = (): SavedFlowProject[] => {
+const loadSavedProjects = (userId?: string): SavedFlowProject[] => {
   try {
+    if (userId) {
+      const userKey = `${FLOW_PROJECTS_KEY}.${userId}`;
+      return JSON.parse(localStorage.getItem(userKey) || "[]") || [];
+    }
     return JSON.parse(localStorage.getItem(FLOW_PROJECTS_KEY) || "[]") || [];
   } catch {
     return [];
@@ -514,15 +741,91 @@ const saveProjectsToStorage = (projects: SavedFlowProject[]) => {
   localStorage.setItem(FLOW_PROJECTS_KEY, JSON.stringify(projects));
 };
 
+// FlowStateProvider - Global state for all nodes
+const FlowStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [nodeData, setNodeData] = useState<FlowNodeData>({});
+
+  const updateNodeData = useCallback((nodeId: string, data: Partial<FlowNodeData>) => {
+    setNodeData((prev) => {
+      const updated = { ...prev };
+      
+      // Map node IDs to data structure
+      if (nodeId === "website-user-input") {
+        if (data.userInput !== undefined) updated.userInput = data.userInput;
+      } else if (nodeId === "website-brand-identity") {
+        if (data.brandIdentity) updated.brandIdentity = { ...prev.brandIdentity, ...data.brandIdentity };
+      } else if (nodeId === "website-purpose") {
+        if (data.websitePurpose) updated.websitePurpose = { ...prev.websitePurpose, ...data.websitePurpose };
+      } else if (nodeId === "website-seo-structure") {
+        if (data.seoStructure) updated.seoStructure = { ...prev.seoStructure, ...data.seoStructure };
+      } else if (nodeId === "website-functional-requirements") {
+        if (data.functionalRequirements) updated.functionalRequirements = { ...prev.functionalRequirements, ...data.functionalRequirements };
+      } else if (nodeId === "website-content-inputs") {
+        if (data.contentInputs) updated.contentInputs = { ...prev.contentInputs, ...data.contentInputs };
+      }
+      
+      return updated;
+    });
+  }, []);
+
+  const getNodeData = useCallback((nodeId: string) => {
+    if (nodeId === "website-user-input") return nodeData.userInput;
+    if (nodeId === "website-brand-identity") return nodeData.brandIdentity;
+    if (nodeId === "website-purpose") return nodeData.websitePurpose;
+    if (nodeId === "website-seo-structure") return nodeData.seoStructure;
+    if (nodeId === "website-functional-requirements") return nodeData.functionalRequirements;
+    if (nodeId === "website-content-inputs") return nodeData.contentInputs;
+    return null;
+  }, [nodeData]);
+
+  return (
+    <FlowStateContext.Provider value={{ nodeData, updateNodeData, getNodeData }}>
+      {children}
+    </FlowStateContext.Provider>
+  );
+};
+
 const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const navigate = useNavigate();
   const { user, login, logout } = useAuth();
+  const { nodeData, updateNodeData } = useFlowState();
 
   // --- State ---
   const [viewMode, setViewMode] = useState<"landing" | "workspace">("landing");
   const [landingTab, setLandingTab] = useState<"projects" | "templates">("projects");
+  const [landingChatInput, setLandingChatInput] = useState("");
+  const landingChatTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const landingChatContainerRef = useRef<HTMLDivElement>(null);
+  const [showProjectsDropdown, setShowProjectsDropdown] = useState(false);
+  const [referenceProject, setReferenceProject] = useState<SavedFlowProject | null>(null);
+  const projectsTabRef = useRef<HTMLButtonElement>(null);
+  const templatesTabRef = useRef<HTMLButtonElement>(null);
+  const [activeTabWidth, setActiveTabWidth] = useState<number | null>(null);
+  
+  // Animated placeholder text for landing chat
+  const [landingPlaceholderIndex, setLandingPlaceholderIndex] = useState(0);
+  const [landingDisplayedText, setLandingDisplayedText] = useState("");
+  const [landingIsDeleting, setLandingIsDeleting] = useState(false);
+  const [landingIsFocused, setLandingIsFocused] = useState(false);
+  
+  const landingPlaceholders = [
+    "Build a prompt for a SaaS website project...",
+    "Create a prompt for a mobile app idea...",
+    "Generate a prompt for a game concept...",
+    "Design a prompt for an e-commerce platform...",
+  ];
 
-  const [activeDomain, setActiveDomain] = useState<string>("Website");
+  // Update active tab width when tab changes
+  useEffect(() => {
+    if (landingTab === "projects" && projectsTabRef.current) {
+      setActiveTabWidth(projectsTabRef.current.offsetWidth);
+    } else if (landingTab === "templates" && templatesTabRef.current) {
+      setActiveTabWidth(templatesTabRef.current.offsetWidth);
+    }
+  }, [landingTab]);
+
+  const [activeDomain, setActiveDomain] = useState<"Website" | "App" | "Game">("Website");
+  const [selectedMode, setSelectedMode] = useState<ModeId>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [savedProjects, setSavedProjects] = useState<SavedFlowProject[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
@@ -537,14 +840,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     fontSize: 16,
     textAlign: "left",
     color: "#ffffff",
-    fontFamily: "Inter",
+    fontFamily: AVAILABLE_FONTS[0].value, // Use full font stack value
   });
 
   // Workspace State
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [showCategories, setShowCategories] = useState(false);
-  const livePrompt = useMemo(() => generatePromptFromGraph(widgets, edges), [widgets, edges]);
+  // Memoize prompt generation to avoid recomputing on every render/drag
+  const livePrompt = useMemo(() => {
+    // Only recompute if widgets actually changed (not just position)
+    return generatePromptFromGraph(widgets, edges);
+  }, [widgets, edges]);
   const hasPromptWindow = useMemo(() => widgets.some((widget) => widget.type === "prompt-window"), [widgets]);
 
   // Selection & Manipulation State
@@ -605,13 +912,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showBackgroundPattern, setShowBackgroundPattern] = useState(true);
 
-  useEffect(() => {
-    if (viewMode !== "workspace") return;
-    const promptWindows = widgets.filter((widget) => widget.type === "prompt-window");
-    if (promptWindows.length !== 1) {
-      setWidgets((prev) => ensurePromptWindowPresence(prev));
-    }
-  }, [viewMode, widgets]);
+  // Removed automatic prompt window creation - user must add it manually
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -640,23 +941,122 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     combinedPrompt: "",
   });
 
+  // Auto-resize landing chat textarea
+  useEffect(() => {
+    if (landingChatTextareaRef.current) {
+      landingChatTextareaRef.current.style.height = "auto";
+      landingChatTextareaRef.current.style.height = `${Math.min(landingChatTextareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [landingChatInput]);
+
+  // Update glow effect based on text input and cursor position
+  useEffect(() => {
+    if (!landingChatTextareaRef.current || !landingChatContainerRef.current) return;
+    
+    const textarea = landingChatTextareaRef.current;
+    const container = landingChatContainerRef.current;
+    
+    // Find the glow element (the div with --start CSS variable)
+    const glowElement = container.querySelector('[style*="--start"]') as HTMLElement;
+    if (!glowElement) return;
+    
+    const updateGlow = () => {
+      const cursorPos = textarea.selectionStart;
+      const textLength = textarea.value.length;
+      
+      // Calculate cursor position as percentage (0-1)
+      const cursorPercent = textLength > 0 
+        ? Math.max(0, Math.min(1, cursorPos / textLength)) 
+        : 0.5;
+      
+      // Map cursor position to angle (0-360 degrees)
+      // Start from top (90 degrees) and go clockwise based on text position
+      const angle = 90 + (cursorPercent * 360);
+      
+      // Set active state - glow is active when there's text or when focused
+      const isActive = textLength > 0 || landingIsFocused;
+      glowElement.style.setProperty("--active", isActive ? "1" : "0");
+      
+      // Smoothly interpolate angle
+      const currentAngle = parseFloat(glowElement.style.getPropertyValue("--start")) || 0;
+      const angleDiff = ((angle - currentAngle + 180) % 360) - 180;
+      const newAngle = currentAngle + angleDiff * 0.2; // Smooth interpolation
+      glowElement.style.setProperty("--start", String(newAngle));
+    };
+    
+    updateGlow();
+    
+    // Update on various events
+    const handleUpdate = () => {
+      requestAnimationFrame(updateGlow);
+    };
+    
+    textarea.addEventListener('input', handleUpdate);
+    textarea.addEventListener('click', handleUpdate);
+    textarea.addEventListener('keyup', handleUpdate);
+    textarea.addEventListener('keydown', handleUpdate);
+    
+    // Use selectionchange if available
+    document.addEventListener('selectionchange', handleUpdate);
+    
+    return () => {
+      textarea.removeEventListener('input', handleUpdate);
+      textarea.removeEventListener('click', handleUpdate);
+      textarea.removeEventListener('keyup', handleUpdate);
+      textarea.removeEventListener('keydown', handleUpdate);
+      document.removeEventListener('selectionchange', handleUpdate);
+    };
+  }, [landingChatInput, landingIsFocused]);
+
+  // Animated placeholder for landing chat
+  useEffect(() => {
+    if (landingIsFocused || landingChatInput.trim()) {
+      setLandingDisplayedText("");
+      return;
+    }
+    const currentText = landingPlaceholders[landingPlaceholderIndex];
+    const timeout = setTimeout(
+      () => {
+        if (!landingIsDeleting) {
+          if (landingDisplayedText.length < currentText.length) {
+            setLandingDisplayedText(currentText.slice(0, landingDisplayedText.length + 1));
+          } else {
+            setTimeout(() => setLandingIsDeleting(true), 2000);
+          }
+        } else {
+          if (landingDisplayedText.length > 0) {
+            setLandingDisplayedText(landingDisplayedText.slice(0, -1));
+          } else {
+            setLandingIsDeleting(false);
+            setLandingPlaceholderIndex((prev) => (prev + 1) % landingPlaceholders.length);
+          }
+        }
+      },
+      landingIsDeleting ? 50 : 100,
+    );
+    return () => clearTimeout(timeout);
+  }, [landingDisplayedText, landingIsDeleting, landingPlaceholderIndex, landingIsFocused, landingChatInput]);
+
+  useEffect(() => {
+    if (!landingIsFocused && !landingChatInput.trim()) {
+      setLandingDisplayedText("");
+      setLandingIsDeleting(false);
+      setLandingPlaceholderIndex(0);
+    }
+  }, [landingIsFocused, landingChatInput]);
+
   // --- Domain Selection Logic & Template Loading (MOVED UP) ---
-  const handleDomainSelection = (domainLabel: string) => {
-    setIsLoading(true);
+  const handleDomainSelection = (domainLabel: "Website" | "App" | "Game") => {
+    // Only update the mode and clear input, don't switch to workspace yet
     setActiveDomain(domainLabel);
-
-    setTimeout(() => {
-      // --- UPDATED: Removed the mainPromptWidget creation ---
-
-      // Reset canvas transform when entering workspace
-      setCanvasTransform({ translateX: 100, translateY: 100, scale: 1 });
-      setWidgets(ensurePromptWindowPresence([])); // Start with prompt window in workspace
-      setEdges([]);
-      setViewMode("workspace");
-      setIsLoading(false);
-      setShowCategories(false);
-      setProjectName(`New ${domainLabel} Project`);
-    }, 600);
+    // Map to selectedMode format
+    const modeMap: Record<"Website" | "App" | "Game", "website" | "app" | "game"> = {
+      Website: "website",
+      App: "app",
+      Game: "game",
+    };
+    setSelectedMode(modeMap[domainLabel]);
+    setLandingChatInput(""); // Clear the input when mode is selected
   };
 
   // Helper to generate unique IDs for template nodes to avoid collisions when appending
@@ -691,6 +1091,198 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     return { newNodes, newEdges };
   };
 
+  // Parse user input to determine domain type
+  const detectDomainFromInput = (input: string): "Website" | "App" | "Game" => {
+    const lowerInput = input.toLowerCase();
+    
+    // Check for game-related keywords
+    if (lowerInput.includes("game") || lowerInput.includes("gaming") || lowerInput.includes("play")) {
+      return "Game";
+    }
+    
+    // Check for app-related keywords
+    if (lowerInput.includes("app") || lowerInput.includes("mobile") || lowerInput.includes("ios") || 
+        lowerInput.includes("android") || lowerInput.includes("application")) {
+      return "App";
+    }
+    
+    // Default to Website (most common)
+    return "Website";
+  };
+
+  // Generate template from user input
+  const handleGenerateTemplateFromInput = (input: string) => {
+    setIsLoading(true);
+    // Use the explicitly selected mode, map to domain format
+    // Default to "Website" if no mode is selected
+    const modeToDomain: Record<"website" | "app" | "game", "Website" | "App" | "Game"> = {
+      website: "Website",
+      app: "App",
+      game: "Game",
+    };
+    const selectedDomain = selectedMode ? modeToDomain[selectedMode] : "Website";
+    
+    // If we have a reference project, we're developing it; otherwise create new
+    const isDevelopingExisting = !!referenceProject;
+    
+    // Don't change activeDomain if we're developing an existing project
+    // (it's already set from the project)
+
+    setTimeout(() => {
+      let presetData;
+      if (selectedDomain === "Website") presetData = createWebsiteFlowPreset();
+      else if (selectedDomain === "App") presetData = createAppFlowPreset();
+      else presetData = createGameFlowPreset();
+
+      const { nodes: rawNodes, edges: rawEdges } = presetData;
+
+      // Update the first input node with user's input
+      const updatedNodes = rawNodes.map((node) => {
+        if (node.type === "flow-input") {
+          // For website flow, update the website-user-input node specifically
+          if (selectedDomain === "Website" && node.id === "website-user-input") {
+            return { ...node, content: input };
+          }
+          // For other flows, update any flow-input node
+          if (selectedDomain !== "Website") {
+            return { ...node, content: input };
+          }
+        }
+        // For website flow, also populate initial content in Website Purpose and Content Inputs
+        if (selectedDomain === "Website" && node.type === "website-section") {
+          if (node.id === "website-purpose" && node.websiteData) {
+            return {
+              ...node,
+              websiteData: {
+                ...node.websiteData,
+                fields: {
+                  ...node.websiteData.fields,
+                  problem: input, // Pre-fill problem with user input
+                },
+              },
+            };
+          }
+          if (node.id === "website-content-inputs" && node.websiteData) {
+            return {
+              ...node,
+              websiteData: {
+                ...node.websiteData,
+                fields: {
+                  ...node.websiteData.fields,
+                  copy: input, // Pre-fill copy with user input
+                },
+              },
+            };
+          }
+        }
+        return node;
+      });
+
+      // UPDATED: Append nodes instead of replacing, generate unique IDs
+      const { newNodes, newEdges } = generateUniqueNodesAndEdges(updatedNodes, rawEdges, widgets);
+
+      // Ensure prompt window is present and connected to the final output node
+      const finalOutputNode = newNodes.find((n) => n.isPromptNode);
+      
+      // Create prompt window positioned next to final output node
+      let promptWindow: Widget | undefined;
+      let nodesWithPromptWindow = [...newNodes];
+      
+      // Check if prompt window already exists in existing widgets
+      const existingPromptWindow = widgets.find((w) => w.type === "prompt-window");
+      
+      if (!existingPromptWindow && finalOutputNode) {
+        // Create new prompt window positioned to the right of final output node
+        promptWindow = {
+          id: `prompt-window-${Date.now()}`,
+          type: "prompt-window",
+          title: "Prompt Window",
+          x: finalOutputNode.x + (finalOutputNode.width || 360) + 50,
+          y: finalOutputNode.y,
+          width: 400,
+          height: 500,
+          content: "",
+          promptMode: "preview",
+        };
+        nodesWithPromptWindow.push(promptWindow);
+      } else if (existingPromptWindow) {
+        promptWindow = existingPromptWindow;
+      }
+      
+      // Create edges array with prompt window connection if needed
+      let finalEdges = [...newEdges];
+      if (promptWindow && finalOutputNode) {
+        // Check if edge already exists
+        const edgeExists = finalEdges.some(
+          (e) => e.source === finalOutputNode.id && e.target === promptWindow!.id
+        );
+        if (!edgeExists) {
+          const promptWindowEdge: Edge = {
+            id: `edge-prompt-${Date.now()}`,
+            source: finalOutputNode.id,
+            target: promptWindow.id,
+          };
+          finalEdges.push(promptWindowEdge);
+        }
+      }
+      
+      // Update widgets and edges
+      const updatedWidgets = (() => {
+        if (promptWindow && !existingPromptWindow) {
+          return [...widgets, ...nodesWithPromptWindow];
+        }
+        return [...widgets, ...newNodes];
+      })();
+      
+      const updatedEdges = [...edges, ...finalEdges];
+      
+      setWidgets(updatedWidgets);
+      setEdges(updatedEdges);
+
+      // If developing existing project, save it automatically
+      if (isDevelopingExisting && referenceProject) {
+        // Update the reference project with new nodes
+        const updatedProject: SavedFlowProject = {
+          ...referenceProject,
+          widgets: updatedWidgets,
+          edges: updatedEdges,
+          updatedAt: new Date().toISOString(),
+        };
+        
+        // Save to storage
+        if (user) {
+          const savedProjects = loadSavedProjects(user.id);
+          const updatedProjects = savedProjects.map((p) =>
+            p.id === referenceProject.id ? updatedProject : p
+          );
+          const userKey = `${FLOW_PROJECTS_KEY}.${user.id}`;
+          localStorage.setItem(userKey, JSON.stringify(updatedProjects));
+          setSavedProjects(updatedProjects);
+        }
+        setReferenceProject(updatedProject);
+        
+        toast.success(`Added to ${referenceProject.name}`);
+      } else {
+        // Only reset view/transform if it's a fresh project
+        if (widgets.length === 0) {
+          setCanvasTransform({ translateX: 100, translateY: 100, scale: 0.8 });
+          setCurrentProjectId(null);
+          setProjectName(`${selectedDomain} Flow Template`);
+        } else {
+          toast.success(`${selectedDomain} Flow added to workspace`);
+        }
+      }
+
+      // Don't switch to workspace if we have a reference project - keep split view
+      if (!referenceProject) {
+        setViewMode("workspace");
+      }
+      setIsLoading(false);
+      setShowCategories(false);
+      setLandingChatInput(""); // Clear input after generation
+    }, 300);
+  };
+
   const handleLoadTemplate = (templateType: "Website" | "App" | "Game") => {
     setIsLoading(true);
     setActiveDomain(templateType);
@@ -706,14 +1298,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       // UPDATED: Append nodes instead of replacing, generate unique IDs
       const { newNodes, newEdges } = generateUniqueNodesAndEdges(rawNodes, rawEdges, widgets);
 
-      setWidgets((prev) => ensurePromptWindowPresence([...prev, ...newNodes]));
+      // ENSURE ONLY ONE PROMPT WINDOW - Remove duplicates
+      const allNodes = [...widgets, ...newNodes];
+      const cleanedNodes = ensurePromptWindowPresence(allNodes);
+      setWidgets(cleanedNodes);
       setEdges((prev) => [...prev, ...newEdges]);
 
       // Only reset view/transform if it's a fresh project
       if (widgets.length === 0) {
-        setCanvasTransform({ translateX: 100, translateY: 100, scale: 0.8 });
         setCurrentProjectId(null);
         setProjectName(`${templateType} Flow Template`);
+        
+        // Fit view to show all nodes with padding
+        setTimeout(() => {
+          // ENSURE ONLY ONE PROMPT WINDOW
+          const allNodes = ensurePromptWindowPresence([...widgets, ...newNodes]);
+          setWidgets(allNodes); // Update widgets to ensure single Prompt Window
+          fitViewToNodes(allNodes);
+        }, 200);
       } else {
         toast.success(`${templateType} Flow added to workspace`);
       }
@@ -884,11 +1486,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [user, widgets, viewMode, saveCurrentProject]);
 
+  // Load saved projects when user is available
+  useEffect(() => {
+    if (user) {
+      const projects = loadSavedProjects(user.id);
+      setSavedProjects(projects);
+    } else {
+      setSavedProjects([]);
+    }
+  }, [user]);
+
   const loadProject = (project: SavedFlowProject) => {
     setCurrentProjectId(project.id);
     setProjectName(project.name);
     setActiveDomain(project.domain);
-    setWidgets(ensurePromptWindowPresence(project.widgets));
+    setWidgets(project.widgets); // Load project widgets as-is, don't force prompt window
     setEdges(project.edges);
     if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
     if (project.mainPromptState) setMainPromptState(project.mainPromptState);
@@ -907,7 +1519,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const createNewProject = () => {
     setCurrentProjectId(null);
     setProjectName("Untitled Project");
-    setWidgets(ensurePromptWindowPresence([]));
+    setWidgets([]); // Start with empty workspace
     setEdges([]);
     setNodeOutputMap({});
     setMainPromptState({ sections: [], combinedPrompt: "" });
@@ -938,6 +1550,83 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const buildPromptForPromptNode = useCallback(
     (promptNodeId: string, allWidgets: Widget[], allEdges: Edge[]): string => {
+      // Special handling for "Step 7 - Prompt Structure" node (website-prompt-output)
+      // This node should aggregate all website node data from GLOBAL STATE
+      if (promptNodeId === "website-prompt-output" || 
+          allWidgets.find(w => w.id === promptNodeId)?.title === "Step 7 – Prompt Structure") {
+        const hasWebsiteSections = allWidgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
+        if (hasWebsiteSections) {
+          // Use global state to build spec
+          const spec: WebsiteSpec = {};
+          
+          // Get data from global state
+          if (nodeData.userInput) {
+            spec.userInput = nodeData.userInput;
+          }
+          
+          if (nodeData.brandIdentity) {
+            spec.brandIdentity = {
+              title: "Brand Identity",
+              fields: {
+                primaryColor: nodeData.brandIdentity.primaryColor || "",
+                secondaryColor: nodeData.brandIdentity.secondaryColor || "",
+                accentColor: nodeData.brandIdentity.accentColor || "",
+                fontFamily: nodeData.brandIdentity.fontFamily || "",
+                styleMood: nodeData.brandIdentity.styleMood || "",
+                toneOfVoice: nodeData.brandIdentity.toneOfVoice || "",
+              },
+            };
+          }
+          
+          if (nodeData.websitePurpose) {
+            spec.websitePurpose = {
+              title: "Website Purpose",
+              fields: {
+                problem: nodeData.websitePurpose.problem || "",
+                targetAudience: nodeData.websitePurpose.targetAudience || "",
+                goals: nodeData.websitePurpose.goals || "",
+              },
+            };
+          }
+          
+          if (nodeData.seoStructure) {
+            spec.seoStructure = {
+              title: "SEO & Structure",
+              fields: {
+                keywords: nodeData.seoStructure.keywords || "",
+                metaDescriptions: nodeData.seoStructure.metaDescriptions || "",
+                pageStructure: nodeData.seoStructure.pageStructure || "",
+              },
+            };
+          }
+          
+          if (nodeData.functionalRequirements) {
+            spec.functionalRequirements = {
+              title: "Functional Requirements",
+              fields: {
+                ctas: nodeData.functionalRequirements.ctas || "",
+                animations: nodeData.functionalRequirements.animations || "",
+                layouts: nodeData.functionalRequirements.layouts || "",
+              },
+            };
+          }
+          
+          if (nodeData.contentInputs) {
+            spec.contentInputs = {
+              title: "Content Inputs",
+              fields: {
+                copy: nodeData.contentInputs.copy || "",
+                offers: nodeData.contentInputs.offers || "",
+                references: nodeData.contentInputs.references || "",
+              },
+            };
+          }
+          
+          return generateWebsitePrompt(spec);
+        }
+      }
+
+      // Default behavior: collect data from connected nodes via edges
       const incomingEdges = allEdges.filter((edge) => edge.target === promptNodeId);
       const connectedNodes = incomingEdges
         .map((edge) => allWidgets.find((widget) => widget.id === edge.source))
@@ -957,16 +1646,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         .filter(Boolean)
         .join("\n\n");
     },
-    [],
+    [nodeData],
   );
 
+  // Auto-update prompt nodes (including Step 7 - Prompt Structure)
+  // REACTIVE: Updates whenever widgets, edges, OR global state changes
   useEffect(() => {
     const promptNodes = widgets.filter((widget) => widget.isPromptNode);
-    if (promptNodes.length === 0) return;
+    const step7Node = widgets.find((w) => w.id === "website-prompt-output" || w.title === "Step 7 – Prompt Structure");
+    
+    // Include Step 7 node even if it doesn't have isPromptNode flag
+    const nodesToUpdate = step7Node && !promptNodes.includes(step7Node) 
+      ? [...promptNodes, step7Node]
+      : promptNodes;
+    
+    if (nodesToUpdate.length === 0) return;
 
     let changed = false;
     const updatedWidgets = widgets.map((widget) => {
-      if (!widget.isPromptNode) return widget;
+      const isPromptNode = widget.isPromptNode || widget.id === "website-prompt-output" || widget.title === "Step 7 – Prompt Structure";
+      if (!isPromptNode) return widget;
 
       const builtPrompt = buildPromptForPromptNode(widget.id, widgets, edges);
       const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
@@ -979,7 +1678,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (changed) {
       setWidgets(updatedWidgets);
     }
-  }, [widgets, edges, buildPromptForPromptNode]);
+  }, [widgets, edges, buildPromptForPromptNode, nodeData]); // Added nodeData dependency for reactivity
 
   // --- Content Generation Functions (Simplified for brevity) ---
   const generateIdeaSummary = (userInput: string) => ({ generatedText: "Summary...", jsonPayload: {} });
@@ -993,8 +1692,196 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Missing Helper Functions ---
   const updateWidget = (widgetId: string, field: string, value: any) => {
-    setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, [field]: value } : w)));
+    setWidgets((prev) => {
+      const updated = prev.map((w) => (w.id === widgetId ? { ...w, [field]: value } : w));
+      const widget = updated.find(w => w.id === widgetId);
+      
+      // BROADCAST TO GLOBAL STATE - Flowise-like node communication
+      if (widget) {
+        // Update global state based on node type and field
+        if (widgetId === "website-user-input" && field === "content") {
+          updateNodeData(widgetId, { userInput: value });
+        } else if (widgetId === "website-brand-identity" && field === "brandIdentityData") {
+          if (value?.fields) {
+            updateNodeData(widgetId, {
+              brandIdentity: {
+                primaryColor: value.fields.primaryColor || "",
+                secondaryColor: value.fields.secondaryColor || "",
+                accentColor: value.fields.accentColor || "",
+                fontFamily: value.fields.fontFamily || "",
+                styleMood: value.fields.styleMood || "",
+                toneOfVoice: value.fields.toneOfVoice || "",
+              },
+            });
+          }
+        } else if (widget.type === "website-section" && field === "websiteData") {
+          if (value?.fields) {
+            if (widgetId === "website-purpose") {
+              updateNodeData(widgetId, {
+                websitePurpose: {
+                  problem: value.fields.problem || "",
+                  targetAudience: value.fields.targetAudience || "",
+                  goals: value.fields.goals || "",
+                },
+              });
+            } else if (widgetId === "website-seo-structure") {
+              updateNodeData(widgetId, {
+                seoStructure: {
+                  keywords: value.fields.keywords || "",
+                  metaDescriptions: value.fields.metaDescriptions || "",
+                  pageStructure: value.fields.pageStructure || "",
+                },
+              });
+            } else if (widgetId === "website-functional-requirements") {
+              updateNodeData(widgetId, {
+                functionalRequirements: {
+                  ctas: value.fields.ctas || "",
+                  animations: value.fields.animations || "",
+                  layouts: value.fields.layouts || "",
+                },
+              });
+            } else if (widgetId === "website-content-inputs") {
+              updateNodeData(widgetId, {
+                contentInputs: {
+                  copy: value.fields.copy || "",
+                  offers: value.fields.offers || "",
+                  references: value.fields.references || "",
+                },
+              });
+            }
+          }
+        }
+      }
+      
+      return updated;
+    });
   };
+
+  // SYNC WIDGETS TO GLOBAL STATE - Initialize global state from loaded widgets
+  useEffect(() => {
+    widgets.forEach((widget) => {
+      if (widget.id === "website-user-input" && widget.content) {
+        updateNodeData(widget.id, { userInput: widget.content });
+      } else if (widget.id === "website-brand-identity" && widget.brandIdentityData?.fields) {
+        updateNodeData(widget.id, {
+          brandIdentity: {
+            primaryColor: widget.brandIdentityData.fields.primaryColor || "",
+            secondaryColor: widget.brandIdentityData.fields.secondaryColor || "",
+            accentColor: widget.brandIdentityData.fields.accentColor || "",
+            fontFamily: widget.brandIdentityData.fields.fontFamily || "",
+            styleMood: widget.brandIdentityData.fields.styleMood || "",
+            toneOfVoice: widget.brandIdentityData.fields.toneOfVoice || "",
+          },
+        });
+      } else if (widget.type === "website-section" && widget.websiteData?.fields) {
+        if (widget.id === "website-purpose") {
+          updateNodeData(widget.id, {
+            websitePurpose: {
+              problem: widget.websiteData.fields.problem || "",
+              targetAudience: widget.websiteData.fields.targetAudience || "",
+              goals: widget.websiteData.fields.goals || "",
+            },
+          });
+        } else if (widget.id === "website-seo-structure") {
+          updateNodeData(widget.id, {
+            seoStructure: {
+              keywords: widget.websiteData.fields.keywords || "",
+              metaDescriptions: widget.websiteData.fields.metaDescriptions || "",
+              pageStructure: widget.websiteData.fields.pageStructure || "",
+            },
+          });
+        } else if (widget.id === "website-functional-requirements") {
+          updateNodeData(widget.id, {
+            functionalRequirements: {
+              ctas: widget.websiteData.fields.ctas || "",
+              animations: widget.websiteData.fields.animations || "",
+              layouts: widget.websiteData.fields.layouts || "",
+            },
+          });
+        } else if (widget.id === "website-content-inputs") {
+          updateNodeData(widget.id, {
+            contentInputs: {
+              copy: widget.websiteData.fields.copy || "",
+              offers: widget.websiteData.fields.offers || "",
+              references: widget.websiteData.fields.references || "",
+            },
+          });
+        }
+      }
+    });
+  }, []); // Only run once on mount to initialize from loaded widgets
+
+  // Handler for resizing nodes using ResizableNode component
+  const onResizeNode = useCallback((id: string, width: number, height: number) => {
+    setWidgets((prev) =>
+      prev.map((widget) =>
+        widget.id === id
+          ? {
+              ...widget,
+              width,
+              height,
+            }
+          : widget
+      )
+    );
+  }, []);
+
+  const handleResizeNode = useCallback((id: string, width: number, height: number) => {
+    setWidgets((prev) =>
+      prev.map((w) =>
+        w.id === id
+          ? {
+              ...w,
+              width,
+              height,
+            }
+          : w
+      )
+    );
+  }, []);
+
+  // Fit view to show all nodes (auto-layout helper)
+  const fitViewToNodes = useCallback((nodesToFit: Widget[]) => {
+    if (nodesToFit.length === 0) return;
+    
+    // Calculate bounding box
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    
+    nodesToFit.forEach((node) => {
+      minX = Math.min(minX, node.x);
+      minY = Math.min(minY, node.y);
+      maxX = Math.max(maxX, node.x + (node.width || 320));
+      maxY = Math.max(maxY, node.y + (node.height || 280));
+    });
+    
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    // Get viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate scale to fit with padding
+    const padding = 0.4; // 40% padding for more breathing room
+    const scaleX = (viewportWidth * (1 - padding * 2)) / width;
+    const scaleY = (viewportHeight * (1 - padding * 2)) / height;
+    const scale = Math.min(scaleX, scaleY, 1.0); // Don't zoom in beyond 1.0
+    
+    // Center the view
+    const translateX = viewportWidth / 2 - centerX * scale;
+    const translateY = viewportHeight / 2 - centerY * scale;
+    
+    setCanvasTransform({
+      translateX,
+      translateY,
+      scale,
+    });
+  }, []);
 
   const handleCategoryAdd = (category: Category) => {
     const newWidget: Widget = {
@@ -1057,55 +1944,178 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Flow Preset Creators ---
   const createWebsiteFlowPreset = () => {
+    // Simple linear pipeline layout with proper spacing
+    const startX = -200; // Shift slightly left so the pipeline is centered
+    const startY = 40; // A bit below the very top
+    const horizontalGap = 380; // MORE space between steps
+    const outputRowOffset = 340; // MORE vertical space between rows
+
     const nodes: Widget[] = [
+      // Main pipeline row
       {
-        id: "flow-input-1",
+        id: "website-user-input",
         type: "flow-input",
-        title: "User Input",
-        x: 50,
-        y: 200,
+        title: "Step 1 – User Input",
+        placeholder: "Describe the website / client / product...",
+        x: startX,
+        y: startY,
         width: 320,
-        height: 420,
+        height: 200,
         content: "",
       },
       {
-        id: "flow-text-1",
-        type: "flow-text-gen",
-        title: "Idea Summary",
-        x: 420,
-        y: 80,
-        width: 320,
-        height: 300,
-        content: "",
-      },
-      {
-        id: "flow-text-2",
-        type: "flow-text-gen",
-        title: "Page Structure",
-        x: 420,
-        y: 340,
-        width: 320,
-        height: 380,
-        content: "",
-      },
-      {
-        id: "flow-text-final",
-        type: "flow-text-gen",
-        title: "Prompt Output",
-        x: 780,
-        y: 200,
+        id: "website-brand-identity",
+        type: "brandIdentity",
+        title: "Step 2 – Brand Identity",
+        x: startX + horizontalGap * 1,
+        y: startY,
         width: 360,
-        height: 440,
+        height: 400,
+        brandIdentityData: {
+          title: "Brand Identity",
+          fields: {
+            primaryColor: "#3B82F6",
+            secondaryColor: "#0F172A",
+            accentColor: "#F97316",
+            fontFamily: AVAILABLE_FONTS[0].value,
+            styleMood: "",
+            toneOfVoice: "",
+          },
+        },
+      },
+      {
+        id: "website-purpose",
+        type: "website-section",
+        title: "Step 3 – Website Purpose",
+        x: startX + horizontalGap * 2,
+        y: startY,
+        width: 320,
+        height: 280,
+        websiteData: {
+          title: "Website Purpose",
+          fields: {
+            problem: "",
+            targetAudience: "",
+            goals: "",
+          },
+        },
+      },
+      {
+        id: "website-seo-structure",
+        type: "website-section",
+        title: "Step 4 – SEO & Structure",
+        x: startX + horizontalGap * 3,
+        y: startY,
+        width: 320,
+        height: 280,
+        websiteData: {
+          title: "SEO & Structure",
+          fields: {
+            keywords: "",
+            metaDescriptions: "",
+            pageStructure: "",
+          },
+        },
+      },
+      {
+        id: "website-functional-requirements",
+        type: "website-section",
+        title: "Step 5 – Functional Requirements",
+        x: startX + horizontalGap * 4,
+        y: startY,
+        width: 320,
+        height: 280,
+        websiteData: {
+          title: "Functional Requirements",
+          fields: {
+            ctas: "",
+            animations: "",
+            layouts: "",
+          },
+        },
+      },
+      {
+        id: "website-content-inputs",
+        type: "website-section",
+        title: "Step 6 – Content Inputs",
+        x: startX + horizontalGap * 5,
+        y: startY,
+        width: 320,
+        height: 280,
+        websiteData: {
+          title: "Content Inputs",
+          fields: {
+            copy: "",
+            offers: "",
+            references: "",
+          },
+        },
+      },
+
+      // Output row (below the main pipeline, clearly separated)
+      {
+        id: "website-prompt-output",
+        type: "flow-text-gen",
+        title: "Step 7 – Prompt Structure",
+        x: startX + horizontalGap * 2,
+        y: startY + outputRowOffset,
+        width: 400,
+        height: 600,
         content: PROMPT_PLACEHOLDER,
         isPromptNode: true,
       },
+      {
+        id: "website-prompt-window",
+        type: "prompt-window",
+        title: "Step 8 – Final Website Prompt",
+        x: startX + horizontalGap * 4,
+        y: startY + outputRowOffset,
+        width: 400,
+        height: 600,
+        content: "",
+        promptMode: "preview",
+      },
     ];
+
+    // Simple linear pipeline edges
     const edges: Edge[] = [
-      { id: "e1", source: "flow-input-1", target: "flow-text-1" },
-      { id: "e2", source: "flow-input-1", target: "flow-text-2" },
-      { id: "e3", source: "flow-text-1", target: "flow-text-final" },
-      { id: "e4", source: "flow-text-2", target: "flow-text-final" },
+      {
+        id: "e-1-user-to-brand",
+        source: "website-user-input",
+        target: "website-brand-identity",
+      },
+      {
+        id: "e-2-brand-to-purpose",
+        source: "website-brand-identity",
+        target: "website-purpose",
+      },
+      {
+        id: "e-3-purpose-to-seo",
+        source: "website-purpose",
+        target: "website-seo-structure",
+      },
+      {
+        id: "e-4-seo-to-functional",
+        source: "website-seo-structure",
+        target: "website-functional-requirements",
+      },
+      {
+        id: "e-5-functional-to-content",
+        source: "website-functional-requirements",
+        target: "website-content-inputs",
+      },
+      {
+        id: "e-6-content-to-output",
+        source: "website-content-inputs",
+        target: "website-prompt-output",
+      },
+      {
+        id: "e-7-output-to-window",
+        source: "website-prompt-output",
+        target: "website-prompt-window",
+      },
     ];
+
     return { nodes, edges };
   };
 
@@ -1342,7 +2352,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Drag/Resize/Move Logic ---
   const handleMouseDown = (e: React.MouseEvent, widgetId: string, action: "move" | "resize") => {
-    if ((e.target as HTMLElement).closest("textarea, input, button")) return;
+    // Don't handle if clicking on interactive elements or connection handles
+    if ((e.target as HTMLElement).closest("textarea, input, button, .flow-handle")) return;
     e.stopPropagation();
 
     // Prevent dragging if in Hand or Text mode
@@ -1419,17 +2430,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 }
               : null,
           );
-        } else if (draggingHandle) {
-          // Check if dragged far enough from handle to disconnect
-          const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
-
+        } else if (connecting || draggingHandle) {
+          // Update mouse position for connection line when dragging from handle
           const canvasX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
           const canvasY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
+          setMousePosition({ x: canvasX, y: canvasY });
 
+          if (draggingHandle) {
+            // Check if dragged far enough from handle to disconnect
+            const handlePos = getHandlePosition(draggingHandle.nodeId, draggingHandle.handleType, widgets);
           const distance = Math.sqrt(Math.pow(canvasX - handlePos.x, 2) + Math.pow(canvasY - handlePos.y, 2));
 
           // If dragged more than 50px away, disconnect (will be finalized on mouse up)
           // Visual feedback: show disconnection state
+          }
         } else if (dragging && lastDragPos && activeTool === "select") {
           // Calculate delta movement
           const dx = (e.clientX - lastDragPos.x) / canvasTransform.scale;
@@ -1563,13 +2577,19 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         setDraggingHandle(null);
       }
 
+      // Cancel connection if mouse is released without connecting
+      if (connecting) {
+        setConnecting(null);
+        setMousePosition(null);
+      }
+
       setDragging(null);
       setLastDragPos(null);
       setResizing(null);
       setPanning(null);
     };
 
-    if (panning || dragging || resizing || draggingHandle || selectionBox) {
+    if (panning || dragging || resizing || draggingHandle || selectionBox || connecting) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     }
@@ -1612,6 +2632,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     // Prevent double-click issues
     if (e.detail > 1) return; // Ignore double-clicks
 
+    // Calculate initial mouse position in canvas coordinates
+    const canvasX = (e.clientX - canvasTransform.translateX) / canvasTransform.scale;
+    const canvasY = (e.clientY - canvasTransform.translateY) / canvasTransform.scale;
+    setMousePosition({ x: canvasX, y: canvasY });
+
     // Start dragging handle - can be used to disconnect by dragging away
     setDraggingHandle({
       nodeId,
@@ -1640,6 +2665,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
       setConnecting(null);
       setDraggingHandle(null);
+      setMousePosition(null);
     }
   };
 
@@ -1648,6 +2674,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const target = e.target as HTMLElement;
     if (connecting && !target.closest(".flow-handle, .widget-container")) {
       setConnecting(null);
+      setMousePosition(null);
     }
   };
 
@@ -1661,22 +2688,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     if (!widget) return { x: 0, y: 0 };
 
     const handleY = widget.y + widget.height / 2; // Center vertically
-    // Handles are positioned at -4.5px from edge (half of 9px handle width)
-    const handleX = handleType === "input" ? widget.x - 4.5 : widget.x + widget.width + 4.5;
 
+    // For prompt window, balls are centered on the edge (half outside, half inside)
+    // For other nodes, balls are positioned at -7px from edge (half of 14px ball diameter)
+    if (widget.type === "prompt-window") {
+      const handleX = handleType === "input" ? widget.x : widget.x + widget.width;
     return { x: handleX, y: handleY };
+    } else {
+      const handleX = handleType === "input" ? widget.x - 7 : widget.x + widget.width + 7;
+      return { x: handleX, y: handleY };
+    }
   };
 
   // --- RENDER ---
   return (
-    <div className="h-screen bg-[#050509] text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
+    <div className="h-screen bg-black text-neutral-200 relative flex flex-col font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       <AnimatePresence mode="wait">
         {viewMode === "landing" ? (
           // --- LANDING VIEW ---
           <motion.main
             key="landing"
             exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-            className="flex-1 flex flex-col items-center p-4 w-full max-w-4xl mx-auto z-10 pt-24 text-center min-h-screen overflow-y-auto no-scrollbar"
+            className="flex-1 flex flex-col min-h-screen overflow-y-auto relative"
           >
             {/* Home Button - Top Left */}
             <button
@@ -1684,7 +2717,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 if (onBack) onBack();
                 else navigate("/");
               }}
-              className="absolute top-6 left-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+              className="absolute top-6 left-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
             >
               <Home size={20} />
               <span className="text-sm font-medium pr-1">Home</span>
@@ -1694,7 +2727,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             {user ? (
               <button
                 onClick={createNewProject}
-                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
               >
                 <Plus size={20} />
                 <span className="text-sm font-medium pr-1">Project</span>
@@ -1702,70 +2735,270 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             ) : (
               <button
                 onClick={login}
-                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans"
+                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
               >
                 <LogIn size={20} />
                 <span className="text-sm font-medium pr-1">Sign in</span>
               </button>
             )}
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12 w-full">
-              <motion.h1
-                className="text-3xl md:text-4xl font-bold tracking-tight text-white pb-6"
-                style={{
-                  fontFamily:
-                    '"SF Pro Display", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                }}
+            {/* Main Content Container - Centered with max-width */}
+            <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="flex flex-col gap-8"
               >
-                What are we building today?
-              </motion.h1>
+                {/* 1. Beymflow Brand Section */}
+                <div className="flex items-center justify-center gap-0 mt-4 mb-3 w-full max-w-3xl mx-auto">
+                  <img
+                    src="/images/BeymflowlogoREAL.png"
+                    alt="Beymflow Logo"
+                    className="h-20 w-auto object-contain -ml-2"
+                  />
+                  <span className="text-white font-semibold text-4xl -ml-1">
+                    Beymflow
+                  </span>
+                </div>
 
-              {/* Main Selection Grid */}
-              <div className="flex flex-wrap justify-center gap-4">
-                {suggestionChips.map((chip) => {
-                  const Icon = chip.icon;
-
-                  return (
-                    <button
-                      key={chip.label}
-                      onClick={() => !isLoading && handleDomainSelection(chip.label)}
-                      disabled={isLoading}
-                      className={`
-                        px-8 py-4 rounded-xl bg-neutral-900 border border-neutral-800 
-                        text-neutral-300 hover:bg-neutral-800 hover:text-white hover:border-neutral-700 
-                        transition-all cursor-pointer font-sans 
-                        flex flex-col items-center gap-3 group min-w-[140px]
-                        ${isLoading ? "opacity-50 cursor-wait" : ""}
-                      `}
+                {/* 2. Prompt Input Section */}
+                <div className="w-full max-w-4xl mx-auto">
+                  <div className="relative">
+                    <GlowingEffect
+                      spread={60}
+                      glow
+                      disabled={true}
+                      proximity={40}
+                      inactiveZone={0.2}
+                      borderWidth={3}
+                      className="opacity-70 rounded-[2rem]"
+                      variant="default"
+                    />
+                    <div
+                      className={cn(
+                        "relative bg-transparent rounded-[2rem] px-3 sm:px-4 border border-white/10 transition-all duration-300",
+                        selectedMode ? "py-4 flex flex-col gap-2" : "py-3 flex items-start gap-2 sm:gap-3"
+                      )}
+                      ref={landingChatContainerRef}
                     >
-                      {isLoading && activeDomain === chip.label ? (
-                        <div className="w-8 h-8 border-2 border-neutral-500 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <Icon className="w-8 h-8 text-neutral-500 group-hover:text-white transition-colors" />
+                      {/* SINGLE MODE CHIP – only visible if a mode is selected */}
+                      {selectedMode && (
+                        <div className="flex items-center">
+                          {MODES.filter((m) => m.id === selectedMode).map((mode) => {
+                            const Icon = mode.icon;
+                            return (
+                              <div
+                                key={mode.id}
+                                className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-white/10 text-white/90 border border-white/10 text-xs md:text-sm"
+                              >
+                                <Icon className="w-4 h-4" />
+                                <span>{mode.label}</span>
+                                {/* X BUTTON TO REMOVE MODE */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedMode(null);
+                                    setActiveDomain("Website"); // Reset to default
+                                    setLandingChatInput(""); // Clear input when mode is removed
+                                  }}
+                                  className="ml-2 flex items-center justify-center w-4 h-4 text-white/70 hover:text-white/90 transition"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
 
-                      <span className="text-sm font-medium">{chip.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                      {/* BOTTOM ROW: INPUT */}
+                      <div className="flex items-start gap-2 sm:gap-3 w-full">
+                        <div className="pt-2 relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowProjectsDropdown(!showProjectsDropdown)}
+                            className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0"
+                          >
+                            <Paperclip className="w-4 h-4" />
+                          </button>
+                          
+                          {/* Projects Dropdown */}
+                          {showProjectsDropdown && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setShowProjectsDropdown(false)}
+                              />
+                              <div className="absolute top-full left-0 mt-2 bg-black rounded-xl p-2 min-w-[180px] z-50 max-h-96 overflow-y-auto border border-white/10">
+                                {savedProjects.length > 0 ? (
+                                  <div className="space-y-1">
+                                    {savedProjects.map((project) => (
+                                      <button
+                                        key={project.id}
+                                        onClick={() => {
+                                          setReferenceProject(project);
+                                          setCurrentProjectId(project.id);
+                                          setProjectName(project.name);
+                                          setActiveDomain(project.domain);
+                                          const modeMap: Record<"Website" | "App" | "Game", "website" | "app" | "game"> = {
+                                            Website: "website",
+                                            App: "app",
+                                            Game: "game",
+                                          };
+                                          setSelectedMode(modeMap[project.domain]);
+                                          setWidgets(project.widgets);
+                                          setEdges(project.edges);
+                                          if (project.nodeOutputMap) setNodeOutputMap(project.nodeOutputMap);
+                                          if (project.mainPromptState) setMainPromptState(project.mainPromptState);
+                                          if (project.canvasTransform) setCanvasTransform(project.canvasTransform);
+                                          setShowProjectsDropdown(false);
+                                        }}
+                                        className="w-full text-left flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
+                                      >
+                                        <FolderKanban className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                                        <span className="transition-all duration-300 group-hover:font-semibold truncate">{project.name}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-white/50">
+                                    No projects yet
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
 
-              {/* NEW: Tabs for Projects vs Templates */}
-              <div className="w-full mt-12 mb-6">
-                <div className="flex items-center justify-center gap-6 border-b border-neutral-800 pb-2">
+                        {/* Text Input */}
+                        <div className="relative flex-1 min-w-0">
+                          {!landingChatInput && !landingIsFocused && (
+                            <div className="absolute inset-0 flex items-center pointer-events-none z-0">
+                              <span className="text-sm sm:text-base text-white/50 leading-relaxed">
+                                {selectedMode === "website"
+                                  ? "Generate a prompt for a website…"
+                                  : selectedMode === "app"
+                                  ? "Generate a prompt for an app…"
+                                  : selectedMode === "game"
+                                  ? "Generate a prompt for a game…"
+                                  : "Generate a prompt for your project…"}
+                              </span>
+                            </div>
+                          )}
+                          <textarea
+                            ref={landingChatTextareaRef}
+                            value={landingChatInput}
+                            onChange={(e) => setLandingChatInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                if (!isLoading && landingChatInput.trim()) {
+                                  handleGenerateTemplateFromInput(landingChatInput.trim());
+                                }
+                              }
+                            }}
+                            onFocus={() => setLandingIsFocused(true)}
+                            onBlur={() => setLandingIsFocused(false)}
+                            placeholder=""
+                            rows={1}
+                            className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white placeholder:text-white/50 resize-none overflow-hidden py-2 leading-relaxed text-left"
+                            style={{ minHeight: "24px", maxHeight: "200px" }}
+                            maxLength={2000}
+                          />
+                        </div>
+
+                        {/* Send Button */}
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!isLoading && landingChatInput.trim()) {
+                                handleGenerateTemplateFromInput(landingChatInput.trim());
+                              }
+                            }}
+                            disabled={isLoading || !landingChatInput.trim()}
+                            className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
+                          >
+                            {isLoading ? (
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            ) : (
+                              <SquareStack className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Bottom Mode Buttons - Outside but linked to the same state */}
+                <div className="mt-6 flex items-center justify-center gap-4">
+                  {MODES.map((mode) => {
+                    const Icon = mode.icon;
+                    return (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => {
+                          const domainMap: Record<"website" | "app" | "game", "Website" | "App" | "Game"> = {
+                            website: "Website",
+                            app: "App",
+                            game: "Game",
+                          };
+                          setSelectedMode(mode.id as Exclude<ModeId, null>);
+                          setActiveDomain(domainMap[mode.id]);
+                          setLandingChatInput(""); // Clear input when mode changes
+                        }}
+                        disabled={isLoading}
+                        className="flex items-center gap-2 rounded-full px-6 py-2 text-sm bg-white/5 border border-white/15 hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Icon className="w-4 h-4 text-white/70" />
+                        <span className="text-white/70">{mode.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 4. Tabs (My Projects / Templates) */}
+                <div className="flex items-center justify-center gap-6 pb-2 relative">
                   <button
-                    onClick={() => setLandingTab("projects")}
+                    ref={projectsTabRef}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setLandingTab("projects");
+                      if (projectsTabRef.current) {
+                        setActiveTabWidth(projectsTabRef.current.offsetWidth);
+                      }
+                    }}
                     className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
                       landingTab === "projects" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
                     }`}
                   >
                     My Projects
                     {landingTab === "projects" && (
-                      <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500" />
+                      <motion.div 
+                        layoutId="activeTab" 
+                        initial={false}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 500, 
+                          damping: 30,
+                          mass: 0.5
+                        }}
+                        className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
+                        style={{ width: activeTabWidth || "auto" }}
+                      />
                     )}
                   </button>
                   <button
-                    onClick={() => setLandingTab("templates")}
+                    ref={templatesTabRef}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setLandingTab("templates");
+                      if (templatesTabRef.current) {
+                        setActiveTabWidth(templatesTabRef.current.offsetWidth);
+                      }
+                    }}
                     className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
                       landingTab === "templates" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
                     }`}
@@ -1774,62 +3007,84 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     {landingTab === "templates" && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                        initial={false}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 500, 
+                          damping: 30,
+                          mass: 0.5
+                        }}
+                        className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
+                        style={{ width: activeTabWidth || "auto" }}
                       />
                     )}
                   </button>
                 </div>
-              </div>
 
-              {/* Saved Projects Section */}
-              {landingTab === "projects" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="w-full"
-                >
-                  {user && savedProjects.length > 0 ? (
-                    <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 5. Cards Container - Left-aligned grid */}
+                <div className="w-full pb-20">
+                  <AnimatePresence mode="wait">
+                    {landingTab === "projects" ? (
+                      <motion.div
+                        key="projects"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full"
+                      >
+                        {user && savedProjects.length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {savedProjects.map((project) => {
                           const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
                           return (
+                              <div key={project.id} className="min-h-[11rem]">
+                                <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                             <div
-                              key={project.id}
-                              className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                                    className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                    style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                               onClick={() => loadProject(project)}
                             >
-                              <div className="flex items-start justify-between mb-3">
-                                <DomainIcon className="w-5 h-5 text-neutral-500" />
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteProject(project.id);
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                              <h3 className="text-sm font-medium text-white truncate mb-1">{project.name}</h3>
-                              <p className="text-xs text-neutral-500">
-                                {new Date(project.updatedAt).toLocaleDateString()}
-                              </p>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteProject(project.id);
+                                      }}
+                                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                    <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                                      <div className="flex flex-col gap-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                            <DomainIcon className="w-5 h-5 text-white" />
+                                          </div>
+                                          <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{project.name}</h3>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <p className="text-xs text-neutral-500">
+                                            {new Date(project.updatedAt).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                             </div>
                           );
                         })}
                       </div>
-                    </>
                   ) : (
-                    <div className="text-neutral-500 py-10">
+                        <div className="text-neutral-500 py-20 text-center">
                       {user ? "No saved projects yet." : "Sign in to see your projects."}
                     </div>
                   )}
 
                   {/* Login prompt for non-logged in users */}
                   {!user && (
-                    <div className="w-full mt-4">
+                        <div className="w-full mt-8">
                       <div className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800 text-center">
                         <LogIn className="w-8 h-8 text-neutral-500 mx-auto mb-3" />
                         <p className="text-neutral-400 mb-4">Sign in to save projects</p>
@@ -1843,101 +3098,149 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     </div>
                   )}
                 </motion.div>
-              )}
-
-              {/* Templates List Section */}
-              {landingTab === "templates" && (
+                  ) : (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
+                      key="templates"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                   className="w-full"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Website Template */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {/* Website Template */}
+                    <div className="min-h-[11rem]">
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                     <div
-                      className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-blue-500/30 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                       onClick={() => !isLoading && handleLoadTemplate("Website")}
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-                          <LayoutTemplate size={20} />
+                          <div className="absolute top-2 right-2 z-20">
+                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
+                              Complete Flow
+                            </div>
+                          </div>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                  <LayoutTemplate className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
+                                  Website Builder Flow
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
+                                  Complete workflow for website design. Includes idea structuring, module planning, and SEO optimization.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="px-2 py-0.5 rounded text-[10px] bg-neutral-800 text-neutral-400 border border-neutral-700">
-                          Complete Flow
-                        </div>
-                      </div>
-                      <h3 className="text-sm font-medium text-white truncate mb-1">Website Builder Flow</h3>
-                      <p className="text-xs text-neutral-500 mb-4">
-                        Complete workflow for website design. Includes idea structuring, module planning, and SEO
-                        optimization.
-                      </p>
-                      <div className="flex items-center text-xs text-blue-400 font-medium group-hover:translate-x-1 transition-transform">
-                        Use template <ArrowRight size={12} className="ml-1" />
                       </div>
                     </div>
 
                     {/* App Template */}
+                    <div className="min-h-[11rem]">
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                     <div
-                      className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-green-500/30 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                       onClick={() => !isLoading && handleLoadTemplate("App")}
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="p-2 bg-green-500/10 rounded-lg text-green-400">
-                          <Smartphone size={20} />
+                          <div className="absolute top-2 right-2 z-20">
+                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
+                              Mobile Flow
+                            </div>
+                          </div>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                  <Smartphone className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
+                                  Mobile App Flow
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
+                                  Mobile app development pipeline. Feature mapping, screen design, and technical requirements.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="px-2 py-0.5 rounded text-[10px] bg-neutral-800 text-neutral-400 border border-neutral-700">
-                          Mobile Flow
-                        </div>
-                      </div>
-                      <h3 className="text-sm font-medium text-white truncate mb-1">Mobile App Flow</h3>
-                      <p className="text-xs text-neutral-500 mb-4">
-                        Mobile app development pipeline. Feature mapping, screen design, and technical requirements.
-                      </p>
-                      <div className="flex items-center text-xs text-green-400 font-medium group-hover:translate-x-1 transition-transform">
-                        Use template <ArrowRight size={12} className="ml-1" />
                       </div>
                     </div>
 
                     {/* Game Template */}
+                    <div className="min-h-[11rem]">
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                     <div
-                      className="group relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-purple-500/30 hover:bg-neutral-800/50 transition-all cursor-pointer text-left"
+                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                       onClick={() => !isLoading && handleLoadTemplate("Game")}
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
-                          <Gamepad2 size={20} />
+                          <div className="absolute top-2 right-2 z-20">
+                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
+                              Game Design
+                            </div>
+                          </div>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                  <Gamepad2 className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
+                                  Game Development Flow
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
+                                  Game design workflow. Concept development, mechanics planning, and technical architecture.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="px-2 py-0.5 rounded text-[10px] bg-neutral-800 text-neutral-400 border border-neutral-700">
-                          Game Design
-                        </div>
-                      </div>
-                      <h3 className="text-sm font-medium text-white truncate mb-1">Game Design Flow</h3>
-                      <p className="text-xs text-neutral-500 mb-4">
-                        Game design workflow. Mechanics, storytelling, characters, and progression loops.
-                      </p>
-                      <div className="flex items-center text-xs text-purple-400 font-medium group-hover:translate-x-1 transition-transform">
-                        Use template <ArrowRight size={12} className="ml-1" />
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
           </motion.main>
         ) : (
           // --- WORKSPACE VIEW ---
           <motion.div
-            key="workspace"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`flex-1 relative w-full h-full flex flex-col bg-[#050509] ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
-          >
+              key="workspace"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`flex-1 relative w-full h-full flex flex-col bg-black ${activeTool === "hand" || isSpacePressed ? "cursor-grab active:cursor-grabbing" : activeTool === "text" ? "cursor-text" : "cursor-default"}`}
+            >
             {/* Top Bar */}
-            <div className="absolute top-0 left-0 right-0 h-14 bg-[#1a1a1d] border-b border-neutral-800 flex items-center justify-between px-4 z-30">
+            <div className="absolute top-0 left-0 right-0 h-14 bg-black border-b border-neutral-800 flex items-center justify-between px-4 z-30">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
-                  onClick={() => setViewMode("landing")}
+                  onClick={() => {
+                    // Save current project before clearing
+                    if (widgets.length > 0 && user) {
+                      saveCurrentProject(true);
+                    }
+                    // Clear workspace when going back to landing
+                    createNewProject();
+                    setViewMode("landing");
+                  }}
                   className="h-8 px-3 rounded-md bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer font-sans text-sm flex-shrink-0"
                 >
                   <ArrowLeft size={16} /> <span>Back</span>
@@ -1946,7 +3249,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="text-base font-medium text-neutral-300 px-2 py-1 bg-transparent border-none outline-none hover:bg-neutral-800 focus:bg-neutral-800 rounded transition-colors truncate max-w-[200px]"
+                  className="text-base font-medium text-neutral-300 px-2 py-1 bg-transparent border-none outline-none rounded transition-colors truncate max-w-[200px]"
                   placeholder="Project name..."
                 />
               </div>
@@ -1985,13 +3288,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   >
                     {/* Font Family */}
                     <select
-                      value={textToolSettings.fontFamily}
+                      value={textToolSettings.fontFamily || AVAILABLE_FONTS[0].value}
                       onChange={(e) => setTextToolSettings((prev) => ({ ...prev, fontFamily: e.target.value }))}
-                      className="bg-neutral-800 text-xs text-white border border-neutral-700 rounded px-2 py-1 outline-none focus:border-blue-500"
+                      className="dark-select"
+                      style={{ fontFamily: textToolSettings.fontFamily || AVAILABLE_FONTS[0].value }}
                     >
                       {AVAILABLE_FONTS.map((font) => (
-                        <option key={font} value={font}>
-                          {font}
+                        <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                          {font.label}
                         </option>
                       ))}
                     </select>
@@ -2124,7 +3428,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
             <div
               ref={canvasRef}
               className="flex-1 relative overflow-hidden z-0 min-h-screen outline-none"
-              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#050509" }}
+              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#000000" }}
               tabIndex={0}
               onMouseDown={handleCanvasMouseDown}
               onWheel={handleCanvasWheel}
@@ -2135,7 +3439,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   zIndex: 0,
-                  backgroundColor: "#050509",
+                  backgroundColor: "#000000",
                   backgroundImage: showBackgroundPattern
                     ? "radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px)"
                     : "none",
@@ -2179,12 +3483,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   const sourcePos = getHandlePosition(edge.source, "output", widgets);
                   const targetPos = getHandlePosition(edge.target, "input", widgets);
                   if (!sourcePos || !targetPos) return null;
+                  
+                  // Smoothstep curve with better control points
+                  const dx = targetPos.x - sourcePos.x;
+                  const dy = targetPos.y - sourcePos.y;
+                  const controlPointOffset = Math.min(Math.abs(dx) * 0.5, 100);
+                  
                   return (
                     <path
                       key={edge.id}
-                      d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${targetPos.x - 50} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
-                      stroke="rgba(148, 163, 184, 0.6)"
-                      strokeWidth="1.5"
+                      d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + controlPointOffset} ${sourcePos.y}, ${targetPos.x - controlPointOffset} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
+                      stroke="rgba(255, 255, 255, 0.25)"
+                      strokeWidth="1"
                       fill="none"
                       style={{ pointerEvents: "none" }}
                     />
@@ -2197,8 +3507,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     return sourcePos ? (
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${mousePosition.x - 50} ${mousePosition.y}, ${mousePosition.x} ${mousePosition.y}`}
-                        stroke="rgba(148, 163, 184, 0.6)"
-                        strokeWidth="1.5"
+                        stroke="rgba(255, 255, 255, 0.3)"
+                        strokeWidth="1"
                         fill="none"
                         style={{ pointerEvents: "none" }}
                       />
@@ -2220,36 +3530,77 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
                   // --- RENDER PROMPT WINDOW ---
                   if (widget.type === "prompt-window") {
-                    const promptContent = livePrompt || "";
-                    const displayContent = widget.promptMode === "preview" ? promptContent : widget.content || promptContent;
-
+                    // PROMPT WINDOW LISTENS ONLY TO PROMPT STRUCTURE (Step 7)
+                    // Find Step 7 - Prompt Structure node
+                    const step7Node = widgets.find(
+                      (w) => w.id === "website-prompt-output" || w.title === "Step 7 – Prompt Structure"
+                    );
+                    
+                    // Get content from Step 7 node (which is continuously updated from global state)
+                    const step7Content = step7Node?.content || "";
+                    
+                    // For website flows, always use Step 7 content in preview mode
+                    const hasWebsiteSections = widgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
+                    const promptContent = hasWebsiteSections ? step7Content : (livePrompt || "");
+                    
+                    // In preview mode, always show Step 7 content (real-time updates)
+                    // In edit mode, allow manual editing
+                    const displayContent = widget.promptMode === "preview" 
+                      ? promptContent 
+                      : widget.content || promptContent;
+                    
                     return (
                       <div
                         key={widget.id}
-                        className={`absolute bg-[#1b1b1e] border rounded-xl flex flex-col font-sans widget-container overflow-hidden shadow-2xl ${
-                          isSelected
-                            ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-30"
-                            : "border-neutral-700 hover:border-neutral-500 z-20"
-                        }`}
-                        style={{ left: widget.x, top: widget.y, width: widget.width, height: widget.height }}
-                        onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                        className="absolute z-20"
+                        style={{ left: widget.x, top: widget.y }}
                       >
-                        {/* Handles - NOW HAS INPUT HANDLE FOR CONNECTIVITY */}
+                        <ResizableNodeWrapper
+                          id={widget.id}
+                          width={widget.width || 400}
+                          height={widget.height || 300}
+                          onResizeNode={onResizeNode}
+                          onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                        >
+                        <div className="w-full h-full flex flex-col rounded-xl border border-white/10 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-white shadow-md">
+                        {/* Handles - INPUT AND OUTPUT BALLS INTEGRATED INTO BORDER */}
                         <div
-                          className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
-                          style={{ left: "-4.5px", pointerEvents: "auto", zIndex: 1000 }}
+                          className={`absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                            draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                              ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                              : connecting && connecting.sourceId !== widget.id
+                                ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                          }`}
+                          style={{ left: "0px", pointerEvents: "auto", zIndex: 1000 }}
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             handleHandleMouseDown(e, widget.id, "input");
                           }}
                         />
+                        <div
+                          className={`absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                            draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                              ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                              : connecting && connecting.sourceId === widget.id
+                                ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                          }`}
+                          style={{ right: "0px", pointerEvents: "auto", zIndex: 1000 }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleHandleMouseDown(e, widget.id, "output");
+                          }}
+                        />
 
-                        {/* Prompt Window Header */}
-                        <div className="px-3 py-2 border-b border-neutral-800 bg-[#202022] flex items-center justify-between handle">
-                          <div className="flex items-center gap-2">
-                            <Sparkles size={14} className="text-yellow-400" />
-                            <span className="text-sm font-semibold text-neutral-200">Prompt Window</span>
-                          </div>
+                          {/* Prompt Window Header */}
+                          <div className="px-3 py-2 border-b border-neutral-800 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] flex items-center justify-between handle flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                              <Sparkles size={14} className="text-yellow-400" />
+                              <span className="text-sm font-semibold text-neutral-200">
+                                Prompt Window
+                              </span>
+                            </div>
                           <div className="flex gap-1 bg-neutral-900 rounded-md p-0.5 border border-neutral-800">
                             {/* Copy Button */}
                             <button
@@ -2291,59 +3642,254 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         </div>
 
-                        {/* Prompt Window Content */}
-                        <div className="flex-1 bg-[#0a0a0a] relative">
-                          {widget.promptMode === "preview" ? (
-                            <div className="absolute inset-0 p-4 overflow-y-auto custom-scrollbar">
-                              <div className="prose prose-invert prose-sm max-w-none">
+                          {/* Prompt Window Content */}
+                          <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-auto">
+                            {widget.promptMode === "preview" ? (
+                              <div className="p-4 overflow-y-auto custom-scrollbar">
                                 {displayContent ? (
-                                  <pre className="whitespace-pre-wrap font-mono text-sm text-neutral-300">
+                                  <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-white/90">
                                     {displayContent}
                                   </pre>
                                 ) : (
                                   <div className="flex flex-col items-center justify-center h-full text-neutral-600 gap-2 p-4 text-center">
                                     <Link2 size={24} className="opacity-50" />
-                                    <p className="text-xs">Connect nodes to this window to generate a prompt.</p>
+                                    <p className="text-xs">
+                                      {hasWebsiteSections 
+                                        ? "Fill in the website sections to generate a prompt."
+                                        : "Connect nodes to this window to generate a prompt."}
+                                    </p>
                                   </div>
                                 )}
                               </div>
-                            </div>
-                          ) : (
-                            <textarea
-                              className="w-full h-full bg-[#0a0a0a] text-neutral-300 p-4 font-mono text-sm resize-none outline-none"
-                              value={widget.content || ""}
-                              onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                              placeholder="Write your custom prompt here..."
-                              onMouseDown={(e) => e.stopPropagation()}
-                            />
-                          )}
+                            ) : (
+                              <textarea
+                                className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-300 p-4 font-mono text-sm resize-none outline-none leading-relaxed"
+                                value={widget.content || ""}
+                                onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                                placeholder="Write your custom prompt here..."
+                                onMouseDown={(e) => e.stopPropagation()}
+                                disabled={hasWebsiteSections} // Disable manual editing for website flows
+                              />
+                            )}
+                          </div>
                         </div>
+                        </ResizableNodeWrapper>
+                      </div>
+                    );
+                  }
 
-                        {/* Resize Handle */}
-                        <div
-                          className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1 z-50"
-                          onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
+                  // --- RENDER BRAND IDENTITY NODE ---
+                  if (widget.type === "brandIdentity") {
+                    const brandData = widget.brandIdentityData || {
+                      title: "Brand Identity",
+                      fields: {
+                        primaryColor: "#3B82F6",
+                        secondaryColor: "#0F172A",
+                        accentColor: "#F97316",
+                        fontFamily: AVAILABLE_FONTS[0].value,
+                        styleMood: "",
+                        toneOfVoice: "",
+                      },
+                    };
+
+                    return (
+                      <div
+                        key={widget.id}
+                        className="absolute z-20"
+                        style={{ left: widget.x, top: widget.y }}
+                      >
+                        <ResizableNodeWrapper
+                          id={widget.id}
+                          width={widget.width || 280}
+                          height={widget.height || 400}
+                          onResizeNode={onResizeNode}
+                          onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                         >
-                          <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
+                        <div className="relative w-full h-full">
+                          {/* Handles */}
+                          <div
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                              draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                                ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                : connecting && connecting.sourceId !== widget.id
+                                  ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                  : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                            }`}
+                            style={{ pointerEvents: "auto", zIndex: 1000 }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleHandleMouseDown(e, widget.id, "input");
+                            }}
+                          />
+                          <div
+                            className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                              draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                                ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                : connecting && connecting.sourceId === widget.id
+                                  ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                  : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                            }`}
+                            style={{ pointerEvents: "auto", zIndex: 1000 }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
+                          />
+                          {/* Brand Identity Node Component */}
+                          <BrandIdentityNode
+                            id={widget.id}
+                            data={{
+                              title: brandData.title,
+                              fields: brandData.fields,
+                              onChange: (newFields: BrandIdentityFields) => {
+                                updateWidget(widget.id, "brandIdentityData", {
+                                  ...brandData,
+                                  fields: newFields,
+                                });
+                              },
+                            }}
+                          />
                         </div>
+                        </ResizableNodeWrapper>
+                      </div>
+                    );
+                  }
+
+                  // --- RENDER WEBSITE SECTION WIDGET ---
+                  if (widget.type === "website-section") {
+                    const websiteData = widget.websiteData || { title: widget.title || "Section", fields: {} };
+                    
+                    return (
+                      <div
+                        key={widget.id}
+                        className="absolute z-20"
+                        style={{ left: widget.x, top: widget.y }}
+                      >
+                        <ResizableNodeWrapper
+                          id={widget.id}
+                          width={widget.width || 280}
+                          height={widget.height || 300}
+                          onResizeNode={onResizeNode}
+                          onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                        >
+                        <div className="flow-node w-full h-full rounded-xl border border-white/10 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-white shadow-md flex flex-col">
+                          {/* Handles */}
+                          <div
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                              draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                                ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                : connecting && connecting.sourceId !== widget.id
+                                  ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                  : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                            }`}
+                            style={{ pointerEvents: "auto", zIndex: 1000 }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleHandleMouseDown(e, widget.id, "input");
+                            }}
+                          />
+                          <div
+                            className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                              draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                                ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                : connecting && connecting.sourceId === widget.id
+                                  ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                  : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                            }`}
+                            style={{ pointerEvents: "auto", zIndex: 1000 }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              handleHandleMouseDown(e, widget.id, "output");
+                            }}
+                          />
+
+                          {/* Header */}
+                          <div className="px-4 py-2 border-b border-white/10 flex-shrink-0">
+                            <span className="node-title text-sm font-semibold text-white">
+                              {websiteData.title}
+                            </span>
+                          </div>
+
+                          {/* Fields */}
+                          <div className="flex-1 overflow-auto px-4 py-3 space-y-3 text-xs leading-relaxed custom-scrollbar">
+                            {Object.entries(websiteData.fields).map(([fieldKey, fieldValue]) => (
+                              <section key={fieldKey} className="space-y-2">
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+                                  {fieldKey.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+                                </p>
+                                <textarea
+                                  value={fieldValue}
+                                  onChange={(e) => {
+                                    const updatedData = {
+                                      ...websiteData,
+                                      fields: {
+                                        ...websiteData.fields,
+                                        [fieldKey]: e.target.value,
+                                      },
+                                    };
+                                    updateWidget(widget.id, "websiteData", updatedData);
+                                  }}
+                                  placeholder={`Enter ${fieldKey}...`}
+                                  className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:border-white/30 leading-relaxed"
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  style={{ minHeight: "48px" }}
+                                />
+                              </section>
+                            ))}
+                          </div>
+                        </div>
+                        </ResizableNodeWrapper>
                       </div>
                     );
                   }
 
                   // --- RENDER TEXT WIDGET ---
                   if (widget.type === "text") {
+                    // Calculate text widget dimensions for handle positioning
+                    const textWidth = Math.max(100, (widget.content?.length || 0) * (widget.style?.fontSize || 16) * 0.7);
+                    const textHeight = (widget.style?.fontSize || 16) * 1.5;
+                    
                     return (
                       <div
                         key={widget.id}
-                        className={`absolute flex items-center justify-center p-1 ${isSelected ? "border border-neutral-400" : "border border-transparent hover:border-neutral-700"}`}
+                        className={`absolute flex items-center justify-center p-1 border-0`}
                         style={{
                           left: widget.x,
                           top: widget.y,
-                          // For text, width/height can be auto or fixed. Let's use auto for simplicity or drag.
-                          // minWidth: "50px",
+                          width: textWidth,
+                          height: textHeight,
                         }}
                         onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
                       >
+                        {/* Handles - INPUT AND OUTPUT BALLS FOR TEXT WIDGET */}
+                        <div
+                          className={`absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                            draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                              ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                              : connecting && connecting.sourceId !== widget.id
+                                ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                          }`}
+                          style={{ left: "-7px", pointerEvents: "auto", zIndex: 1000 }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleHandleMouseDown(e, widget.id, "input");
+                          }}
+                        />
+                        <div
+                          className={`absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                            draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                              ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                              : connecting && connecting.sourceId === widget.id
+                                ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                          }`}
+                          style={{ right: "-7px", pointerEvents: "auto", zIndex: 1000 }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleHandleMouseDown(e, widget.id, "output");
+                          }}
+                        />
                         <textarea
                           className="bg-transparent outline-none resize-none overflow-hidden"
                           style={{
@@ -2351,9 +3897,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             textAlign: widget.style?.textAlign || "left",
                             color: widget.style?.color || "#ffffff",
                             fontFamily: widget.style?.fontFamily || "Inter",
-                            width: `${Math.max(50, (widget.content?.length || 0) * (widget.style?.fontSize || 16) * 0.7)}px`, // Crude auto-width
+                            width: `${textWidth}px`,
                             minWidth: "100px",
-                            height: `${(widget.style?.fontSize || 16) * 1.5}px`,
+                            height: `${textHeight}px`,
                           }}
                           value={widget.content}
                           onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
@@ -2389,6 +3935,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   } else if (widget.type === "flow-tool") {
                     Icon = Link2;
                     accentColor = "text-cyan-400";
+                  } else if (widget.type === "website-section") {
+                    Icon = FileText;
+                    accentColor = "text-purple-400";
+                  } else if (widget.type === "brandIdentity") {
+                    Icon = Palette;
+                    accentColor = "text-purple-400";
                   }
 
                   const isPromptNode = widget.isPromptNode;
@@ -2396,34 +3948,55 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   return (
                     <div
                       key={widget.id}
-                      className={`absolute bg-[#1b1b1e] border rounded-xl flex flex-col hover:border-neutral-500 transition-colors font-sans widget-container ${isSelected ? "border-neutral-400 shadow-[0_0_0_1px_rgba(163,163,163,1)] z-20" : "border-neutral-800 hover:border-neutral-700"}`}
-                      style={{ left: widget.x, top: widget.y, width: widget.width, height: widget.height }}
-                      onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                      className="absolute z-20"
+                      style={{ left: widget.x, top: widget.y }}
                     >
-                      {/* Handles */}
+                      <ResizableNodeWrapper
+                        id={widget.id}
+                        width={widget.width || 280}
+                        height={widget.height || 200}
+                        onResizeNode={onResizeNode}
+                        onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                      >
+                      <div className="flow-node w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] border-0 rounded-xl flex flex-col">
+                      {/* Handles - INPUT AND OUTPUT BALLS */}
                       <div
-                        className="absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target"
-                        style={{ left: "-4.5px", pointerEvents: "auto", zIndex: 1000 }}
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                          draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                            ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                            : connecting && connecting.sourceId !== widget.id
+                              ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                              : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                        }`}
+                        style={{ left: "-7px", pointerEvents: "auto", zIndex: 1000 }}
                         onMouseDown={(e) => {
                           e.stopPropagation();
                           handleHandleMouseDown(e, widget.id, "input");
                         }}
                       />
                       <div
-                        className="absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source"
-                        style={{ right: "-4.5px", pointerEvents: "auto", zIndex: 1000 }}
+                        className={`absolute right-0 top-1/2 -translate-y-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                          draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                            ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                            : connecting && connecting.sourceId === widget.id
+                              ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                              : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                        }`}
+                        style={{ right: "-7px", pointerEvents: "auto", zIndex: 1000 }}
                         onMouseDown={(e) => {
                           e.stopPropagation();
                           handleHandleMouseDown(e, widget.id, "output");
                         }}
                       />
 
-                      {/* Content */}
-                      <div className="px-3 py-2 border-b border-neutral-800 bg-[#1b1b1e] flex items-center gap-2">
-                        <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor}`}>
-                          <Icon size={14} />
-                        </div>
-                        <span className="text-sm font-semibold text-neutral-200">{widget.title || "Node"}</span>
+                        {/* Content */}
+                        <div className="px-3 py-2 border-b border-neutral-800 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] flex items-center gap-2 flex-shrink-0">
+                          <div className={`p-1 rounded-md bg-neutral-800/50 ${accentColor}`}>
+                            <Icon size={14} />
+                          </div>
+                          <span className="node-title text-sm font-semibold text-neutral-200">
+                            {widget.title || "Node"}
+                          </span>
                         {isPromptNode && (
                           <div className="ml-auto flex items-center gap-1 text-neutral-400">
                             <button
@@ -2449,32 +4022,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 bg-[#1b1b1e] p-4 overflow-hidden">
-                        {isPromptNode ? (
-                          <textarea
-                            readOnly
-                            className="w-full h-full bg-[#0f0f12] text-neutral-200 text-sm font-mono resize-none outline-none custom-scrollbar"
-                            value={widget.content || PROMPT_PLACEHOLDER}
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <textarea
-                            className="w-full h-full bg-[#0f0f12] text-neutral-200 text-sm font-mono resize-none outline-none custom-scrollbar"
-                            value={widget.content || ""}
-                            onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            placeholder="Content..."
-                          />
-                        )}
+                        <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 overflow-auto">
+                          {isPromptNode ? (
+                            <textarea
+                              readOnly
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-xs font-mono resize-none outline-none custom-scrollbar leading-relaxed"
+                              value={widget.content || PROMPT_PLACEHOLDER}
+                              onMouseDown={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <textarea
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-xs font-mono resize-none outline-none custom-scrollbar leading-relaxed"
+                              value={widget.content || ""}
+                              onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              placeholder="Content..."
+                            />
+                          )}
+                        </div>
                       </div>
-
-                      {/* Resize Handle */}
-                      <div
-                        className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end p-1"
-                        onMouseDown={(e) => handleMouseDown(e, widget.id, "resize")}
-                      >
-                        <div className="border-r-2 border-b-2 border-neutral-600 w-2 h-2" />
-                      </div>
+                    </ResizableNodeWrapper>
                     </div>
                   );
                 })}
@@ -2489,10 +4056,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 320, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="absolute top-20 right-4 w-80 bg-[#1b1b1e] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
+                  className="absolute top-20 right-4 w-80 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] border border-neutral-800 rounded-xl z-40 flex flex-col max-h-[calc(100vh-100px)] overflow-hidden"
                 >
                   {/* Drawer Header */}
-                  <div className="p-4 border-b border-neutral-800 bg-[#1b1b1e]">
+                  <div className="p-4 border-b border-neutral-800 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Nodes</h3>
 
                     {/* Domain Switcher */}
@@ -2531,7 +4098,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   </div>
 
                   {/* Drawer Content */}
-                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#1b1b1e]">
+                  <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]">
                     {/* Section 1 */}
                     <div className="mb-2">
                       <button
@@ -2860,8 +4427,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
   return (
     <MockAuthProvider>
-      <Toaster position="top-center" />
-      <FlowEngineContent {...props} />
+      <FlowStateProvider>
+        <Toaster position="top-center" />
+        <FlowEngineContent {...props} />
+      </FlowStateProvider>
     </MockAuthProvider>
   );
 };

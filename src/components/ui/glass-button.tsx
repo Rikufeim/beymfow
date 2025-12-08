@@ -40,19 +40,25 @@ export interface GlassButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof glassButtonVariants> {
   contentClassName?: string;
+  isSelected?: boolean;
 }
 
 const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
-  ({ className, children, size, contentClassName, ...props }, ref) => {
+  ({ className, children, size, contentClassName, isSelected = false, ...props }, ref) => {
     return (
       <div
         className={cn(
-          "glass-button-wrap cursor-pointer rounded-full",
+          "glass-button-wrap cursor-pointer rounded-full relative",
           className
         )}
       >
         <button
-          className={cn("glass-button", glassButtonVariants({ size }))}
+          className={cn(
+            "glass-button relative z-10 transition-all duration-300",
+            glassButtonVariants({ size }),
+            isSelected && "glass-button-selected",
+            !isSelected && "glass-button-inactive"
+          )}
           ref={ref}
           {...props}
         >

@@ -16,6 +16,7 @@ interface GlowingEffectProps {
   disabled?: boolean;
   movementDuration?: number;
   borderWidth?: number;
+  customGradient?: string;
 }
 const GlowingEffect = memo(
   ({
@@ -29,6 +30,7 @@ const GlowingEffect = memo(
     movementDuration = 2,
     borderWidth = 1,
     disabled = true,
+    customGradient,
   }: GlowingEffectProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const lastPosition = useRef({ x: 0, y: 0 });
@@ -122,7 +124,7 @@ const GlowingEffect = memo(
       <>
         <div
           className={cn(
-            "pointer-events-none absolute -inset-px hidden rounded-[inherit] border opacity-0 transition-opacity",
+            "pointer-events-none absolute -inset-px hidden rounded-[inherit] border border-transparent opacity-0 transition-opacity",
             glow && "opacity-100",
             variant === "white" && "border-white",
             disabled && "!block"
@@ -138,7 +140,7 @@ const GlowingEffect = memo(
               "--active": "0",
               "--glowingeffect-border-width": `${borderWidth}px`,
               "--repeating-conic-gradient-times": "5",
-              "--gradient":
+              "--gradient": customGradient || (
                 variant === "white"
                   ? `repeating-conic-gradient(
                   from 236.84deg at 50% 50%,
@@ -148,15 +150,15 @@ const GlowingEffect = memo(
                   : `radial-gradient(circle at 10% 0%, #22d3ee 0%, #22d3ee00 30%),
                 radial-gradient(circle at 80% 20%, #38bdf8 0%, #38bdf800 35%),
                 radial-gradient(circle at 20% 80%, #a855f7 0%, #a855f700 35%), 
-                radial-gradient(circle at 90% 90%, #4f46e5 0%, #4f46e500 40%),
+                radial-gradient(circle at 90% 90%, #a855f7 0%, #a855f700 40%),
                 repeating-conic-gradient(
                   from 236.84deg at 50% 50%,
                   #22d3ee 0%,
-                  #38bdf8 calc(25% / var(--repeating-conic-gradient-times)),
-                  #4f46e5 calc(50% / var(--repeating-conic-gradient-times)), 
-                  #a855f7 calc(75% / var(--repeating-conic-gradient-times)),
+                  #38bdf8 calc(33.33% / var(--repeating-conic-gradient-times)),
+                  #a855f7 calc(66.66% / var(--repeating-conic-gradient-times)), 
                   #22d3ee calc(100% / var(--repeating-conic-gradient-times))
-                )`,
+                )`
+              ),
             } as CSSProperties
           }
           className={cn(

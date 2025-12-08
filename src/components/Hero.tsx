@@ -1,6 +1,8 @@
 "use client";
 
 import { QuickPromptGenerator } from "./QuickPromptGenerator";
+import { PromptSidebar } from "@/components/ui/prompt-sidebar";
+
 export default function Hero() {
   return <section id="hero"
   // MUUTOS:
@@ -8,7 +10,7 @@ export default function Hero() {
   // 2. "pt-32" pitää sisällön irti navigaatiopalkista (voit kokeilla myös pt-36 tai pt-40)
   className="relative mx-auto w-full pt-32 px-6 text-center md:px-8 
       min-h-screen overflow-hidden 
-      bg-black flex flex-col items-center justify-start">
+      bg-transparent flex flex-col items-center justify-start">
 
       {/* Otsikko */}
       <h1 className="animate-fade-in mx-auto max-w-6xl
@@ -17,7 +19,7 @@ export default function Hero() {
       animationDelay: "0.1s",
       animationFillMode: "forwards"
     }}>
-        <span className="block text-white mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
+        <span className="block text-white/85 mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
           Make powerful prompts
         </span>
         <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">with pure flow</span>
@@ -41,8 +43,12 @@ export default function Hero() {
         <QuickPromptGenerator />
       </div>
 
-      {/* Bottom Fade / Glow effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 
-        bg-gradient-to-t from-black to-transparent pointer-events-none" />
+      {/* PROMPT CARDS BANNER - Below QuickPromptGenerator */}
+      <div className="w-full max-w-7xl mx-auto relative z-20 animate-fade-in opacity-0 mt-8" style={{
+      animationDelay: "0.4s",
+      animationFillMode: "forwards"
+    }}>
+        <PromptSidebar />
+      </div>
     </section>;
 }
