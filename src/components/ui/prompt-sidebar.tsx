@@ -143,7 +143,7 @@ export function PromptSidebar({ className }: { className?: string }) {
       <div className={cn("relative flex w-full flex-col items-center justify-center", className)}>
         <div 
           ref={scrollContainerRef}
-          className="group flex overflow-x-auto overflow-y-hidden [--gap:1rem] [gap:var(--gap)] flex-row [--duration:120s] w-full scrollbar-hide"
+          className="group flex overflow-x-auto overflow-y-hidden p-2 [--gap:1rem] [gap:var(--gap)] flex-row [--duration:120s] w-full scrollbar-hide"
           style={{ 
             scrollBehavior: 'smooth',
             perspective: '1200px',
@@ -273,8 +273,8 @@ export function PromptSidebar({ className }: { className?: string }) {
         </div>
 
         {/* Gradient fades on sides */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 sm:w-32 md:w-40 bg-gradient-to-r from-[#000000] via-[#000000]/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 sm:w-32 md:w-40 bg-gradient-to-l from-[#000000] via-[#000000]/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/4 bg-gradient-to-r from-background via-background/50 to-transparent sm:block" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/4 bg-gradient-to-l from-background via-background/50 to-transparent sm:block" />
       </div>
 
       {/* Modal for full prompt */}
