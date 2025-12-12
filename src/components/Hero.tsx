@@ -12,14 +12,14 @@ export default function Hero() {
       style={{
         backgroundImage: `url(${heroWallpaper})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center 70%',
         backgroundRepeat: 'no-repeat',
       }}
     >
       <div className="relative z-10 w-full flex flex-col items-center gap-6">
         {/* Otsikko */}
         <h1
-          className="animate-fade-in mx-auto max-w-6xl py-2 text-5xl font-bold leading-tight tracking-tighter opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
+          className="animate-fade-in mx-auto max-w-6xl py-2 text-5xl font-bold leading-tight tracking-tighter opacity-0 sm:text-6xl md:text-7xl lg:text-8xl overflow-visible"
           style={{
             animationDelay: "0.1s",
             animationFillMode: "forwards",
@@ -30,7 +30,7 @@ export default function Hero() {
               Make powerful
             </span>
           </span>
-          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-0 my-px pb-0 font-medium">
+          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-2 my-px pb-2 font-medium">
             <span className="whitespace-nowrap">prompts with pure flow</span>
           </span>
         </h1>
