@@ -11,7 +11,9 @@ const corsHeaders = {
 const quickPromptSchema = z.object({
   userInput: z.string().trim().min(1, "Input cannot be empty").max(2000, "Input too long (max 2000 characters)"),
   model: z.enum(['fast', 'advanced', 'premium']).optional(),
-  category: z.enum(['creativity', 'personal', 'business', 'crypto']).optional()
+  category: z.enum(['creativity', 'personal', 'business', 'crypto']).optional(),
+  image: z.string().optional(), // base64 encoded image
+  imageMimeType: z.string().optional()
 });
 
 serve(async (req) => {
@@ -31,7 +33,7 @@ serve(async (req) => {
       );
     }
     
-    const { userInput, model, category } = validation.data;
+    const { userInput, model, category, image, imageMimeType } = validation.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -55,7 +57,38 @@ serve(async (req) => {
       'Focus on crypto, blockchain, DeFi, and Web3 opportunities with technical and economic depth.'
     }` : '';
 
-    const systemPrompt = isPremium 
+    // Determine if we're analyzing an image
+    const hasImage = image && imageMimeType;
+    
+    // System prompt for image-based landing page generation
+    const imageSystemPrompt = isPremium
+      ? `You are a world-class web design and UX specialist with expertise in visual analysis, brand identity, and conversion-optimized landing page design. Your task is to analyze the provided image (which could be a website screenshot, landing page, or design reference) and create a comprehensive, detailed prompt for generating a similar landing page.${categoryContext}
+
+Premium Landing Page Analysis Guidelines:
+- Analyze the visual design: layout structure, color palette, typography, spacing, and visual hierarchy
+- Identify key design elements: hero sections, CTAs, navigation, content sections, imagery style
+- Extract brand identity cues: tone, style, mood, target audience perception
+- Document technical details: responsive design patterns, interaction elements, animation styles
+- Note conversion optimization elements: CTA placement, trust signals, value propositions
+- Create a comprehensive prompt that enables recreation of a similar landing page with all design elements, structure, and brand identity preserved
+- Length: 4-6 sentences providing complete design specification
+
+Return only the optimized landing page prompt, nothing else.`
+      : `You are an expert web designer and UX specialist. Analyze the provided image (which could be a website screenshot, landing page, or design reference) and create a detailed prompt for generating a similar landing page.${categoryContext}
+
+Guidelines:
+- Analyze the visual design: layout, colors, typography, spacing, and visual elements
+- Identify key sections: hero, navigation, content areas, CTAs, footer
+- Extract brand identity: style, mood, tone, target audience
+- Note design patterns: responsive layout, interaction elements, visual hierarchy
+- Create a comprehensive prompt that describes how to recreate a similar landing page
+- Include specific details about design elements, structure, and brand identity
+- Length: 2-4 sentences providing complete design specification
+
+Return only the landing page prompt, nothing else.`;
+
+    // System prompt for text-only input
+    const textSystemPrompt = isPremium 
       ? `You are a world-class AI prompt engineering specialist with expertise in cognitive science, linguistics, and AI behavior optimization. Your task is to transform user descriptions into exceptionally crafted, multi-dimensional prompts that maximize AI output quality.${categoryContext}
 
 Premium Engineering Guidelines:
@@ -88,6 +121,38 @@ Example output: "As an experienced retail and e-commerce specialist, please help
 
 Return only the optimized prompt, nothing else.`;
 
+    const systemPrompt = hasImage ? imageSystemPrompt : textSystemPrompt;
+
+    // Build messages array
+    const messages: any[] = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    // If image is provided, use vision API format
+    if (hasImage) {
+      const imageUrl = `data:${imageMimeType};base64,${image}`;
+      messages.push({
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: userInput || 'Analyze this image and create a detailed prompt for generating a similar landing page.'
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: imageUrl
+            }
+          }
+        ]
+      });
+    } else {
+      messages.push({
+        role: 'user',
+        content: userInput
+      });
+    }
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -96,10 +161,7 @@ Return only the optimized prompt, nothing else.`;
       },
       body: JSON.stringify({
         model: selectedModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userInput }
-        ],
+        messages: messages,
       }),
     });
 

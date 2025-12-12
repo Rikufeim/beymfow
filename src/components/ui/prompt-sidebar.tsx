@@ -150,7 +150,8 @@ export function PromptSidebar({ className }: { className?: string }) {
             perspectiveOrigin: 'center center',
             transformStyle: 'preserve-3d',
             transform: 'translateZ(0)',
-            willChange: 'scroll-position'
+            willChange: 'scroll-position',
+            WebkitOverflowScrolling: 'touch'
           }}
           onMouseEnter={(e) => {
             const container = e.currentTarget;
@@ -254,7 +255,8 @@ export function PromptSidebar({ className }: { className?: string }) {
             style={{ 
               transformStyle: 'preserve-3d',
               transform: 'translateZ(0)',
-              backfaceVisibility: 'hidden'
+              backfaceVisibility: 'hidden',
+              width: 'max-content'
             }}
           >
             {/* Render prompts multiple times for seamless loop - more copies for smoother infinite scroll */}

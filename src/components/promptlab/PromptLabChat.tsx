@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Crown, Puzzle } from "lucide-react";
+import { Paperclip, Crown, Puzzle } from "lucide-react";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
 
@@ -60,6 +60,20 @@ const deriveSuggestions = (text: string): string[] => {
 
   return options;
 };
+
+// Custom 3 boxes icon component
+const ThreeBoxes = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="1" y="1" width="4" height="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <rect x="6" y="1" width="4" height="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <rect x="11" y="1" width="4" height="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+  </svg>
+);
 
 export default function PromptLabChat() {
   const [mode, setMode] = useState<Mode>("chat");
@@ -253,7 +267,7 @@ export default function PromptLabChat() {
                 className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 font-medium text-black transition hover:bg-white"
                 disabled={Boolean(loadingId)}
               >
-                <Send className="h-4 w-4" />
+                <ThreeBoxes className="h-4 w-4" />
                 <span>{loadingId ? "Thinking…" : "Send"}</span>
               </button>
             </div>

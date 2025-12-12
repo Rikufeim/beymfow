@@ -46,8 +46,8 @@ export const FlowFeaturesSection = ({
         {/* Your vibe coding flow text */}
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 lg:mb-8">
-            <span className="text-white/85 font-semibold">Your </span>
-            <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium">vibe coding tools</span>
+            <span className="text-white/85 font-semibold" style={{ fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif' }}>Your </span>
+            <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium" style={{ fontFamily: "Outfit, sans-serif" }}>vibe coding tools</span>
           </h2>
           <p className="mx-auto max-w-3xl text-lg md:text-xl text-gray-400 tracking-tight leading-relaxed">
             Build and control your whole creative workflow — no clutter, no complexity, just clean, intuitive tools that build prompts as fast as you think.

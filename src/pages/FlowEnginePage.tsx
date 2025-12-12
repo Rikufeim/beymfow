@@ -186,7 +186,9 @@ interface Widget {
     | "text"
     | "prompt-window"
     | "website-section"
-    | "brandIdentity";
+    | "brandIdentity"
+    | "prompt-scanner"
+    | "prompt-library";
   title?: string;
   basePrompt?: string;
   content?: string;
@@ -410,6 +412,36 @@ const createPromptWindowWidget = (widgets: Widget[] = []): Widget => {
     y: position.y,
     width: DEFAULT_PROMPT_WINDOW_SIZE.width,
     height: DEFAULT_PROMPT_WINDOW_SIZE.height,
+  };
+};
+
+const createPromptScannerWidget = (widgets: Widget[] = []): Widget => {
+  const position = getPromptWindowPosition(widgets);
+
+  return {
+    id: `prompt-scanner-${Date.now()}`,
+    type: "prompt-scanner",
+    title: "Prompt Scanner",
+    content: "",
+    x: position.x,
+    y: position.y + 200,
+    width: 400,
+    height: 300,
+  };
+};
+
+const createPromptLibraryWidget = (widgets: Widget[] = []): Widget => {
+  const position = getPromptWindowPosition(widgets);
+
+  return {
+    id: `prompt-library-${Date.now()}`,
+    type: "prompt-library",
+    title: "Prompt Library",
+    content: "",
+    x: position.x,
+    y: position.y + 400,
+    width: 400,
+    height: 300,
   };
 };
 
@@ -807,13 +839,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [landingDisplayedText, setLandingDisplayedText] = useState("");
   const [landingIsDeleting, setLandingIsDeleting] = useState(false);
   const [landingIsFocused, setLandingIsFocused] = useState(false);
+  const [landingShowCursor, setLandingShowCursor] = useState(true);
   
   const landingPlaceholders = [
-    "Build a prompt for a SaaS website project...",
-    "Create a prompt for a mobile app idea...",
-    "Generate a prompt for a game concept...",
-    "Design a prompt for an e-commerce platform...",
+    "Build a complete website flow...",
+    "Create a mobile app workflow...",
+    "Design a game development pipeline...",
+    "Generate a custom project template...",
   ];
+  
+  const landingPauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const landingAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const landingSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Update active tab width when tab changes
   useEffect(() => {
@@ -906,6 +943,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     general: false,
     flows: false,
     templates: false, // New templates section
+    beymflowTools: false, // Beymflow tools subcategory
   });
 
   const [showSettings, setShowSettings] = useState(false);
@@ -1008,34 +1046,109 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     };
   }, [landingChatInput, landingIsFocused]);
 
-  // Animated placeholder for landing chat
+  // Cursor blink animation for landing chat
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setLandingShowCursor((prev) => !prev);
+    }, 530);
+    return () => clearInterval(cursorInterval);
+  }, []);
+
+  // Animated placeholder for landing chat (sophisticated version matching QuickPromptGenerator)
   useEffect(() => {
     if (landingIsFocused || landingChatInput.trim()) {
       setLandingDisplayedText("");
+      if (landingPauseTimeoutRef.current) {
+        clearTimeout(landingPauseTimeoutRef.current);
+        landingPauseTimeoutRef.current = null;
+      }
+      if (landingAnimationTimeoutRef.current) {
+        clearTimeout(landingAnimationTimeoutRef.current);
+        landingAnimationTimeoutRef.current = null;
+      }
+      if (landingSwitchTimeoutRef.current) {
+        clearTimeout(landingSwitchTimeoutRef.current);
+        landingSwitchTimeoutRef.current = null;
+      }
       return;
     }
+    
     const currentText = landingPlaceholders[landingPlaceholderIndex];
-    const timeout = setTimeout(
+    
+    // If text is complete and we're not deleting yet, wait before starting to delete
+    if (!landingIsDeleting && landingDisplayedText.length === currentText.length) {
+      if (!landingPauseTimeoutRef.current) {
+        landingPauseTimeoutRef.current = setTimeout(() => {
+          setLandingIsDeleting(true);
+          landingPauseTimeoutRef.current = null;
+        }, 3000);
+      }
+      return;
+    }
+    
+    // Dynamic speed calculation for smoother, more natural animation
+    const getTypingSpeed = (position: number, totalLength: number) => {
+      // Natural typing rhythm: smooth and flowing
+      const progress = position / totalLength;
+      // Add slight randomness for natural feel
+      const baseRandom = Math.random() * 25;
+      
+      if (progress < 0.2) return 150 + baseRandom; // Gentle start: 150-175ms
+      if (progress < 0.8) return 100 + baseRandom; // Comfortable flow: 100-125ms
+      return 120 + baseRandom; // Gentle finish: 120-145ms
+    };
+    
+    const getDeletingSpeed = (remainingLength: number, totalLength: number) => {
+      // Smooth deleting: consistent and flowing
+      const progress = remainingLength / totalLength;
+      const baseRandom = Math.random() * 20;
+      
+      if (progress > 0.7) return 60 + baseRandom; // Smooth start: 60-80ms
+      if (progress > 0.4) return 50 + baseRandom; // Steady middle: 50-70ms
+      return 45 + baseRandom; // Slightly faster end: 45-65ms
+    };
+    
+    const speed = landingIsDeleting
+      ? getDeletingSpeed(landingDisplayedText.length, currentText.length)
+      : getTypingSpeed(landingDisplayedText.length, currentText.length);
+    
+    landingAnimationTimeoutRef.current = setTimeout(
       () => {
         if (!landingIsDeleting) {
           if (landingDisplayedText.length < currentText.length) {
             setLandingDisplayedText(currentText.slice(0, landingDisplayedText.length + 1));
-          } else {
-            setTimeout(() => setLandingIsDeleting(true), 2000);
           }
         } else {
           if (landingDisplayedText.length > 0) {
             setLandingDisplayedText(landingDisplayedText.slice(0, -1));
           } else {
-            setLandingIsDeleting(false);
-            setLandingPlaceholderIndex((prev) => (prev + 1) % landingPlaceholders.length);
+            // Small pause before switching to next placeholder for smooth flow
+            landingSwitchTimeoutRef.current = setTimeout(() => {
+              setLandingIsDeleting(false);
+              setLandingPlaceholderIndex((prev) => (prev + 1) % landingPlaceholders.length);
+              landingSwitchTimeoutRef.current = null;
+            }, 400);
           }
         }
       },
-      landingIsDeleting ? 50 : 100,
+      speed,
     );
-    return () => clearTimeout(timeout);
-  }, [landingDisplayedText, landingIsDeleting, landingPlaceholderIndex, landingIsFocused, landingChatInput]);
+    
+    return () => {
+      if (landingAnimationTimeoutRef.current) {
+        clearTimeout(landingAnimationTimeoutRef.current);
+        landingAnimationTimeoutRef.current = null;
+      }
+      if (landingPauseTimeoutRef.current) {
+        clearTimeout(landingPauseTimeoutRef.current);
+        landingPauseTimeoutRef.current = null;
+      }
+      if (landingSwitchTimeoutRef.current) {
+        clearTimeout(landingSwitchTimeoutRef.current);
+        landingSwitchTimeoutRef.current = null;
+      }
+    };
+  }, [landingDisplayedText, landingIsDeleting, landingPlaceholderIndex, landingIsFocused, landingChatInput, landingPlaceholders]);
 
   useEffect(() => {
     if (!landingIsFocused && !landingChatInput.trim()) {
@@ -1265,7 +1378,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       } else {
         // Only reset view/transform if it's a fresh project
         if (widgets.length === 0) {
-          setCanvasTransform({ translateX: 100, translateY: 100, scale: 0.8 });
+          // Center and zoom to the freshly created template so it's immediately visible
+          fitViewToNodes(updatedWidgets);
           setCurrentProjectId(null);
           setProjectName(`${selectedDomain} Flow Template`);
         } else {
@@ -1308,14 +1422,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       if (widgets.length === 0) {
         setCurrentProjectId(null);
         setProjectName(`${templateType} Flow Template`);
-        
-        // Fit view to show all nodes with padding
-        setTimeout(() => {
-          // ENSURE ONLY ONE PROMPT WINDOW
-          const allNodes = ensurePromptWindowPresence([...widgets, ...newNodes]);
-          setWidgets(allNodes); // Update widgets to ensure single Prompt Window
-          fitViewToNodes(allNodes);
-        }, 200);
+        // Fit view to show all nodes with padding (no delay so the first render is close)
+        fitViewToNodes(cleanedNodes);
       } else {
         toast.success(`${templateType} Flow added to workspace`);
       }
@@ -1867,10 +1975,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const viewportHeight = window.innerHeight;
     
     // Calculate scale to fit with padding
-    const padding = 0.4; // 40% padding for more breathing room
+    const padding = 0.15; // Smaller padding so initial view is closer to nodes
     const scaleX = (viewportWidth * (1 - padding * 2)) / width;
     const scaleY = (viewportHeight * (1 - padding * 2)) / height;
-    const scale = Math.min(scaleX, scaleY, 1.0); // Don't zoom in beyond 1.0
+    const desiredScale = Math.min(scaleX, scaleY);
+    // Allow a modest zoom-in for small templates but keep within the global zoom range
+    const scale = Math.max(0.25, Math.min(desiredScale, 1.35));
     
     // Center the view
     const translateX = viewportWidth / 2 - centerX * scale;
@@ -1907,6 +2017,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     const newWidget = createPromptWindowWidget(widgets);
     setWidgets((prev) => [...prev, newWidget]);
     toast.success("Prompt Window Added");
+  };
+
+  const handleAddPromptScanner = () => {
+    if (widgets.some((w) => w.type === "prompt-scanner")) {
+      toast.info("Prompt Scanner is already in this workspace");
+      return;
+    }
+
+    const newWidget = createPromptScannerWidget(widgets);
+    setWidgets((prev) => [...prev, newWidget]);
+    toast.success("Prompt Scanner Added");
+  };
+
+  const handleAddPromptLibrary = () => {
+    if (widgets.some((w) => w.type === "prompt-library")) {
+      toast.info("Prompt Library is already in this workspace");
+      return;
+    }
+
+    const newWidget = createPromptLibraryWidget(widgets);
+    setWidgets((prev) => [...prev, newWidget]);
+    toast.success("Prompt Library Added");
   };
 
   const handleCopyPrompt = (text: string) => {
@@ -2689,9 +2821,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
     const handleY = widget.y + widget.height / 2; // Center vertically
 
-    // For prompt window, balls are centered on the edge (half outside, half inside)
+    // For prompt window, prompt scanner, and prompt library, balls are centered on the edge (half outside, half inside)
     // For other nodes, balls are positioned at -7px from edge (half of 14px ball diameter)
-    if (widget.type === "prompt-window") {
+    if (widget.type === "prompt-window" || widget.type === "prompt-scanner" || widget.type === "prompt-library") {
       const handleX = handleType === "input" ? widget.x : widget.x + widget.width;
     return { x: handleX, y: handleY };
     } else {
@@ -2875,13 +3007,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           {!landingChatInput && !landingIsFocused && (
                             <div className="absolute inset-0 flex items-center pointer-events-none z-0">
                               <span className="text-sm sm:text-base text-white/50 leading-relaxed">
-                                {selectedMode === "website"
-                                  ? "Generate a prompt for a website…"
-                                  : selectedMode === "app"
-                                  ? "Generate a prompt for an app…"
-                                  : selectedMode === "game"
-                                  ? "Generate a prompt for a game…"
-                                  : "Generate a prompt for your project…"}
+                                {landingDisplayedText}
+                                {landingShowCursor && <span className="inline-block w-0.5 h-4 bg-white/50 ml-1 animate-pulse" />}
                               </span>
                             </div>
                           )}
@@ -3527,6 +3654,134 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               >
                 {widgets.map((widget) => {
                   const isSelected = selectedWidgetIds.has(widget.id);
+
+                  // --- RENDER PROMPT SCANNER ---
+                  if (widget.type === "prompt-scanner") {
+                    return (
+                      <div
+                        key={widget.id}
+                        className="absolute z-20"
+                        style={{ left: widget.x, top: widget.y }}
+                      >
+                        <ResizableNodeWrapper
+                          id={widget.id}
+                          width={widget.width || 400}
+                          height={widget.height || 300}
+                          onResizeNode={onResizeNode}
+                          onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                        >
+                          <div className="w-full h-full flex flex-col rounded-xl border border-white/10 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-white shadow-md">
+                            {/* Handles */}
+                            <div
+                              className={`absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                                draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                                  ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                  : connecting && connecting.sourceId !== widget.id
+                                    ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                    : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                              }`}
+                              style={{ pointerEvents: "auto", zIndex: 1000 }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleHandleMouseDown(e, widget.id, "input");
+                              }}
+                            />
+                            <div
+                              className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                                draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                                  ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                  : connecting && connecting.sourceId === widget.id
+                                    ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                    : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                              }`}
+                              style={{ pointerEvents: "auto", zIndex: 1000 }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleHandleMouseDown(e, widget.id, "output");
+                              }}
+                            />
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-3 border-b border-white/10">
+                              <div className="flex items-center gap-2">
+                                <Search size={16} className="text-neutral-400" />
+                                <h3 className="text-sm font-semibold text-white">{widget.title || "Prompt Scanner"}</h3>
+                              </div>
+                            </div>
+                            {/* Content */}
+                            <div className="flex-1 p-4 overflow-y-auto">
+                              <p className="text-xs text-neutral-400">
+                                Connect this node to verify that all prompts in your flow work correctly.
+                              </p>
+                            </div>
+                          </div>
+                        </ResizableNodeWrapper>
+                      </div>
+                    );
+                  }
+
+                  // --- RENDER PROMPT LIBRARY ---
+                  if (widget.type === "prompt-library") {
+                    return (
+                      <div
+                        key={widget.id}
+                        className="absolute z-20"
+                        style={{ left: widget.x, top: widget.y }}
+                      >
+                        <ResizableNodeWrapper
+                          id={widget.id}
+                          width={widget.width || 400}
+                          height={widget.height || 300}
+                          onResizeNode={onResizeNode}
+                          onMouseDown={(e) => handleMouseDown(e, widget.id, "move")}
+                        >
+                          <div className="w-full h-full flex flex-col rounded-xl border border-white/10 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-white shadow-md">
+                            {/* Handles */}
+                            <div
+                              className={`absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 flow-handle flow-handle-target w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                                draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "input"
+                                  ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                  : connecting && connecting.sourceId !== widget.id
+                                    ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                    : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                              }`}
+                              style={{ pointerEvents: "auto", zIndex: 1000 }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleHandleMouseDown(e, widget.id, "input");
+                              }}
+                            />
+                            <div
+                              className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 flow-handle flow-handle-source w-3.5 h-3.5 rounded-full border-2 cursor-pointer transition-all duration-200 shadow-lg ${
+                                draggingHandle?.nodeId === widget.id && draggingHandle?.handleType === "output"
+                                  ? "bg-neutral-400 border-neutral-200 scale-150 shadow-neutral-400/50"
+                                  : connecting && connecting.sourceId === widget.id
+                                    ? "bg-neutral-500/90 border-neutral-300 scale-110 shadow-neutral-300/50"
+                                    : "bg-neutral-600/70 border-neutral-400/80 hover:bg-neutral-500/80 hover:scale-125 hover:border-neutral-300"
+                              }`}
+                              style={{ pointerEvents: "auto", zIndex: 1000 }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleHandleMouseDown(e, widget.id, "output");
+                              }}
+                            />
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-3 border-b border-white/10">
+                              <div className="flex items-center gap-2">
+                                <FolderKanban size={16} className="text-neutral-400" />
+                                <h3 className="text-sm font-semibold text-white">{widget.title || "Prompt Library"}</h3>
+                              </div>
+                            </div>
+                            {/* Content */}
+                            <div className="flex-1 p-4 overflow-y-auto">
+                              <p className="text-xs text-neutral-400">
+                                Access your purchased prompts here. Connect to add them to your flow.
+                              </p>
+                            </div>
+                          </div>
+                        </ResizableNodeWrapper>
+                      </div>
+                    );
+                  }
 
                   // --- RENDER PROMPT WINDOW ---
                   if (widget.type === "prompt-window") {
@@ -4324,9 +4579,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       <AnimatePresence>
                         {expandedSections.templates && (
                           <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
+                            initial={{ height: 0 }}
+                            animate={{ height: "auto" }}
+                            exit={{ height: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
                             className="overflow-hidden"
                           >
                             <div className="pl-2 space-y-1 mt-1">
@@ -4366,6 +4622,77 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                   </span>
                                   <span className="block text-[10px] text-neutral-500 truncate">
                                     Input {"->"} Sentiment {"->"} Save
+                                  </span>
+                                </div>
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                />
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* NEW: Beymflow Tools Section (Under Templates) */}
+                    <div className="mb-2">
+                      <button
+                        onClick={() => toggleSection("beymflowTools")}
+                        className="w-full flex items-center justify-between p-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Box size={14} className="text-neutral-500" />
+                          Beymflow tools
+                        </div>
+                        {expandedSections.beymflowTools ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      </button>
+
+                      <AnimatePresence>
+                        {expandedSections.beymflowTools && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-2 space-y-1 mt-1">
+                              {/* Prompt Scanner Node */}
+                              <button
+                                onClick={() => handleAddPromptScanner()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
+                                  <Search size={14} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    Prompt Scanner
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Verify prompt functionality
+                                  </span>
+                                </div>
+                                <Plus
+                                  size={12}
+                                  className="text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                />
+                              </button>
+
+                              {/* Prompt Library Node */}
+                              <button
+                                onClick={() => handleAddPromptLibrary()}
+                                className="w-full flex items-center gap-3 p-2 hover:bg-neutral-800/50 rounded-lg group transition-colors text-left cursor-pointer"
+                              >
+                                <div className="p-1.5 rounded-md bg-neutral-900 text-neutral-300 group-hover:bg-neutral-800 flex-shrink-0">
+                                  <FolderKanban size={14} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="block text-xs font-medium text-neutral-300 group-hover:text-white">
+                                    Prompt Library
+                                  </span>
+                                  <span className="block text-[10px] text-neutral-500 truncate">
+                                    Your purchased prompts
                                   </span>
                                 </div>
                                 <Plus

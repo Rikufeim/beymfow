@@ -23,3 +23,6 @@ export const typographyScale = {
   promptWindowHeader: (fontScale: number) => 13.5 * fontScale,
 };
 
+
+
+

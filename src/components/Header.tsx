@@ -21,15 +21,15 @@ const Header = () => {
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
-        <Link to="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
+        <Link to="/" className="flex items-center gap-0 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
           <img
             src="/images/BeymflowlogoREAL.png"
             alt="Beymflow Logo"
             className="h-[50px] sm:h-[60px] object-contain"
           />
-          <span className="relative text-lg sm:text-xl font-semibold tracking-[0.35em] text-white uppercase hidden sm:block">
+          <span className="relative text-sm sm:text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1">
             Beymflow
-            <span className="absolute -top-2 -right-6 text-[10px] tracking-normal text-white/60 lowercase font-normal">
+            <span className="absolute -top-2 -right-5 text-[9px] tracking-normal text-white/60 lowercase font-normal">
               beta
             </span>
           </span>
@@ -40,18 +40,40 @@ const Header = () => {
       {isHomePage && (
         <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 font-medium">
           {/* 1. Pricing */}
-          <Link to="/premium" className="text-white hover:text-white transition-colors duration-300 text-sm">
+          <Link
+            to="/premium"
+            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+          >
             Pricing
           </Link>
 
-          {/* 2. About Us */}
-          <Link to="/about" className="text-white hover:text-white transition-colors duration-300 text-sm">
+          {/* 2. Products */}
+          <Link
+            to="/prompt-lab-page"
+            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+          >
+            Products
+          </Link>
+
+          {/* 3. Tools */}
+          <Link
+            to="/flow-engine"
+            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+          >
+            Tools
+          </Link>
+
+          {/* 4. About Us */}
+          <Link
+            to="/about"
+            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+          >
             About Us
           </Link>
 
-          {/* 3. Community Dropdown */}
+          {/* 5. Community Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-white transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
+            <DropdownMenuTrigger className="relative flex items-center gap-2 text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100">
               Community
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -138,8 +160,20 @@ const Header = () => {
               {isHomePage && (
                 <>
                   <Link
+                    to="/prompt-lab-page"
+                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+                  >
+                    Products
+                  </Link>
+                  <Link
+                    to="/flow-engine"
+                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+                  >
+                    Tools
+                  </Link>
+                  <Link
                     to="/about"
-                    className="text-white/90 hover:text-white transition-colors text-lg font-medium px-4"
+                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
                   >
                     About Us
                   </Link>

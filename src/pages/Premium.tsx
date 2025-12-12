@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 // Pricing data updated to match requirements
 const pricingPlans = [
@@ -149,87 +151,110 @@ const PricingCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.1 * index }}
-      className={`group relative overflow-hidden rounded-3xl border bg-[#0b0d11] p-6 sm:p-8 flex flex-col transition-all duration-300 ${plan.cardStyle}`}
+      className="flex flex-col gap-3"
     >
-      {/* Background Glow Effects */}
-      <div
-        className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full blur-3xl opacity-70 transition-opacity duration-300 group-hover:opacity-100"
-        style={{ background: plan.accent.glow }}
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 -bottom-24 h-48 opacity-40 blur-3xl transition-all duration-300 group-hover:opacity-70"
-        style={{ background: plan.accent.beam }}
-      />
+      {/* Small title above card */}
+      <h3 className="text-xs sm:text-sm font-medium text-white/70 pl-2">
+        {plan.name}
+      </h3>
 
-      {/* Most Popular Tag */}
-      {plan.isPremium && (
-        <div className="absolute top-0 inset-x-0 flex justify-center">
-          <div className="bg-[#facc15] text-black text-xs font-bold px-3 py-1 rounded-b-lg shadow-[0_0_10px_rgba(250,204,21,0.4)] flex items-center gap-1.5 uppercase tracking-wide">
-            <Sparkles className="w-3 h-3" />
-            Most Popular
+      {/* Card - Same style as homepage cards */}
+      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]", plan.isPremium && "transform md:-translate-y-4 z-10")}>
+        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+        <div
+          className={`group relative flex h-full flex-col justify-between rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden transition-all duration-500 ${
+            plan.isPremium ? "group-hover:shadow-[0_0_30px_rgba(250,204,21,0.3)]" : "group-hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+          }`}
+        >
+          {/* Most Popular Tag */}
+          {plan.isPremium && (
+            <div className="absolute top-0 inset-x-0 flex justify-center z-20">
+              <div className="bg-[#facc15] text-black text-xs font-bold px-3 py-1 rounded-b-lg shadow-[0_0_10px_rgba(250,204,21,0.4)] flex items-center gap-1.5 uppercase tracking-wide">
+                <Sparkles className="w-3 h-3" />
+                Most Popular
+              </div>
+            </div>
+          )}
+
+          {/* Card Content */}
+          <div className="p-6 sm:p-8 flex flex-col flex-1">
+            {/* Card Header */}
+            <div className="mb-5 mt-2">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-3 mb-5">
+                {plan.name}
+                {plan.isPremium && <Crown className="w-5 h-5 text-[#facc15]" />}
+              </h2>
+
+              {/* Price */}
+              <div className="flex items-baseline justify-center gap-2 mb-3">
+                <span className="text-4xl sm:text-5xl font-bold text-white">
+                  {plan.price}
+                </span>
+                <span className="text-base text-neutral-400">{plan.period}</span>
+              </div>
+
+              <p className="text-base text-neutral-400 mb-3">{plan.description}</p>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent mb-6" />
+
+            {/* Features List */}
+            <ul className="flex-1 space-y-3 text-base text-neutral-300 text-left mb-8">
+              {plan.features.map((feature, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span
+                    className="mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border text-xs border-white/20 bg-white/10 text-white"
+                  >
+                    ✓
+                  </span>
+                  <span
+                    className={`leading-relaxed ${
+                      plan.isPremium
+                        ? "text-neutral-100 font-medium"
+                        : "text-neutral-300"
+                    }`}
+                  >
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Bottom Action Bar - Same style as homepage */}
+          <div className="p-3 sm:p-4 border-t border-white/5 flex items-center justify-center gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <GlowingEffect 
+                spread={40} 
+                glow 
+                disabled={false} 
+                proximity={0} 
+                inactiveZone={1} 
+                borderWidth={2} 
+                className="opacity-30 rounded-xl" 
+              />
+              <button
+                onClick={() => {
+                  if (plan.name !== "Free" && priceIds[plan.name as keyof typeof priceIds]) {
+                    onSubscribe(priceIds[plan.name as keyof typeof priceIds]!, plan.name);
+                  }
+                }}
+                disabled={isCurrentPlan || plan.name === "Free"}
+                className={`relative z-10 w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-transparent transition-all duration-500 font-medium text-xs sm:text-sm ${
+                  isCurrentPlan
+                    ? "border border-green-500/50 bg-green-500/15 text-green-300 cursor-not-allowed"
+                    : plan.isPremium
+                      ? "bg-[#facc15] text-black hover:bg-[#fbbf24]"
+                      : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                } disabled:cursor-not-allowed`}
+              >
+                {isCurrentPlan ? "Current Plan" : plan.buttonText}
+              </button>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Card Header */}
-      <div className="mb-5 mt-2">
-        <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-3 mb-5">
-          {plan.name}
-          {plan.isPremium && <Crown className="w-5 h-5 text-[#facc15]" />}
-        </h2>
-
-        {/* Price */}
-        <div className="flex items-baseline justify-center gap-2 mb-3">
-          <span className="text-4xl sm:text-5xl font-bold text-white">
-            {plan.price}
-          </span>
-          <span className="text-base text-neutral-400">{plan.period}</span>
-        </div>
-
-        <p className="text-base text-neutral-400 mb-3">{plan.description}</p>
       </div>
-
-      {/* Divider */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent mb-6" />
-
-      {/* Features List */}
-      <ul className="flex-1 space-y-3 text-base text-neutral-300 text-left mb-8">
-        {plan.features.map((feature, i) => (
-          <li key={i} className="flex items-start gap-3">
-            <span
-              className="mt-1 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border text-xs border-white/20 bg-white/10 text-white"
-            >
-              ✓
-            </span>
-            <span
-              className={`leading-relaxed ${
-                plan.isPremium
-                  ? "text-neutral-100 font-medium"
-                  : "text-neutral-300"
-              }`}
-            >
-              {feature}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* CTA Button */}
-      <button
-        onClick={() => {
-          if (plan.name !== "Free" && priceIds[plan.name as keyof typeof priceIds]) {
-            onSubscribe(priceIds[plan.name as keyof typeof priceIds]!, plan.name);
-          }
-        }}
-        disabled={isCurrentPlan || plan.name === "Free"}
-        className={`w-full text-center text-base font-semibold rounded-xl px-6 py-3 transition-colors ${
-          isCurrentPlan
-            ? "border border-green-500/50 bg-green-500/15 text-green-300 cursor-not-allowed"
-            : plan.buttonStyle
-        } disabled:cursor-not-allowed`}
-      >
-        {isCurrentPlan ? "Current Plan" : plan.buttonText}
-      </button>
     </motion.div>
   );
 };

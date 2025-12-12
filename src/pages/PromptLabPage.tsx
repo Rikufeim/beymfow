@@ -22,6 +22,7 @@ import {
   Plus,
   Save,
   ArrowRight,
+  Boxes,
 } from "lucide-react";
 
 const PLACEHOLDERS = [
@@ -967,7 +968,7 @@ Before finalizing, verify:
                     className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
                   >
                     <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                      <Sparkles size={24} className="text-white group-hover:scale-110 transition-transform" />
+                      <Boxes size={24} className="text-white group-hover:scale-110 transition-transform" />
                     </div>
                     <span className="text-lg font-semibold tracking-tight text-white">Prompt Library</span>
                   </button>

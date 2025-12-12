@@ -39,12 +39,26 @@ const PromptGeneratorPage = () => {
     creativity: "border-purple-500/40 hover:border-purple-500/60",
   };
 
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    target.style.height = "auto";
+    const scrollHeight = target.scrollHeight;
+    const maxHeight = 200;
+    if (scrollHeight <= maxHeight) {
+      target.style.height = `${scrollHeight}px`;
+      target.style.overflowY = "hidden";
+    } else {
+      target.style.height = `${maxHeight}px`;
+      target.style.overflowY = "auto";
     }
-  }, [input]);
+  };
+
+  // Initialize textarea height
+  useEffect(() => {
+    if (textareaRef.current && !input.trim()) {
+      textareaRef.current.style.height = "48px";
+    }
+  }, []);
 
   useEffect(() => {
     if (isFocused || input.trim()) {
@@ -81,6 +95,7 @@ const PromptGeneratorPage = () => {
       setPlaceholderIndex(0);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = "48px";
       }
     }
   }, [isFocused, input]);
@@ -184,23 +199,25 @@ const PromptGeneratorPage = () => {
         </GlassButton>
       </div>
 
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-24">
+      <div className="flex flex-col items-center justify-start px-4 pt-24 pb-8">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-            <span className="text-white">Prompt </span>
-            <span className="text-purple-500">Generator</span>
+            <span className="text-white">Make powerful prompts</span>
           </h1>
-          <p className="text-white/60 text-lg">Transform your ideas into powerful AI prompts</p>
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            with pure flow
+          </h2>
+          <p className="text-white/60 text-lg mt-8">Let your ideas move clean.</p>
         </div>
 
         {/* Generator */}
-        <div className="w-full max-w-4xl mx-auto space-y-6">
-          <div className="relative">
+        <div className="w-full max-w-2xl mx-auto">
+          <div className="relative mt-6">
             <div
-              className={`flex items-start gap-2 sm:gap-3 bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 border transition-all duration-300 ${categoryColors[selectedCategory]}`}
+              className={`relative bg-transparent rounded-[2rem] px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 border-[0.5px] border-white/5 transition-all duration-300 ${isFocused || input.trim() ? categoryColors[selectedCategory] : ""}`}
             >
-              <div className="pt-2">
+              <div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0">
@@ -231,18 +248,18 @@ const PromptGeneratorPage = () => {
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  onInput={handleInput}
                   onKeyDown={handleKeyDown}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={displayedText}
                   rows={1}
-                  className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white placeholder:text-white/50 resize-none overflow-hidden py-2 leading-relaxed text-left"
-                  style={{ minHeight: "24px", maxHeight: "200px" }}
+                  className="w-full bg-transparent resize-none outline-none text-sm sm:text-base text-white placeholder:text-white/50 min-h-[48px] max-h-[200px] overflow-y-auto leading-relaxed text-left py-2"
                   maxLength={2000}
                 />
               </div>
 
-              <div className="pt-2">
+              <div>
                 <button
                   onClick={handleGenerate}
                   disabled={isLoading || !input.trim()}
@@ -258,7 +275,7 @@ const PromptGeneratorPage = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-6">
             <GlassButton
               size="sm"
               onClick={() => setSelectedModel("fast")}

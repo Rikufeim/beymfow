@@ -4,6 +4,8 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { Home, ArrowLeft, Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 type Domain = "creativity" | "personal" | "business" | "crypto";
 type PromptTier = "free" | "premium";
@@ -281,12 +283,12 @@ const PromptLibraryPage = () => {
                     key={prompt.id}
                     layoutId={`card-${prompt.id}`}
                     onClick={() => setActivePrompt(prompt)}
-                    className={`group relative bg-white/5 backdrop-blur-md border rounded-2xl p-6 flex flex-col justify-between transition-all hover:shadow-2xl overflow-hidden cursor-pointer ${isPremium ? "border-amber-500/20 hover:border-amber-500/40" : "border-white/10 hover:border-white/20"}`}
+                    className="group relative min-h-[11rem] cursor-pointer"
                   >
-                    {isPremium && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-                    )}
-                    <div className="relative z-10">
+                    <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                      <div className="relative flex h-full flex-col justify-between rounded-[1.05rem] bg-black p-6 overflow-hidden will-change-transform transition-all hover:shadow-2xl" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                        <div className="relative z-10 flex flex-col justify-between h-full">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider ${domainConfig?.color}`}>
                           {domainConfig?.emoji} {domainConfig?.label}
@@ -316,20 +318,22 @@ const PromptLibraryPage = () => {
                           <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-70">{prompt.prompt}</p>
                         )}
                       </div>
-                    </div>
-                    <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Tag size={14} className="text-neutral-600" />
-                        {prompt.tags.map((tag) => (
-                          <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
-                        ))}
+                        </div>
+                        <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Tag size={14} className="text-neutral-600" />
+                            {prompt.tags.map((tag) => (
+                              <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
+                            ))}
+                          </div>
+                          {isPremium && !isPremiumUnlocked && (
+                            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
+                              <span>Unlock {prompt.price}</span>
+                              <ShoppingCart size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      {isPremium && !isPremiumUnlocked && (
-                        <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
-                          <span>Unlock {prompt.price}</span>
-                          <ShoppingCart size={14} />
-                        </button>
-                      )}
                     </div>
                   </motion.div>
                 );
@@ -351,8 +355,11 @@ const PromptLibraryPage = () => {
               <motion.div
                 layoutId={`card-${activePrompt.id}`}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-neutral-900 border border-white/10 rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="relative rounded-2xl border border-white/10 p-[1px] max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide"
+                style={{ transform: 'translateZ(0)', willChange: 'transform' }}
               >
+                <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                <div className="relative flex flex-col rounded-[1.05rem] bg-black p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider mb-3 ${getDomainConfig(activePrompt.domain)?.color}`}>
@@ -370,7 +377,7 @@ const PromptLibraryPage = () => {
 
                 <p className="text-white/60 mb-6">{activePrompt.description}</p>
 
-                <div className="bg-black/30 rounded-xl p-6 border border-white/5 mb-6">
+                <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 mb-6">
                   {activePrompt.tier === "premium" && !isPremiumUnlocked ? (
                     <div className="text-center py-8">
                       <Lock className="w-12 h-12 text-amber-500/50 mx-auto mb-4" />
@@ -405,6 +412,7 @@ const PromptLibraryPage = () => {
                     </GlassButton>
                   </div>
                 )}
+                </div>
               </motion.div>
             </motion.div>
           )}
