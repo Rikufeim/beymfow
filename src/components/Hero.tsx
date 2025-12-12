@@ -12,7 +12,7 @@ export default function Hero() {
     >
       {/* Background image with gradient overlay */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-no-repeat bg-[center_50%] md:bg-[center_35%] lg:bg-[center_20%]"
+        className="absolute inset-0 z-0 bg-no-repeat bg-[length:200%_auto] bg-[center_30%] sm:bg-[length:150%_auto] sm:bg-[center_25%] md:bg-cover md:bg-[center_35%] lg:bg-[center_20%]"
         style={{
           backgroundImage: `url(${heroWallpaper})`,
         }}
