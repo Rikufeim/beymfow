@@ -16,7 +16,7 @@ export default function Hero() {
         style={{
           backgroundImage: `url(${heroWallpaper})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
+          backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
         }}
       />
@@ -26,19 +26,17 @@ export default function Hero() {
       <div className="relative z-10 w-full flex flex-col items-center gap-6">
         {/* Otsikko */}
         <h1
-          className="animate-fade-in mx-auto max-w-6xl py-4 text-5xl font-bold leading-tight tracking-tighter opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
+          className="animate-fade-in mx-auto max-w-6xl text-5xl font-bold leading-none tracking-tight opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
           style={{
             animationDelay: "0.1s",
             animationFillMode: "forwards",
           }}
         >
-          <span className="block text-white/85 mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold">
-            <span className="whitespace-nowrap" style={{ fontFamily: "Outfit, sans-serif" }}>
-              Make powerful
-            </span>
+          <span className="block text-white/90 text-center text-5xl sm:text-6xl md:text-7xl font-semibold" style={{ fontFamily: "Outfit, sans-serif" }}>
+            Make powerful
           </span>
-          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-4 my-px font-medium leading-normal">
-            <span className="whitespace-nowrap">prompts with pure flow</span>
+          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-5xl sm:text-6xl md:text-7xl font-medium mt-1 pb-2">
+            prompts with pure flow
           </span>
         </h1>
 
