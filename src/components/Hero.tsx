@@ -8,29 +8,36 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-hidden flex flex-col items-center justify-center pt-20 pb-16 text-center"
-      style={{
-        backgroundImage: `url(${heroWallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center 70%',
-        backgroundRepeat: 'no-repeat',
-      }}
+      className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-visible flex flex-col items-center justify-center pt-20 pb-16 text-center bg-black"
     >
+      {/* Background image with gradient overlay */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(${heroWallpaper})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      {/* Top gradient fade to black */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black to-transparent z-[1]" />
+      
       <div className="relative z-10 w-full flex flex-col items-center gap-6">
         {/* Otsikko */}
         <h1
-          className="animate-fade-in mx-auto max-w-6xl py-2 text-5xl font-bold leading-tight tracking-tighter opacity-0 sm:text-6xl md:text-7xl lg:text-8xl overflow-visible"
+          className="animate-fade-in mx-auto max-w-6xl py-4 text-5xl font-bold leading-tight tracking-tighter opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
           style={{
             animationDelay: "0.1s",
             animationFillMode: "forwards",
           }}
         >
-          <span className="block text-white/85 mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold pb-0">
+          <span className="block text-white/85 mb-2 md:mb-4 text-center mx-0 text-7xl py-px my-0 font-semibold">
             <span className="whitespace-nowrap" style={{ fontFamily: "Outfit, sans-serif" }}>
               Make powerful
             </span>
           </span>
-          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-2 my-px pb-2 font-medium">
+          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-7xl py-4 my-px font-medium leading-normal">
             <span className="whitespace-nowrap">prompts with pure flow</span>
           </span>
         </h1>
