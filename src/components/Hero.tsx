@@ -20,7 +20,7 @@ export default function Hero() {
       />
       {/* Desktop background */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_15%]"
+        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_5%]"
         style={{
           backgroundImage: `url(${heroWallpaper})`,
         }}
