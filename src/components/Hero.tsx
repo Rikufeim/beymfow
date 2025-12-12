@@ -3,6 +3,7 @@
 import { QuickPromptGenerator } from "./QuickPromptGenerator";
 import { PromptSidebar } from "@/components/ui/prompt-sidebar";
 import heroWallpaper from "@/assets/hero-wallpaper.png";
+import heroWallpaperMobile from "@/assets/hero-wallpaper-mobile.png";
 
 export default function Hero() {
   return (
@@ -10,9 +11,16 @@ export default function Hero() {
       id="hero"
       className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-visible flex flex-col items-center justify-center pt-20 pb-16 text-center bg-black"
     >
-      {/* Background image with gradient overlay */}
+      {/* Mobile background */}
       <div 
-        className="absolute inset-0 z-0 bg-no-repeat bg-[length:200%_auto] bg-[center_30%] sm:bg-[length:150%_auto] sm:bg-[center_25%] md:bg-cover md:bg-[center_35%] lg:bg-[center_20%]"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat md:hidden"
+        style={{
+          backgroundImage: `url(${heroWallpaperMobile})`,
+        }}
+      />
+      {/* Desktop background */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block md:bg-[center_35%] lg:bg-[center_20%]"
         style={{
           backgroundImage: `url(${heroWallpaper})`,
         }}
