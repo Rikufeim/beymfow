@@ -2,12 +2,19 @@
 
 import { QuickPromptGenerator } from "./QuickPromptGenerator";
 import { PromptSidebar } from "@/components/ui/prompt-sidebar";
+import heroWallpaper from "@/assets/hero-wallpaper.png";
 
 export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-hidden bg-black flex flex-col items-center justify-center pt-20 pb-16 text-center"
+      className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-hidden flex flex-col items-center justify-center pt-20 pb-16 text-center"
+      style={{
+        backgroundImage: `url(${heroWallpaper})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
       <div className="relative z-10 w-full flex flex-col items-center gap-6">
         {/* Otsikko */}
