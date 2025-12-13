@@ -312,7 +312,7 @@ const Auth = () => {
         </div>
 
         {/* Right Side - Image with Overlay */}
-        <div className="hidden lg:flex lg:w-1/2 relative p-6">
+        <div className="hidden lg:flex lg:w-1/2 relative p-12">
           <div className="relative w-full h-full rounded-3xl overflow-hidden">
             <img 
               src={authRightBg}
