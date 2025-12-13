@@ -1994,42 +1994,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     });
   }, []); // Only run once on mount to initialize from loaded widgets
 
-  // AUTO-UPDATE PROMPT NODE: Update Step 7 (website-prompt-output) when any website node content changes
-  useEffect(() => {
-    // Check if we have website flow nodes
-    const hasWebsiteSections = widgets.some(
-      (w) => w.type === "website-section" || w.type === "brandIdentity" || w.id === "website-user-input"
-    );
-    
-    if (!hasWebsiteSections) return;
-    
-    // Find the prompt output node (Step 7)
-    const promptOutputNode = widgets.find((w) => w.id === "website-prompt-output");
-    if (!promptOutputNode) return;
-    
-    // Build the website spec from current widgets and generate prompt
-    const spec = buildWebsiteSpec(widgets);
-    const generatedPrompt = generateWebsitePrompt(spec);
-    
-    // Only update if the prompt has changed
-    if (promptOutputNode.content !== generatedPrompt) {
-      setWidgets((prev) =>
-        prev.map((w) =>
-          w.id === "website-prompt-output"
-            ? { ...w, content: generatedPrompt }
-            : w
-        )
-      );
-    }
-  }, [
-    // Watch specific fields that affect prompt generation
-    widgets.find((w) => w.id === "website-user-input")?.content,
-    widgets.find((w) => w.id === "website-brand-identity")?.brandIdentityData,
-    widgets.find((w) => w.id === "website-purpose")?.websiteData,
-    widgets.find((w) => w.id === "website-seo-structure")?.websiteData,
-    widgets.find((w) => w.id === "website-functional-requirements")?.websiteData,
-    widgets.find((w) => w.id === "website-content-inputs")?.websiteData,
-  ]);
+  // Manual generation for website prompt is triggered via the Step 7 button.
+  // AUTO-UPDATE DISABLED for website-prompt-output to allow users to write custom notes.
+
 
   // Handler for resizing nodes using ResizableNode component
   const onResizeNode = useCallback((id: string, width: number, height: number) => {
@@ -2165,10 +2132,36 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   const refreshPromptNode = (promptNodeId: string) => {
+    // Special handling: website flow uses Step 7 node to generate prompt into Prompt Generator window
+    if (promptNodeId === "website-prompt-output") {
+      const hasWebsiteSections = widgets.some(
+        (w) => w.type === "website-section" || w.type === "brandIdentity"
+      );
+
+      if (!hasWebsiteSections) return;
+
+      const spec = buildWebsiteSpec(widgets);
+      const builtPrompt = generateWebsitePrompt(spec);
+      const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
+
+      setWidgets((prev) =>
+        prev.map((widget) =>
+          widget.id === "website-prompt-window"
+            ? { ...widget, content: finalContent }
+            : widget
+        )
+      );
+      return;
+    }
+
     const builtPrompt = buildPromptForPromptNode(promptNodeId, widgets, edges);
     const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
 
-    setWidgets((prev) => prev.map((widget) => (widget.id === promptNodeId ? { ...widget, content: finalContent } : widget)));
+    setWidgets((prev) =>
+      prev.map((widget) =>
+        widget.id === promptNodeId ? { ...widget, content: finalContent } : widget
+      )
+    );
   };
 
   // --- Helper Functions for Button Zoom ---
@@ -2305,7 +2298,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         y: startY + outputRowOffset,
         width: 400,
         height: 600,
-        content: PROMPT_PLACEHOLDER,
+        content: "",
         isPromptNode: true,
       },
       {
@@ -3909,15 +3902,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     // Get content from Step 7 node (which is continuously updated from global state)
                     const step7Content = step7Node?.content || "";
                     
-                    // For website flows, always use Step 7 content in preview mode
-                    const hasWebsiteSections = widgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
-                    const promptContent = hasWebsiteSections ? step7Content : (livePrompt || "");
-                    
-                    // In preview mode, always show Step 7 content (real-time updates)
-                    // In edit mode, allow manual editing
-                    const displayContent = widget.promptMode === "preview" 
-                      ? promptContent 
-                      : widget.content || promptContent;
+                      // For website flows, use the Prompt Generator node's own content (written by Step 7 button)
+                      const hasWebsiteSections = widgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
+                      const promptContent = hasWebsiteSections ? (widget.content || "") : (livePrompt || "");
+                      
+                      const displayContent = promptContent;
                     
                     // Calculate input status for visual feedback
                     const userInputNode = widgets.find((w) => w.id === "website-user-input");
@@ -4005,35 +3994,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               title="Copy Prompt"
                             >
                               <Copy size={12} />
-                            </button>
-                            <div className="w-px bg-neutral-800 mx-0.5" />
-                            <button
-                              onClick={() => {
-                                // If switching to Edit, pre-fill if empty
-                                if (widget.promptMode !== "edit" && !widget.content) {
-                                  updateWidget(widget.id, "content", promptContent);
-                                }
-                                updateWidget(widget.id, "promptMode", "edit");
-                              }}
-                              className={`p-1 rounded ${
-                                widget.promptMode === "edit"
-                                  ? "bg-neutral-700 text-white"
-                                  : "text-neutral-500 hover:text-neutral-300"
-                              }`}
-                              title="Edit Mode"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button
-                              onClick={() => updateWidget(widget.id, "promptMode", "preview")}
-                              className={`p-1 rounded ${
-                                widget.promptMode === "preview" || !widget.promptMode
-                                  ? "bg-neutral-700 text-white"
-                                  : "text-neutral-500 hover:text-neutral-300"
-                              }`}
-                              title="Preview Mode"
-                            >
-                              <Eye size={12} />
                             </button>
                           </div>
                         </div>
@@ -4433,24 +4393,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       </div>
                         
                         {/* Generate Button for Prompt Nodes */}
-                        {isPromptNode && (
+                        {isPromptNode && widget.id === "website-prompt-output" && (
                           <div className="px-3 py-2 border-b border-neutral-800/50 bg-neutral-900/30 flex-shrink-0">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 refreshPromptNode(widget.id);
-                                toast.success("Prompt generated!");
                               }}
-                              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-purple-900/30"
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-100 text-sm font-medium rounded-lg transition-all duration-200 shadow-md"
                             >
-                              <Sparkles size={14} className="animate-pulse" />
+                              <Sparkles size={14} />
                               Generate Prompt
                             </button>
                           </div>
                         )}
                         
                         <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 flow-node-scroll">
-                          {isPromptNode ? (
+                          {isPromptNode && widget.id !== "website-prompt-output" ? (
                             <textarea
                               readOnly
                               className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed flow-node-scroll"
@@ -4463,7 +4422,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               value={widget.content || ""}
                               onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                               onMouseDown={(e) => e.stopPropagation()}
-                              placeholder="Content..."
+                              placeholder={widget.id === "website-prompt-output" ? "Add any extra instructions or context for the final prompt..." : "Content..."}
                             />
                           )}
                         </div>
