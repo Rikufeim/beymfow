@@ -570,66 +570,141 @@ const buildWebsiteSpec = (nodes: Widget[]): WebsiteSpec => {
   return spec;
 };
 
-// Generate website prompt from specification
+// Generate website prompt from specification - Intelligent Prompt Architect
 const generateWebsitePrompt = (spec: WebsiteSpec): string => {
-  let prompt = `You are an expert web designer, copywriter, and UX strategist.
-Use the following project specification to create a complete website prompt.
+  // Extract and synthesize data
+  const projectDescription = spec.userInput?.trim() || "";
+  const brand = spec.brandIdentity?.fields || {};
+  const purpose = spec.websitePurpose?.fields || {};
+  const seo = spec.seoStructure?.fields || {};
+  const functional = spec.functionalRequirements?.fields || {};
+  const content = spec.contentInputs?.fields || {};
 
-### Project Overview
-${spec.userInput || "[No user input provided]"}
+  // Determine project type and infer context
+  const hasVisualIdentity = brand.primaryColor || brand.styleMood || brand.fontFamily;
+  const hasAudienceData = purpose.targetAudience || purpose.problem;
+  const hasSeoData = seo.keywords || seo.pageStructure;
+  const hasFunctionalData = functional.ctas || functional.animations || functional.layouts;
+  const hasContentData = content.copy || content.offers || content.references;
+
+  // Infer tone and style
+  const inferredTone = brand.toneOfVoice || "professional and approachable";
+  const inferredStyle = brand.styleMood || "modern and clean";
+  const inferredFont = brand.fontFamily || "a refined sans-serif typeface";
+
+  // Build the synthesized prompt
+  let prompt = `## Role & Perspective
+
+You are acting as a senior product designer, brand strategist, and frontend architect. Your task is to design and build a complete, polished website that feels intentional, premium, and conversion-optimized.
+
+## Project Overview
 
 `;
 
-  if (spec.brandIdentity) {
-    prompt += `### Brand Identity
-- Primary Color: ${spec.brandIdentity.fields.primaryColor || "[Not specified]"}
-- Secondary Color: ${spec.brandIdentity.fields.secondaryColor || "[Not specified]"}
-- Accent Color: ${spec.brandIdentity.fields.accentColor || "[Not specified]"}
-- Font Family: ${spec.brandIdentity.fields.fontFamily || "[Not specified]"}
-- Style / Mood: ${spec.brandIdentity.fields.styleMood || "[Not specified]"}
-- Tone of Voice: ${spec.brandIdentity.fields.toneOfVoice || "[Not specified]"}
-
-`;
+  if (projectDescription) {
+    prompt += `${projectDescription}\n\n`;
+  } else {
+    prompt += `Create a modern, responsive website that serves its intended purpose with clarity and visual sophistication.\n\n`;
   }
 
-  if (spec.websitePurpose) {
-    prompt += `### Website Purpose
-- Problem to Solve: ${spec.websitePurpose.fields.problem || "[Not specified]"}
-- Target Audience: ${spec.websitePurpose.fields.targetAudience || "[Not specified]"}
-- Goals: ${spec.websitePurpose.fields.goals || "[Not specified]"}
+  // Audience & Experience Goals
+  prompt += `## Audience & Experience Goals\n\n`;
 
-`;
+  if (hasAudienceData) {
+    if (purpose.targetAudience) {
+      prompt += `This website is designed for ${purpose.targetAudience}. `;
+    }
+    if (purpose.problem) {
+      prompt += `It exists to solve a core challenge: ${purpose.problem}. `;
+    }
+    if (purpose.goals) {
+      prompt += `The primary objective is to ${purpose.goals}.\n\n`;
+    } else {
+      prompt += `\n\n`;
+    }
+  } else {
+    prompt += `Design for users who value clarity, speed, and trust. The experience should feel intuitive from the first interaction, guiding visitors naturally toward the primary action.\n\n`;
   }
 
-  if (spec.seoStructure) {
-    prompt += `### SEO & Structure
-- Primary Keywords: ${spec.seoStructure.fields.keywords || "[Not specified]"}
-- Meta Descriptions: ${spec.seoStructure.fields.metaDescriptions || "[Not specified]"}
-- Page Structure: ${spec.seoStructure.fields.pageStructure || "[Not specified]"}
+  // Design & Logic Principles
+  prompt += `## Design & Logic Principles\n\n`;
 
-`;
+  prompt += `**Visual Identity:** `;
+  if (hasVisualIdentity) {
+    const colors = [
+      brand.primaryColor && `primary color ${brand.primaryColor}`,
+      brand.secondaryColor && `secondary ${brand.secondaryColor}`,
+      brand.accentColor && `accent ${brand.accentColor}`,
+    ].filter(Boolean).join(", ");
+    
+    prompt += colors ? `Use a palette built around ${colors}. ` : "";
+    prompt += `The typography should leverage ${inferredFont} for a ${inferredStyle} aesthetic. `;
+    if (brand.styleMood) {
+      prompt += `The overall mood should feel ${brand.styleMood}.\n\n`;
+    } else {
+      prompt += `\n\n`;
+    }
+  } else {
+    prompt += `Establish a cohesive color system with strong contrast. Use modern typography that balances readability with character. Embrace generous whitespace and intentional hierarchy.\n\n`;
   }
 
-  if (spec.functionalRequirements) {
-    prompt += `### Functional Requirements
-- CTAs: ${spec.functionalRequirements.fields.ctas || "[Not specified]"}
-- Animations & Interactions: ${spec.functionalRequirements.fields.animations || "[Not specified]"}
-- Layout Preferences: ${spec.functionalRequirements.fields.layouts || "[Not specified]"}
+  prompt += `**Tone & Voice:** Communicate in a tone that is ${inferredTone}. Every piece of copy should feel deliberate, concise, and aligned with the brand personality.\n\n`;
 
-`;
+  if (hasSeoData) {
+    prompt += `**Structure & Discoverability:** `;
+    if (seo.keywords) {
+      prompt += `Optimize for keywords including: ${seo.keywords}. `;
+    }
+    if (seo.pageStructure) {
+      prompt += `Structure the site as: ${seo.pageStructure}. `;
+    }
+    if (seo.metaDescriptions) {
+      prompt += `Meta descriptions should emphasize: ${seo.metaDescriptions}. `;
+    }
+    prompt += `\n\n`;
   }
 
-  if (spec.contentInputs) {
-    prompt += `### Content Inputs
-- Core Messaging and Copy Ideas: ${spec.contentInputs.fields.copy || "[Not specified]"}
-- Offers / Pricing: ${spec.contentInputs.fields.offers || "[Not specified]"}
-- References / Case Studies: ${spec.contentInputs.fields.references || "[Not specified]"}
-
-`;
+  if (hasFunctionalData) {
+    prompt += `**Interactions & Functionality:** `;
+    if (functional.ctas) {
+      prompt += `Primary calls-to-action: ${functional.ctas}. `;
+    }
+    if (functional.animations) {
+      prompt += `Motion design approach: ${functional.animations}. `;
+    }
+    if (functional.layouts) {
+      prompt += `Layout preferences: ${functional.layouts}. `;
+    }
+    prompt += `\n\n`;
   }
 
-  prompt += `### Task
-Using all the information above, generate a high-quality website prompt I can use in Lovable (or any other AI website builder) to design and implement this website.`;
+  // Execution Instructions
+  prompt += `## Execution Instructions\n\n`;
+
+  prompt += `1. **Think systematically** - Build with a component-first mindset. Every element should be reusable and consistent.\n\n`;
+  
+  prompt += `2. **Prioritize hierarchy** - The most important information should be immediately visible. Use size, color, and spacing to guide attention.\n\n`;
+  
+  prompt += `3. **Design for conversion** - Every page should have a clear purpose. Remove friction, minimize distractions, and make the next step obvious.\n\n`;
+  
+  prompt += `4. **Responsive by default** - The experience must be flawless on mobile, tablet, and desktop. Design mobile-first.\n\n`;
+  
+  prompt += `5. **Performance matters** - Optimize for speed. Lazy load images, minimize dependencies, and keep the DOM clean.\n\n`;
+
+  if (hasContentData) {
+    prompt += `## Content Direction\n\n`;
+    if (content.copy) {
+      prompt += `Core messaging: ${content.copy}\n\n`;
+    }
+    if (content.offers) {
+      prompt += `Value proposition / offers: ${content.offers}\n\n`;
+    }
+    if (content.references) {
+      prompt += `Reference materials and inspiration: ${content.references}\n\n`;
+    }
+  }
+
+  prompt += `---\n\nDeliver a complete, production-ready implementation that embodies these principles. The result should feel like the work of a senior design team, not a template.`;
 
   return prompt;
 };
