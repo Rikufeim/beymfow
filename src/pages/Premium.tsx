@@ -193,24 +193,23 @@ const Premium = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="relative z-10 max-w-7xl w-full mx-auto">
-          <div className="flex flex-col items-end">
-            {/* Title - Right aligned */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white mb-12">
-              Every plan includes
-            </h2>
-            
-            {/* Features Grid - Right aligned */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
-              {includedFeatures.map((col, colIndex) => (
-                <ul key={colIndex} className="space-y-4">
-                  {col.items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-lime-400 flex-shrink-0" />
-                      <span className="text-sm sm:text-base text-white">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ))}
+          <div className="flex flex-col lg:flex-row lg:justify-end">
+            {/* Right side content */}
+            <div className="lg:w-1/2 flex flex-col items-end">
+              {/* Title - Right aligned */}
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white mb-12 text-right">
+                Every plan includes
+              </h2>
+              
+              {/* Features List - Right aligned */}
+              <ul className="space-y-4">
+                {includedFeatures[0].items.map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-lime-400 flex-shrink-0" />
+                    <span className="text-sm sm:text-base text-white">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
