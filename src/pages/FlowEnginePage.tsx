@@ -1919,6 +1919,43 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     });
   }, []); // Only run once on mount to initialize from loaded widgets
 
+  // AUTO-UPDATE PROMPT NODE: Update Step 7 (website-prompt-output) when any website node content changes
+  useEffect(() => {
+    // Check if we have website flow nodes
+    const hasWebsiteSections = widgets.some(
+      (w) => w.type === "website-section" || w.type === "brandIdentity" || w.id === "website-user-input"
+    );
+    
+    if (!hasWebsiteSections) return;
+    
+    // Find the prompt output node (Step 7)
+    const promptOutputNode = widgets.find((w) => w.id === "website-prompt-output");
+    if (!promptOutputNode) return;
+    
+    // Build the website spec from current widgets and generate prompt
+    const spec = buildWebsiteSpec(widgets);
+    const generatedPrompt = generateWebsitePrompt(spec);
+    
+    // Only update if the prompt has changed
+    if (promptOutputNode.content !== generatedPrompt) {
+      setWidgets((prev) =>
+        prev.map((w) =>
+          w.id === "website-prompt-output"
+            ? { ...w, content: generatedPrompt }
+            : w
+        )
+      );
+    }
+  }, [
+    // Watch specific fields that affect prompt generation
+    widgets.find((w) => w.id === "website-user-input")?.content,
+    widgets.find((w) => w.id === "website-brand-identity")?.brandIdentityData,
+    widgets.find((w) => w.id === "website-purpose")?.websiteData,
+    widgets.find((w) => w.id === "website-seo-structure")?.websiteData,
+    widgets.find((w) => w.id === "website-functional-requirements")?.websiteData,
+    widgets.find((w) => w.id === "website-content-inputs")?.websiteData,
+  ]);
+
   // Handler for resizing nodes using ResizableNode component
   const onResizeNode = useCallback((id: string, width: number, height: number) => {
     setWidgets((prev) =>
