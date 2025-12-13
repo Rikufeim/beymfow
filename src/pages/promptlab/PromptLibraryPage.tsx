@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Home, ArrowLeft, Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Twemoji } from "@/components/Twemoji";
 
 type Domain = "creativity" | "personal" | "business" | "crypto";
 type PromptTier = "free" | "premium";
@@ -156,6 +156,79 @@ const PROMPTS: LibraryPrompt[] = [
   },
 ];
 
+// Memoized card component for better performance
+const PromptCardItem = memo(({ 
+  prompt, 
+  domainConfig, 
+  isPremiumUnlocked,
+  onClick 
+}: { 
+  prompt: LibraryPrompt; 
+  domainConfig: typeof DOMAINS[0] | undefined;
+  isPremiumUnlocked: boolean;
+  onClick: () => void;
+}) => {
+  const isPremium = prompt.tier === "premium";
+  
+  return (
+    <div
+      onClick={onClick}
+      className="group relative min-h-[11rem] cursor-pointer"
+    >
+      <div className="relative h-full rounded-2xl border border-white/10 bg-black p-6 overflow-hidden transition-all duration-200 hover:border-white/20 hover:bg-white/[0.02]">
+        <div className="relative z-10 flex flex-col justify-between h-full">
+          <div className="flex items-start justify-between mb-4">
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider ${domainConfig?.color}`}>
+              <Twemoji emoji={domainConfig?.emoji || "📝"} />
+              <span>{domainConfig?.label}</span>
+            </div>
+            {isPremium ? (
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${isPremiumUnlocked ? "text-green-400 bg-green-900/20 border-green-500/20" : "text-amber-400 bg-amber-900/20 border-amber-500/20"}`}>
+                {isPremiumUnlocked ? <CheckCircle2 size={12} /> : <Lock size={12} />}
+                <span>{isPremiumUnlocked ? "Unlocked" : "Premium"}</span>
+              </div>
+            ) : (
+              <div className="p-2 rounded-lg bg-transparent text-neutral-500 group-hover:text-white transition-colors">
+                <Expand size={16} />
+              </div>
+            )}
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-white">{prompt.title}</h3>
+          <p className="text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-2">{prompt.description}</p>
+          <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/5 relative overflow-hidden h-24">
+            {isPremium && !isPremiumUnlocked ? (
+              <>
+                <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-30 blur-sm select-none">{prompt.prompt}</p>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Lock className="text-amber-500/50" size={24} />
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-70">{prompt.prompt}</p>
+            )}
+          </div>
+        </div>
+        <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Tag size={14} className="text-neutral-600" />
+            {prompt.tags.map((tag) => (
+              <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
+            ))}
+          </div>
+          {isPremium && !isPremiumUnlocked && (
+            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
+              <span>Unlock {prompt.price}</span>
+              <ShoppingCart size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+PromptCardItem.displayName = "PromptCardItem";
+
 const PromptLibraryPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,14 +251,22 @@ const PromptLibraryPage = () => {
     });
   }, [searchQuery, filterDomain, selectedTier]);
 
-  const getDomainConfig = (domain: Domain) => DOMAINS.find((d) => d.key === domain);
+  const getDomainConfig = useCallback((domain: Domain) => DOMAINS.find((d) => d.key === domain), []);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     toast.success("Copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, []);
+
+  const handleCardClick = useCallback((prompt: LibraryPrompt) => {
+    setActivePrompt(prompt);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setActivePrompt(null);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -259,7 +340,7 @@ const PromptLibraryPage = () => {
                 onClick={() => setFilterDomain(domain.key)}
                 className={`px-4 py-2 rounded-full text-sm transition-all flex items-center gap-2 ${filterDomain === domain.key ? `bg-white/10 ${domain.color} border border-white/20` : "text-white/50 hover:text-white/70"}`}
               >
-                <span>{domain.emoji}</span>
+                <Twemoji emoji={domain.emoji} />
                 {domain.label}
               </button>
             ))}
@@ -274,70 +355,15 @@ const PromptLibraryPage = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPrompts.map((prompt) => {
-                const domainConfig = getDomainConfig(prompt.domain);
-                const isPremium = prompt.tier === "premium";
-
-                return (
-                  <motion.div
-                    key={prompt.id}
-                    layoutId={`card-${prompt.id}`}
-                    onClick={() => setActivePrompt(prompt)}
-                    className="group relative min-h-[11rem] cursor-pointer"
-                  >
-                    <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                      <div className="relative flex h-full flex-col justify-between rounded-[1.05rem] bg-black p-6 overflow-hidden will-change-transform transition-all hover:shadow-2xl" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
-                        <div className="relative z-10 flex flex-col justify-between h-full">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider ${domainConfig?.color}`}>
-                          {domainConfig?.emoji} {domainConfig?.label}
-                        </div>
-                        {isPremium ? (
-                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${isPremiumUnlocked ? "text-green-400 bg-green-900/20 border-green-500/20" : "text-amber-400 bg-amber-900/20 border-amber-500/20"}`}>
-                            {isPremiumUnlocked ? <CheckCircle2 size={12} /> : <Lock size={12} />}
-                            <span>{isPremiumUnlocked ? "Unlocked" : "Premium"}</span>
-                          </div>
-                        ) : (
-                          <div className="p-2 rounded-lg bg-transparent text-neutral-500 group-hover:text-white transition-colors">
-                            <Expand size={16} />
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="text-xl font-bold mb-2 text-white">{prompt.title}</h3>
-                      <p className="text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-2">{prompt.description}</p>
-                      <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 mb-4 border border-white/5 relative overflow-hidden h-24">
-                        {isPremium && !isPremiumUnlocked ? (
-                          <>
-                            <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-30 blur-sm select-none">{prompt.prompt}</p>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Lock className="text-amber-500/50" size={24} />
-                            </div>
-                          </>
-                        ) : (
-                          <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-70">{prompt.prompt}</p>
-                        )}
-                      </div>
-                        </div>
-                        <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Tag size={14} className="text-neutral-600" />
-                            {prompt.tags.map((tag) => (
-                              <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
-                            ))}
-                          </div>
-                          {isPremium && !isPremiumUnlocked && (
-                            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
-                              <span>Unlock {prompt.price}</span>
-                              <ShoppingCart size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {filteredPrompts.map((prompt) => (
+                <PromptCardItem
+                  key={prompt.id}
+                  prompt={prompt}
+                  domainConfig={getDomainConfig(prompt.domain)}
+                  isPremiumUnlocked={isPremiumUnlocked}
+                  onClick={() => handleCardClick(prompt)}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -349,26 +375,28 @@ const PromptLibraryPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-              onClick={() => setActivePrompt(null)}
+              onClick={handleCloseModal}
             >
               <motion.div
-                layoutId={`card-${activePrompt.id}`}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative rounded-2xl border border-white/10 p-[1px] max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide"
-                style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+                className="relative rounded-2xl border border-white/10 bg-black p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide"
               >
-                <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                <div className="relative flex flex-col rounded-[1.05rem] bg-black p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider mb-3 ${getDomainConfig(activePrompt.domain)?.color}`}>
-                      {getDomainConfig(activePrompt.domain)?.emoji} {getDomainConfig(activePrompt.domain)?.label}
+                      <Twemoji emoji={getDomainConfig(activePrompt.domain)?.emoji || "📝"} />
+                      <span>{getDomainConfig(activePrompt.domain)?.label}</span>
                     </div>
                     <h2 className="text-2xl font-bold text-white">{activePrompt.title}</h2>
                   </div>
                   <button
-                    onClick={() => setActivePrompt(null)}
+                    onClick={handleCloseModal}
                     className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                   >
                     <X className="w-5 h-5 text-white/60" />
@@ -377,7 +405,7 @@ const PromptLibraryPage = () => {
 
                 <p className="text-white/60 mb-6">{activePrompt.description}</p>
 
-                <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 mb-6">
+                <div className="bg-white/5 rounded-xl p-6 mb-6">
                   {activePrompt.tier === "premium" && !isPremiumUnlocked ? (
                     <div className="text-center py-8">
                       <Lock className="w-12 h-12 text-amber-500/50 mx-auto mb-4" />
@@ -412,7 +440,6 @@ const PromptLibraryPage = () => {
                     </GlassButton>
                   </div>
                 )}
-                </div>
               </motion.div>
             </motion.div>
           )}
