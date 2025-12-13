@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Twemoji } from "@/components/Twemoji";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 type Domain = "creativity" | "personal" | "business" | "crypto";
 type PromptTier = "free" | "premium";
@@ -173,10 +174,19 @@ const PromptCardItem = memo(({
   return (
     <div
       onClick={onClick}
-      className="group relative min-h-[11rem] cursor-pointer"
+      className="group relative cursor-pointer"
     >
-      <div className="relative h-full rounded-2xl border border-white/10 bg-black p-6 overflow-hidden transition-all duration-200 hover:border-white/20 hover:bg-white/[0.02]">
-        <div className="relative z-10 flex flex-col justify-between h-full">
+      <div className="relative rounded-2xl border border-white/10 p-[1px]">
+        <GlowingEffect 
+          spread={40} 
+          glow={true}
+          disabled={false} 
+          proximity={64} 
+          inactiveZone={0.01} 
+          borderWidth={2} 
+          className="opacity-70"
+        />
+        <div className="relative flex flex-col rounded-[0.95rem] bg-black p-6 overflow-hidden transition-all duration-200 hover:bg-white/[0.02]">
           <div className="flex items-start justify-between mb-4">
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider ${domainConfig?.color}`}>
               <Twemoji emoji={domainConfig?.emoji || "📝"} />
@@ -194,8 +204,8 @@ const PromptCardItem = memo(({
             )}
           </div>
           <h3 className="text-xl font-bold mb-2 text-white">{prompt.title}</h3>
-          <p className="text-neutral-400 text-sm mb-6 leading-relaxed line-clamp-2">{prompt.description}</p>
-          <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/5 relative overflow-hidden h-24">
+          <p className="text-neutral-400 text-sm mb-4 leading-relaxed line-clamp-2">{prompt.description}</p>
+          <div className="bg-white/5 rounded-xl p-4 mb-4 border border-white/5 relative overflow-hidden">
             {isPremium && !isPremiumUnlocked ? (
               <>
                 <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-30 blur-sm select-none">{prompt.prompt}</p>
@@ -207,20 +217,20 @@ const PromptCardItem = memo(({
               <p className="text-sm text-neutral-300 font-mono line-clamp-3 opacity-70">{prompt.prompt}</p>
             )}
           </div>
-        </div>
-        <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Tag size={14} className="text-neutral-600" />
-            {prompt.tags.map((tag) => (
-              <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
-            ))}
+          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Tag size={14} className="text-neutral-600" />
+              {prompt.tags.map((tag) => (
+                <span key={tag} className="text-xs text-neutral-500">#{tag}</span>
+              ))}
+            </div>
+            {isPremium && !isPremiumUnlocked && (
+              <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
+                <span>Unlock {prompt.price}</span>
+                <ShoppingCart size={14} />
+              </button>
+            )}
           </div>
-          {isPremium && !isPremiumUnlocked && (
-            <button className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-200 transition-colors">
-              <span>Unlock {prompt.price}</span>
-              <ShoppingCart size={14} />
-            </button>
-          )}
         </div>
       </div>
     </div>
