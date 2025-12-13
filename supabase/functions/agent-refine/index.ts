@@ -1,18 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Input validation schema
-const agentRefineSchema = z.object({
-  spec: z.record(z.any()).refine(
-    (val) => Object.keys(val).length > 0,
-    "Specification cannot be empty"
-  )
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,16 +15,14 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate input
-    const validation = agentRefineSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    const spec = body.spec;
+    if (!spec || typeof spec !== 'object' || Object.keys(spec).length === 0) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: "Specification cannot be empty" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    const { spec } = validation.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {

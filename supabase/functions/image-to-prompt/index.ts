@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,20 +9,6 @@ const corsHeaders = {
 // Server-side cost definitions
 const IMAGE_ANALYSIS_COST = 2;
 
-// Input validation schema with 5MB limit
-const imageAnalysisSchema = z.object({
-  image: z.string()
-    .min(1, "Image data is required")
-    .refine(
-      (val) => val.startsWith('data:image/'),
-      "Must be a valid image data URL"
-    )
-    .refine(
-      (val) => val.length < 5 * 1024 * 1024, // 5MB in base64
-      "Image too large (max 5MB)"
-    )
-});
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,19 +17,27 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate input
-    const validation = imageAnalysisSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    const image = body.image;
+    if (!image || typeof image !== 'string') {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: "Image data is required" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!image.startsWith('data:image/')) {
+      return new Response(
+        JSON.stringify({ error: "Must be a valid image data URL" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (image.length > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max 5MB)" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { image } = validation.data;
     const cost = IMAGE_ANALYSIS_COST;
 
     // Check authentication
@@ -57,10 +50,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -70,10 +60,7 @@ serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -117,10 +104,7 @@ serve(async (req) => {
               error: `Not enough credits. Need ${cost}, have ${creditsRemaining}`,
               requiresSubscription: true
             }),
-            { 
-              status: 403, 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-            }
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
@@ -131,10 +115,7 @@ serve(async (req) => {
       console.error('LOVABLE_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -199,20 +180,14 @@ Return only the prompt text, nothing else.`;
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { 
-            status: 429, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { 
-            status: 402, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -271,9 +246,7 @@ Return only the prompt text, nothing else.`;
 
     return new Response(
       JSON.stringify({ prompt: generatedPrompt.trim() }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -282,10 +255,7 @@ Return only the prompt text, nothing else.`;
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Failed to analyze image' 
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

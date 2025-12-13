@@ -1,20 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Input validation schema
-const agentInputSchema = z.object({
-  userGoal: z.string().trim().min(1, "Goal cannot be empty").max(2000, "Goal too long"),
-  context: z.string().max(5000, "Context too long").optional(),
-  categories: z.array(z.string()).max(10, "Too many categories").optional(),
-  mode: z.string().max(50, "Mode too long").optional(),
-  timeframeDays: z.number().int().min(1).max(365).optional(),
-  expertTone: z.string().max(100, "Expert tone too long").optional()
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,16 +15,26 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate input
-    const validation = agentInputSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    const userGoal = body.userGoal?.trim();
+    if (!userGoal || userGoal.length < 1) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
+        JSON.stringify({ error: "Goal cannot be empty" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (userGoal.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Goal too long" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { userGoal, context, categories, mode, timeframeDays, expertTone } = validation.data;
+    const context = body.context || "";
+    const categories = body.categories || [];
+    const mode = body.mode || "";
+    const timeframeDays = body.timeframeDays || 30;
+    const expertTone = body.expertTone || "";
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
