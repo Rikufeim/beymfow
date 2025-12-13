@@ -2279,11 +2279,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           },
         },
       },
-      // Prompt Generator - also on same row, at the end
+      // Internal prompt source node (not the visible generator)
       {
         id: "website-prompt-output",
         type: "flow-text-gen",
-        title: "Prompt Generator",
+        title: "Prompt Source",
         x: startX + horizontalGap * 6,
         y: startY,
         width: 360,
@@ -2291,9 +2291,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         content: "",
         isPromptNode: true,
       },
+      // Visible Prompt Generator window (connected to Prompt Source)
+      {
+        id: "website-prompt-window",
+        type: "prompt-window",
+        title: "Prompt Generator",
+        x: startX + horizontalGap * 7,
+        y: startY,
+        width: 420,
+        height: 420,
+        content: "",
+        promptMode: "preview",
+      },
     ];
 
-    // Linear pipeline edges - all nodes feed into Prompt Generator
+    // Linear pipeline edges - all nodes feed into Prompt Source, then Prompt Generator window
     const edges: Edge[] = [
       {
         id: "e-1-user-to-brand",
@@ -2325,11 +2337,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         source: "website-content-inputs",
         target: "website-prompt-output",
       },
+      {
+        id: "e-7-output-to-window",
+        source: "website-prompt-output",
+        target: "website-prompt-window",
+      },
     ];
 
     return { nodes, edges };
   };
-
   const createAppFlowPreset = () => {
     const nodes: Widget[] = [
       {
@@ -3872,15 +3888,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     const step7Node = widgets.find(
                       (w) => w.id === "website-prompt-output" || w.title === "Step 7 – Prompt Structure"
                     );
-                    
-                    // Get content from Step 7 node (which is continuously updated from global state)
                     const step7Content = step7Node?.content || "";
                     
-                      // For website flows, use the Prompt Generator node's own content (written by Step 7 button)
-                      const hasWebsiteSections = widgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
-                      const promptContent = hasWebsiteSections ? (widget.content || "") : (livePrompt || "");
-                      
-                      const displayContent = promptContent;
+                    // For website flows, use content from the Prompt Source node (website-prompt-output)
+                    const hasWebsiteSections = widgets.some(
+                      (w) => w.type === "website-section" || w.type === "brandIdentity"
+                    );
+                    const promptContent = hasWebsiteSections
+                      ? step7Content // live content from Prompt Source node
+                      : livePrompt || "";
+
+                    const displayContent = promptContent;
                     
                     // Calculate input status for visual feedback
                     const userInputNode = widgets.find((w) => w.id === "website-user-input");
