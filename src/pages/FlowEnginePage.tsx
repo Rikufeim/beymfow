@@ -3620,9 +3620,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     <path
                       key={edge.id}
                       d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + controlPointOffset} ${sourcePos.y}, ${targetPos.x - controlPointOffset} ${targetPos.y}, ${targetPos.x} ${targetPos.y}`}
-                      stroke="rgba(255, 255, 255, 0.25)"
-                      strokeWidth="1"
+                      stroke="rgba(255, 255, 255, 0.4)"
+                      strokeWidth="2"
                       fill="none"
+                      strokeLinecap="round"
                       style={{ pointerEvents: "none" }}
                     />
                   );
@@ -3634,9 +3635,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     return sourcePos ? (
                       <path
                         d={`M ${sourcePos.x} ${sourcePos.y} C ${sourcePos.x + 50} ${sourcePos.y}, ${mousePosition.x - 50} ${mousePosition.y}, ${mousePosition.x} ${mousePosition.y}`}
-                        stroke="rgba(255, 255, 255, 0.3)"
-                        strokeWidth="1"
+                        stroke="rgba(255, 255, 255, 0.5)"
+                        strokeWidth="2"
                         fill="none"
+                        strokeLinecap="round"
+                        strokeDasharray="6 4"
                         style={{ pointerEvents: "none" }}
                       />
                     ) : null;
@@ -3708,7 +3711,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </div>
                             </div>
                             {/* Content */}
-                            <div className="flex-1 p-4 overflow-hidden">
+                            <div className="flex-1 p-4 flow-node-scroll">
                               <p className="text-xs text-neutral-400">
                                 Connect this node to verify that all prompts in your flow work correctly.
                               </p>
@@ -3772,7 +3775,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </div>
                             </div>
                             {/* Content */}
-                            <div className="flex-1 p-4 overflow-hidden">
+                            <div className="flex-1 p-4 flow-node-scroll">
                               <p className="text-xs text-neutral-400">
                                 Access your purchased prompts here. Connect to add them to your flow.
                               </p>
@@ -3900,7 +3903,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           {/* Prompt Window Content */}
                           <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden">
                             {widget.promptMode === "preview" ? (
-                              <div className="p-4 overflow-hidden">
+                              <div className="p-4 flow-node-scroll h-full">
                                 {displayContent ? (
                                   <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-white/90">
                                     {displayContent}
@@ -3918,7 +3921,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </div>
                             ) : (
                               <textarea
-                                className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-300 p-4 font-mono text-sm resize-none outline-none leading-relaxed"
+                                className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-300 p-4 font-mono text-sm resize-none outline-none leading-relaxed flow-node-scroll"
                                 value={widget.content || ""}
                                 onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                                 placeholder="Write your custom prompt here..."
@@ -4066,7 +4069,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           {/* Fields */}
-                          <div className="flex-1 overflow-hidden px-4 py-3 space-y-3 text-sm leading-relaxed">
+                          <div className="flex-1 flow-node-scroll px-4 py-3 space-y-3 text-sm leading-relaxed">
                             {Object.entries(websiteData.fields).map(([fieldKey, fieldValue]) => (
                               <section key={fieldKey} className="space-y-2">
                                 <p className="text-xs uppercase tracking-[0.18em] text-white/40">
@@ -4271,17 +4274,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         )}
                       </div>
-                        <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 overflow-hidden">
+                        <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 flow-node-scroll">
                           {isPromptNode ? (
                             <textarea
                               readOnly
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed flow-node-scroll"
                               value={widget.content || PROMPT_PLACEHOLDER}
                               onMouseDown={(e) => e.stopPropagation()}
                             />
                           ) : (
                             <textarea
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed flow-node-scroll"
                               value={widget.content || ""}
                               onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                               onMouseDown={(e) => e.stopPropagation()}

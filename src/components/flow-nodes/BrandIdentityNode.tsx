@@ -37,7 +37,7 @@ const BrandIdentityNode: React.FC<BrandIdentityNodeProps> = ({ id, data }) => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto px-4 py-3 space-y-3 text-xs leading-relaxed">
+      <div className="flex-1 flow-node-scroll px-4 py-3 space-y-3 text-xs leading-relaxed">
         {/* Colors */}
         <section className="space-y-2">
           <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
