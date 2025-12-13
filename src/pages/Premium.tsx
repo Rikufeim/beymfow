@@ -8,6 +8,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import ctaFooterBg from "@/assets/cta-footer-bg.png";
+import featuresSectionBg from "@/assets/features-section-bg.png";
 
 // Pricing data - 4 tiers
 const pricingPlans = [
@@ -191,9 +192,14 @@ const Premium = () => {
         </div>
       </div>
 
-      {/* Features Section - Dark Gray Background */}
-      <div className="bg-neutral-900 text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
-        <div className="max-w-7xl w-full mx-auto">
+      {/* Features Section - Background Image */}
+      <div className="relative text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
+        <img 
+          src={featuresSectionBg} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="relative z-10 max-w-7xl w-full mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left - Title */}
             <div>
