@@ -1733,10 +1733,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   const buildPromptForPromptNode = useCallback(
     (promptNodeId: string, allWidgets: Widget[], allEdges: Edge[]): string => {
-      // Special handling for "Step 7 - Prompt Structure" node (website-prompt-output)
+      // Special handling for "Prompt Generator" node (website-prompt-output)
       // This node should aggregate all website node data from GLOBAL STATE
-      if (promptNodeId === "website-prompt-output" || 
-          allWidgets.find(w => w.id === promptNodeId)?.title === "Step 7 – Prompt Structure") {
+      const promptNode = allWidgets.find(w => w.id === promptNodeId);
+      const isPromptGenerator = promptNodeId === "website-prompt-output" || 
+          promptNode?.title === "Step 7 – Prompt Structure" ||
+          promptNode?.title === "Prompt Generator";
+      
+      if (isPromptGenerator) {
         const hasWebsiteSections = allWidgets.some((w) => w.type === "website-section" || w.type === "brandIdentity");
         if (hasWebsiteSections) {
           // Use global state to build spec
@@ -1835,33 +1839,25 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Auto-update prompt nodes (including Step 7 - Prompt Structure)
   // REACTIVE: Updates whenever widgets, edges, OR global state changes
   useEffect(() => {
-    const promptNodes = widgets.filter((widget) => widget.isPromptNode);
-    const step7Node = widgets.find((w) => w.id === "website-prompt-output" || w.title === "Step 7 – Prompt Structure");
+    // Find nodes that should display generated prompts (Prompt Generator)
+    const promptGeneratorNode = widgets.find(
+      (w) => w.id === "website-prompt-output" || w.title === "Prompt Generator" || w.title === "Step 7 – Prompt Structure" || w.isPromptNode
+    );
     
-    // Include Step 7 node even if it doesn't have isPromptNode flag
-    const nodesToUpdate = step7Node && !promptNodes.includes(step7Node) 
-      ? [...promptNodes, step7Node]
-      : promptNodes;
-    
-    if (nodesToUpdate.length === 0) return;
+    if (!promptGeneratorNode) return;
 
-    let changed = false;
-    const updatedWidgets = widgets.map((widget) => {
-      const isPromptNode = widget.isPromptNode || widget.id === "website-prompt-output" || widget.title === "Step 7 – Prompt Structure";
-      if (!isPromptNode) return widget;
+    const builtPrompt = buildPromptForPromptNode(promptGeneratorNode.id, widgets, edges);
+    const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
 
-      const builtPrompt = buildPromptForPromptNode(widget.id, widgets, edges);
-      const finalContent = builtPrompt || PROMPT_PLACEHOLDER;
-
-      if (widget.content === finalContent) return widget;
-      changed = true;
-      return { ...widget, content: finalContent };
-    });
-
-    if (changed) {
-      setWidgets(updatedWidgets);
+    // Only update if content changed
+    if (promptGeneratorNode.content !== finalContent) {
+      setWidgets((prev) =>
+        prev.map((widget) =>
+          widget.id === promptGeneratorNode.id ? { ...widget, content: finalContent } : widget
+        )
+      );
     }
-  }, [widgets, edges, buildPromptForPromptNode, nodeData]); // Added nodeData dependency for reactivity
+  }, [nodeData, edges, buildPromptForPromptNode]); // React to nodeData changes for real-time updates
 
   // --- Content Generation Functions (Simplified for brevity) ---
   const generateIdeaSummary = (userInput: string) => ({ generatedText: "Summary...", jsonPayload: {} });
@@ -2181,14 +2177,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Flow Preset Creators ---
   const createWebsiteFlowPreset = () => {
-    // Simple linear pipeline layout with proper spacing
-    const startX = -200; // Shift slightly left so the pipeline is centered
-    const startY = 40; // A bit below the very top
-    const horizontalGap = 380; // MORE space between steps
-    const outputRowOffset = 340; // MORE vertical space between rows
+    // ALL NODES ON SAME ROW - Horizontal layout for better visibility
+    const startX = -200;
+    const startY = 100; // Single row
+    const horizontalGap = 340; // Space between nodes
 
     const nodes: Widget[] = [
-      // Main pipeline row
+      // All nodes on the same horizontal row
       {
         id: "website-user-input",
         type: "flow-input",
@@ -2196,18 +2191,18 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         placeholder: "Describe the website / client / product...",
         x: startX,
         y: startY,
-        width: 320,
-        height: 200,
+        width: 280,
+        height: 180,
         content: "",
       },
       {
         id: "website-brand-identity",
         type: "brandIdentity",
-        title: "Step 2 – Brand Identity",
+        title: "Brand Identity",
         x: startX + horizontalGap * 1,
         y: startY,
-        width: 360,
-        height: 400,
+        width: 320,
+        height: 320,
         brandIdentityData: {
           title: "Brand Identity",
           fields: {
@@ -2223,98 +2218,82 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       {
         id: "website-purpose",
         type: "website-section",
-        title: "Step 3 – Website Purpose",
+        title: "Website Purpose",
         x: startX + horizontalGap * 2,
         y: startY,
-        width: 320,
-        height: 280,
+        width: 280,
+        height: 240,
         websiteData: {
           title: "Website Purpose",
           fields: {
             problem: "",
             targetAudience: "",
-            goals: "",
           },
         },
       },
       {
         id: "website-seo-structure",
         type: "website-section",
-        title: "Step 4 – SEO & Structure",
+        title: "SEO & Structure",
         x: startX + horizontalGap * 3,
         y: startY,
-        width: 320,
-        height: 280,
+        width: 280,
+        height: 240,
         websiteData: {
           title: "SEO & Structure",
           fields: {
             keywords: "",
             metaDescriptions: "",
-            pageStructure: "",
           },
         },
       },
       {
         id: "website-functional-requirements",
         type: "website-section",
-        title: "Step 5 – Functional Requirements",
+        title: "Functional Requirements",
         x: startX + horizontalGap * 4,
         y: startY,
-        width: 320,
-        height: 280,
+        width: 280,
+        height: 240,
         websiteData: {
           title: "Functional Requirements",
           fields: {
             ctas: "",
             animations: "",
-            layouts: "",
           },
         },
       },
       {
         id: "website-content-inputs",
         type: "website-section",
-        title: "Step 6 – Content Inputs",
+        title: "Content Inputs",
         x: startX + horizontalGap * 5,
         y: startY,
-        width: 320,
-        height: 280,
+        width: 280,
+        height: 240,
         websiteData: {
           title: "Content Inputs",
           fields: {
             copy: "",
             offers: "",
-            references: "",
           },
         },
       },
-
-      // Output row (below the main pipeline, clearly separated)
+      // Prompt Generator - also on same row, at the end
       {
         id: "website-prompt-output",
         type: "flow-text-gen",
-        title: "Step 7 – Prompt Structure",
-        x: startX + horizontalGap * 2,
-        y: startY + outputRowOffset,
-        width: 400,
-        height: 600,
+        title: "Prompt Generator",
+        x: startX + horizontalGap * 6,
+        y: startY,
+        width: 360,
+        height: 400,
         content: "",
         isPromptNode: true,
       },
-      {
-        id: "website-prompt-window",
-        type: "prompt-window",
-        title: "Step 8 – Final Website Prompt",
-        x: startX + horizontalGap * 4,
-        y: startY + outputRowOffset,
-        width: 400,
-        height: 600,
-        content: "",
-        promptMode: "preview",
-      },
     ];
 
-    // Simple linear pipeline edges
+    // Linear pipeline edges - all nodes feed into Prompt Generator
     const edges: Edge[] = [
       {
         id: "e-1-user-to-brand",
@@ -2345,11 +2324,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         id: "e-6-content-to-output",
         source: "website-content-inputs",
         target: "website-prompt-output",
-      },
-      {
-        id: "e-7-output-to-window",
-        source: "website-prompt-output",
-        target: "website-prompt-window",
       },
     ];
 
