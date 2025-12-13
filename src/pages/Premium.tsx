@@ -55,7 +55,7 @@ const pricingPlans = [
       "Serverless functions",
     ],
     buttonText: "Get started",
-    isPopular: true,
+    isPopular: false,
   },
   {
     name: "Enterprise",
@@ -330,17 +330,8 @@ const PricingCard = ({
           className="opacity-70"
         />
         <div className="relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]">
-          {/* Popular Badge */}
-          {plan.isPopular && (
-            <div className="absolute top-4 left-6">
-              <span className="bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/20">
-                Popular
-              </span>
-            </div>
-          )}
-
           {/* Price */}
-          <div className={cn("mb-4", plan.isPopular && "mt-8")}>
+          <div className="mb-4">
             <div className="flex items-baseline gap-1">
               <span className="text-4xl sm:text-5xl font-bold text-white">
                 {displayPrice}
@@ -356,13 +347,13 @@ const PricingCard = ({
             {plan.name}
           </h3>
 
-          {/* Description */}
-          <p className="text-sm mb-6 leading-relaxed text-neutral-400">
+          {/* Description - Fixed height for alignment */}
+          <p className="text-sm mb-6 leading-relaxed text-neutral-400 min-h-[60px]">
             {plan.description}
           </p>
 
-          {/* CTA Button - Fixed height position */}
-          <div className="mt-auto pt-4">
+          {/* CTA Button */}
+          <div className="pt-4">
             <button
               onClick={() => onSubscribe(plan.name)}
               className="w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6 bg-neutral-700 text-white hover:bg-neutral-600"
