@@ -200,15 +200,13 @@ const Premium = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="relative z-10 max-w-7xl w-full mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-            {/* Left - Title */}
-            <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white">
-                Eliminate costly, complex add-ons. Every Beymflow plan includes:
-              </h2>
-            </div>
+          <div className="flex flex-col items-end">
+            {/* Title - Right aligned */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white mb-12">
+              Every plan includes
+            </h2>
             
-            {/* Right - Features Grid */}
+            {/* Features Grid - Right aligned */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
               {includedFeatures.map((col, colIndex) => (
                 <ul key={colIndex} className="space-y-4">
