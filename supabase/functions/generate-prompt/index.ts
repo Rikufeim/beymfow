@@ -97,7 +97,7 @@ serve(async (req) => {
         console.log('Subscription check:', { 
           hasActiveSubscription, 
           subscriptionCount: subscriptions.data.length,
-          subscriptions: subscriptions.data.map(s => ({ id: s.id, status: s.status }))
+          subscriptions: subscriptions.data.map((s: { id: string; status: string }) => ({ id: s.id, status: s.status }))
         });
       } else {
         console.log('No Stripe customer found for:', user.email);
