@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Github, Youtube, Instagram, Menu, Twitter } from "lucide-react";
+import { LogOut, Github, Youtube, Instagram, Menu, Twitter, Workflow, FlaskConical } from "lucide-react";
 import { useState } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [isCommunityOpen, setIsCommunityOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const isHomePage = location.pathname === "/";
   const isAuthPage = location.pathname === "/auth";
 
@@ -55,13 +56,33 @@ const Header = () => {
             Products
           </Link>
 
-          {/* 3. Tools */}
-          <Link
-            to="/flow-engine"
-            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
-          >
-            Tools
-          </Link>
+          {/* 3. Tools Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="relative flex items-center gap-2 text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100">
+              Tools
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
+              align="center"
+            >
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
+                <Link
+                  to="/flow-engine"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
+                >
+                  <Workflow className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Flow Engine</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
+                <Link
+                  to="/prompt-lab-page"
+                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
+                >
+                  <FlaskConical className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Prompt Lab</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* 4. About Us */}
           <Link
@@ -165,12 +186,39 @@ const Header = () => {
                   >
                     Products
                   </Link>
-                  <Link
-                    to="/flow-engine"
-                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
-                  >
-                    Tools
-                  </Link>
+                  <div className="px-4">
+                    <button
+                      onClick={() => setIsToolsOpen(!isToolsOpen)}
+                      className="flex items-center justify-between w-full text-white/90 hover:text-white transition-colors text-lg font-medium mb-3"
+                    >
+                      Tools
+                      <svg
+                        className="w-4 h-4 transition-transform"
+                        style={{ transform: isToolsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isToolsOpen && (
+                      <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
+                        <Link
+                          to="/flow-engine"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
+                        >
+                          <Workflow className="h-5 w-5" /> <span>Flow Engine</span>
+                        </Link>
+                        <Link
+                          to="/prompt-lab-page"
+                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
+                        >
+                          <FlaskConical className="h-5 w-5" /> <span>Prompt Lab</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                   <Link
                     to="/about"
                     className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
