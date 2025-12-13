@@ -12,49 +12,49 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 // Pricing data - 3 tiers as shown in reference
 const pricingPlans = [
   {
+    name: "Free",
+    price: "$0",
+    period: "/month",
+    yearlyPrice: "$0",
+    description: "Perfect for getting started and exploring our platform",
+    sectionTitle: "Includes:",
+    features: [
+      "Basic prompt generation",
+      "Limited daily credits",
+      "Community support",
+    ],
+    buttonText: "Get started",
+    isEnterprise: false,
+  },
+  {
     name: "Starter",
     price: "$12",
     period: "/month",
     yearlyPrice: "$9.60",
     description: "Great for small businesses and startups looking to get started with AI",
-    sectionTitle: "Free includes:",
+    sectionTitle: "Everything in Free, plus:",
     features: [
       "Unlimited Cards",
       "Custom background & stickers",
       "2-factor authentication",
     ],
     buttonText: "Get started",
-    isPopular: false,
-  },
-  {
-    name: "Business",
-    price: "$48",
-    period: "/month",
-    yearlyPrice: "$38.40",
-    description: "Best value for growing businesses that need more advanced features",
-    sectionTitle: "Everything in Starter, plus:",
-    features: [
-      "Advanced checklists",
-      "Custom fields",
-      "Serverless functions",
-    ],
-    buttonText: "Get started",
-    isPopular: false,
+    isEnterprise: false,
   },
   {
     name: "Enterprise",
-    price: "$96",
+    price: "$48",
     period: "/month",
-    yearlyPrice: "$76.80",
+    yearlyPrice: "$38.40",
     description: "Advanced plan with enhanced security and unlimited access for large teams",
-    sectionTitle: "Everything in Business, plus:",
+    sectionTitle: "Everything in Starter, plus:",
     features: [
       "Multi-board management",
-      "Multi-board guest",
-      "Attachment permissions",
+      "Priority support",
+      "Advanced analytics",
     ],
     buttonText: "Get started",
-    isPopular: true,
+    isEnterprise: true,
   },
 ];
 
@@ -180,22 +180,13 @@ const PricingCard = ({
         <div
           className={cn(
             "relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300",
-            plan.isPopular
+            plan.isEnterprise
               ? "bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]"
               : "bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-neutral-800/80"
           )}
         >
-          {/* Popular Badge */}
-          {plan.isPopular && (
-            <div className="absolute top-4 left-6">
-              <span className="bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/20">
-                Popular
-              </span>
-            </div>
-          )}
-
           {/* Price */}
-          <div className={cn("mb-4", plan.isPopular && "mt-8")}>
+          <div className="mb-4">
             <div className="flex items-baseline gap-1">
               <span className="text-4xl sm:text-5xl font-bold text-white">
                 {displayPrice}
@@ -228,9 +219,9 @@ const PricingCard = ({
           <ul className="flex-1 space-y-3 mb-8">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-center gap-3">
-                <div className={cn(
+              <div className={cn(
                   "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                  plan.isPopular
+                  plan.isEnterprise
                     ? "border-teal-400 text-teal-400"
                     : "border-neutral-500 text-neutral-400"
                 )}>
@@ -248,7 +239,7 @@ const PricingCard = ({
             onClick={() => onSubscribe(plan.name)}
             className={cn(
               "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300",
-              plan.isPopular
+              plan.isEnterprise
                 ? "bg-white text-black hover:bg-neutral-200"
                 : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
             )}
