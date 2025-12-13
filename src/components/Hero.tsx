@@ -13,14 +13,14 @@ export default function Hero() {
     >
       {/* Mobile background */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-[center_top] bg-no-repeat md:hidden"
+        className="absolute inset-0 z-0 bg-cover bg-[center_25%] bg-no-repeat md:hidden"
         style={{
           backgroundImage: `url(${heroWallpaperMobile})`,
         }}
       />
       {/* Desktop background */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_5%]"
+        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_-5%]"
         style={{
           backgroundImage: `url(${heroWallpaper})`,
         }}
