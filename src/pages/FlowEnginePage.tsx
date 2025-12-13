@@ -3898,7 +3898,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     );
                   }
 
-                  // --- RENDER PROMPT WINDOW ---
+                  // --- RENDER PROMPT WINDOW (INTELLIGENT GENERATOR) ---
                   if (widget.type === "prompt-window") {
                     // PROMPT WINDOW LISTENS ONLY TO PROMPT STRUCTURE (Step 7)
                     // Find Step 7 - Prompt Structure node
@@ -3918,6 +3918,27 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     const displayContent = widget.promptMode === "preview" 
                       ? promptContent 
                       : widget.content || promptContent;
+                    
+                    // Calculate input status for visual feedback
+                    const userInputNode = widgets.find((w) => w.id === "website-user-input");
+                    const brandNode = widgets.find((w) => w.id === "website-brand-identity");
+                    const purposeNode = widgets.find((w) => w.id === "website-purpose");
+                    const seoNode = widgets.find((w) => w.id === "website-seo-structure");
+                    const functionalNode = widgets.find((w) => w.id === "website-functional-requirements");
+                    const contentNode = widgets.find((w) => w.id === "website-content-inputs");
+                    
+                    const inputStatus = {
+                      userInput: !!userInputNode?.content?.trim(),
+                      brand: !!(brandNode?.brandIdentityData?.fields?.styleMood || brandNode?.brandIdentityData?.fields?.toneOfVoice),
+                      purpose: !!(purposeNode?.websiteData?.fields?.problem || purposeNode?.websiteData?.fields?.targetAudience),
+                      seo: !!(seoNode?.websiteData?.fields?.keywords || seoNode?.websiteData?.fields?.pageStructure),
+                      functional: !!(functionalNode?.websiteData?.fields?.ctas || functionalNode?.websiteData?.fields?.animations),
+                      content: !!(contentNode?.websiteData?.fields?.copy || contentNode?.websiteData?.fields?.offers),
+                    };
+                    
+                    const filledCount = Object.values(inputStatus).filter(Boolean).length;
+                    const totalCount = Object.values(inputStatus).length;
+                    const completionPercent = Math.round((filledCount / totalCount) * 100);
                     
                     return (
                       <div
@@ -3966,9 +3987,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           {/* Prompt Window Header */}
                           <div className="px-3 py-2 border-b border-neutral-800 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] flex items-center justify-between handle flex-shrink-0">
                             <div className="flex items-center gap-2">
-                              <Sparkles size={14} className="text-yellow-400" />
+                              <div className="relative">
+                                <Sparkles size={14} className={filledCount > 0 ? "text-yellow-400" : "text-neutral-500"} />
+                                {filledCount > 0 && (
+                                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                )}
+                              </div>
                               <span className="text-sm font-semibold text-neutral-200">
-                                Prompt Window
+                                Prompt Generator
                               </span>
                             </div>
                           <div className="flex gap-1 bg-neutral-900 rounded-md p-0.5 border border-neutral-800">
@@ -4012,6 +4038,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         </div>
 
+                          {/* Input Status Bar */}
+                          {hasWebsiteSections && (
+                            <div className="px-3 py-2 border-b border-neutral-800/50 bg-neutral-900/30 flex-shrink-0">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] uppercase tracking-wider text-neutral-500">
+                                  Inputs Detected
+                                </span>
+                                <span className={`text-[10px] font-medium ${completionPercent === 100 ? "text-green-400" : completionPercent > 50 ? "text-yellow-400" : "text-neutral-500"}`}>
+                                  {completionPercent}%
+                                </span>
+                              </div>
+                              <div className="flex gap-1">
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.userInput ? "bg-blue-500" : "bg-neutral-800"}`} title="User Input" />
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.brand ? "bg-purple-500" : "bg-neutral-800"}`} title="Brand Identity" />
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.purpose ? "bg-green-500" : "bg-neutral-800"}`} title="Purpose" />
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.seo ? "bg-orange-500" : "bg-neutral-800"}`} title="SEO" />
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.functional ? "bg-pink-500" : "bg-neutral-800"}`} title="Functional" />
+                                <div className={`flex-1 h-1 rounded-full transition-colors ${inputStatus.content ? "bg-cyan-500" : "bg-neutral-800"}`} title="Content" />
+                              </div>
+                            </div>
+                          )}
+
                           {/* Prompt Window Content */}
                           <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden">
                             {widget.promptMode === "preview" ? (
@@ -4021,13 +4069,20 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                     {displayContent}
                                   </pre>
                                 ) : (
-                                  <div className="flex flex-col items-center justify-center h-full text-neutral-600 gap-2 p-4 text-center">
-                                    <Link2 size={24} className="opacity-50" />
-                                    <p className="text-xs">
-                                      {hasWebsiteSections 
-                                        ? "Fill in the website sections to generate a prompt."
-                                        : "Connect nodes to this window to generate a prompt."}
-                                    </p>
+                                  <div className="flex flex-col items-center justify-center h-full text-neutral-600 gap-3 p-4 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-neutral-800/50 flex items-center justify-center">
+                                      <Sparkles size={24} className="text-neutral-600" />
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-neutral-400 mb-1">
+                                        Waiting for input...
+                                      </p>
+                                      <p className="text-xs text-neutral-600">
+                                        {hasWebsiteSections 
+                                          ? "Start filling in the nodes to generate your prompt."
+                                          : "Connect nodes to this window to generate a prompt."}
+                                      </p>
+                                    </div>
                                   </div>
                                 )}
                               </div>
