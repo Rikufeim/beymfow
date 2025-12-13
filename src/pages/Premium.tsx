@@ -365,14 +365,9 @@ const PricingCard = ({
           <div className="mt-auto pt-4">
             <button
               onClick={() => onSubscribe(plan.name)}
-              className={cn(
-                "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6",
-                plan.isPopular
-                  ? "bg-white text-black hover:bg-neutral-200"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-              )}
+              className="w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6 bg-neutral-700 text-white hover:bg-neutral-600"
             >
-              {plan.buttonText}
+              Get started
             </button>
           </div>
 
@@ -388,12 +383,7 @@ const PricingCard = ({
           <ul className="flex-1 space-y-3">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-center gap-3">
-                <div className={cn(
-                  "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                  plan.isPopular
-                    ? "border-teal-400 text-teal-400"
-                    : "border-neutral-500 text-neutral-400"
-                )}>
+                <div className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center border-teal-400 text-teal-400">
                   <Check className="w-3 h-3" />
                 </div>
                 <span className="text-sm text-neutral-300">
