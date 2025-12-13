@@ -11,16 +11,16 @@ export default function Hero() {
       id="hero"
       className="relative mx-auto w-full min-h-screen px-6 md:px-8 overflow-visible flex flex-col items-center justify-center pt-20 pb-16 text-center bg-black"
     >
-      {/* Mobile background */}
+      {/* Mobile background - fixed position */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-[center_25%] bg-no-repeat md:hidden"
+        className="fixed inset-0 z-0 bg-cover bg-[center_25%] bg-no-repeat md:hidden pointer-events-none"
         style={{
           backgroundImage: `url(${heroWallpaperMobile})`,
         }}
       />
-      {/* Desktop background */}
+      {/* Desktop background - fixed position */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_-15%]"
+        className="fixed inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_-15%] pointer-events-none"
         style={{
           backgroundImage: `url(${heroWallpaper})`,
         }}
