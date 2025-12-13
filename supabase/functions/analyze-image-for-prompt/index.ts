@@ -176,15 +176,19 @@ The structured analysis contains:
 - Lighting, colors, textures, style
 - Mood, details, and any uncertainties
 
-Create a prompt that:
-- Is clear and readable (user will edit it manually)
-- Combines all relevant elements naturally
-- Is structured for easy editing
-- Mentions uncertainties only if relevant
-- Is optimized for prompt generation workflows
-- Length: 2-4 sentences, comprehensive but concise
-- Captures all fine details and specifics from the analysis
-
+Create a prompt that can be used to RECREATE the content of the image.
+If "image_type" is "website" or "ui_design", the prompt MUST describe a full landing page or UI so that a website generator can rebuild it as closely as possible.
+It should specify:
+- Layout sections (hero, navigation, content blocks, footers, sidebars, etc.)
+- Component hierarchy and placement
+- Typography (font feel, sizes, weights, hierarchy)
+- Color palette and background treatments
+- Imagery style and iconography
+- Call-to-action buttons and conversion elements
+- Overall style, brand mood, and interaction feel
+For regular images, create a prompt that fully describes the scene for an image generator.
+The prompt must be clear, readable, and easy to edit.
+Length: 3-6 sentences, comprehensive but concise.
 Return ONLY the prompt text, nothing else.`;
 
     const phase2Response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
