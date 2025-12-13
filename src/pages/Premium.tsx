@@ -7,6 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import ctaFooterBg from "@/assets/cta-footer-bg.png";
 
 // Pricing data - 4 tiers
 const pricingPlans = [
@@ -284,7 +285,16 @@ const Premium = () => {
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
+      </div>
+
+      {/* Footer Image Section */}
+      <div className="w-full">
+        <img 
+          src={ctaFooterBg} 
+          alt="" 
+          className="w-full h-48 sm:h-64 md:h-80 object-cover"
+        />
+      </div>
       </div>
     </Layout>
   );
