@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, Check, X, ArrowUp } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
 import { z } from 'zod';
 import StarsBackground from '@/components/StarsBackground';
 import authRightBg from '@/assets/auth-right-bg.png';
@@ -137,7 +137,7 @@ const Auth = () => {
               <img 
                 src="/lovable-uploads/BeymflowlogoREAL.png" 
                 alt="Beymflow" 
-                className="h-8 w-auto"
+                className="h-12 w-auto"
               />
             </Link>
           </div>
@@ -320,15 +320,12 @@ const Auth = () => {
               className="absolute inset-0 w-full h-full object-cover"
             />
             
-            {/* Black Box Overlay with Text */}
-            <div className="absolute bottom-8 left-8 right-8">
-              <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-6 flex items-center justify-between">
-                <p className="text-2xl md:text-3xl font-light text-white">
+            {/* Centered Text Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-8">
+                <p className="text-2xl md:text-3xl font-light text-white text-center">
                   Turn your ideas into<br />prompts
                 </p>
-                <div className="flex-shrink-0 ml-4 w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
-                  <ArrowUp className="w-5 h-5 text-white" />
-                </div>
               </div>
             </div>
           </div>
