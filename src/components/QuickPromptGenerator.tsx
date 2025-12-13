@@ -354,19 +354,9 @@ export const QuickPromptGenerator = () => {
       }
 
       if (data?.prompt) {
-        // Set the generated prompt to input field - user can edit it
-        setInput(data.prompt);
-        toast.success("Image analyzed! Prompt filled in - you can edit it now.");
-        
-        // Focus textarea for immediate editing
-        if (textareaRef.current) {
-          setTimeout(() => {
-            textareaRef.current?.focus();
-            // Move cursor to end
-            const length = data.prompt.length;
-            textareaRef.current?.setSelectionRange(length, length);
-          }, 100);
-        }
+        // Set the generated prompt to display area (same format as other prompts)
+        setGeneratedPrompt(data.prompt);
+        toast.success("Image analyzed! Prompt generated.");
       } else {
         toast.error("No prompt generated. Please try again.");
       }
@@ -405,9 +395,6 @@ export const QuickPromptGenerator = () => {
       if (selectedModel === "fast") {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
       }
-
-      // NOTE: Image is no longer sent to quick-prompt - it's analyzed separately
-      // via handleAnalyzeImage() and the result is in the input field
 
       const { data, error } = await supabase.functions.invoke("quick-prompt", {
         body: {
@@ -464,7 +451,6 @@ export const QuickPromptGenerator = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    toast.success("Cleared!");
   };
 
   return (
