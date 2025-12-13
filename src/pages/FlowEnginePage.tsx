@@ -4422,16 +4422,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               className="p-1 rounded hover:bg-neutral-800"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                refreshPromptNode(widget.id);
-                              }}
-                              title="Regenerate prompt"
-                            >
-                              <RefreshCcw size={14} />
-                            </button>
-                            <button
-                              className="p-1 rounded hover:bg-neutral-800"
-                              onClick={(e) => {
-                                e.stopPropagation();
                                 handleCopyPrompt(widget.content || "");
                               }}
                               title="Copy prompt"
@@ -4441,6 +4431,24 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         )}
                       </div>
+                        
+                        {/* Generate Button for Prompt Nodes */}
+                        {isPromptNode && (
+                          <div className="px-3 py-2 border-b border-neutral-800/50 bg-neutral-900/30 flex-shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                refreshPromptNode(widget.id);
+                                toast.success("Prompt generated!");
+                              }}
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-purple-900/30"
+                            >
+                              <Sparkles size={14} className="animate-pulse" />
+                              Generate Prompt
+                            </button>
+                          </div>
+                        )}
+                        
                         <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 flow-node-scroll">
                           {isPromptNode ? (
                             <textarea
