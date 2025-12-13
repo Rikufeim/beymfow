@@ -42,13 +42,6 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Starting image analysis for prompt generation');
-
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
-
     console.log('Starting two-phase image analysis');
 
     // ============================================
@@ -160,7 +153,7 @@ CRITICAL: Be specific about what you observe. If it's a landing page, describe t
     }
 
     // Parse JSON from response (handle cases where response might be wrapped)
-    let analysisJSON: ImageAnalysisJSON;
+    let analysisJSON: Record<string, unknown>;
     try {
       // Try to extract JSON if wrapped in markdown or text
       const jsonMatch = phase1Content.match(/\{[\s\S]*\}/);

@@ -197,7 +197,7 @@ Return only the optimized prompt, nothing else.`;
   } catch (error) {
     console.error('Error in quick-prompt function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'An error occurred' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'An error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
