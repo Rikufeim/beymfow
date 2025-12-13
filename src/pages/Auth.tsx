@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, Check, X, ArrowUp } from 'lucide-react';
 import { z } from 'zod';
 import StarsBackground from '@/components/StarsBackground';
+import authRightBg from '@/assets/auth-right-bg.png';
 
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -129,49 +128,57 @@ const Auth = () => {
 
   return (
     <StarsBackground>
-      <div className="min-h-screen text-white flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center px-4 py-12 pb-32">
-          <motion.div
+      <div className="min-h-screen text-white flex">
+        {/* Left Side - Login Form */}
+        <div className="w-full lg:w-1/2 flex flex-col min-h-screen">
+          {/* Logo */}
+          <div className="p-6 sm:p-8">
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/BeymflowlogoREAL.png" 
+                alt="Beymflow" 
+                className="h-8 w-auto"
+              />
+            </Link>
+          </div>
+
+          {/* Form Content */}
+          <div className="flex-1 flex items-center justify-center px-6 sm:px-12 lg:px-16">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               className="w-full max-w-md"
             >
-            <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white text-balance mb-3">
-                {isLogin ? 'Welcome Back' : 'Start Creating'}
-              </h1>
-              <p className="text-base text-gray-400">
-                {isLogin 
-                  ? 'Sign in to continue your creative journey' 
-                  : 'Create your account and unlock unlimited possibilities'}
-              </p>
-            </div>
-  
-            <Card className="bg-black backdrop-blur-sm border-2 border-gray-700 p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
+                  {isLogin ? 'Welcome to' : 'Join'}
+                </h1>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                  Beymflow
+                </h2>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    Email Address
+                  <label className="text-sm font-medium text-gray-300">
+                    Email
                   </label>
                   <Input
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12"
+                    className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 rounded-lg"
                   />
                   {validationErrors.email && (
                     <p className="text-xs text-red-400">{validationErrors.email}</p>
                   )}
                 </div>
-  
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
+                  <label className="text-sm font-medium text-gray-300">
                     Password
                   </label>
                   <div className="relative">
@@ -182,16 +189,16 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={isLogin ? 6 : 8}
-                      className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10"
+                      className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10 rounded-lg"
                     />
-                     <button
-                       type="button"
-                       onClick={() => setShowPassword(!showPassword)}
-                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors touch-none"
-                       tabIndex={-1}
-                     >
-                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors touch-none"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                   {!isLogin && password && (
                     <div className="space-y-2">
@@ -228,11 +235,10 @@ const Auth = () => {
                     <p className="text-xs text-red-400">{validationErrors.password}</p>
                   )}
                 </div>
-  
+
                 {!isLogin && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                      <Lock className="h-4 w-4" />
+                    <label className="text-sm font-medium text-gray-300">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -243,7 +249,7 @@ const Auth = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         minLength={8}
-                        className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10"
+                        className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10 rounded-lg"
                       />
                       <button
                         type="button"
@@ -271,58 +277,62 @@ const Auth = () => {
                     )}
                   </div>
                 )}
-  
+
                 <Button
                   type="submit"
                   disabled={loading}
-                  variant="ghost"
-                  className="w-full bg-black text-white border-2 border-white/50 hover:border-white transition-all duration-300 h-12 text-base font-semibold"
-                  style={{ transform: 'translateZ(0)' }}
+                  className="w-full bg-neutral-700 text-white hover:bg-neutral-600 transition-all duration-300 h-12 text-base font-semibold rounded-lg"
                 >
-                  {loading ? (
-                    'Loading...'
-                  ) : (
-                    <span className="flex items-center justify-center gap-2" style={{ transform: 'translateZ(0)' }}>
-                      {isLogin ? (
-                        <>
-                          <LogIn className="h-5 w-5" style={{ transform: 'translateZ(0)' }} />
-                          Sign In
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-5 w-5" style={{ transform: 'translateZ(0)' }} />
-                          Create Account
-                        </>
-                      )}
-                    </span>
-                  )}
+                  {loading ? 'Loading...' : 'Continue'}
                 </Button>
               </form>
-  
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="text-center">
-                  <span className="text-sm text-gray-400">
-                    {isLogin ? "Don't have an account? " : 'Already have an account? '}
-                  </span>
-                  <button
-                    onClick={() => setIsLogin(!isLogin)}
-                    type="button"
-                    className="text-sm text-white hover:text-gray-300 font-medium transition-colors"
-                  >
-                    {isLogin ? 'Sign up' : 'Sign in'}
-                  </button>
+
+              <div className="mt-6 text-center">
+                <span className="text-sm text-gray-400">
+                  {isLogin ? "Don't have an account? " : 'Already have an account? '}
+                </span>
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  type="button"
+                  className="text-sm text-white hover:text-gray-300 font-medium transition-colors underline"
+                >
+                  {isLogin ? 'Sign up' : 'Sign in'}
+                </button>
+              </div>
+
+              <div className="mt-12 text-center">
+                <p className="text-xs text-gray-500">
+                  <Link to="#" className="text-gray-400 hover:text-white underline">Terms of Service</Link>
+                  {' and '}
+                  <Link to="#" className="text-gray-400 hover:text-white underline">Privacy Policy</Link>.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Right Side - Image with Overlay */}
+        <div className="hidden lg:flex lg:w-1/2 relative p-6">
+          <div className="relative w-full h-full rounded-3xl overflow-hidden">
+            <img 
+              src={authRightBg}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            
+            {/* Black Box Overlay with Text */}
+            <div className="absolute bottom-8 left-8 right-8">
+              <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-6 flex items-center justify-between">
+                <p className="text-2xl md:text-3xl font-light text-white">
+                  Turn your ideas into<br />prompts
+                </p>
+                <div className="flex-shrink-0 ml-4 w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20">
+                  <ArrowUp className="w-5 h-5 text-white" />
                 </div>
               </div>
-            </Card>
-  
-            <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500">
-                By continuing, you agree to Beymflow's Terms of Service
-              </p>
             </div>
-          </motion.div>
+          </div>
         </div>
-        <Footer />
       </div>
     </StarsBackground>
   );
