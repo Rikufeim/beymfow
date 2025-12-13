@@ -77,13 +77,6 @@ const pricingPlans = [
 // Features included in every plan
 const includedFeatures = [
   { col: 1, items: [
-    "AI powered app building",
-    "Integrated backend and database system",
-    "Responsive visual editor",
-    "Analytics dashboard",
-    "Multi-user editing and collaboration",
-  ]},
-  { col: 2, items: [
     "Cloud storage",
     "Authentication and user management",
     "Payment processing",
