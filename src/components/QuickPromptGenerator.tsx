@@ -670,6 +670,13 @@ export const QuickPromptGenerator = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-[98vw] max-h-[98vh] w-full h-full"
             >
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-2 right-2 z-10 p-1 rounded-full bg-black/80 hover:bg-black border border-white/30 text-white transition-colors"
+                aria-label="Close image preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
               <img
                 src={imagePreview}
                 alt="Full size preview"
