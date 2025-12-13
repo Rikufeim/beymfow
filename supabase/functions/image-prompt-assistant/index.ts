@@ -1,20 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Input validation schema
-const imageAssistantSchema = z.object({
-  message: z.string().trim().min(1, "Message cannot be empty").max(2000, "Message too long"),
-  currentPrompt: z.string().max(3000, "Current prompt too long").optional(),
-  conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant']),
-    content: z.string().max(5000)
-  })).max(50, "Conversation history too long")
-});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,29 +13,30 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate input
-    const validation = imageAssistantSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    const message = body.message?.trim();
+    if (!message || message.length < 1) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: "Message cannot be empty" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Message too long" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { message, currentPrompt, conversationHistory } = validation.data;
+    const currentPrompt = body.currentPrompt || "";
+    const conversationHistory = body.conversationHistory || [];
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'AI service not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -91,7 +81,7 @@ Current user prompt: ${currentPrompt || "None yet"}`;
     // Build messages array with conversation history
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.map((msg: any) => ({
+      ...conversationHistory.slice(-20).map((msg: any) => ({
         role: msg.role,
         content: msg.content
       })),
@@ -117,20 +107,14 @@ Current user prompt: ${currentPrompt || "None yet"}`;
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { 
-            status: 429, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { 
-            status: 402, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -161,9 +145,7 @@ Current user prompt: ${currentPrompt || "None yet"}`;
         message: assistantMessage,
         improvedPrompt: improvedPrompt
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -172,10 +154,7 @@ Current user prompt: ${currentPrompt || "None yet"}`;
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Failed to process request' 
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

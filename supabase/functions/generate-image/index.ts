@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,12 +9,6 @@ const corsHeaders = {
 // Server-side cost definitions
 const GENERATION_COST = 2;
 
-// Input validation schema
-const imagePromptSchema = z.object({
-  prompt: z.string().trim().min(1, "Prompt cannot be empty").max(2000, "Prompt too long (max 2000 characters)"),
-  multiplyStyle: z.boolean().optional()
-});
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -24,19 +17,22 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate input
-    const validation = imagePromptSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    const prompt = body.prompt?.trim();
+    if (!prompt || prompt.length < 1) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: "Prompt cannot be empty" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (prompt.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Prompt too long (max 2000 characters)" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { prompt, multiplyStyle = false } = validation.data;
+    const multiplyStyle = body.multiplyStyle || false;
     const cost = GENERATION_COST;
 
     // Check authentication (optional for guest users)

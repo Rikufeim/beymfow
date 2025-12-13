@@ -1,19 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const requestSchema = z.object({
-  idea: z
-    .string()
-    .trim()
-    .min(1, "Idea cannot be empty")
-    .max(2000, "Idea too long (max 2000 characters)"),
-});
 
 const systemPrompt = `You are a startup builder assistant inside a product called Multiply.
 Your job is to turn a raw business idea into a lean, practical, launchable mini business plan.
@@ -51,19 +42,21 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const validation = requestSchema.safeParse(body);
+    const idea = body.idea?.trim();
 
-    if (!validation.success) {
+    if (!idea || idea.length < 1) {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0]?.message ?? "Invalid request" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Idea cannot be empty" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { idea } = validation.data;
+    if (idea.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Idea too long (max 2000 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -89,20 +82,14 @@ serve(async (req) => {
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "Payment required. Please add credits to continue." }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 

@@ -1,41 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { z } from "npm:zod@3.22.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Input validation schema
-const imageAnalysisSchema = z.object({
-  image: z.string()
-    .min(1, "Image data is required")
-    .refine(
-      (val) => val.startsWith('data:image/'),
-      "Must be a valid image data URL"
-    )
-    .refine(
-      (val) => val.length < 5 * 1024 * 1024, // 5MB in base64
-      "Image too large (max 5MB)"
-    )
-});
-
-// JSON structure for structured analysis
-interface ImageAnalysisJSON {
-  subject: string;
-  environment: string;
-  composition: string;
-  perspective_camera_angle: string;
-  lighting: string;
-  colors: string;
-  textures_materials: string;
-  style: string;
-  mood: string;
-  visible_text: string | null;
-  fine_details: string;
-  uncertainties: string[];
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -44,20 +13,36 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
+    const image = body.image;
     
-    // Validate input
-    const validation = imageAnalysisSchema.safeParse(body);
-    if (!validation.success) {
+    // Manual validation
+    if (!image || typeof image !== 'string') {
       return new Response(
-        JSON.stringify({ error: validation.error.errors[0].message }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: "Image data is required" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    const { image } = validation.data;
+    if (!image.startsWith('data:image/')) {
+      return new Response(
+        JSON.stringify({ error: "Must be a valid image data URL" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (image.length > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max 5MB)" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    console.log('Starting image analysis for prompt generation');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -69,32 +54,43 @@ serve(async (req) => {
     // ============================================
     // PHASE 1: Image → Structured JSON Analysis
     // ============================================
-    const phase1SystemPrompt = `You are an expert visual analyst specializing in precise, objective image analysis. Your task is to analyze the provided image and extract ONLY what can be directly observed, without inventing details.
+    const phase1SystemPrompt = `You are an expert visual analyst. Your task is to analyze the provided image and understand what kind of content it represents.
 
-Analyze the image and return a JSON object with the following structure. Be precise and honest about what you can and cannot see:
+FIRST, determine what type of image this is:
+1. **Website/Landing Page Screenshot**: If this is a screenshot of a website, landing page, hero section, or web interface
+2. **UI/App Design**: If this is a mobile app, desktop app, or software interface
+3. **Regular Image**: Photos, artwork, illustrations, graphics, etc.
 
+For WEBSITES/LANDING PAGES/UI, your analysis should focus on:
+- Layout structure and sections visible
+- Design style (modern, minimal, corporate, playful, etc.)
+- Color scheme and typography choices
+- Key features and elements (hero, CTA buttons, navigation, forms, etc.)
+- Content type and messaging style
+- Any specific patterns or components used
+
+For REGULAR IMAGES, analyze:
+- Main subject(s) and key characteristics
+- Environment/background setting
+- Composition and framing
+- Lighting and colors
+- Style and mood
+
+Return a JSON object with this structure:
 {
-  "subject": "Main subject(s) and key characteristics (what is clearly visible)",
-  "environment": "Background, setting, location (only if clearly identifiable)",
-  "composition": "Layout, framing, arrangement of elements",
-  "perspective_camera_angle": "Viewpoint, angle, distance (e.g., eye-level, bird's-eye, close-up)",
-  "lighting": "Light source direction, quality (soft/hard), time of day if apparent",
-  "colors": "Dominant colors and color palette (be specific)",
-  "textures_materials": "Visible textures and materials (only if clearly discernible)",
-  "style": "Artistic style, medium, technique (photography, painting, digital, etc.)",
-  "mood": "Emotional tone, atmosphere conveyed",
-  "visible_text": "Any text visible in the image (null if none)",
-  "fine_details": "Specific details that are clearly visible (objects, patterns, etc.)",
-  "uncertainties": ["List of things you're uncertain about or cannot clearly see"]
+  "image_type": "website" | "ui_design" | "regular_image",
+  "subject": "Main subject/purpose of the image",
+  "design_elements": "Key design elements, layout, and structure",
+  "style": "Visual style, aesthetic, design approach",
+  "colors": "Color palette and scheme",
+  "key_features": "Important features, sections, or components",
+  "mood": "Overall feel and atmosphere",
+  "technical_details": "Any technical or implementation-relevant details",
+  "purpose": "What this content is trying to achieve"
 }
 
-CRITICAL RULES:
-- Only describe what you can actually see in the image
-- If something is unclear or uncertain, add it to the "uncertainties" array
-- Do NOT invent details that are not visible
-- Distinguish between observations (facts) and interpretations (inferences)
-- Be specific and technical where possible
-- Return ONLY valid JSON, no additional text`;
+CRITICAL: Be specific about what you observe. If it's a landing page, describe the actual sections and elements visible.`;
+
 
     const phase1Response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
