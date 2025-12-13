@@ -1,15 +1,14 @@
 import Layout from "@/components/Layout";
-import { Check } from "lucide-react";
+import { Check, Plus, Minus, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
-// Pricing data - 3 tiers as shown in reference
+// Pricing data - 4 tiers
 const pricingPlans = [
   {
     name: "Free",
@@ -73,10 +72,45 @@ const pricingPlans = [
   },
 ];
 
+// Features included in every plan
+const includedFeatures = [
+  { col: 1, items: [
+    "AI powered app building",
+    "Integrated backend and database system",
+    "Responsive visual editor",
+    "Analytics dashboard",
+    "Multi-user editing and collaboration",
+  ]},
+  { col: 2, items: [
+    "Cloud storage",
+    "Authentication and user management",
+    "Payment processing",
+    "Email marketing tools",
+    "Debugging and troubleshooting tools",
+  ]},
+];
+
+// FAQ data
+const faqItems = [
+  {
+    question: "What's included in the free plan?",
+    answer: "The free plan includes basic prompt generation, limited daily credits, and access to our community support. It's perfect for getting started and exploring our platform.",
+  },
+  {
+    question: "What are integration credits?",
+    answer: "Integration credits are used when you connect external services or APIs to your projects. Each integration uses a certain number of credits based on complexity.",
+  },
+  {
+    question: "What happens if I reach my plan limits?",
+    answer: "If you reach your plan limits, you can upgrade to a higher tier for more resources, or wait until your limits reset at the beginning of the next billing cycle.",
+  },
+];
+
 const Premium = () => {
-  const { user, usageInfo } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const handleSubscribe = async (planName: string) => {
     if (!user) {
@@ -84,14 +118,13 @@ const Premium = () => {
       navigate("/auth");
       return;
     }
-    
-    // Placeholder for actual Stripe integration
     toast.info(`Starting subscription for ${planName} plan...`);
   };
 
   return (
     <Layout>
-      <div className="relative min-h-screen bg-black text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24 md:py-32">
+      {/* Pricing Section */}
+      <div className="relative bg-black text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24 md:py-32">
         <div className="relative z-10 max-w-7xl w-full mx-auto">
           {/* Header Section */}
           <motion.div
@@ -156,6 +189,103 @@ const Premium = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Features Section - Dark Gray Background */}
+      <div className="bg-neutral-900 text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
+        <div className="max-w-7xl w-full mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+            {/* Left - Title */}
+            <div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white">
+                Eliminate costly, complex add-ons. Every Beymflow plan includes:
+              </h2>
+            </div>
+            
+            {/* Right - Features Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
+              {includedFeatures.map((col, colIndex) => (
+                <ul key={colIndex} className="space-y-4">
+                  {col.items.map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-lime-400 flex-shrink-0" />
+                      <span className="text-sm sm:text-base text-white">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section - White Background */}
+      <div className="bg-white text-black px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
+        <div className="max-w-7xl w-full mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+            {/* Left - Title */}
+            <div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-black">
+                Frequently asked questions
+              </h2>
+            </div>
+            
+            {/* Right - FAQ Accordion */}
+            <div className="space-y-0">
+              {faqItems.map((item, index) => (
+                <div key={index} className="border-t border-neutral-200">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full flex items-center justify-between py-6 text-left"
+                  >
+                    <span className="text-lg font-medium text-black pr-4">{item.question}</span>
+                    {openFaqIndex === index ? (
+                      <Minus className="w-5 h-5 text-neutral-500 flex-shrink-0" />
+                    ) : (
+                      <Plus className="w-5 h-5 text-neutral-500 flex-shrink-0" />
+                    )}
+                  </button>
+                  {openFaqIndex === index && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="pb-6"
+                    >
+                      <p className="text-neutral-600 leading-relaxed">{item.answer}</p>
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+              <div className="border-t border-neutral-200" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section - Orange Gradient Background */}
+      <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-orange-300 px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-32">
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-orange-400/50 blur-3xl" />
+          <div className="absolute -right-20 top-0 w-96 h-96 rounded-full bg-orange-300/40 blur-3xl" />
+        </div>
+        
+        <div className="relative z-10 max-w-7xl w-full mx-auto flex items-center justify-center">
+          {/* Card */}
+          <div className="bg-orange-50 rounded-3xl p-10 sm:p-16 text-center max-w-md w-full shadow-2xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-8">
+              So, what are we building?
+            </h2>
+            <Link
+              to="/auth"
+              className="inline-flex items-center gap-2 bg-black text-lime-300 px-6 py-3 rounded-full font-semibold text-sm hover:bg-neutral-800 transition-colors"
+            >
+              Start Building
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 };
@@ -192,14 +322,7 @@ const PricingCard = ({
           borderWidth={2} 
           className="opacity-70"
         />
-        <div
-          className={cn(
-            "relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300",
-            plan.isPopular
-              ? "bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]"
-              : "bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-neutral-800/80"
-          )}
-        >
+        <div className="relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]">
           {/* Popular Badge */}
           {plan.isPopular && (
             <div className="absolute top-4 left-6">
@@ -231,6 +354,19 @@ const PricingCard = ({
             {plan.description}
           </p>
 
+          {/* CTA Button - Centered */}
+          <button
+            onClick={() => onSubscribe(plan.name)}
+            className={cn(
+              "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6",
+              plan.isPopular
+                ? "bg-white text-black hover:bg-neutral-200"
+                : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+            )}
+          >
+            {plan.buttonText}
+          </button>
+
           {/* Divider */}
           <div className="h-px w-full mb-6 bg-white/10" />
 
@@ -240,10 +376,10 @@ const PricingCard = ({
           </p>
 
           {/* Features List */}
-          <ul className="flex-1 space-y-3 mb-8">
+          <ul className="flex-1 space-y-3">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-center gap-3">
-              <div className={cn(
+                <div className={cn(
                   "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
                   plan.isPopular
                     ? "border-teal-400 text-teal-400"
@@ -257,19 +393,6 @@ const PricingCard = ({
               </li>
             ))}
           </ul>
-
-          {/* CTA Button */}
-          <button
-            onClick={() => onSubscribe(plan.name)}
-            className={cn(
-              "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300",
-              plan.isPopular
-                ? "bg-white text-black hover:bg-neutral-200"
-                : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-            )}
-          >
-            {plan.buttonText}
-          </button>
         </div>
       </div>
     </motion.div>
