@@ -24,7 +24,7 @@ const pricingPlans = [
       "Community support",
     ],
     buttonText: "Get started",
-    isEnterprise: false,
+    isPopular: false,
   },
   {
     name: "Starter",
@@ -39,22 +39,37 @@ const pricingPlans = [
       "2-factor authentication",
     ],
     buttonText: "Get started",
-    isEnterprise: false,
+    isPopular: false,
   },
   {
-    name: "Enterprise",
+    name: "Business",
     price: "$48",
     period: "/month",
     yearlyPrice: "$38.40",
-    description: "Advanced plan with enhanced security and unlimited access for large teams",
+    description: "Best value for growing businesses that need more advanced features",
     sectionTitle: "Everything in Starter, plus:",
+    features: [
+      "Advanced checklists",
+      "Custom fields",
+      "Serverless functions",
+    ],
+    buttonText: "Get started",
+    isPopular: true,
+  },
+  {
+    name: "Enterprise",
+    price: "$96",
+    period: "/month",
+    yearlyPrice: "$76.80",
+    description: "Advanced plan with enhanced security and unlimited access for large teams",
+    sectionTitle: "Everything in Business, plus:",
     features: [
       "Multi-board management",
       "Priority support",
       "Advanced analytics",
     ],
     buttonText: "Get started",
-    isEnterprise: true,
+    isPopular: false,
   },
 ];
 
@@ -127,7 +142,7 @@ const Premium = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
           >
             {pricingPlans.map((plan, index) => (
               <PricingCard
@@ -180,13 +195,22 @@ const PricingCard = ({
         <div
           className={cn(
             "relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300",
-            plan.isEnterprise
+            plan.isPopular
               ? "bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]"
               : "bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-neutral-800/80"
           )}
         >
+          {/* Popular Badge */}
+          {plan.isPopular && (
+            <div className="absolute top-4 left-6">
+              <span className="bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/20">
+                Popular
+              </span>
+            </div>
+          )}
+
           {/* Price */}
-          <div className="mb-4">
+          <div className={cn("mb-4", plan.isPopular && "mt-8")}>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl sm:text-5xl font-bold text-white">
                 {displayPrice}
@@ -221,7 +245,7 @@ const PricingCard = ({
               <li key={i} className="flex items-center gap-3">
               <div className={cn(
                   "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                  plan.isEnterprise
+                  plan.isPopular
                     ? "border-teal-400 text-teal-400"
                     : "border-neutral-500 text-neutral-400"
                 )}>
@@ -239,7 +263,7 @@ const PricingCard = ({
             onClick={() => onSubscribe(plan.name)}
             className={cn(
               "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300",
-              plan.isEnterprise
+              plan.isPopular
                 ? "bg-white text-black hover:bg-neutral-200"
                 : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
             )}
