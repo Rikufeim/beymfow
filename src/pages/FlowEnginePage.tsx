@@ -3708,7 +3708,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </div>
                             </div>
                             {/* Content */}
-                            <div className="flex-1 p-4 overflow-y-auto">
+                            <div className="flex-1 p-4 overflow-hidden">
                               <p className="text-xs text-neutral-400">
                                 Connect this node to verify that all prompts in your flow work correctly.
                               </p>
@@ -3772,7 +3772,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               </div>
                             </div>
                             {/* Content */}
-                            <div className="flex-1 p-4 overflow-y-auto">
+                            <div className="flex-1 p-4 overflow-hidden">
                               <p className="text-xs text-neutral-400">
                                 Access your purchased prompts here. Connect to add them to your flow.
                               </p>
@@ -3898,9 +3898,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         </div>
 
                           {/* Prompt Window Content */}
-                          <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-auto">
+                          <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden">
                             {widget.promptMode === "preview" ? (
-                              <div className="p-4 overflow-y-auto custom-scrollbar">
+                              <div className="p-4 overflow-hidden">
                                 {displayContent ? (
                                   <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-white/90">
                                     {displayContent}
@@ -4066,7 +4066,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           {/* Fields */}
-                          <div className="flex-1 overflow-auto px-4 py-3 space-y-3 text-xs leading-relaxed custom-scrollbar">
+                          <div className="flex-1 overflow-hidden px-4 py-3 space-y-3 leading-relaxed">
                             {Object.entries(websiteData.fields).map(([fieldKey, fieldValue]) => (
                               <section key={fieldKey} className="space-y-2">
                                 <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
@@ -4271,17 +4271,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
                         )}
                       </div>
-                        <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 overflow-auto">
+                        <div className="flex-1 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-4 overflow-hidden">
                           {isPromptNode ? (
                             <textarea
                               readOnly
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-xs font-mono resize-none outline-none custom-scrollbar leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 font-mono resize-none outline-none leading-relaxed"
                               value={widget.content || PROMPT_PLACEHOLDER}
                               onMouseDown={(e) => e.stopPropagation()}
                             />
                           ) : (
                             <textarea
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-xs font-mono resize-none outline-none custom-scrollbar leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 font-mono resize-none outline-none leading-relaxed"
                               value={widget.content || ""}
                               onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                               onMouseDown={(e) => e.stopPropagation()}
