@@ -82,49 +82,53 @@ export const GeneratedPromptDisplay = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!prompt) return null;
-
   return (
-    <div className="mt-8 animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="text-base sm:text-lg font-bold text-white">Your prompt:</h4>
-        <div className="flex items-center gap-2">
-          <GlassButton
-            size="sm"
-            onClick={handleEnhancePrompt}
-            disabled={isEnhancing}
-            contentClassName="flex items-center gap-2"
-          >
-            {isEnhancing ? (
-              <div className="w-3 h-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-            ) : (
-              <Sparkles className="w-3 h-3" />
-            )}
-            Enhance
-          </GlassButton>
-          <GlassButton
-            size="sm"
-            onClick={copyToClipboard}
-            contentClassName="flex items-center gap-2"
-          >
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            {copied ? "Copied" : "Copy"}
-          </GlassButton>
-          <GlassButton
-            size="sm"
-            onClick={onClear}
-            contentClassName="flex items-center gap-2"
-          >
-            <X className="w-3 h-3" />
-            Delete
-          </GlassButton>
+    <div className="mt-8 min-h-[200px]">
+      {!prompt ? (
+        <div className="min-h-[200px]" />
+      ) : (
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-base sm:text-lg font-bold text-white">Your prompt:</h4>
+            <div className="flex items-center gap-2">
+              <GlassButton
+                size="sm"
+                onClick={handleEnhancePrompt}
+                disabled={isEnhancing}
+                contentClassName="flex items-center gap-2"
+              >
+                {isEnhancing ? (
+                  <div className="w-3 h-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                ) : (
+                  <Sparkles className="w-3 h-3" />
+                )}
+                Enhance
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={copyToClipboard}
+                contentClassName="flex items-center gap-2"
+              >
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {copied ? "Copied" : "Copy"}
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={onClear}
+                contentClassName="flex items-center gap-2"
+              >
+                <X className="w-3 h-3" />
+                Delete
+              </GlassButton>
+            </div>
+          </div>
+          <div className="p-4 rounded-xl bg-black border border-white/10">
+            <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/90 text-left">
+              {prompt}
+            </p>
+          </div>
         </div>
-      </div>
-      <div className="p-4 rounded-xl bg-black border border-white/10">
-        <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/90 text-left">
-          {prompt}
-        </p>
-      </div>
+      )}
     </div>
   );
 };
