@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { Crown, Sparkles, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 // Pricing data - 3 tiers as shown in reference
 const pricingPlans = [
@@ -163,104 +164,99 @@ const PricingCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.1 * index }}
-      className={cn(
-        "relative flex flex-col rounded-2xl p-6 sm:p-8 transition-all duration-300",
-        plan.isPopular
-          ? "bg-neutral-900 border border-neutral-700 shadow-2xl"
-          : "bg-neutral-100 text-black"
-      )}
+      className="relative h-full"
     >
-      {/* Popular Badge */}
-      {plan.isPopular && (
-        <div className="absolute top-4 left-6">
-          <span className="bg-neutral-700 text-white text-xs font-semibold px-3 py-1 rounded-full">
-            Popular
-          </span>
-        </div>
-      )}
+      {/* Card with GlowingEffect */}
+      <div className="relative h-full rounded-2xl p-[1px]">
+        <GlowingEffect 
+          spread={40} 
+          glow={true}
+          disabled={false} 
+          proximity={64} 
+          inactiveZone={0.01} 
+          borderWidth={2} 
+          className="opacity-70"
+        />
+        <div
+          className={cn(
+            "relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300",
+            plan.isPopular
+              ? "bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]"
+              : "bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-neutral-800/80"
+          )}
+        >
+          {/* Popular Badge */}
+          {plan.isPopular && (
+            <div className="absolute top-4 left-6">
+              <span className="bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/20">
+                Popular
+              </span>
+            </div>
+          )}
 
-      {/* Price */}
-      <div className={cn("mb-4", plan.isPopular && "mt-8")}>
-        <div className="flex items-baseline gap-1">
-          <span className={cn(
-            "text-4xl sm:text-5xl font-bold",
-            plan.isPopular ? "text-white" : "text-black"
-          )}>
-            {displayPrice}
-          </span>
-          <span className={cn(
-            "text-base",
-            plan.isPopular ? "text-neutral-400" : "text-neutral-500"
-          )}>
-            {plan.period}
-          </span>
+          {/* Price */}
+          <div className={cn("mb-4", plan.isPopular && "mt-8")}>
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl sm:text-5xl font-bold text-white">
+                {displayPrice}
+              </span>
+              <span className="text-base text-neutral-400">
+                {plan.period}
+              </span>
+            </div>
+          </div>
+
+          {/* Plan Name */}
+          <h3 className="text-2xl font-bold mb-2 text-white">
+            {plan.name}
+          </h3>
+
+          {/* Description */}
+          <p className="text-sm mb-6 leading-relaxed text-neutral-400">
+            {plan.description}
+          </p>
+
+          {/* Divider */}
+          <div className="h-px w-full mb-6 bg-white/10" />
+
+          {/* Section Title */}
+          <p className="text-sm font-semibold mb-4 text-white">
+            {plan.sectionTitle}
+          </p>
+
+          {/* Features List */}
+          <ul className="flex-1 space-y-3 mb-8">
+            {plan.features.map((feature, i) => (
+              <li key={i} className="flex items-center gap-3">
+                <div className={cn(
+                  "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                  plan.isPopular
+                    ? "border-teal-400 text-teal-400"
+                    : "border-neutral-500 text-neutral-400"
+                )}>
+                  <Check className="w-3 h-3" />
+                </div>
+                <span className="text-sm text-neutral-300">
+                  {feature}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA Button */}
+          <button
+            onClick={() => onSubscribe(plan.name)}
+            className={cn(
+              "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300",
+              plan.isPopular
+                ? "bg-white text-black hover:bg-neutral-200"
+                : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+            )}
+          >
+            {plan.buttonText}
+          </button>
         </div>
       </div>
-
-      {/* Plan Name */}
-      <h3 className={cn(
-        "text-2xl font-bold mb-2",
-        plan.isPopular ? "text-white" : "text-black"
-      )}>
-        {plan.name}
-      </h3>
-
-      {/* Description */}
-      <p className={cn(
-        "text-sm mb-6 leading-relaxed",
-        plan.isPopular ? "text-neutral-400" : "text-neutral-600"
-      )}>
-        {plan.description}
-      </p>
-
-      {/* Divider */}
-      <div className={cn(
-        "h-px w-full mb-6",
-        plan.isPopular ? "bg-neutral-700" : "bg-neutral-300"
-      )} />
-
-      {/* Section Title */}
-      <p className={cn(
-        "text-sm font-semibold mb-4",
-        plan.isPopular ? "text-white" : "text-black"
-      )}>
-        {plan.sectionTitle}
-      </p>
-
-      {/* Features List */}
-      <ul className="flex-1 space-y-3 mb-8">
-        {plan.features.map((feature, i) => (
-          <li key={i} className="flex items-center gap-3">
-            <div className={cn(
-              "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center",
-              plan.isPopular
-                ? "border-teal-400 text-teal-400"
-                : "border-neutral-400 text-neutral-600"
-            )}>
-              <Check className="w-3 h-3" />
-            </div>
-            <span className={cn(
-              "text-sm",
-              plan.isPopular ? "text-neutral-300" : "text-neutral-700"
-            )}>
-              {feature}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* CTA Button */}
-      <button
-        onClick={() => onSubscribe(plan.name)}
-        className={cn(
-          "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300",
-          plan.isPopular
-            ? "bg-neutral-100 text-black hover:bg-white"
-            : "bg-neutral-800 text-white hover:bg-neutral-900"
-        )}
-      >
-        {plan.buttonText}
-      </button>
     </motion.div>
   );
 };
