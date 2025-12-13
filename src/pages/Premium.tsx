@@ -263,13 +263,14 @@ const Premium = () => {
         </div>
       </div>
 
-      {/* CTA Section - Black to Purple Gradient Background */}
-      <div className="relative bg-gradient-to-r from-black via-neutral-900 to-purple-900 px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-32">
-        {/* Decorative shapes */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-neutral-800/50 blur-3xl" />
-          <div className="absolute -right-20 top-0 w-96 h-96 rounded-full bg-purple-600/40 blur-3xl" />
-        </div>
+      {/* CTA Section - Background Image */}
+      <div className="relative px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-32">
+        {/* Background Image */}
+        <img 
+          src={ctaFooterBg} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         
         <div className="relative z-10 max-w-7xl w-full mx-auto flex items-center justify-center">
           {/* Card */}
@@ -285,16 +286,7 @@ const Premium = () => {
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-      </div>
-
-      {/* Footer Image Section */}
-      <div className="w-full">
-        <img 
-          src={ctaFooterBg} 
-          alt="" 
-          className="w-full h-48 sm:h-64 md:h-80 object-cover"
-        />
-      </div>
+        </div>
       </div>
     </Layout>
   );
