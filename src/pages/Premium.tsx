@@ -280,7 +280,7 @@ const Premium = () => {
         
         <div className="relative z-10 max-w-7xl w-full mx-auto flex items-center justify-center">
           {/* Card */}
-          <div className="bg-neutral-900 rounded-3xl p-10 sm:p-16 text-center max-w-md w-full shadow-2xl border border-neutral-800">
+          <div className="bg-black rounded-3xl p-10 sm:p-16 text-center max-w-md w-full shadow-2xl border border-neutral-800">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-8">
               So, what are we building?
             </h2>
