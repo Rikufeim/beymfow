@@ -175,7 +175,7 @@ const Premium = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start"
           >
             {pricingPlans.map((plan, index) => (
               <PricingCard
@@ -218,13 +218,13 @@ const Premium = () => {
         </div>
       </div>
 
-      {/* FAQ Section - White Background */}
-      <div className="bg-white text-black px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
+      {/* FAQ Section - Black Background */}
+      <div className="bg-black text-white px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-24">
         <div className="max-w-7xl w-full mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left - Title */}
             <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-black">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white">
                 Frequently asked questions
               </h2>
             </div>
@@ -232,16 +232,16 @@ const Premium = () => {
             {/* Right - FAQ Accordion */}
             <div className="space-y-0">
               {faqItems.map((item, index) => (
-                <div key={index} className="border-t border-neutral-200">
+                <div key={index} className="border-t border-neutral-700">
                   <button
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                     className="w-full flex items-center justify-between py-6 text-left"
                   >
-                    <span className="text-lg font-medium text-black pr-4">{item.question}</span>
+                    <span className="text-lg font-medium text-white pr-4">{item.question}</span>
                     {openFaqIndex === index ? (
-                      <Minus className="w-5 h-5 text-neutral-500 flex-shrink-0" />
+                      <Minus className="w-5 h-5 text-neutral-400 flex-shrink-0" />
                     ) : (
-                      <Plus className="w-5 h-5 text-neutral-500 flex-shrink-0" />
+                      <Plus className="w-5 h-5 text-neutral-400 flex-shrink-0" />
                     )}
                   </button>
                   {openFaqIndex === index && (
@@ -251,34 +251,34 @@ const Premium = () => {
                       exit={{ opacity: 0, height: 0 }}
                       className="pb-6"
                     >
-                      <p className="text-neutral-600 leading-relaxed">{item.answer}</p>
+                      <p className="text-neutral-400 leading-relaxed">{item.answer}</p>
                     </motion.div>
                   )}
                 </div>
               ))}
-              <div className="border-t border-neutral-200" />
+              <div className="border-t border-neutral-700" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* CTA Section - Orange Gradient Background */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-orange-300 px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-32">
+      {/* CTA Section - Black to Purple Gradient Background */}
+      <div className="relative bg-gradient-to-r from-black via-neutral-900 to-purple-900 px-4 sm:px-6 md:px-8 lg:px-12 py-20 sm:py-32">
         {/* Decorative shapes */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-orange-400/50 blur-3xl" />
-          <div className="absolute -right-20 top-0 w-96 h-96 rounded-full bg-orange-300/40 blur-3xl" />
+          <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-neutral-800/50 blur-3xl" />
+          <div className="absolute -right-20 top-0 w-96 h-96 rounded-full bg-purple-600/40 blur-3xl" />
         </div>
         
         <div className="relative z-10 max-w-7xl w-full mx-auto flex items-center justify-center">
           {/* Card */}
-          <div className="bg-orange-50 rounded-3xl p-10 sm:p-16 text-center max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-8">
+          <div className="bg-neutral-900 rounded-3xl p-10 sm:p-16 text-center max-w-md w-full shadow-2xl border border-neutral-800">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-8">
               So, what are we building?
             </h2>
             <Link
               to="/auth"
-              className="inline-flex items-center gap-2 bg-black text-lime-300 px-6 py-3 rounded-full font-semibold text-sm hover:bg-neutral-800 transition-colors"
+              className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-semibold text-sm hover:bg-neutral-200 transition-colors"
             >
               Start Building
               <ArrowRight className="w-4 h-4" />
@@ -354,18 +354,20 @@ const PricingCard = ({
             {plan.description}
           </p>
 
-          {/* CTA Button - Centered */}
-          <button
-            onClick={() => onSubscribe(plan.name)}
-            className={cn(
-              "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6",
-              plan.isPopular
-                ? "bg-white text-black hover:bg-neutral-200"
-                : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-            )}
-          >
-            {plan.buttonText}
-          </button>
+          {/* CTA Button - Fixed height position */}
+          <div className="mt-auto pt-4">
+            <button
+              onClick={() => onSubscribe(plan.name)}
+              className={cn(
+                "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6",
+                plan.isPopular
+                  ? "bg-white text-black hover:bg-neutral-200"
+                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+              )}
+            >
+              {plan.buttonText}
+            </button>
+          </div>
 
           {/* Divider */}
           <div className="h-px w-full mb-6 bg-white/10" />
