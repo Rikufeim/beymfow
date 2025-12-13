@@ -103,10 +103,6 @@ export const ResizableNodeWrapper: React.FC<ResizableNodeWrapperProps> = ({
         <div 
           className="w-full h-full flex flex-col overflow-hidden" 
           onMouseDown={onMouseDown}
-          style={{
-            // Apply scale transform to content
-            fontSize: `${Math.max(0.6, Math.min(1.4, scale))}em`,
-          }}
         >
           {children}
         </div>

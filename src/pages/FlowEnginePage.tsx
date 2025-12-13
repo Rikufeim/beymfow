@@ -4066,10 +4066,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </div>
 
                           {/* Fields */}
-                          <div className="flex-1 overflow-hidden px-4 py-3 space-y-3 leading-relaxed">
+                          <div className="flex-1 overflow-hidden px-4 py-3 space-y-3 text-sm leading-relaxed">
                             {Object.entries(websiteData.fields).map(([fieldKey, fieldValue]) => (
                               <section key={fieldKey} className="space-y-2">
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+                                <p className="text-xs uppercase tracking-[0.18em] text-white/40">
                                   {fieldKey.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
                                 </p>
                                 <textarea
@@ -4085,7 +4085,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                     updateWidget(widget.id, "websiteData", updatedData);
                                   }}
                                   placeholder={`Enter ${fieldKey}...`}
-                                  className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:border-white/30 leading-relaxed"
+                                  className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 resize-none outline-none focus:border-white/30 leading-relaxed"
                                   onMouseDown={(e) => e.stopPropagation()}
                                   style={{ minHeight: "48px" }}
                                 />
@@ -4275,13 +4275,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           {isPromptNode ? (
                             <textarea
                               readOnly
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 font-mono resize-none outline-none leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed"
                               value={widget.content || PROMPT_PLACEHOLDER}
                               onMouseDown={(e) => e.stopPropagation()}
                             />
                           ) : (
                             <textarea
-                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 font-mono resize-none outline-none leading-relaxed"
+                              className="w-full h-full bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] text-neutral-200 text-sm font-mono resize-none outline-none leading-relaxed"
                               value={widget.content || ""}
                               onChange={(e) => updateWidget(widget.id, "content", e.target.value)}
                               onMouseDown={(e) => e.stopPropagation()}
