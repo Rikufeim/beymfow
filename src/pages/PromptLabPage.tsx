@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { PromptSidebar } from "@/components/ui/prompt-sidebar";
 import { cn } from "@/lib/utils";
 import {
   Copy,
@@ -974,6 +975,11 @@ Before finalizing, verify:
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Prompt Cards Banner */}
+            <div className="w-full max-w-7xl mx-auto mt-8 mb-12">
+              <PromptSidebar />
             </div>
           </motion.section>
 
