@@ -15,8 +15,9 @@ import PricingCarousel from "@/components/PricingCarousel";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
-import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle } from "lucide-react";
+import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { useRef } from "react";
+import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholderCarousel";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Index = () => {
   });
   return <>
       <Layout>
-        <main ref={containerRef} className="relative overflow-hidden bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
+        <main ref={containerRef} className="relative overflow-y-auto bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
           {/* Darkening overlay - page gets darker as you scroll */}
           <motion.div
             className="fixed inset-0 pointer-events-none z-0 bg-black"
@@ -53,6 +54,40 @@ const Index = () => {
           <div className="relative z-10">
             {/* Hero Section */}
             <Hero />
+
+            {/* Start Building + CTA buttons with ambient scroll effect */}
+            <section
+              className="relative w-full px-4 sm:px-6 lg:px-8 xl:px-12 mt-12 mb-10 min-h-[360px] pt-14 pb-16"
+            >
+              <div className="relative z-10 flex flex-col items-center gap-4">
+                <h2 className="text-3xl sm:text-4xl font-bold text-white">Start Building</h2>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <GlassButton
+                    size="lg"
+                    isSelected={false}
+                    contentClassName="flex items-center gap-2 text-base font-semibold px-5"
+                    onClick={() => navigate("/flow-engine")}
+                  >
+                    Flow Engine
+                  </GlassButton>
+                  <GlassButton
+                    size="lg"
+                    isSelected={false}
+                    contentClassName="flex items-center gap-2 text-base font-semibold px-5"
+                    onClick={() => navigate("/prompt-lab-page")}
+                  >
+                    Prompt Lab
+                  </GlassButton>
+                </div>
+              </div>
+            </section>
+
+            {/* Prompt Packs (placeholder carousels) */}
+            <section className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 mt-16">
+              <HorizontalPlaceholderCarousel title="Landing Pages" />
+              <HorizontalPlaceholderCarousel title="Popular" />
+              <HorizontalPlaceholderCarousel title="Components" />
+            </section>
 
             {/* Flow Features Section */}
             <FlowFeaturesSection className="my-[100px] py-[300px]" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Github, Youtube, Instagram, Menu, Twitter, Workflow, FlaskConical } from "lucide-react";
+import { LogOut, Menu, Workflow, FlaskConical } from "lucide-react";
 import { useState } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,9 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const [isCommunityOpen, setIsCommunityOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
-  const isHomePage = location.pathname === "/";
   const isAuthPage = location.pathname === "/auth";
 
   return (
@@ -30,121 +28,73 @@ const Header = () => {
           />
           <span className="relative text-sm sm:text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1">
             Beymflow
-            <span className="absolute -top-2 -right-5 text-[9px] tracking-normal text-white/60 lowercase font-normal">
-              beta
-            </span>
           </span>
         </Link>
       </div>
 
       {/* ================= KESKI: NAVIGAATIO (Desktop) ================= */}
-      {isHomePage && (
-        <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 font-medium">
-          {/* 1. Pricing */}
-          <Link
-            to="/premium"
-            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+      <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 font-medium">
+        {/* 1. Pricing */}
+        <Link
+          to="/premium"
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+        >
+          Pricing
+        </Link>
+
+        {/* 2. Products */}
+        <Link
+          to="/prompt-lab-page"
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+        >
+          Products
+        </Link>
+
+        {/* 3. Tools Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
+            Tools
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
+            align="center"
           >
-            Pricing
-          </Link>
+            <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
+              <Link
+                to="/flow-engine"
+                className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
+              >
+                <Workflow className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Flow Engine</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
+              <Link
+                to="/prompt-lab-page"
+                className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
+              >
+                <FlaskConical className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Prompt Lab</span>
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-          {/* 2. Products */}
-          <Link
-            to="/prompt-lab-page"
-            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
-          >
-            Products
-          </Link>
+        {/* Templates */}
+        <Link
+          to="/templates"
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+        >
+          Templates
+        </Link>
 
-          {/* 3. Tools Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="relative flex items-center gap-2 text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100">
-              Tools
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
-              align="center"
-            >
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <Link
-                  to="/flow-engine"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <Workflow className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Flow Engine</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <Link
-                  to="/prompt-lab-page"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <FlaskConical className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Prompt Lab</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* 4. About Us */}
+        <Link
+          to="/about"
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+        >
+          About Us
+        </Link>
 
-          {/* 4. About Us */}
-          <Link
-            to="/about"
-            className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
-          >
-            About Us
-          </Link>
-
-          {/* 5. Community Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="relative flex items-center gap-2 text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer after:absolute after:left-0 after:-bottom-1 after:h-[1.5px] after:w-full after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100">
-              Community
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
-              align="center"
-            >
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <a
-                  href="https://github.com/beymflow"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <Github className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">GitHub</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <a
-                  href="https://x.com/beymflow"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <Twitter className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">X</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <a
-                  href="https://www.youtube.com/@Beymflow"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <Youtube className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">YouTube</span>
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-                <a
-                  href="https://www.instagram.com/beymflow/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-                >
-                  <Instagram className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Instagram</span>
-                </a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </nav>
-      )}
+      </nav>
 
       {/* ================= OIKEA: TOIMINNOT ================= */}
       <div className="flex items-center justify-end gap-2 sm:gap-3 md:gap-6 flex-1">
@@ -170,130 +120,89 @@ const Header = () => {
                 </GlassButton>
               ) : (
                 !isAuthPage && (
-                  <Link to="/auth" className="w-full">
-                    <GlassButton contentClassName="w-full text-center" className="w-full">
-                      Start Creating
-                    </GlassButton>
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link to="/auth" className="w-full text-left text-gray-300 hover:text-white transition">
+                      Login
+                    </Link>
+                    <Link to="/premium" className="w-full">
+                      <GlassButton
+                        contentClassName="w-full text-center"
+                        className="w-full bg-neutral-900 text-white hover:bg-neutral-800"
+                        size="sm"
+                      >
+                        Get All-Access
+                      </GlassButton>
+                    </Link>
+                  </div>
                 )
               )}
 
-              {isHomePage && (
-                <>
-                  <Link
-                    to="/prompt-lab-page"
-                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
+              <>
+                <Link
+                  to="/prompt-lab-page"
+                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                >
+                  Products
+                </Link>
+                <div className="px-4">
+                  <button
+                    onClick={() => setIsToolsOpen(!isToolsOpen)}
+                    className="flex items-center justify-between w-full text-gray-300 hover:text-white transition-colors text-lg font-medium mb-3"
                   >
-                    Products
-                  </Link>
-                  <div className="px-4">
-                    <button
-                      onClick={() => setIsToolsOpen(!isToolsOpen)}
-                      className="flex items-center justify-between w-full text-white/90 hover:text-white transition-colors text-lg font-medium mb-3"
+                    Tools
+                    <svg
+                      className="w-4 h-4 transition-transform"
+                      style={{ transform: isToolsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      Tools
-                      <svg
-                        className="w-4 h-4 transition-transform"
-                        style={{ transform: isToolsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isToolsOpen && (
+                    <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
+                      <Link
+                        to="/flow-engine"
+                        className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors p-2"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {isToolsOpen && (
-                      <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
-                        <Link
-                          to="/flow-engine"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <Workflow className="h-5 w-5" /> <span>Flow Engine</span>
-                        </Link>
-                        <Link
-                          to="/prompt-lab-page"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <FlaskConical className="h-5 w-5" /> <span>Prompt Lab</span>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                  <Link
-                    to="/about"
-                    className="relative text-white hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4 after:absolute after:left-4 after:-bottom-1.5 after:h-[1.5px] after:w-[calc(100%-2rem)] after:scale-x-0 after:origin-left after:bg-gradient-to-r after:from-teal-400 after:to-purple-600 after:transition-[transform,opacity] after:duration-300 after:opacity-40 hover:after:scale-x-100 hover:after:opacity-100"
-                  >
-                    About Us
-                  </Link>
-                  <Link
-                    to="/premium"
-                    className="text-white/90 hover:text-white transition-colors text-lg font-medium px-4"
-                  >
-                    Pricing
-                  </Link>
-
-                  <div className="px-4">
-                    <button
-                      onClick={() => setIsCommunityOpen(!isCommunityOpen)}
-                      className="flex items-center justify-between w-full text-white/90 hover:text-white transition-colors text-lg font-medium mb-3"
-                    >
-                      Community
-                      <svg
-                        className="w-4 h-4 transition-transform"
-                        style={{ transform: isCommunityOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        <Workflow className="h-5 w-5" /> <span>Flow Engine</span>
+                      </Link>
+                      <Link
+                        to="/prompt-lab-page"
+                        className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors p-2"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {isCommunityOpen && (
-                      <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
-                        <a
-                          href="https://github.com/beymflow"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <Github className="h-5 w-5" /> <span>GitHub</span>
-                        </a>
-                        <a
-                          href="https://x.com/beymflow"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <Twitter className="h-5 w-5" /> <span>X</span>
-                        </a>
-                        <a
-                          href="https://www.youtube.com/@Beymflow"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <Youtube className="h-5 w-5" /> <span>YouTube</span>
-                        </a>
-                        <a
-                          href="https://www.instagram.com/beymflow/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-white/70 hover:text-white transition-colors p-2"
-                        >
-                          <Instagram className="h-5 w-5" /> <span>Instagram</span>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+                        <FlaskConical className="h-5 w-5" /> <span>Prompt Lab</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <Link
+                  to="/templates"
+                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                >
+                  Templates
+                </Link>
+                <Link
+                  to="/about"
+                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                >
+                  About Us
+                </Link>
+                <Link
+                  to="/premium"
+                  className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4"
+                >
+                  Pricing
+                </Link>
+              </>
             </div>
           </SheetContent>
         </Sheet>
 
         {/* Desktop Sign In/Out Button */}
         {!isAuthPage && (
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-4">
             {user ? (
               <GlassButton
                 onClick={signOut}
@@ -303,11 +212,16 @@ const Header = () => {
                 Sign Out
               </GlassButton>
             ) : (
-              <Link to="/auth">
-                <GlassButton>
-                  Start Creating
-                </GlassButton>
-              </Link>
+              <>
+                <Link to="/auth" className="text-gray-300 hover:text-white transition">
+                  Login
+                </Link>
+                <Link to="/premium">
+                  <GlassButton className="bg-neutral-900 text-white hover:bg-neutral-800" size="sm">
+                    Get All-Access
+                  </GlassButton>
+                </Link>
+              </>
             )}
           </div>
         )}
