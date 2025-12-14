@@ -1,4 +1,5 @@
 import Products from "@/components/Products";
+import ProductsGrid from "@/components/ProductsGrid";
 import Footer from "@/components/Footer";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
@@ -55,6 +56,9 @@ const Index = () => {
 
             {/* Flow Features Section */}
             <FlowFeaturesSection className="my-[100px] py-[300px]" />
+
+            {/* Products Grid Section */}
+            <ProductsGrid />
 
             {/* Beymflow Premium highlight */}
             
