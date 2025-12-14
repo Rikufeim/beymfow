@@ -31,7 +31,6 @@ export function PromptSidebar({ className }: { className?: string }) {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    let scrollTimeout: NodeJS.Timeout;
     let animationFrameId: number | null = null;
     let rafScheduled = false;
 
@@ -107,23 +106,9 @@ export function PromptSidebar({ className }: { className?: string }) {
       }
     };
 
+    // Prevent wheel scrolling - only auto-scroll with hover pause
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
-      const marquee = container.querySelector('.animate-marquee') as HTMLElement;
-      if (marquee) {
-        marquee.style.animationPlayState = 'paused';
-      }
-      
-      container.scrollLeft += e.deltaY * 0.5;
-      
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const marquee = container.querySelector('.animate-marquee') as HTMLElement;
-        if (marquee && !container.matches(':hover')) {
-          marquee.style.animationPlayState = 'running';
-        }
-      }, 150);
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
@@ -131,7 +116,6 @@ export function PromptSidebar({ className }: { className?: string }) {
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
-      clearTimeout(scrollTimeout);
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
       }
