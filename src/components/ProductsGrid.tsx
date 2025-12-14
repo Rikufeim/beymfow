@@ -40,7 +40,9 @@ const ProductsGrid = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {products.map((product, idx) => (
             <div key={idx} className="flex flex-col items-start gap-4">
-              <div className="mb-2">{product.icon}</div>
+              <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2">
+                {product.icon}
+              </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white">
                 {product.title}
               </h3>
