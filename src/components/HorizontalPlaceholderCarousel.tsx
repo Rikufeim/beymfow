@@ -35,7 +35,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   };
 
   return (
-    <div className={`w-full max-w-6xl mx-auto mb-10 ${className}`}>
+    <div className={`w-full mb-10 ${className}`}>
       <div className="flex items-center justify-between px-1 mb-2">
         <h3 className="text-white/85 font-semibold text-lg">{title}</h3>
         <div className="flex items-center gap-4">
