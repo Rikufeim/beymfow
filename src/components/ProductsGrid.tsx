@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
-import { BookOpen, Workflow, Sparkles, Package } from "lucide-react";
+import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
 
 const products = [
   {
@@ -18,7 +18,7 @@ const products = [
     link: "/flow-engine",
   },
   {
-    icon: <Sparkles className="h-10 w-10 text-white" />,
+    icon: <FlaskConical className="h-10 w-10 text-white" />,
     title: "Prompt Lab",
     description: "Generate, optimize, and refine AI prompts instantly.",
     buttonText: "Open Lab >",
