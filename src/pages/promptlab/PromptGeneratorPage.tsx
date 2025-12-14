@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Zap, Settings, Send, Plus, Crown, Home, ArrowLeft } from "lucide-react";

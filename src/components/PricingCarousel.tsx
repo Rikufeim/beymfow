@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -42,14 +43,15 @@ export const PricingCarousel = () => {
                     </div>
 
                     <div className="relative mt-8 w-fit">
-                      <GlassButton
-                        size="sm"
-                        onClick={() => {}}
-                        contentClassName="flex items-center gap-1.5"
-                        isSelected={false}
-                      >
-                        Start building
-                      </GlassButton>
+                      <Link to="/prompt-lab-page">
+                        <GlassButton
+                          size="sm"
+                          contentClassName="flex items-center gap-1.5"
+                          isSelected={false}
+                        >
+                          Start building
+                        </GlassButton>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -74,10 +76,10 @@ export const PricingCarousel = () => {
                 <div className="relative flex h-full flex-col justify-between rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-6 sm:p-7 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
                   <div className="relative z-10 flex flex-col justify-between h-full">
                     <div>
-                      <h3 className="text-2xl sm:text-3xl font-medium tracking-tight text-white leading-tight mb-2">Premium</h3>
+                      <h3 className="text-2xl sm:text-3xl font-medium tracking-tight text-white leading-tight mb-2">Starter</h3>
                       <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-3xl sm:text-5xl font-bold text-white">€9,90</span>
-                        <span className="text-lg sm:text-2xl font-medium text-white/70">/mo</span>
+                        <span className="text-3xl sm:text-5xl font-bold text-white">€12</span>
+                        <span className="text-lg sm:text-2xl font-medium text-white/70">/month</span>
                       </div>
 
                       <p className="text-sm text-white/70 leading-relaxed sm:text-lg">
@@ -86,14 +88,15 @@ export const PricingCarousel = () => {
                     </div>
 
                     <div className="relative mt-8 w-fit">
-                      <GlassButton
-                        size="sm"
-                        onClick={() => {}}
-                        contentClassName="flex items-center gap-1.5"
-                        isSelected={false}
-                      >
-                        See all plans
-                      </GlassButton>
+                      <Link to="/premium">
+                        <GlassButton
+                          size="sm"
+                          contentClassName="flex items-center gap-1.5"
+                          isSelected={false}
+                        >
+                          See all plans
+                        </GlassButton>
+                      </Link>
                     </div>
                   </div>
                 </div>

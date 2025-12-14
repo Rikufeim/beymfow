@@ -2,15 +2,14 @@ import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import { PromptSidebar } from "@/components/ui/prompt-sidebar";
 import { cn } from "@/lib/utils";
+import { GlassButton } from "@/components/ui/glass-button";
 import {
   Copy,
   Sparkles,
   Home,
   Search,
   Wand2,
-  ArrowLeft,
   X,
   Loader2,
   CheckCircle2,
@@ -22,15 +21,47 @@ import {
   Expand,
   Plus,
   Save,
+  ArrowLeft,
   ArrowRight,
-  Boxes,
 } from "lucide-react";
 
-const PLACEHOLDERS = [
-  "What is your goal?",
-  "Draft a viral thread...",
-  "Analyze Q3 sales data...",
-  "Create a fitness plan...",
+const PROMPT_BUNDLES = [
+  {
+    title: "Landing Pages",
+    tag: "Landing",
+    bullets: [
+      "Generate a base landing page layout",
+      "Includes hero, features, CTA scaffolding",
+      "Extend with your product details",
+    ],
+  },
+  {
+    title: "Mobile App",
+    tag: "App",
+    bullets: [
+      "Starter prompt for core mobile app screens",
+      "Flows for auth, dashboard, and settings",
+      "Structure you can refine per feature",
+    ],
+  },
+  {
+    title: "Mobile Games",
+    tag: "Games",
+    bullets: [
+      "Kickoff prompt for casual mobile games",
+      "Loops, levels, and core gameplay beats",
+      "Extend with art style and monetization",
+    ],
+  },
+  {
+    title: "Prompts for business",
+    tag: "UI",
+    bullets: [
+      "Generate reusable UI component structures",
+      "Props, variants, and accessibility hints",
+      "Plug into landing, app, or game flows",
+    ],
+  },
 ];
 
 const copyToClipboard = (text: string) => {
@@ -325,9 +356,6 @@ function PromptWorkspaceInner() {
 
   // Landing Input State
   const [landingInput, setLandingInput] = useState("");
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [cursorPos, setCursorPos] = useState(0);
-  const [isFocused, setIsFocused] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<{ title: string; prompt: string }[]>([]);
 
   // Generator State
@@ -359,6 +387,14 @@ function PromptWorkspaceInner() {
     domain: "business" as Domain,
   });
 
+  // Bundle scroller state
+  const bundlesRef = useRef<HTMLDivElement>(null);
+  const bundlesCarouselRef = useRef<HTMLDivElement>(null);
+  const [bundleScroll, setBundleScroll] = useState({ scroll: 0, max: 1 });
+  const componentsCarouselRef = useRef<HTMLDivElement>(null);
+  const popularCarouselRef = useRef<HTMLDivElement>(null);
+  const landingPagesCarouselRef = useRef<HTMLDivElement>(null);
+
   // --- EFFECTS ---
   // Debounce search query for library
   useEffect(() => {
@@ -368,15 +404,6 @@ function PromptWorkspaceInner() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Optimize placeholder animation - only run when needed
-  useEffect(() => {
-    if (landingInput.length > 0 || isFocused) return;
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [landingInput, isFocused]);
-
   // Generator: Auto-generate prompts when user types
   useEffect(() => {
     if (currentView !== "generator") return;
@@ -385,6 +412,23 @@ function PromptWorkspaceInner() {
     }, 1000);
     return () => clearTimeout(timer);
   }, [generatorInput, currentView]);
+
+  // Bundle scroller sync
+  useEffect(() => {
+    const el = bundlesRef.current;
+    if (!el) return;
+    const update = () => {
+      const max = Math.max(el.scrollWidth - el.clientWidth, 1);
+      setBundleScroll({ scroll: el.scrollLeft, max });
+    };
+    update();
+    el.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   // Memoize domain lookup map
   const domainMap = useMemo(() => {
@@ -735,8 +779,6 @@ Before finalizing, verify:
     return () => clearTimeout(timer);
   }, [landingInput, generatePromptAlternatives]);
 
-  const handleInputFocus = useCallback(() => setIsFocused(true), []);
-  const handleInputBlur = useCallback(() => setIsFocused(false), []);
   const handleInputContainerClick = useCallback(() => document.getElementById("main-input")?.focus(), []);
 
   // Generator Functions
@@ -931,92 +973,152 @@ Before finalizing, verify:
               <p className="text-sm text-white/90 font-medium text-center">By Beymflow</p>
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-12">
-              <div className="min-h-[11rem] min-w-[200px]">
-                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
-                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+            {/* Prompt Bundles with arrow-only scroll */}
+            <div className="w-full max-w-6xl mx-auto mb-12 px-2">
+              <div className="flex items-center justify-between px-1 mb-4">
+                <h3 className="text-white/85 font-semibold text-lg">Prompt Packs</h3>
+                <div className="flex items-center gap-4">
                   <button
-                    onClick={() => navigate("/prompt-lab-page/generator")}
-                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
+                    onClick={() => {
+                      const el = bundlesCarouselRef.current;
+                      if (!el) return;
+                      const amount = el.clientWidth * 0.7;
+                      el.scrollBy({ left: -amount, behavior: "smooth" });
+                    }}
+                    className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+                    aria-label="Scroll left"
                   >
-                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                      <Wand2 size={24} className="text-white group-hover:rotate-12 transition-transform" />
-                    </div>
-                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Generator</span>
+                    <ArrowLeft size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const el = bundlesCarouselRef.current;
+                      if (!el) return;
+                      const amount = el.clientWidth * 0.7;
+                      el.scrollBy({ left: amount, behavior: "smooth" });
+                    }}
+                    className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+                    aria-label="Scroll right"
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+                  <button className="text-white/80 text-sm font-semibold hover:text-white transition-colors flex items-center gap-1">
+                    View all <ArrowRight size={14} />
                   </button>
                 </div>
               </div>
-              <div className="min-h-[11rem] min-w-[200px]">
-                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
-                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                  <button
-                    onClick={() => navigate("/prompt-lab-page/scanner")}
-                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
-                  >
-                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                      <Search size={24} className="text-white group-hover:scale-110 transition-transform" />
+              <div
+                ref={bundlesCarouselRef}
+                onWheel={(e) => e.preventDefault()}
+                className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
+              >
+                {PROMPT_BUNDLES.map((bundle) => (
+                  <div key={bundle.title} className="relative min-w-[260px] max-w-[320px] flex-shrink-0">
+                    <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
+                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                      <div className="relative rounded-[1.05rem] bg-gradient-to-b from-[#0b0b0b] via-[#0c0c0c] to-[#0a0a0a] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] h-full flex flex-col">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <h3 className="text-xl font-extrabold text-white leading-tight">{bundle.title}</h3>
+                          <span className="text-xs font-black uppercase px-3 py-1 rounded-full bg-white text-black shadow">{bundle.tag}</span>
+                        </div>
+                        <ul className="space-y-2 mb-6">
+                          {bundle.bullets.map((item) => (
+                            <li key={item} className="flex items-start gap-2 text-white/85 text-sm leading-snug">
+                              <CheckCircle2 className="text-white mt-0.5" size={16} />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <GlassButton
+                          size="sm"
+                          isSelected={false}
+                          className="mt-auto w-full"
+                          contentClassName="w-full flex items-center justify-center gap-2"
+                        >
+                          Learn More <ArrowRight size={16} />
+                        </GlassButton>
+                      </div>
                     </div>
-                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Scanner</span>
-                  </button>
-                </div>
-              </div>
-              <div className="min-h-[11rem] min-w-[200px]">
-                <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
-                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                  <button
-                    onClick={() => navigate("/prompt-lab-page/library")}
-                    className="group relative flex h-full flex-col items-center justify-center gap-3 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 cursor-pointer w-full min-h-[11rem]"
-                  >
-                    <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                      <Boxes size={24} className="text-white group-hover:scale-110 transition-transform" />
-                    </div>
-                    <span className="text-lg font-semibold tracking-tight text-white">Prompt Library</span>
-                  </button>
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Prompt Cards Banner */}
-            <div className="w-full max-w-7xl mx-auto mt-8 mb-12">
-              <PromptSidebar />
-            </div>
+            {/* Placeholder carousels (2 rows) */}
+            {[
+              { title: "Components", ref: componentsCarouselRef },
+              { title: "Popular", ref: popularCarouselRef },
+              { title: "Landing Pages", ref: landingPagesCarouselRef },
+            ].map(({ title, ref }) => {
+              const scrollBy = (dir: number) => {
+                const el = ref.current;
+                if (!el) return;
+                const amount = el.clientWidth * 0.7 * dir;
+                el.scrollBy({ left: amount, behavior: "smooth" });
+              };
+              return (
+                <div key={title} className="w-full max-w-6xl mx-auto mb-10">
+                  <div className="flex items-center justify-between px-1 mb-2">
+                    <h3 className="text-white/85 font-semibold text-lg">{title}</h3>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => scrollBy(-1)}
+                        className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+                        aria-label="Scroll left"
+                      >
+                        <ArrowLeft size={16} />
+                      </button>
+                      <button
+                        onClick={() => scrollBy(1)}
+                        className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+                        aria-label="Scroll right"
+                      >
+                        <ArrowRight size={16} />
+                      </button>
+                      <button className="text-white/80 text-sm font-semibold hover:text-white transition-colors flex items-center gap-1">
+                        View all <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    ref={ref}
+                    onWheel={(e) => e.preventDefault()}
+                    className="flex gap-4 overflow-hidden pb-3 px-1"
+                  >
+                    {Array.from({ length: 6 }).map((_, idx) => (
+                      <div
+                        key={`${title}-${idx}`}
+                        className="relative min-w-[300px] max-w-[360px] h-[200px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0"
+                      >
+                        <div className="absolute inset-0 opacity-50">
+                          <GlowingEffect
+                            spread={28}
+                            glow
+                            disabled={false}
+                            proximity={40}
+                            inactiveZone={0.01}
+                            borderWidth={2}
+                            className="opacity-60"
+                          />
+                        </div>
+                        <div className="relative h-full w-full p-5 flex flex-col justify-between">
+                          <div className="h-4 w-2/3 rounded-full bg-white/10" />
+                          <div className="space-y-2">
+                            <div className="h-3 w-3/4 rounded-full bg-white/8" />
+                            <div className="h-3 w-1/2 rounded-full bg-white/6" />
+                          </div>
+                          <div className="flex justify-end">
+                            <div className="h-8 w-24 rounded-full bg-white/10" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
           </motion.section>
-
-          {/* Animated Text Display */}
-          <div className="w-full max-w-4xl mx-auto mb-12 px-4 relative z-20">
-            <div className="relative flex flex-col items-center justify-center">
-              <div className="relative flex flex-wrap justify-center items-center text-2xl md:text-4xl font-light tracking-tight min-h-[60px] w-full text-center">
-                <div className="flex items-center justify-center overflow-hidden">
-                  <AnimatePresence mode="popLayout">
-                    <motion.span
-                      key={placeholderIndex}
-                      initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        filter: "blur(0px)",
-                        backgroundPosition: ["0% center", "-200% center"],
-                      }}
-                      exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                      transition={{
-                        opacity: { duration: 0.5 },
-                        y: { duration: 0.5 },
-                        backgroundPosition: { duration: 2.5, ease: "linear", repeat: 0 },
-                      }}
-                      className="text-transparent bg-clip-text bg-[length:200%_auto]"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(to right, #737373 0%, #737373 20%, #a855f7 50%, #06b6d4 80%, #737373 100%)",
-                      }}
-                    >
-                      {PLACEHOLDERS[placeholderIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* --- PROMPT ALTERNATIVES SECTION --- */}
           <AnimatePresence>

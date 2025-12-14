@@ -30,8 +30,6 @@ import ImagePrompts from "./pages/promptlab/ImagePrompts";
 import VideoPrompts from "./pages/promptlab/VideoPrompts";
 import TextDetector from "./pages/promptlab/TextDetector";
 import Humanizer from "./pages/promptlab/Humanizer";
-import PromptGeneratorPage from "./pages/promptlab/PromptGeneratorPage";
-import PromptScannerPage from "./pages/promptlab/PromptScannerPage";
 import PromptLibraryPage from "./pages/promptlab/PromptLibraryPage";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import Multiagentpage from "./pages/Multiagentpage";
@@ -61,9 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/premium" element={<Premium />} />
         <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
         <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
-        <Route path="/prompt-lab-page/generator" element={<ProtectedRoute><PromptGeneratorPage /></ProtectedRoute>} />
-        <Route path="/prompt-lab-page/scanner" element={<ProtectedRoute><PromptScannerPage /></ProtectedRoute>} />
-        <Route path="/prompt-lab-page/library" element={<ProtectedRoute><PromptLibraryPage /></ProtectedRoute>} />
+        <Route path="/prompt-lab-page/library" element={<PromptLibraryPage />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/about" element={

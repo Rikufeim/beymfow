@@ -1707,6 +1707,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setNodeOutputMap({});
     setMainPromptState({ sections: [], combinedPrompt: "" });
     setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    setViewMode("workspace"); // Jump directly into workspace when starting a new project
   };
 
   const getMainPromptNodeId = (): string | null => {

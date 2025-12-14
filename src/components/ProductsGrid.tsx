@@ -4,28 +4,28 @@ import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
 
 const products = [
   {
-    icon: <BookOpen className="h-10 w-10 text-white" />,
+    icon: <BookOpen className="h-10 w-10 text-primary" />,
     title: "Prompt Library",
     description: "Explore the biggest prompt library for ChatGPT & Midjourney.",
     buttonText: "Explore >",
-    link: "/prompt-library",
+    link: "/prompt-lab-page/library",
   },
   {
-    icon: <Workflow className="h-10 w-10 text-white" />,
+    icon: <Workflow className="h-10 w-10 text-primary" />,
     title: "Flow Engine",
     description: "Build complex AI workflows with our visual flow editor.",
     buttonText: "Try Now >",
     link: "/flow-engine",
   },
   {
-    icon: <FlaskConical className="h-10 w-10 text-white" />,
+    icon: <FlaskConical className="h-10 w-10 text-primary" />,
     title: "Prompt Lab",
     description: "Generate, optimize, and refine AI prompts instantly.",
     buttonText: "Open Lab >",
     link: "/prompt-lab-page",
   },
   {
-    icon: <Package className="h-10 w-10 text-white" />,
+    icon: <Package className="h-10 w-10 text-primary" />,
     title: "Digital Products",
     description: "Supercharge your workflow with ultimate AI resources.",
     buttonText: "Shop Now >",

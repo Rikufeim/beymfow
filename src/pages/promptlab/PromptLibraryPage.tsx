@@ -1,10 +1,9 @@
 import { useState, useMemo, useCallback, memo } from "react";
-import { useNavigate } from "react-router-dom";
+import Layout from "@/components/Layout";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Home, ArrowLeft, Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";
+import { Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { Twemoji } from "@/components/Twemoji";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
@@ -186,7 +185,7 @@ const PromptCardItem = memo(({
           borderWidth={2} 
           className="opacity-70"
         />
-        <div className="relative flex flex-col rounded-[0.95rem] bg-black p-6 overflow-hidden transition-all duration-200 hover:bg-white/[0.02]">
+        <div className="relative flex flex-col rounded-[0.95rem] bg-black p-6 overflow-hidden transition-all duration-200">
           <div className="flex items-start justify-between mb-4">
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/5 text-xs font-bold uppercase tracking-wider ${domainConfig?.color}`}>
               <Twemoji emoji={domainConfig?.emoji || "📝"} />
@@ -279,20 +278,9 @@ const PromptLibraryPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* Navigation */}
-      <div className="fixed top-6 left-6 z-50 flex items-center gap-3">
-        <GlassButton size="sm" onClick={() => navigate("/prompt-lab-page")} contentClassName="flex items-center gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </GlassButton>
-        <GlassButton size="sm" onClick={() => navigate("/")} contentClassName="flex items-center gap-2">
-          <Home className="w-4 h-4" />
-          Home
-        </GlassButton>
-      </div>
-
-      <div className="flex flex-col items-center min-h-screen px-4 py-24">
+    <Layout hideFooter>
+      <div className="min-h-screen bg-black text-white overflow-x-hidden">
+        <div className="flex flex-col items-center min-h-screen px-4 py-24">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">
@@ -454,8 +442,9 @@ const PromptLibraryPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
