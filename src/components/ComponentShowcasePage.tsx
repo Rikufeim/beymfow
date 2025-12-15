@@ -116,13 +116,6 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               playsInline
               className="w-full h-full object-contain"
             />
-            
-            {/* Move cursor hint */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-white/20 text-sm tracking-[0.3em] uppercase">
-                MOVE CURSOR
-              </span>
-            </div>
           </div>
         </div>
       </div>
