@@ -226,6 +226,18 @@ export const QuickPromptGenerator = () => {
     return () => window.removeEventListener("paste", handlePaste);
   }, []);
 
+  // Handle ESC key to close image modal
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showImageModal) {
+        setShowImageModal(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [showImageModal]);
+
   const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024; // ~3.5MB raw -> ~4.9MB base64 (<5MB Edge limit)
   const MAX_IMAGE_BASE64_LENGTH = 5 * 1024 * 1024; // mirrors backend validator
 
