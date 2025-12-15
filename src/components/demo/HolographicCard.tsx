@@ -1,5 +1,6 @@
 import React, { useRef } from "react"
 import { cn } from "@/lib/utils"
+import cardBgPurple from "@/assets/card-bg-purple.png"
 
 type HolographicCardProps = {
   className?: string
@@ -48,7 +49,7 @@ const HolographicCard: React.FC<HolographicCardProps> = ({ className }) => {
       ref={cardRef}
       className={cn(
         "holo-card relative w-full overflow-hidden rounded-2xl border border-white/10",
-        "bg-black p-6",
+        "p-6",
         "h-[220px] sm:h-[260px] md:h-[280px]",
         "transition-transform duration-300 ease-out will-change-transform",
         className
@@ -59,6 +60,9 @@ const HolographicCard: React.FC<HolographicCardProps> = ({ className }) => {
         transform: "perspective(1000px)",
         transformStyle: "preserve-3d",
         transition: "transform 180ms ease-out",
+        backgroundImage: `url(${cardBgPurple})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <div className="relative z-10 flex h-full items-center justify-center">
