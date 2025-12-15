@@ -83,9 +83,9 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
       </div>
 
       {/* Right Panel - Video Preview */}
-      <div className="hidden md:flex flex-1 items-center justify-center bg-[#0a0a0a] p-8 lg:p-16">
+      <div className="hidden md:flex flex-1 items-center justify-center bg-[#0a0a0a] p-4 lg:p-8">
         {/* Video Window Frame */}
-        <div className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[#0d0d0d] shadow-2xl shadow-black/50">
+        <div className="w-full h-[90vh] max-w-6xl rounded-2xl overflow-hidden border border-white/10 bg-[#0d0d0d] shadow-2xl shadow-black/50">
           {/* Window Toolbar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#0d0d0d]">
             <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               loop
               muted
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             
             {/* Move cursor hint */}
