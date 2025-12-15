@@ -1,5 +1,5 @@
 import React from 'react';
-import { Copy, ArrowLeft, Maximize2, Sun, RotateCcw, Code, Bookmark, MoreVertical } from 'lucide-react';
+import { Copy, Home, Maximize2, Sun, RotateCcw, Code, Bookmark, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -36,20 +36,14 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
     <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex overflow-hidden">
       {/* Left Panel - Documentation */}
       <div className="w-full md:w-[35%] lg:w-[30%] pl-6 pr-6 py-10 lg:pl-8 lg:pr-10 lg:py-14 overflow-y-auto overflow-x-hidden border-r border-white/10 flex flex-col items-start">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-white/50 text-sm mb-12">
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-1 hover:text-white transition-colors whitespace-nowrap"
-          >
-            <ArrowLeft size={16} />
-            <span>Components</span>
-          </button>
-          <span>/</span>
-          <span className="text-white/70 whitespace-nowrap">{creator.username}</span>
-          <span>/</span>
-          <span className="text-white whitespace-nowrap">{title}</span>
-        </div>
+        {/* Home Button */}
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-12 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10"
+        >
+          <Home size={16} />
+          <span>Home</span>
+        </button>
 
         {/* Title & Description */}
         <h1 className="text-3xl font-bold mb-4">{title}</h1>
