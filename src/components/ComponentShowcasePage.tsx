@@ -33,33 +33,33 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex">
+    <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex overflow-hidden">
       {/* Left Panel - Documentation */}
-      <div className="w-full md:w-[35%] lg:w-[30%] p-10 lg:p-14 overflow-y-auto border-r border-white/10">
+      <div className="w-full md:w-[35%] lg:w-[30%] p-10 lg:p-14 overflow-y-auto overflow-x-hidden border-r border-white/10">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-white/50 text-sm mb-12">
+        <div className="flex items-center gap-2 text-white/50 text-sm mb-12 text-left">
           <button 
             onClick={onBack}
-            className="flex items-center gap-1 hover:text-white transition-colors"
+            className="flex items-center gap-1 hover:text-white transition-colors whitespace-nowrap"
           >
             <ArrowLeft size={16} />
             <span>Components</span>
           </button>
           <span>/</span>
-          <span className="text-white/70">{creator.username}</span>
+          <span className="text-white/70 whitespace-nowrap">{creator.username}</span>
           <span>/</span>
-          <span className="text-white">{title}</span>
+          <span className="text-white whitespace-nowrap">{title}</span>
         </div>
 
         {/* Title & Description */}
-        <h1 className="text-3xl font-bold mb-4">{title}</h1>
-        <p className="text-white/60 mb-12 leading-relaxed">{description}</p>
+        <h1 className="text-3xl font-bold mb-4 text-left">{title}</h1>
+        <p className="text-white/60 mb-12 leading-relaxed text-left">{description}</p>
 
         {/* How to use */}
-        <div>
+        <div className="text-left">
           <h3 className="text-white/50 text-sm uppercase tracking-wider mb-5">How to use</h3>
           
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
               size="sm"
