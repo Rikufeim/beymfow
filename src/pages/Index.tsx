@@ -102,10 +102,10 @@ const Index = () => {
                     <UploadTile className="md:row-span-1" />
                     {/* Buttons in empty space */}
                     <div className="md:row-span-1 flex items-center justify-center gap-4">
-                      <GradientButton onClick={() => navigate("/prompt-lab-page")}>
+                      <GradientButton>
                         GET
                       </GradientButton>
-                      <GradientButton variant="variant" onClick={() => navigate("/flow-engine")}>
+                      <GradientButton variant="variant">
                         FLOW
                       </GradientButton>
                     </div>
