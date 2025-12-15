@@ -70,6 +70,16 @@ const readyToUseLandingPagesData: ComponentData[] = [
     importCode: "@/pages/LandingPage",
     usageCode: "<LandingPage />",
     accentColor: "emerald"
+  },
+  {
+    title: "Creative Landing Page",
+    description: "A creative landing page design with unique animations.",
+    videoSrc: "/videos/landing-pages-demo-2.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/creative-landing",
+    importCode: "@/pages/CreativeLanding",
+    usageCode: "<CreativeLanding />",
+    accentColor: "purple"
   }
 ];
 
