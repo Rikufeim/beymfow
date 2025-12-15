@@ -116,7 +116,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   };
 
   const getDataArray = (): ComponentData[] => {
-    if (title === "Landing Pages") return landingPageComponents;
+    if (title === "Landing page heros") return landingPageComponents;
     if (title === "Components") return componentsData;
     if (title === "Ready-to use Landing pages") return readyToUseLandingPagesData;
     return [];
