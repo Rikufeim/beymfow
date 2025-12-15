@@ -16,6 +16,16 @@ interface ComponentData {
 
 const landingPageComponents: ComponentData[] = [
   {
+    title: "Modern Landing Page",
+    description: "A sleek modern landing page design with smooth animations.",
+    videoSrc: "/videos/landing-page-1.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/modern-landing",
+    importCode: "@/pages/ModernLanding",
+    usageCode: "<ModernLanding />",
+    accentColor: "emerald"
+  },
+  {
     title: "Pixel Trail",
     description: "A beautiful smooth cursor pixel trail effect.",
     videoSrc: "/videos/pixel-trail-demo.mp4",
