@@ -42,47 +42,112 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Starting two-phase image analysis');
+    console.log('Starting comprehensive image analysis for prompt generation');
 
     // ============================================
-    // PHASE 1: Image → Structured JSON Analysis
+    // PHASE 1: Deep Visual Analysis
     // ============================================
-    const phase1SystemPrompt = `You are an expert visual analyst. Your task is to analyze the provided image and understand what kind of content it represents.
+    const phase1SystemPrompt = `You are an expert UI/UX designer and front-end developer with exceptional attention to visual detail. Your task is to analyze the provided image with extreme precision.
 
 FIRST, determine what type of image this is:
-1. **Website/Landing Page Screenshot**: If this is a screenshot of a website, landing page, hero section, or web interface
-2. **UI/App Design**: If this is a mobile app, desktop app, or software interface
-3. **Regular Image**: Photos, artwork, illustrations, graphics, etc.
+1. **Website/Landing Page**: Screenshots of websites, landing pages, hero sections, web interfaces
+2. **UI/App Design**: Mobile apps, desktop apps, software interfaces, dashboards
+3. **Regular Image**: Photos, artwork, illustrations, graphics
 
-For WEBSITES/LANDING PAGES/UI, your analysis should focus on:
-- Layout structure and sections visible
-- Design style (modern, minimal, corporate, playful, etc.)
-- Color scheme and typography choices
-- Key features and elements (hero, CTA buttons, navigation, forms, etc.)
-- Content type and messaging style
-- Any specific patterns or components used
+For WEBSITES/LANDING PAGES, provide exhaustive analysis:
 
-For REGULAR IMAGES, analyze:
-- Main subject(s) and key characteristics
-- Environment/background setting
-- Composition and framing
-- Lighting and colors
-- Style and mood
+**LAYOUT & STRUCTURE:**
+- Exact section breakdown (header, hero, features, testimonials, pricing, footer, etc.)
+- Grid system used (columns, gaps, alignment)
+- Spacing patterns (padding, margins between sections)
+- Responsive indicators if visible
 
-Return a JSON object with this structure:
+**HERO SECTION (if present):**
+- Headline text style (size, weight, font family feel)
+- Subheadline/description styling
+- CTA button(s): color, shape, text, size, hover states if visible
+- Background treatment (solid, gradient, image, video, pattern, overlay)
+- Any decorative elements (shapes, illustrations, icons)
+
+**NAVIGATION:**
+- Logo placement and style
+- Menu items layout
+- CTA in navigation
+- Mobile menu indicators
+
+**COLOR PALETTE (be VERY specific):**
+- Primary brand color (describe exact shade)
+- Secondary colors
+- Background colors (main, sections, cards)
+- Text colors (headings, body, muted)
+- Accent/highlight colors
+
+**TYPOGRAPHY:**
+- Heading font style (serif, sans-serif, modern, classic, bold, light)
+- Body text style
+- Font size hierarchy
+- Line height and letter spacing feel
+
+**VISUAL ELEMENTS:**
+- Images/illustrations style (photography, 3D, flat, gradient, isometric)
+- Icons style (line, filled, colorful, monochrome)
+- Shadows and depth (flat, subtle, prominent)
+- Border radius patterns (sharp, slightly rounded, very rounded, pill-shaped)
+- Decorative elements (blobs, gradients, patterns, lines, dots)
+
+**COMPONENTS:**
+- Cards styling
+- Buttons variations
+- Form inputs if present
+- Social proof elements
+- Trust badges/logos
+
+Return a comprehensive JSON object with ALL these details:
 {
   "image_type": "website" | "ui_design" | "regular_image",
-  "subject": "Main subject/purpose of the image",
-  "design_elements": "Key design elements, layout, and structure",
-  "style": "Visual style, aesthetic, design approach",
-  "colors": "Color palette and scheme",
-  "key_features": "Important features, sections, or components",
-  "mood": "Overall feel and atmosphere",
-  "technical_details": "Any technical or implementation-relevant details",
-  "purpose": "What this content is trying to achieve"
+  "overall_style": "Describe the overall design aesthetic (minimal, bold, corporate, playful, luxury, tech, etc.)",
+  "layout": {
+    "sections": ["List each section in order with brief description"],
+    "grid_pattern": "Describe the grid/column layout",
+    "spacing": "Describe spacing patterns"
+  },
+  "hero": {
+    "headline_style": "Describe headline typography",
+    "subheadline": "Describe subheadline if present",
+    "cta_buttons": "Describe all CTA buttons in detail",
+    "background": "Describe background treatment in detail",
+    "decorative_elements": "Describe any decorative elements"
+  },
+  "navigation": {
+    "style": "Describe navigation layout and style",
+    "logo": "Describe logo placement/style",
+    "items": "Describe menu items and CTA"
+  },
+  "colors": {
+    "primary": "Primary brand color (be specific like 'deep purple #6B46C1' or 'bright coral')",
+    "secondary": "Secondary colors",
+    "background": "Background colors",
+    "text": "Text colors hierarchy",
+    "accents": "Accent colors"
+  },
+  "typography": {
+    "headings": "Heading font description",
+    "body": "Body text description",
+    "hierarchy": "Size/weight hierarchy"
+  },
+  "visual_elements": {
+    "images_style": "Photo/illustration style",
+    "icons": "Icon style",
+    "shadows": "Shadow usage",
+    "borders": "Border radius patterns",
+    "decorations": "Decorative elements like blobs, patterns, gradients"
+  },
+  "components": "Describe key UI components and their styling",
+  "mood": "Overall mood and feel",
+  "unique_features": "Any standout or unique design elements"
 }
 
-CRITICAL: Be specific about what you observe. If it's a landing page, describe the actual sections and elements visible.`;
+Be EXTREMELY specific and detailed. The goal is to capture EVERY visual detail so the design can be precisely recreated.`;
 
 
     const phase1Response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -167,28 +232,38 @@ CRITICAL: Be specific about what you observe. If it's a landing page, describe t
     console.log('Phase 1 completed, structured analysis:', analysisJSON);
 
     // ============================================
-    // PHASE 2: JSON → Final Prompt
+    // PHASE 2: JSON → Actionable Implementation Prompt
     // ============================================
-    const phase2SystemPrompt = `You are an expert prompt engineer. Your task is to transform a structured image analysis into a clear, effective, and editable text prompt.
+    const isWebsite = analysisJSON.image_type === 'website' || analysisJSON.image_type === 'ui_design';
+    
+    const phase2SystemPrompt = isWebsite 
+      ? `You are an expert front-end developer and prompt engineer. Transform this detailed visual analysis into a comprehensive, actionable prompt that can be used to EXACTLY recreate this landing page/website.
 
-The structured analysis contains:
-- Subject, environment, composition, perspective
-- Lighting, colors, textures, style
-- Mood, details, and any uncertainties
+The prompt must be structured as clear implementation instructions that describe:
+1. **Overall Design Direction**: Style, mood, aesthetic approach
+2. **Layout Structure**: Exact sections in order, grid layout, spacing
+3. **Hero Section**: Headline styling, CTAs, background treatment, decorative elements
+4. **Color Scheme**: Specific colors for backgrounds, text, buttons, accents
+5. **Typography**: Font styles for headings and body, size hierarchy
+6. **Visual Elements**: Image/icon styles, shadows, borders, decorative elements
+7. **Key Components**: How cards, buttons, forms, etc. should look
+8. **Special Features**: Any unique or standout design elements
 
-Create a prompt that can be used to RECREATE the content of the image.
-If "image_type" is "website" or "ui_design", the prompt MUST describe a full landing page or UI so that a website generator can rebuild it as closely as possible.
-It should specify:
-- Layout sections (hero, navigation, content blocks, footers, sidebars, etc.)
-- Component hierarchy and placement
-- Typography (font feel, sizes, weights, hierarchy)
-- Color palette and background treatments
-- Imagery style and iconography
-- Call-to-action buttons and conversion elements
-- Overall style, brand mood, and interaction feel
-For regular images, create a prompt that fully describes the scene for an image generator.
-The prompt must be clear, readable, and easy to edit.
-Length: 3-6 sentences, comprehensive but concise.
+FORMAT: Write the prompt as if you're instructing a developer to build this exact design. Be specific with colors, spacing, font styles, and all visual details. The goal is that someone reading this prompt can recreate the design with high fidelity.
+
+LENGTH: 6-12 sentences covering ALL visual aspects comprehensively.
+
+Return ONLY the implementation prompt, no explanations or meta-commentary.`
+      : `You are an expert prompt engineer. Transform this structured image analysis into a clear, detailed prompt that can recreate the image.
+
+The prompt should describe:
+- Main subject and composition
+- Colors, lighting, and atmosphere
+- Style and artistic approach
+- Key details and elements
+
+LENGTH: 3-6 sentences that fully capture the image.
+
 Return ONLY the prompt text, nothing else.`;
 
     const phase2Response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -198,7 +273,7 @@ Return ONLY the prompt text, nothing else.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash', // Faster model for text transformation
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -206,7 +281,7 @@ Return ONLY the prompt text, nothing else.`;
           },
           {
             role: 'user',
-            content: `Transform this structured image analysis into a clear, editable prompt that captures all details:\n\n${JSON.stringify(analysisJSON, null, 2)}`
+            content: `Transform this detailed visual analysis into a comprehensive implementation prompt that captures EVERY design detail for precise recreation:\n\n${JSON.stringify(analysisJSON, null, 2)}`
           }
         ]
       }),
