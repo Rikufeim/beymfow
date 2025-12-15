@@ -91,16 +91,6 @@ const componentsVideoData: VideoComponentData[] = [
     usageCode: "<InteractiveUI />",
     accentColor: "purple"
   },
-  {
-    title: "Animated Component",
-    description: "A smooth animated UI component demo.",
-    videoSrc: "/videos/components-demo.mp4",
-    creator: { name: "Beymflow", username: "beymflow" },
-    installCommand: "https://beymflow.com/components/animated",
-    importCode: "@/components/ui/animated-component",
-    usageCode: "<AnimatedComponent />",
-    accentColor: "blue"
-  }
 ];
 
 const fullLandingPagesData: VideoComponentData[] = [
