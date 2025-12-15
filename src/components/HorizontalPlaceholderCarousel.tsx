@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
 
 interface ComponentData {
@@ -137,17 +136,6 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                 onClick={() => handleCardClick(idx)}
                 className={`relative min-w-[520px] max-w-[620px] h-[340px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
               >
-                <div className="absolute inset-0 opacity-50">
-                  <GlowingEffect
-                    spread={28}
-                    glow
-                    disabled={false}
-                    proximity={40}
-                    inactiveZone={0.01}
-                    borderWidth={2}
-                    className="opacity-60"
-                  />
-                </div>
                 {isComponentCard ? (
                   <>
                     {/* Video thumbnail */}
