@@ -51,7 +51,7 @@ const componentsData: ComponentData[] = [
   {
     title: "Interactive UI",
     description: "A beautiful interactive UI component demo.",
-    videoSrc: "/videos/component-demo-2.mp4",
+    videoSrc: "/videos/interactive-ui-demo.mp4",
     creator: { name: "Beymflow", username: "beymflow" },
     installCommand: "https://beymflow.com/components/interactive",
     importCode: "@/components/ui/interactive-ui",
