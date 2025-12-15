@@ -37,6 +37,19 @@ const landingPageComponents: ComponentData[] = [
   }
 ];
 
+const componentsData: ComponentData[] = [
+  {
+    title: "Animated Component",
+    description: "A smooth animated UI component demo.",
+    videoSrc: "/videos/components-demo.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/animated",
+    importCode: "@/components/ui/animated-component",
+    usageCode: "<AnimatedComponent />",
+    accentColor: "blue"
+  }
+];
+
 interface HorizontalPlaceholderCarouselProps {
   title: string;
   itemCount?: number;
@@ -51,6 +64,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   const rowRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 0) {
@@ -68,15 +82,24 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     el.scrollBy({ left: amount, behavior: "smooth" });
   };
 
+  const getDataArray = (): ComponentData[] => {
+    if (title === "Landing Pages") return landingPageComponents;
+    if (title === "Components") return componentsData;
+    return [];
+  };
+
   const handleCardClick = (idx: number) => {
-    if (title === "Landing Pages" && idx < landingPageComponents.length) {
+    const dataArray = getDataArray();
+    if (idx < dataArray.length) {
       setShowComponentPage(idx);
+      setActiveSection(title);
     }
   };
 
   const getComponentData = (idx: number): ComponentData | null => {
-    if (title === "Landing Pages" && idx < landingPageComponents.length) {
-      return landingPageComponents[idx];
+    const dataArray = getDataArray();
+    if (idx < dataArray.length) {
+      return dataArray[idx];
     }
     return null;
   };
@@ -85,13 +108,15 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && showComponentPage !== null) {
         setShowComponentPage(null);
+        setActiveSection(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showComponentPage]);
 
-  const selectedComponent = showComponentPage !== null ? landingPageComponents[showComponentPage] : null;
+  const dataArray = getDataArray();
+  const selectedComponent = showComponentPage !== null && activeSection === title ? dataArray[showComponentPage] : null;
 
   return (
     <>
