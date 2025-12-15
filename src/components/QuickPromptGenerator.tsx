@@ -33,10 +33,12 @@ export const QuickPromptGenerator = () => {
   );
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  
+  const MAX_IMAGES = 3;
 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -202,10 +204,10 @@ export const QuickPromptGenerator = () => {
   }, [isFocused, input]);
 
   useEffect(() => {
-    if (!input.trim() && !imageFile) {
+    if (!input.trim() && uploadedImages.length === 0) {
       setGeneratedPrompt("");
     }
-  }, [input, imageFile]);
+  }, [input, uploadedImages]);
 
   // Handle paste image
   useEffect(() => {
@@ -245,6 +247,11 @@ export const QuickPromptGenerator = () => {
   const MAX_IMAGE_BASE64_LENGTH = 5 * 1024 * 1024; // mirrors backend validator
 
   const handleImageSelect = (file: File) => {
+    if (uploadedImages.length >= MAX_IMAGES) {
+      toast.error(`Maximum ${MAX_IMAGES} images allowed`);
+      return;
+    }
+    
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -256,7 +263,6 @@ export const QuickPromptGenerator = () => {
       return;
     }
 
-    setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = reader.result as string;
@@ -264,53 +270,62 @@ export const QuickPromptGenerator = () => {
       // Defensive: if encoding still pushes us over the 5MB string limit, block before calling Edge
       if (result.length > MAX_IMAGE_BASE64_LENGTH) {
         toast.error("Encoded image is too large. Please choose a smaller image (<~3.5MB).");
-        setImageFile(null);
-        setImagePreview(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
         return;
       }
 
-      setImagePreview(result);
+      // Extract base64 and mime type
+      const mimeMatch = result.match(/^data:(image\/[^;]+);base64,(.+)$/);
+      if (mimeMatch) {
+        setUploadedImages(prev => [...prev, {
+          file,
+          preview: result,
+          base64: mimeMatch[2],
+          mimeType: mimeMatch[1]
+        }]);
+      }
     };
     reader.readAsDataURL(file);
-    toast.success("Image added! Click 'Analyze & fill prompt' to analyze it.");
   };
 
-  const handleImageRemove = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const handleImageRemove = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageSelect(file);
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => handleImageSelect(file));
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  // Analyze image and populate prompt input
   const handleAnalyzeImage = async () => {
     if (!isSupabaseConfigured) {
       toast.error("Supabase ei ole konfiguroitu (VITE_SUPABASE_URL / KEY puuttuu).");
       return;
     }
 
-    if (!imagePreview) {
+    if (uploadedImages.length === 0) {
       toast.error("Please select an image first");
       return;
     }
 
     setIsAnalyzingImage(true);
     try {
+      // Use the first image for analyze-image-for-prompt (it only supports single image)
+      const firstImage = uploadedImages[0];
       const invokeAttempt = async () => {
         const { data, error } = await supabase.functions.invoke("analyze-image-for-prompt", {
           body: {
-            image: imagePreview,
+            image: firstImage.preview,
           },
         });
         return { data, error };
@@ -326,7 +341,7 @@ export const QuickPromptGenerator = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${supabaseKey}`,
           },
-          body: JSON.stringify({ image: imagePreview }),
+          body: JSON.stringify({ image: firstImage.preview }),
         });
         let json: any = null;
         try {
@@ -384,7 +399,7 @@ export const QuickPromptGenerator = () => {
   };
 
   const handleGenerate = async () => {
-    if (!input.trim() && !imagePreview) {
+    if (!input.trim() && uploadedImages.length === 0) {
       toast.error("Please enter what you want the AI to do or add an image");
       return;
     }
@@ -404,28 +419,28 @@ export const QuickPromptGenerator = () => {
     setGeneratedPrompt("");
 
     try {
-      let finalInput = input.trim() || "Analyze this image and create a detailed prompt that can recreate this design with high fidelity.";
+      let finalInput = input.trim() || (uploadedImages.length > 1 
+        ? `Analyze these ${uploadedImages.length} images and create a detailed prompt that can recreate this design with high fidelity.`
+        : "Analyze this image and create a detailed prompt that can recreate this design with high fidelity.");
 
       // Add instruction for fast model
-      if (selectedModel === "fast" && !imagePreview) {
+      if (selectedModel === "fast" && uploadedImages.length === 0) {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
       }
 
-      // Prepare body with optional image
+      // Prepare body with optional images
       const requestBody: Record<string, unknown> = {
         userInput: finalInput,
         model: selectedModel,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
       };
 
-      // If image is present, include it in the request
-      if (imagePreview && imageFile) {
-        // Extract base64 and mime type from data URL
-        const mimeMatch = imagePreview.match(/^data:(image\/[^;]+);base64,(.+)$/);
-        if (mimeMatch) {
-          requestBody.imageMimeType = mimeMatch[1];
-          requestBody.image = mimeMatch[2];
-        }
+      // If images are present, include them in the request
+      if (uploadedImages.length > 0) {
+        requestBody.images = uploadedImages.map(img => ({
+          data: img.base64,
+          mimeType: img.mimeType
+        }));
       }
 
       const { data, error } = await supabase.functions.invoke("quick-prompt", {
@@ -471,8 +486,7 @@ export const QuickPromptGenerator = () => {
   const clearPrompt = () => {
     setGeneratedPrompt("");
     setInput("");
-    setImageFile(null);
-    setImagePreview(null);
+    setUploadedImages([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -509,36 +523,51 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Image Preview - Top Left with Analyze Button */}
-          {imagePreview && (
-            <div className="flex items-start gap-2 mb-2">
-              <div className="relative group">
+          {/* Image Previews - Multiple images support */}
+          {uploadedImages.length > 0 && (
+            <div className="flex items-start gap-2 mb-2 flex-wrap">
+              {uploadedImages.map((img, index) => (
+                <div key={index} className="relative group">
+                  <button
+                    onClick={() => {
+                      setSelectedImageIndex(index);
+                      setShowImageModal(true);
+                    }}
+                    className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
+                  >
+                    <img
+                      src={img.preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImageRemove(index);
+                    }}
+                    className="absolute -top-1 -right-1 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
+                    title="Remove image"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              ))}
+              {/* Add more button if under limit */}
+              {uploadedImages.length < MAX_IMAGES && (
                 <button
-                  onClick={() => setShowImageModal(true)}
-                  className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-10 h-10 rounded-lg border border-dashed border-white/20 hover:border-white/40 flex items-center justify-center text-white/40 hover:text-white/60 transition-all"
+                  title={`Add more images (${uploadedImages.length}/${MAX_IMAGES})`}
                 >
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <Plus className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageRemove();
-                  }}
-                  className="absolute -top-1 -right-1 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
-                  title="Remove image"
-                >
-                  <X className="w-2.5 h-2.5" />
-                </button>
-              </div>
-              {/* Analyze button next to image preview */}
+              )}
+              {/* Analyze button */}
               <button
                 onClick={handleAnalyzeImage}
                 disabled={isAnalyzingImage}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm flex items-center gap-2"
+                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm flex items-center gap-2 h-10"
               >
                 {isAnalyzingImage ? (
                   <>
@@ -548,7 +577,7 @@ export const QuickPromptGenerator = () => {
                 ) : (
                   <>
                     <ImageIcon className="w-3 h-3" />
-                    Analyze & fill prompt
+                    Analyze
                   </>
                 )}
               </button>
@@ -561,6 +590,7 @@ export const QuickPromptGenerator = () => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileInputChange}
                 className="hidden"
               />
@@ -587,10 +617,11 @@ export const QuickPromptGenerator = () => {
                     <div className="border-t border-white/10 my-2"></div>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full text-left px-3 py-1.5 text-xs rounded transition-all text-white/70 hover:bg-white/10 flex items-center gap-2"
+                      disabled={uploadedImages.length >= MAX_IMAGES}
+                      className="w-full text-left px-3 py-1.5 text-xs rounded transition-all text-white/70 hover:bg-white/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ImageIcon className="w-3 h-3" />
-                      Upload Image
+                      Upload Images ({uploadedImages.length}/{MAX_IMAGES})
                     </button>
                   </div>
                 </DropdownMenuContent>
@@ -628,7 +659,7 @@ export const QuickPromptGenerator = () => {
             <div className="pt-2">
               <button
                 onClick={handleGenerate}
-                disabled={isLoading || (!input.trim() && !imageFile)}
+                disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
                 className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
               >
                 {isLoading ? (
@@ -683,7 +714,7 @@ export const QuickPromptGenerator = () => {
 
       {/* Image Modal */}
       <AnimatePresence>
-        {showImageModal && imagePreview && (
+        {showImageModal && uploadedImages.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -706,7 +737,7 @@ export const QuickPromptGenerator = () => {
                 <X className="w-4 h-4" />
               </button>
               <img
-                src={imagePreview}
+                src={uploadedImages[selectedImageIndex]?.preview}
                 alt="Full size preview"
                 className="w-full h-full object-contain rounded-lg"
               />
