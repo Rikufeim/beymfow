@@ -80,6 +80,16 @@ const readyToUseLandingPagesData: ComponentData[] = [
     importCode: "@/pages/CreativeLanding",
     usageCode: "<CreativeLanding />",
     accentColor: "purple"
+  },
+  {
+    title: "Minimal Landing Page",
+    description: "A clean minimal landing page with elegant transitions.",
+    videoSrc: "/videos/landing-pages-demo-3.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/minimal-landing",
+    importCode: "@/pages/MinimalLanding",
+    usageCode: "<MinimalLanding />",
+    accentColor: "cyan"
   }
 ];
 
