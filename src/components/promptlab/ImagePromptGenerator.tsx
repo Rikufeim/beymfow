@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, X, Loader2, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 
 interface ImagePromptGeneratorProps {
   toolColor: string;

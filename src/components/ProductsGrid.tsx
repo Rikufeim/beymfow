@@ -4,28 +4,28 @@ import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
 
 const products = [
   {
-    icon: <BookOpen className="h-10 w-10 text-primary" />,
+    icon: BookOpen,
     title: "Prompt Library",
     description: "Explore the biggest prompt library for ChatGPT & Midjourney.",
     buttonText: "Explore >",
     link: "/prompt-lab-page/library",
   },
   {
-    icon: <Workflow className="h-10 w-10 text-primary" />,
+    icon: Workflow,
     title: "Flow Engine",
     description: "Build complex AI workflows with our visual flow editor.",
     buttonText: "Try Now >",
     link: "/flow-engine",
   },
   {
-    icon: <FlaskConical className="h-10 w-10 text-primary" />,
+    icon: FlaskConical,
     title: "Prompt Lab",
     description: "Generate, optimize, and refine AI prompts instantly.",
     buttonText: "Open Lab >",
     link: "/prompt-lab-page",
   },
   {
-    icon: <Package className="h-10 w-10 text-primary" />,
+    icon: Package,
     title: "Digital Products",
     description: "Supercharge your workflow with ultimate AI resources.",
     buttonText: "Shop Now >",
@@ -38,28 +38,36 @@ const ProductsGrid = () => {
     <section className="w-full bg-black py-16 sm:py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {products.map((product, idx) => (
-            <div key={idx} className="flex flex-col items-start gap-4">
-              <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2">
-                {product.icon}
+          {products.map((product, idx) => {
+            const Icon = product.icon;
+            return (
+              <div key={idx} className="flex flex-col items-start gap-4 group">
+                <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-all duration-300 group-hover:border-teal-400/30 group-hover:bg-gradient-to-r group-hover:from-teal-400/10 group-hover:to-purple-600/10">
+                  <Icon className="h-10 w-10 text-white transition-colors duration-300 group-hover:text-teal-400" 
+                    style={{
+                      filter: 'drop-shadow(0 0 0px transparent)',
+                    }}
+                    strokeWidth={1.5}
+                  />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-white">
+                  {product.title}
+                </h3>
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                  {product.description}
+                </p>
+                <Link to={product.link} className="mt-2">
+                  <GlassButton
+                    size="sm"
+                    isSelected={false}
+                    contentClassName="text-sm font-medium"
+                  >
+                    {product.buttonText}
+                  </GlassButton>
+                </Link>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
-                {product.title}
-              </h3>
-              <p className="text-sm sm:text-base text-white/70 leading-relaxed">
-                {product.description}
-              </p>
-              <Link to={product.link} className="mt-2">
-                <GlassButton
-                  size="sm"
-                  isSelected={false}
-                  contentClassName="text-sm font-medium"
-                >
-                  {product.buttonText}
-                </GlassButton>
-              </Link>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

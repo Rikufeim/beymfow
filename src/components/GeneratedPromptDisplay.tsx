@@ -2,7 +2,7 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, Copy, Check, X } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 

@@ -1,0 +1,144 @@
+<PAGE_SPEC>
+{
+  "metadata": {
+    "title": "SaaS Product Landing Page",
+    "description": "Example landing page spec"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "props": {
+        "headline": "Build Better Products Faster",
+        "subheadline": "The all-in-one platform for modern product teams. Ship features 10x faster with AI-powered workflows.",
+        "cta": "Start Free Trial"
+      }
+    },
+    {
+      "type": "logos",
+      "props": {
+        "title": "Trusted by Leading Companies",
+        "logos": ["Stripe", "Shopify", "Notion", "Figma", "Linear"],
+        "stats": ["10,000+ Teams", "4.9/5 Rating", "99.9% Uptime"]
+      }
+    },
+    {
+      "type": "features",
+      "props": {
+        "title": "Everything You Need to Succeed",
+        "description": "Powerful features designed for modern teams",
+        "features": [
+          {
+            "icon": "⚡",
+            "title": "Lightning Fast",
+            "description": "Built for speed with modern architecture and edge computing"
+          },
+          {
+            "icon": "🔒",
+            "title": "Enterprise Security",
+            "description": "Bank-level encryption and SOC 2 Type II compliance"
+          },
+          {
+            "icon": "🤖",
+            "title": "AI-Powered",
+            "description": "Intelligent automation that learns from your workflow"
+          }
+        ]
+      }
+    },
+    {
+      "type": "howItWorks",
+      "props": {
+        "title": "How It Works",
+        "steps": [
+          {
+            "title": "Sign Up in Seconds",
+            "description": "Create your account and invite your team in less than a minute"
+          },
+          {
+            "title": "Connect Your Tools",
+            "description": "Seamlessly integrate with your existing workflow and data sources"
+          },
+          {
+            "title": "Ship with Confidence",
+            "description": "Deploy features faster with AI-assisted development and testing"
+          }
+        ]
+      }
+    },
+    {
+      "type": "pricing",
+      "props": {
+        "title": "Simple, Transparent Pricing",
+        "tiers": [
+          {
+            "name": "Starter",
+            "price": "$29/month",
+            "description": "Perfect for small teams and side projects",
+            "features": [
+              "Up to 5 team members",
+              "10 projects",
+              "Basic analytics",
+              "Email support"
+            ],
+            "cta": "Start Free"
+          },
+          {
+            "name": "Pro",
+            "price": "$99/month",
+            "description": "For growing teams that need more power",
+            "features": [
+              "Unlimited team members",
+              "Unlimited projects",
+              "Advanced analytics",
+              "Priority support",
+              "Custom integrations"
+            ],
+            "cta": "Start Free Trial"
+          }
+        ]
+      }
+    },
+    {
+      "type": "faq",
+      "props": {
+        "title": "Frequently Asked Questions",
+        "questions": [
+          {
+            "question": "How long does it take to get started?",
+            "answer": "Most teams are up and running in under 5 minutes. Our onboarding flow guides you through every step."
+          },
+          {
+            "question": "Can I cancel anytime?",
+            "answer": "Yes! Cancel anytime with no penalties or hidden fees. Your data is always yours to export."
+          },
+          {
+            "question": "Is my data secure?",
+            "answer": "Absolutely. We use bank-level encryption, are SOC 2 Type II certified, and never sell your data."
+          },
+          {
+            "question": "Do you offer support?",
+            "answer": "Yes! We offer 24/7 email support for all users, plus chat and phone support for Pro customers."
+          }
+        ]
+      }
+    },
+    {
+      "type": "cta",
+      "props": {
+        "headline": "Ready to Transform Your Workflow?",
+        "subtitle": "Join thousands of teams building better products faster",
+        "cta": "Start Your Free Trial"
+      }
+    },
+    {
+      "type": "footer",
+      "props": {
+        "links": ["About", "Features", "Pricing", "Blog", "Contact", "Privacy", "Terms"],
+        "social": ["Twitter", "LinkedIn", "GitHub", "Discord"],
+        "copyright": "© 2024 Your Company. All rights reserved."
+      }
+    }
+  ]
+}
+</PAGE_SPEC>
+

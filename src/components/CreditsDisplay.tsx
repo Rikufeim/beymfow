@@ -4,7 +4,7 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, Crown, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { useState } from "react";
 
 const CreditsDisplay = () => {

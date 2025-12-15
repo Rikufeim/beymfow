@@ -16,7 +16,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { toast, Toaster } from "sonner";
+import { toast, Toaster } from "@/lib/notifications";
 import { HexColorPicker } from "react-colorful";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
@@ -945,6 +945,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // --- Preview State ---
+  const [activePageSpec, setActivePageSpec] = useState<any | null>(null);
+  const [showPageSpecPreview, setShowPageSpecPreview] = useState(false);
+
   // --- Workspace Tool State ---
   type ToolType = "select" | "hand" | "text";
   const [activeTool, setActiveTool] = useState<ToolType>("select");
@@ -1300,6 +1304,16 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // Generate template from user input
   const handleGenerateTemplateFromInput = (input: string) => {
+    // First, check if this is a PAGE_SPEC
+    const pageSpec = extractPageSpec(input);
+    if (pageSpec) {
+      setActivePageSpec(pageSpec);
+      setShowPageSpecPreview(true);
+      setLandingChatInput(""); // Clear input after successful parse
+      toast.success("Page spec loaded! Opening preview...");
+      return;
+    }
+
     setIsLoading(true);
     // Use the explicitly selected mode, map to domain format
     // Default to "Website" if no mode is selected
@@ -1496,11 +1510,11 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       // Only reset view/transform if it's a fresh project
       if (widgets.length === 0) {
         setCurrentProjectId(null);
-        setProjectName(`${templateType} Flow Template`);
+        setProjectName(`${templateType} Template`);
         // Fit view to show all nodes with padding (no delay so the first render is close)
         fitViewToNodes(cleanedNodes);
       } else {
-        toast.success(`${templateType} Flow added to workspace`);
+        toast.success(`${templateType} Template added to workspace`);
       }
 
       setViewMode("workspace");
@@ -2420,6 +2434,34 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleCreateWebsiteFlowPreset = () => handleLoadTemplate("Website");
   const handleCreateAppFlowPreset = () => handleLoadTemplate("App");
   const handleCreateGameFlowPreset = () => handleLoadTemplate("Game");
+
+  // Extract and parse PAGE_SPEC from message
+  const extractPageSpec = useCallback((message: string): any | null => {
+    try {
+      // Find content between <PAGE_SPEC> and </PAGE_SPEC> tags
+      // Support both <PAGE_SPEC> and <PAGE_SPEC version="1"> formats
+      const regex = /<PAGE_SPEC(?:\s+[^>]*)?>([\s\S]*?)<\/PAGE_SPEC>/i;
+      const match = message.match(regex);
+      
+      if (!match || !match[1]) {
+        return null;
+      }
+
+      const specContent = match[1].trim();
+      const parsed = JSON.parse(specContent);
+
+      // Validate minimal shape
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.sections)) {
+        console.warn('Invalid PAGE_SPEC: missing sections array');
+        return null;
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error('Failed to parse PAGE_SPEC:', error);
+      return null;
+    }
+  }, []);
 
   const handleCreateLoginFlowTemplate = () => {
     const nodes: Widget[] = [
@@ -3435,6 +3477,40 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Add Template */}
+                    <div className="min-h-[11rem]">
+                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                    <div
+                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-default text-left"
+                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                    >
+                          <div className="absolute top-2 right-2 z-20">
+                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
+                              Coming Soon
+                            </div>
+                          </div>
+                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                  <Plus className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
+                                  Add Template
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
+                                  Bring your own flow template. Upload and reuse custom workflows (coming soon).
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                         </div>
                       </motion.div>
                     )}
@@ -3647,16 +3723,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </div>
             </div>
 
-            {/* Canvas */}
+            {/* Main Workspace Area */}
             <div
-              ref={canvasRef}
-              className="flex-1 relative overflow-hidden z-0 min-h-screen outline-none"
-              style={{ marginTop: "56px", width: "100%", height: "100%", backgroundColor: "#000000" }}
-              tabIndex={0}
-              onMouseDown={handleCanvasMouseDown}
-              onWheel={handleCanvasWheel}
-              onClick={handleCanvasClick}
+              className="flex-1 relative overflow-hidden"
+              style={{ marginTop: "56px", height: "calc(100vh - 56px)" }}
             >
+              {/* Canvas */}
+              <div
+                ref={canvasRef}
+                className="relative overflow-hidden z-0 h-full outline-none"
+                style={{ width: "100%", backgroundColor: "#000000" }}
+                tabIndex={0}
+                onMouseDown={handleCanvasMouseDown}
+                onWheel={handleCanvasWheel}
+                onClick={handleCanvasClick}
+              >
               {/* Background Grid */}
               <div
                 className="absolute inset-0 pointer-events-none"
@@ -4426,6 +4507,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 })}
               </div>
             </div>
+            </div>
 
             {/* Side Drawer (Categories) */}
             <AnimatePresence>
@@ -4871,6 +4953,67 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PageSpec Preview Modal */}
+      <AnimatePresence>
+        {showPageSpecPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-6xl h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col overflow-hidden"
+            >
+              {/* Header */}
+              <div className="h-14 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowPageSpecPreview(false)}
+                    className="p-2 hover:bg-neutral-800 rounded transition-colors"
+                  >
+                    <X size={20} className="text-neutral-400" />
+                  </button>
+                  <h2 className="text-white font-semibold">
+                    {activePageSpec?.metadata?.title || "Landing Page Preview"}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-neutral-500">
+                    {activePageSpec?.sections?.length || 0} sections
+                  </span>
+                </div>
+              </div>
+              
+              {/* Preview Content */}
+              <div className="flex-1 overflow-hidden">
+                {activePageSpec ? (
+                  <div className="flex flex-col items-center justify-center h-full text-neutral-500 p-8 text-center">
+                    <LayoutTemplate size={48} className="mb-4 text-neutral-600" />
+                    <p className="text-lg mb-2">Page spec preview coming soon</p>
+                    <p className="text-sm text-neutral-600">
+                      Feature is under development
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-neutral-500 p-8 text-center">
+                    <LayoutTemplate size={48} className="mb-4 text-neutral-600" />
+                    <p className="text-lg mb-2">No page spec loaded</p>
+                    <p className="text-sm text-neutral-600">
+                      Paste a PAGE_SPEC into the chat input to preview a landing page
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

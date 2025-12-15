@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Zap, Settings, Send, Plus, Crown, Home, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,

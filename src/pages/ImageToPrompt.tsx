@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Upload, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useGuestUsage } from "@/hooks/useGuestUsage";

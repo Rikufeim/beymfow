@@ -18,6 +18,9 @@ import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { useRef } from "react";
 import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholderCarousel";
+import HolographicCard from "@/components/demo/HolographicCard";
+import HyperTextCard from "@/components/demo/HyperTextCard";
+import UploadTile from "@/components/demo/UploadTile";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -55,29 +58,48 @@ const Index = () => {
             {/* Hero Section */}
             <Hero />
 
-            {/* Start Building + CTA buttons with ambient scroll effect */}
-            <section
-              className="relative w-full px-4 sm:px-6 lg:px-8 xl:px-12 mt-12 mb-10 min-h-[360px] pt-14 pb-16"
-            >
-              <div className="relative z-10 flex flex-col items-center gap-4">
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">Start Building</h2>
-                <div className="flex flex-wrap gap-4 justify-center">
-                  <GlassButton
-                    size="lg"
-                    isSelected={false}
-                    contentClassName="flex items-center gap-2 text-base font-semibold px-5"
-                    onClick={() => navigate("/flow-engine")}
-                  >
-                    Flow Engine
-                  </GlassButton>
-                  <GlassButton
-                    size="lg"
-                    isSelected={false}
-                    contentClassName="flex items-center gap-2 text-base font-semibold px-5"
-                    onClick={() => navigate("/prompt-lab-page")}
-                  >
-                    Prompt Lab
-                  </GlassButton>
+            {/* Start Building showcase */}
+            <section className="relative w-full px-6 md:px-8 lg:px-12 mt-14 mb-14">
+              <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-2 items-center">
+                <div className="space-y-6">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                    Start Building
+                  </h2>
+                  <p className="text-white/65 max-w-xl">
+                    Jump into Flow Engine or Prompt Lab with premium, interactive previews inspired by Aceternity UI.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => navigate("/flow-engine")}
+                      className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                    >
+                      Flow Engine
+                    </button>
+                    <button
+                      onClick={() => navigate("/prompt-lab-page")}
+                      className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                    >
+                      Prompt Lab
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                      backgroundSize: "80px 80px, 80px 80px",
+                      backgroundRepeat: "repeat, repeat",
+                      backgroundPosition: "0 0, 0 0",
+                    }}
+                  />
+                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 lg:gap-6 items-stretch">
+                    <HolographicCard className="md:row-span-1" />
+                    <HyperTextCard className="md:row-span-1" />
+                    <UploadTile className="md:row-span-2" />
+                  </div>
                 </div>
               </div>
             </section>
@@ -356,6 +378,9 @@ const Index = () => {
                     IT'S ALL ABOUT THE PROMPT
                   </motion.span>
                 </motion.h2>
+                <p className="text-white/70 text-lg mb-10">
+                  This website is made by 100% prompting.
+                </p>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

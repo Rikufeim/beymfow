@@ -3,7 +3,7 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { Input } from "@/components/ui/input";
 import { Send, Wand2, Loader2 } from "lucide-react";
 import { usePromptLab } from "@/contexts/PromptLabContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import RenderMarkdown from "@/lib/renderMarkdown";
 export const OptimizerFlowPanel = () => {
   const [inputValue, setInputValue] = useState("");

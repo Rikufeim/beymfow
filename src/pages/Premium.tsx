@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import { Check, Plus, Minus, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";

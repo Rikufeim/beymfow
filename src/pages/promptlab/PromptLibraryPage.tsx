@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, memo } from "react";
 import Layout from "@/components/Layout";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/notifications";
 import { AnimatePresence, motion } from "framer-motion";
 import { Twemoji } from "@/components/Twemoji";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
