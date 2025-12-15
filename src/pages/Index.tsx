@@ -21,6 +21,7 @@ import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholde
 import HolographicCard from "@/components/demo/HolographicCard";
 import HyperTextCard from "@/components/demo/HyperTextCard";
 import UploadTile from "@/components/demo/UploadTile";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -98,7 +99,16 @@ const Index = () => {
                   <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 lg:gap-6 items-stretch">
                     <HolographicCard className="md:row-span-1" />
                     <HyperTextCard className="md:row-span-1" />
-                    <UploadTile className="md:row-span-2" />
+                    <UploadTile className="md:row-span-1" />
+                    {/* Buttons in empty space */}
+                    <div className="md:row-span-1 flex items-center justify-center gap-4">
+                      <GradientButton onClick={() => navigate("/prompt-lab-page")}>
+                        GET
+                      </GradientButton>
+                      <GradientButton variant="variant" onClick={() => navigate("/flow-engine")}>
+                        FLOW
+                      </GradientButton>
+                    </div>
                   </div>
                 </div>
               </div>
