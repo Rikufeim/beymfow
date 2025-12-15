@@ -50,6 +50,19 @@ const componentsData: ComponentData[] = [
   }
 ];
 
+const readyToUseLandingPagesData: ComponentData[] = [
+  {
+    title: "Landing Page Template",
+    description: "A ready-to-use landing page with modern design.",
+    videoSrc: "/videos/landing-pages-demo.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/landing-page",
+    importCode: "@/pages/LandingPage",
+    usageCode: "<LandingPage />",
+    accentColor: "emerald"
+  }
+];
+
 interface HorizontalPlaceholderCarouselProps {
   title: string;
   itemCount?: number;
@@ -85,6 +98,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   const getDataArray = (): ComponentData[] => {
     if (title === "Landing Pages") return landingPageComponents;
     if (title === "Components") return componentsData;
+    if (title === "Ready-to use Landing pages") return readyToUseLandingPagesData;
     return [];
   };
 
