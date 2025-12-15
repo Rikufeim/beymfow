@@ -1151,8 +1151,8 @@ Before finalizing, verify:
 
             {/* Video Carousels - Same as homepage */}
             {[
-              { title: "Landing page - Hero templates", ref: landingPageHeroCarouselRef, data: landingPageHeroData },
-              { title: "Full - Landing page - Landing page template", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData },
+              { title: "Hero templates", ref: landingPageHeroCarouselRef, data: landingPageHeroData },
+              { title: "Landing page template", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData },
               { title: "Components", ref: componentsCarouselRef, data: componentsVideoData },
             ].map(({ title, ref, data }) => {
               const scrollBy = (dir: number) => {
@@ -1252,9 +1252,9 @@ Before finalizing, verify:
           {/* Component Showcase Modal for Prompt Lab */}
           {showComponentPage !== null && activeVideoSection && (() => {
             const getDataForSection = () => {
-              if (activeVideoSection === "Landing page - Hero templates") return landingPageHeroData;
+              if (activeVideoSection === "Hero templates") return landingPageHeroData;
               if (activeVideoSection === "Components") return componentsVideoData;
-              if (activeVideoSection === "Full - Landing page - Landing page template") return fullLandingPagesData;
+              if (activeVideoSection === "Landing page template") return fullLandingPagesData;
               return [];
             };
             const selectedComponent = getDataForSection()[showComponentPage];
