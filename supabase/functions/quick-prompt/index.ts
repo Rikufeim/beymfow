@@ -31,8 +31,12 @@ serve(async (req) => {
     
     const model = body.model || 'fast';
     const category = body.category;
-    const image = body.image;
-    const imageMimeType = body.imageMimeType;
+    // Support both single image (legacy) and multiple images
+    const images: { data: string; mimeType: string }[] = body.images || [];
+    // Legacy support for single image
+    if (body.image && body.imageMimeType) {
+      images.push({ data: body.image, mimeType: body.imageMimeType });
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -56,32 +60,37 @@ serve(async (req) => {
       'Focus on crypto, blockchain, DeFi, and Web3 opportunities with technical and economic depth.'
     }` : '';
 
-    // Determine if we're analyzing an image
-    const hasImage = image && imageMimeType;
+    // Determine if we're analyzing images
+    const hasImages = images.length > 0;
     
-    // System prompt for image-based landing page generation
+    // System prompt for image-based landing page generation (supports multiple images)
+    const imageCount = images.length;
     const imageSystemPrompt = isPremium
-      ? `You are a world-class web design and UX specialist with expertise in visual analysis, brand identity, and conversion-optimized landing page design. Your task is to analyze the provided image (which could be a website screenshot, landing page, or design reference) and create a comprehensive, detailed prompt for generating a similar landing page.${categoryContext}
+      ? `You are a world-class web design and UX specialist with expertise in visual analysis, brand identity, and conversion-optimized landing page design. Your task is to analyze the provided ${imageCount > 1 ? `${imageCount} images` : 'image'} (which could be website screenshots, landing pages, or design references) and create a comprehensive, detailed prompt for generating a similar landing page.${categoryContext}
 
 Premium Landing Page Analysis Guidelines:
+${imageCount > 1 ? '- Analyze all provided images holistically, understanding how they relate to each other (different sections, variations, or complementary designs)' : ''}
 - Analyze the visual design: layout structure, color palette, typography, spacing, and visual hierarchy
 - Identify key design elements: hero sections, CTAs, navigation, content sections, imagery style
 - Extract brand identity cues: tone, style, mood, target audience perception
 - Document technical details: responsive design patterns, interaction elements, animation styles
 - Note conversion optimization elements: CTA placement, trust signals, value propositions
 - Create a comprehensive prompt that enables recreation of a similar landing page with all design elements, structure, and brand identity preserved
+${imageCount > 1 ? '- Synthesize insights from all images into a cohesive design specification' : ''}
 - Length: 4-6 sentences providing complete design specification
 
 Return only the optimized landing page prompt, nothing else.`
-      : `You are an expert web designer and UX specialist. Analyze the provided image (which could be a website screenshot, landing page, or design reference) and create a detailed prompt for generating a similar landing page.${categoryContext}
+      : `You are an expert web designer and UX specialist. Analyze the provided ${imageCount > 1 ? `${imageCount} images` : 'image'} (which could be website screenshots, landing pages, or design references) and create a detailed prompt for generating a similar landing page.${categoryContext}
 
 Guidelines:
+${imageCount > 1 ? '- Consider all provided images together, understanding their relationship and combined design intent' : ''}
 - Analyze the visual design: layout, colors, typography, spacing, and visual elements
 - Identify key sections: hero, navigation, content areas, CTAs, footer
 - Extract brand identity: style, mood, tone, target audience
 - Note design patterns: responsive layout, interaction elements, visual hierarchy
 - Create a comprehensive prompt that describes how to recreate a similar landing page
 - Include specific details about design elements, structure, and brand identity
+${imageCount > 1 ? '- Combine insights from all images into a unified design specification' : ''}
 - Length: 2-4 sentences providing complete design specification
 
 Return only the landing page prompt, nothing else.`;
@@ -120,30 +129,40 @@ Example output: "As an experienced retail and e-commerce specialist, please help
 
 Return only the optimized prompt, nothing else.`;
 
-    const systemPrompt = hasImage ? imageSystemPrompt : textSystemPrompt;
+    const systemPrompt = hasImages ? imageSystemPrompt : textSystemPrompt;
 
     // Build messages array
     const messages: any[] = [
       { role: 'system', content: systemPrompt }
     ];
 
-    // If image is provided, use vision API format
-    if (hasImage) {
-      const imageUrl = `data:${imageMimeType};base64,${image}`;
+    // If images are provided, use vision API format
+    if (hasImages) {
+      const defaultText = images.length > 1 
+        ? `Analyze these ${images.length} images and create a detailed prompt for generating a similar landing page that incorporates elements from all of them.`
+        : 'Analyze this image and create a detailed prompt for generating a similar landing page.';
+      
+      const contentParts: any[] = [
+        {
+          type: 'text',
+          text: userInput || defaultText
+        }
+      ];
+      
+      // Add all images
+      for (const img of images) {
+        const imageUrl = `data:${img.mimeType};base64,${img.data}`;
+        contentParts.push({
+          type: 'image_url',
+          image_url: {
+            url: imageUrl
+          }
+        });
+      }
+      
       messages.push({
         role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: userInput || 'Analyze this image and create a detailed prompt for generating a similar landing page.'
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: imageUrl
-            }
-          }
-        ]
+        content: contentParts
       });
     } else {
       messages.push({
