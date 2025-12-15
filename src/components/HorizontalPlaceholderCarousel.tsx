@@ -4,6 +4,40 @@ import { useNavigate } from "react-router-dom";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
 
+interface ComponentData {
+  title: string;
+  description: string;
+  videoSrc: string;
+  creator: { name: string; username: string };
+  installCommand: string;
+  importCode: string;
+  usageCode: string;
+  accentColor: string;
+}
+
+const landingPageComponents: ComponentData[] = [
+  {
+    title: "Pixel Trail",
+    description: "A beautiful smooth cursor pixel trail effect.",
+    videoSrc: "/videos/pixel-trail-demo.mp4",
+    creator: { name: "Jatin Yadav", username: "jatin-yadav05" },
+    installCommand: "https://21st.dev/r/jatin-yadav05/pixel-trail",
+    importCode: "@/components/ui/pixel-trail",
+    usageCode: "<PixelCursorTrail />",
+    accentColor: "purple"
+  },
+  {
+    title: "Glow Button",
+    description: "An animated glowing button with hover effects.",
+    videoSrc: "/videos/component-demo-2.mp4",
+    creator: { name: "Demo User", username: "demo-user" },
+    installCommand: "https://21st.dev/r/demo-user/glow-button",
+    importCode: "@/components/ui/glow-button",
+    usageCode: "<GlowButton />",
+    accentColor: "cyan"
+  }
+];
+
 interface HorizontalPlaceholderCarouselProps {
   title: string;
   itemCount?: number;
@@ -36,9 +70,16 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   };
 
   const handleCardClick = (idx: number) => {
-    if (title === "Landing Pages" && idx === 0) {
+    if (title === "Landing Pages" && idx < landingPageComponents.length) {
       setShowComponentPage(idx);
     }
+  };
+
+  const getComponentData = (idx: number): ComponentData | null => {
+    if (title === "Landing Pages" && idx < landingPageComponents.length) {
+      return landingPageComponents[idx];
+    }
+    return null;
   };
 
   React.useEffect(() => {
@@ -50,6 +91,8 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showComponentPage]);
+
+  const selectedComponent = showComponentPage !== null ? landingPageComponents[showComponentPage] : null;
 
   return (
     <>
@@ -85,12 +128,14 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
           className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
         >
           {Array.from({ length: itemCount }).map((_, idx) => {
-            const isPixelTrailCard = title === "Landing Pages" && idx === 0;
+            const componentData = getComponentData(idx);
+            const isComponentCard = componentData !== null;
+            
             return (
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[360px] max-w-[440px] h-[240px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isPixelTrailCard ? 'cursor-pointer hover:border-purple-500/50 transition-colors group' : ''}`}
+                className={`relative min-w-[360px] max-w-[440px] h-[240px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
               >
                 <div className="absolute inset-0 opacity-50">
                   <GlowingEffect
@@ -103,11 +148,11 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                     className="opacity-60"
                   />
                 </div>
-                {isPixelTrailCard ? (
+                {isComponentCard ? (
                   <>
                     {/* Video thumbnail */}
                     <video
-                      src="/videos/pixel-trail-demo.mp4"
+                      src={componentData.videoSrc}
                       muted
                       loop
                       playsInline
@@ -117,14 +162,14 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                     <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between z-10">
                       <div className="flex items-center justify-between">
-                        <span className="text-purple-400 text-xs uppercase tracking-wider font-medium">Component</span>
-                        <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-purple-500/20 group-hover:border-purple-500/50 transition-colors">
+                        <span className={`text-${componentData.accentColor}-400 text-xs uppercase tracking-wider font-medium`}>Component</span>
+                        <div className={`w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-${componentData.accentColor}-500/20 group-hover:border-${componentData.accentColor}-500/50 transition-colors`}>
                           <Play size={14} className="text-white ml-0.5" />
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-white font-semibold text-lg mb-1">Pixel Trail</h4>
-                        <p className="text-white/50 text-sm">A beautiful smooth cursor pixel trail effect.</p>
+                        <h4 className="text-white font-semibold text-lg mb-1">{componentData.title}</h4>
+                        <p className="text-white/50 text-sm">{componentData.description}</p>
                       </div>
                     </div>
                   </>
@@ -148,7 +193,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
       </div>
 
       {/* Component Showcase Modal */}
-      {showComponentPage !== null && (
+      {showComponentPage !== null && selectedComponent && (
         <div 
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
           onClick={() => setShowComponentPage(null)}
@@ -166,16 +211,13 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
             </button>
             <ComponentShowcasePage
               onBack={() => setShowComponentPage(null)}
-              videoSrc="/videos/pixel-trail-demo.mp4"
-              title="Pixel Trail"
-              description="A beautiful smooth cursor pixel trail effect."
-              creator={{
-                name: "Jatin Yadav",
-                username: "jatin-yadav05"
-              }}
-              installCommand="https://21st.dev/r/jatin-yadav05/pixel-trail"
-              importCode="@/components/ui/pixel-trail"
-              usageCode="<PixelCursorTrail />"
+              videoSrc={selectedComponent.videoSrc}
+              title={selectedComponent.title}
+              description={selectedComponent.description}
+              creator={selectedComponent.creator}
+              installCommand={selectedComponent.installCommand}
+              importCode={selectedComponent.importCode}
+              usageCode={selectedComponent.usageCode}
             />
           </div>
         </div>
