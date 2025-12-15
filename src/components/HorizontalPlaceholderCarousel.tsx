@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, X, Play } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
@@ -135,7 +135,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[360px] max-w-[440px] h-[240px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
+                className={`relative min-w-[420px] max-w-[520px] h-[300px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
               >
                 <div className="absolute inset-0 opacity-50">
                   <GlowingEffect
@@ -157,16 +157,10 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                       loop
                       playsInline
                       autoPlay
-                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                      className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                    <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between z-10">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-${componentData.accentColor}-400 text-xs uppercase tracking-wider font-medium`}>Component</span>
-                        <div className={`w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-${componentData.accentColor}-500/20 group-hover:border-${componentData.accentColor}-500/50 transition-colors`}>
-                          <Play size={14} className="text-white ml-0.5" />
-                        </div>
-                      </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="relative h-full w-full px-6 py-5 flex flex-col justify-end z-10">
                       <div>
                         <h4 className="text-white font-semibold text-lg mb-1">{componentData.title}</h4>
                         <p className="text-white/50 text-sm">{componentData.description}</p>
