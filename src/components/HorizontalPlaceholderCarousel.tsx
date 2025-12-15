@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, X, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
-import NexusLandingPage from "@/components/landing-pages/NexusLandingPage";
+import ComponentShowcasePage from "@/components/ComponentShowcasePage";
 
 interface HorizontalPlaceholderCarouselProps {
   title: string;
@@ -17,7 +17,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const [showLandingPage, setShowLandingPage] = useState<number | null>(null);
+  const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 0) {
@@ -36,22 +36,20 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   };
 
   const handleCardClick = (idx: number) => {
-    // Only first card of "Landing Pages" carousel opens the landing page
     if (title === "Landing Pages" && idx === 0) {
-      setShowLandingPage(idx);
+      setShowComponentPage(idx);
     }
   };
 
-  // Close modal on ESC
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && showLandingPage !== null) {
-        setShowLandingPage(null);
+      if (e.key === "Escape" && showComponentPage !== null) {
+        setShowComponentPage(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showLandingPage]);
+  }, [showComponentPage]);
 
   return (
     <>
@@ -87,12 +85,12 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
           className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
         >
           {Array.from({ length: itemCount }).map((_, idx) => {
-            const isNexusCard = title === "Landing Pages" && idx === 0;
+            const isPixelTrailCard = title === "Landing Pages" && idx === 0;
             return (
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[360px] max-w-[440px] h-[240px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isNexusCard ? 'cursor-pointer hover:border-[#00ff88]/50 transition-colors' : ''}`}
+                className={`relative min-w-[360px] max-w-[440px] h-[240px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isPixelTrailCard ? 'cursor-pointer hover:border-purple-500/50 transition-colors group' : ''}`}
               >
                 <div className="absolute inset-0 opacity-50">
                   <GlowingEffect
@@ -105,36 +103,31 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                     className="opacity-60"
                   />
                 </div>
-                {isNexusCard ? (
-                  <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-6 h-6 rounded flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(135deg, #00ff88 0%, #00aa55 100%)',
-                        }}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="text-black">
-                          <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                {isPixelTrailCard ? (
+                  <>
+                    {/* Video thumbnail */}
+                    <video
+                      src="/videos/pixel-trail-demo.mp4"
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between z-10">
+                      <div className="flex items-center justify-between">
+                        <span className="text-purple-400 text-xs uppercase tracking-wider font-medium">Component</span>
+                        <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-purple-500/20 group-hover:border-purple-500/50 transition-colors">
+                          <Play size={14} className="text-white ml-0.5" />
+                        </div>
                       </div>
-                      <span className="text-[#00ff88] font-bold tracking-wider text-sm" style={{ fontFamily: "'Syncopate', sans-serif" }}>
-                        NEXUS
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-white font-semibold text-lg">Web3 Landing Page</h4>
-                      <p className="text-white/50 text-sm">Modern crypto/DeFi landing page with 3D particle effects</p>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#00ff88]/70 text-xs uppercase tracking-wider">Click to preview</span>
-                      <div className="h-8 w-24 rounded-full bg-[#00ff88]/20 border border-[#00ff88]/30 flex items-center justify-center">
-                        <span className="text-[#00ff88] text-xs font-semibold">View</span>
+                      <div>
+                        <h4 className="text-white font-semibold text-lg mb-1">Pixel Trail</h4>
+                        <p className="text-white/50 text-sm">A beautiful smooth cursor pixel trail effect.</p>
                       </div>
                     </div>
-                  </div>
+                  </>
                 ) : (
                   <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between">
                     <div className="h-4 w-3/4 rounded-full bg-white/10" />
@@ -154,26 +147,36 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
         </div>
       </div>
 
-      {/* Landing Page Modal */}
-      {showLandingPage !== null && (
+      {/* Component Showcase Modal */}
+      {showComponentPage !== null && (
         <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowLandingPage(null)}
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
+          onClick={() => setShowComponentPage(null)}
         >
           <div 
-            className="relative w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl"
+            className="relative w-full h-full"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => setShowLandingPage(null)}
+              onClick={() => setShowComponentPage(null)}
               className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
               aria-label="Close"
             >
               <X size={20} />
             </button>
-            <div className="w-full h-full overflow-y-auto">
-              <NexusLandingPage />
-            </div>
+            <ComponentShowcasePage
+              onBack={() => setShowComponentPage(null)}
+              videoSrc="/videos/pixel-trail-demo.mp4"
+              title="Pixel Trail"
+              description="A beautiful smooth cursor pixel trail effect."
+              creator={{
+                name: "Jatin Yadav",
+                username: "jatin-yadav05"
+              }}
+              installCommand="https://21st.dev/r/jatin-yadav05/pixel-trail"
+              importCode="@/components/ui/pixel-trail"
+              usageCode="<PixelCursorTrail />"
+            />
           </div>
         </div>
       )}
