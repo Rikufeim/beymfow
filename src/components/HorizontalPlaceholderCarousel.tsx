@@ -134,18 +134,18 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[520px] max-w-[620px] h-[340px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
+                className={`relative min-w-[380px] max-w-[420px] h-[240px] rounded-xl border border-white/10 bg-[#0a0a0a] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-white/30 transition-colors group` : ''}`}
               >
                 {isComponentCard ? (
                   <>
-                    {/* Video thumbnail */}
+                    {/* Video thumbnail - using object-contain to show full video */}
                     <video
                       src={componentData.videoSrc}
                       muted
                       loop
                       playsInline
                       autoPlay
-                      className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                      className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] object-contain rounded-lg"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     <div className="relative h-full w-full px-6 py-5 flex flex-col justify-end z-10">
