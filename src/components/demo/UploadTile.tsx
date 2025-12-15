@@ -1,7 +1,6 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 import { PixelCursorTrail } from "./PixelCursorTrail"
-import cardBgMixed from "@/assets/card-bg-mixed.png"
 
 type UploadTileProps = {
   className?: string
@@ -12,15 +11,10 @@ const UploadTile: React.FC<UploadTileProps> = ({ className }) => {
     <div
       className={cn(
         "group relative flex h-full min-h-[260px] items-center justify-center overflow-hidden rounded-2xl",
-        "border border-white/10 p-6",
+        "border border-white/10 bg-black p-6",
         "transition-transform duration-200",
         className
       )}
-      style={{
-        backgroundImage: `url(${cardBgMixed})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
     >
       <div className="pointer-events-none absolute inset-0 opacity-15">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20px_20px,#ffffff0a_1px,transparent_0)] bg-[length:60px_60px]" />
