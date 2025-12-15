@@ -35,7 +35,7 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex overflow-hidden">
       {/* Left Panel - Documentation */}
-      <div className="w-full md:w-[35%] lg:w-[30%] pl-6 pr-6 py-10 lg:pl-8 lg:pr-10 lg:py-14 overflow-y-auto overflow-x-hidden border-r border-white/10 flex flex-col items-start">
+      <div className="w-full md:w-[35%] lg:w-[30%] pl-6 pr-6 py-10 pb-20 lg:pl-8 lg:pr-10 lg:py-14 lg:pb-24 overflow-y-auto overflow-x-hidden border-r border-white/10 flex flex-col items-start">
         {/* Home Button */}
         <button 
           onClick={onBack}
