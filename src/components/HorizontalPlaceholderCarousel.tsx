@@ -49,6 +49,16 @@ const landingPageComponents: ComponentData[] = [
 
 const componentsData: ComponentData[] = [
   {
+    title: "Interactive UI",
+    description: "A beautiful interactive UI component demo.",
+    videoSrc: "/videos/component-demo-2.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/interactive",
+    importCode: "@/components/ui/interactive-ui",
+    usageCode: "<InteractiveUI />",
+    accentColor: "purple"
+  },
+  {
     title: "Animated Component",
     description: "A smooth animated UI component demo.",
     videoSrc: "/videos/components-demo.mp4",
