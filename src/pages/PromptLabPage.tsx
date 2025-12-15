@@ -1188,8 +1188,8 @@ Before finalizing, verify:
                       >
                         <ArrowRight size={16} />
                       </button>
-                      <button className="text-white/60 text-sm font-medium hover:text-white transition-colors flex items-center gap-1 ml-2">
-                        Open lab <ArrowRight size={14} />
+                      <button className="text-white/60 text-sm font-medium hover:text-white transition-colors ml-2">
+                        Open lab
                       </button>
                     </div>
                   </div>
