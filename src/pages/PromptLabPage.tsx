@@ -1206,7 +1206,7 @@ Before finalizing, verify:
                         <div
                           key={`${title}-${idx}`}
                           onClick={() => handleCardClick(idx)}
-                          className={`relative min-w-[380px] max-w-[420px] h-[240px] rounded-xl border border-white/10 bg-[#0a0a0a] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-white/30 transition-colors group` : ''}`}
+                          className={`relative min-w-[380px] max-w-[420px] h-[240px] rounded-xl bg-[#0a0a0a] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:opacity-90 transition-opacity group` : ''}`}
                         >
                           {isComponentCard ? (
                             <>
