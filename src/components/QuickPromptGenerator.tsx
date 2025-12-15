@@ -369,8 +369,8 @@ export const QuickPromptGenerator = () => {
   };
 
   const handleGenerate = async () => {
-    if (!input.trim()) {
-      toast.error("Please enter what you want the AI to do");
+    if (!input.trim() && !imagePreview) {
+      toast.error("Please enter what you want the AI to do or add an image");
       return;
     }
 
@@ -389,19 +389,32 @@ export const QuickPromptGenerator = () => {
     setGeneratedPrompt("");
 
     try {
-      let finalInput = input;
+      let finalInput = input.trim() || "Analyze this image and create a detailed prompt that can recreate this design with high fidelity.";
 
       // Add instruction for fast model
-      if (selectedModel === "fast") {
+      if (selectedModel === "fast" && !imagePreview) {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
       }
 
+      // Prepare body with optional image
+      const requestBody: Record<string, unknown> = {
+        userInput: finalInput,
+        model: selectedModel,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+      };
+
+      // If image is present, include it in the request
+      if (imagePreview && imageFile) {
+        // Extract base64 and mime type from data URL
+        const mimeMatch = imagePreview.match(/^data:(image\/[^;]+);base64,(.+)$/);
+        if (mimeMatch) {
+          requestBody.imageMimeType = mimeMatch[1];
+          requestBody.image = mimeMatch[2];
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke("quick-prompt", {
-        body: {
-          userInput: finalInput,
-          model: selectedModel,
-          category: selectedCategory !== "all" ? selectedCategory : undefined,
-        },
+        body: requestBody,
       });
 
       if (error) throw error;
