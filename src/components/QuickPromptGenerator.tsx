@@ -85,8 +85,11 @@ export const QuickPromptGenerator = () => {
 
   useEffect(() => {
     if (textareaRef.current) {
+      // Reset height to auto to get correct scrollHeight
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      // Set new height with max limit
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 300);
+      textareaRef.current.style.height = `${newHeight}px`;
     }
   }, [input]);
 
@@ -604,8 +607,8 @@ export const QuickPromptGenerator = () => {
                 onBlur={() => setIsFocused(false)}
                 placeholder=""
                 rows={1}
-                className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white resize-none overflow-hidden py-2 leading-relaxed text-left"
-                style={{ minHeight: "24px", maxHeight: "200px" }}
+                className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white resize-none overflow-hidden py-2 leading-relaxed text-left transition-[height] duration-150 ease-out"
+                style={{ minHeight: "24px", maxHeight: "300px" }}
                 maxLength={2000}
               />
               {!input && !isFocused && (
