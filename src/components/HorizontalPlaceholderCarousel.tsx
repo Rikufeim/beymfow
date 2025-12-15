@@ -175,25 +175,25 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   return (
     <>
       <div className={`w-full mb-10 ${className}`}>
-        <div className="flex items-center justify-between px-1 mb-2">
+        <div className="flex items-center justify-between px-1 mb-4">
           <h3 className="text-white/85 font-semibold text-lg">{title}</h3>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => scrollByAmount(-1)}
-              className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+              className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
               aria-label="Scroll left"
             >
               <ArrowLeft size={16} />
             </button>
             <button
               onClick={() => scrollByAmount(1)}
-              className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
+              className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
               aria-label="Scroll right"
             >
               <ArrowRight size={16} />
             </button>
             <button
-              className="text-white/80 text-sm font-semibold hover:text-white transition-colors flex items-center gap-1"
+              className="text-white/60 text-sm font-medium hover:text-white transition-colors flex items-center gap-1 ml-2"
               onClick={() => navigate("/prompt-lab-page")}
             >
               Open lab <ArrowRight size={14} />
