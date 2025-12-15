@@ -51,7 +51,10 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
 
         {/* How to use */}
         <div>
-          <h3 className="text-white/50 text-sm uppercase tracking-wider mb-5">How to use</h3>
+          <h3 className="text-white/50 text-sm uppercase tracking-wider mb-4">How to use</h3>
+          <p className="text-white/60 text-sm leading-relaxed mb-5">
+            You can paste the prompt into Cursor, Gemini, Lovable, or any other AI platform. Edit and refine the code and prompt to achieve better and better results, so the final outcome looks exactly like you or your brand.
+          </p>
           
           <div className="flex flex-col gap-3">
             <Button
