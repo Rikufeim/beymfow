@@ -36,13 +36,13 @@ const landingPageComponents: ComponentData[] = [
     accentColor: "purple"
   },
   {
-    title: "Glow Button",
-    description: "An animated glowing button with hover effects.",
-    videoSrc: "/videos/component-demo-2.mp4",
-    creator: { name: "Demo User", username: "demo-user" },
-    installCommand: "https://21st.dev/r/demo-user/glow-button",
-    importCode: "@/components/ui/glow-button",
-    usageCode: "<GlowButton />",
+    title: "Hero Animation",
+    description: "A stunning hero section with smooth animations.",
+    videoSrc: "/videos/landing-hero-new.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/hero-animation",
+    importCode: "@/components/ui/hero-animation",
+    usageCode: "<HeroAnimation />",
     accentColor: "cyan"
   }
 ];
