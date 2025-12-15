@@ -117,7 +117,7 @@ const Index = () => {
             {/* Prompt Packs (placeholder carousels) */}
             <section className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 mt-16">
               <HorizontalPlaceholderCarousel title="Landing Pages" />
-              <HorizontalPlaceholderCarousel title="Popular" />
+              <HorizontalPlaceholderCarousel title="Ready-to use Landing pages" />
               <HorizontalPlaceholderCarousel title="Components" />
             </section>
 
