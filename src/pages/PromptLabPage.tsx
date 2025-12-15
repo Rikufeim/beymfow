@@ -24,6 +24,117 @@ import {
   ArrowLeft,
   ArrowRight,
 } from "lucide-react";
+import ComponentShowcasePage from "@/components/ComponentShowcasePage";
+
+interface VideoComponentData {
+  title: string;
+  description: string;
+  videoSrc: string;
+  creator: { name: string; username: string };
+  installCommand: string;
+  importCode: string;
+  usageCode: string;
+  accentColor: string;
+}
+
+const landingPageHeroData: VideoComponentData[] = [
+  {
+    title: "Modern Landing Page",
+    description: "A sleek modern landing page design with smooth animations.",
+    videoSrc: "/videos/landing-page-1.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/modern-landing",
+    importCode: "@/pages/ModernLanding",
+    usageCode: "<ModernLanding />",
+    accentColor: "emerald"
+  },
+  {
+    title: "Pixel Trail",
+    description: "A beautiful smooth cursor pixel trail effect.",
+    videoSrc: "/videos/pixel-trail-demo.mp4",
+    creator: { name: "Jatin Yadav", username: "jatin-yadav05" },
+    installCommand: "https://21st.dev/r/jatin-yadav05/pixel-trail",
+    importCode: "@/components/ui/pixel-trail",
+    usageCode: "<PixelCursorTrail />",
+    accentColor: "purple"
+  },
+  {
+    title: "Glow Button",
+    description: "An animated glowing button with hover effects.",
+    videoSrc: "/videos/component-demo-2.mp4",
+    creator: { name: "Demo User", username: "demo-user" },
+    installCommand: "https://21st.dev/r/demo-user/glow-button",
+    importCode: "@/components/ui/glow-button",
+    usageCode: "<GlowButton />",
+    accentColor: "cyan"
+  }
+];
+
+const componentsVideoData: VideoComponentData[] = [
+  {
+    title: "New Component",
+    description: "A fresh new component demo.",
+    videoSrc: "/videos/components-new-1.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/new",
+    importCode: "@/components/ui/new-component",
+    usageCode: "<NewComponent />",
+    accentColor: "cyan"
+  },
+  {
+    title: "Interactive UI",
+    description: "A beautiful interactive UI component demo.",
+    videoSrc: "/videos/components-1.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/interactive",
+    importCode: "@/components/ui/interactive-ui",
+    usageCode: "<InteractiveUI />",
+    accentColor: "purple"
+  },
+  {
+    title: "Animated Component",
+    description: "A smooth animated UI component demo.",
+    videoSrc: "/videos/components-demo.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/animated",
+    importCode: "@/components/ui/animated-component",
+    usageCode: "<AnimatedComponent />",
+    accentColor: "blue"
+  }
+];
+
+const fullLandingPagesData: VideoComponentData[] = [
+  {
+    title: "Landing Page Template",
+    description: "A ready-to-use landing page with modern design.",
+    videoSrc: "/videos/landing-pages-demo.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/landing-page",
+    importCode: "@/pages/LandingPage",
+    usageCode: "<LandingPage />",
+    accentColor: "emerald"
+  },
+  {
+    title: "Creative Landing Page",
+    description: "A creative landing page design with unique animations.",
+    videoSrc: "/videos/landing-pages-demo-2.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/creative-landing",
+    importCode: "@/pages/CreativeLanding",
+    usageCode: "<CreativeLanding />",
+    accentColor: "purple"
+  },
+  {
+    title: "Minimal Landing Page",
+    description: "A clean minimal landing page with elegant transitions.",
+    videoSrc: "/videos/landing-pages-demo-3.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/templates/minimal-landing",
+    importCode: "@/pages/MinimalLanding",
+    usageCode: "<MinimalLanding />",
+    accentColor: "cyan"
+  }
+];
 
 const PROMPT_BUNDLES = [
   {
@@ -392,8 +503,12 @@ function PromptWorkspaceInner() {
   const bundlesCarouselRef = useRef<HTMLDivElement>(null);
   const [bundleScroll, setBundleScroll] = useState({ scroll: 0, max: 1 });
   const componentsCarouselRef = useRef<HTMLDivElement>(null);
-  const popularCarouselRef = useRef<HTMLDivElement>(null);
-  const landingPagesCarouselRef = useRef<HTMLDivElement>(null);
+  const landingPageHeroCarouselRef = useRef<HTMLDivElement>(null);
+  const fullLandingPagesCarouselRef = useRef<HTMLDivElement>(null);
+  
+  // Video showcase state
+  const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
+  const [activeVideoSection, setActiveVideoSection] = useState<string | null>(null);
 
   // --- EFFECTS ---
   // Debounce search query for library
@@ -1044,18 +1159,26 @@ Before finalizing, verify:
               </div>
             </div>
 
-            {/* Placeholder carousels (2 rows) */}
+            {/* Video Carousels - Same as homepage */}
             {[
-              { title: "Components", ref: componentsCarouselRef },
-              { title: "Popular", ref: popularCarouselRef },
-              { title: "Landing Pages", ref: landingPagesCarouselRef },
-            ].map(({ title, ref }) => {
+              { title: "Landing page heros", ref: landingPageHeroCarouselRef, data: landingPageHeroData },
+              { title: "Full - Landing Pages", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData },
+              { title: "Components", ref: componentsCarouselRef, data: componentsVideoData },
+            ].map(({ title, ref, data }) => {
               const scrollBy = (dir: number) => {
                 const el = ref.current;
                 if (!el) return;
                 const amount = el.clientWidth * 0.7 * dir;
                 el.scrollBy({ left: amount, behavior: "smooth" });
               };
+              
+              const handleCardClick = (idx: number) => {
+                if (idx < data.length) {
+                  setShowComponentPage(idx);
+                  setActiveVideoSection(title);
+                }
+              };
+              
               return (
                 <div key={title} className="w-full max-w-6xl mx-auto mb-10">
                   <div className="flex items-center justify-between px-1 mb-2">
@@ -1083,42 +1206,109 @@ Before finalizing, verify:
                   <div
                     ref={ref}
                     onWheel={(e) => e.preventDefault()}
-                    className="flex gap-4 overflow-hidden pb-3 px-1"
+                    className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
                   >
-                    {Array.from({ length: 6 }).map((_, idx) => (
-                      <div
-                        key={`${title}-${idx}`}
-                        className="relative min-w-[300px] max-w-[360px] h-[200px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0"
-                      >
-                        <div className="absolute inset-0 opacity-50">
-                          <GlowingEffect
-                            spread={28}
-                            glow
-                            disabled={false}
-                            proximity={40}
-                            inactiveZone={0.01}
-                            borderWidth={2}
-                            className="opacity-60"
-                          />
+                    {Array.from({ length: 6 }).map((_, idx) => {
+                      const componentData = idx < data.length ? data[idx] : null;
+                      const isComponentCard = componentData !== null;
+                      
+                      return (
+                        <div
+                          key={`${title}-${idx}`}
+                          onClick={() => handleCardClick(idx)}
+                          className={`relative min-w-[380px] max-w-[420px] h-[240px] rounded-xl border border-white/10 bg-[#0a0a0a] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-white/30 transition-colors group` : ''}`}
+                        >
+                          {isComponentCard ? (
+                            <>
+                              <video
+                                src={componentData.videoSrc}
+                                muted
+                                loop
+                                playsInline
+                                autoPlay
+                                className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] object-contain rounded-lg"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <div className="relative h-full w-full px-6 py-5 flex flex-col justify-end z-10">
+                                <div>
+                                  <h4 className="text-white font-semibold text-lg mb-1">{componentData.title}</h4>
+                                  <p className="text-white/50 text-sm">{componentData.description}</p>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="relative h-full w-full px-6 py-5 flex flex-col justify-between">
+                              <div className="h-4 w-3/4 rounded-full bg-white/10" />
+                              <div className="space-y-3">
+                                <div className="h-3.5 w-5/6 rounded-full bg-white/8" />
+                                <div className="h-3.5 w-2/3 rounded-full bg-white/6" />
+                              </div>
+                              <div className="flex justify-end items-center gap-3">
+                                <CheckCircle2 className="text-white/50" size={16} />
+                                <div className="h-9 w-28 rounded-full bg-white/10" />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="relative h-full w-full p-5 flex flex-col justify-between">
-                          <div className="h-4 w-2/3 rounded-full bg-white/10" />
-                          <div className="space-y-2">
-                            <div className="h-3 w-3/4 rounded-full bg-white/8" />
-                            <div className="h-3 w-1/2 rounded-full bg-white/6" />
-                          </div>
-                          <div className="flex justify-end">
-                            <div className="h-8 w-24 rounded-full bg-white/10" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
             })}
 
           </motion.section>
+
+          {/* Component Showcase Modal for Prompt Lab */}
+          {showComponentPage !== null && activeVideoSection && (() => {
+            const getDataForSection = () => {
+              if (activeVideoSection === "Landing page heros") return landingPageHeroData;
+              if (activeVideoSection === "Components") return componentsVideoData;
+              if (activeVideoSection === "Full - Landing Pages") return fullLandingPagesData;
+              return [];
+            };
+            const selectedComponent = getDataForSection()[showComponentPage];
+            if (!selectedComponent) return null;
+            
+            return (
+              <div 
+                className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm"
+                onClick={() => {
+                  setShowComponentPage(null);
+                  setActiveVideoSection(null);
+                }}
+              >
+                <div 
+                  className="relative w-full h-full"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => {
+                      setShowComponentPage(null);
+                      setActiveVideoSection(null);
+                    }}
+                    className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                  <ComponentShowcasePage
+                    onBack={() => {
+                      setShowComponentPage(null);
+                      setActiveVideoSection(null);
+                    }}
+                    videoSrc={selectedComponent.videoSrc}
+                    title={selectedComponent.title}
+                    description={selectedComponent.description}
+                    creator={selectedComponent.creator}
+                    installCommand={selectedComponent.installCommand}
+                    importCode={selectedComponent.importCode}
+                    usageCode={selectedComponent.usageCode}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* --- PROMPT ALTERNATIVES SECTION --- */}
           <AnimatePresence>
