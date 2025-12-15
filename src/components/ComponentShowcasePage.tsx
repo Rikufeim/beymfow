@@ -35,9 +35,9 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
   return (
     <div className="min-h-screen w-full bg-[#0a0a0a] text-white flex overflow-hidden">
       {/* Left Panel - Documentation */}
-      <div className="w-full md:w-[35%] lg:w-[30%] p-10 lg:p-14 overflow-y-auto overflow-x-hidden border-r border-white/10">
+      <div className="w-full md:w-[35%] lg:w-[30%] p-10 lg:p-14 overflow-y-auto overflow-x-hidden border-r border-white/10 flex flex-col items-start">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-white/50 text-sm mb-12 text-left">
+        <div className="flex items-center gap-2 text-white/50 text-sm mb-12">
           <button 
             onClick={onBack}
             className="flex items-center gap-1 hover:text-white transition-colors whitespace-nowrap"
@@ -52,18 +52,18 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
         </div>
 
         {/* Title & Description */}
-        <h1 className="text-3xl font-bold mb-4 text-left">{title}</h1>
-        <p className="text-white/60 mb-12 leading-relaxed text-left">{description}</p>
+        <h1 className="text-3xl font-bold mb-4">{title}</h1>
+        <p className="text-white/60 mb-12 leading-relaxed">{description}</p>
 
         {/* How to use */}
-        <div className="text-left">
+        <div>
           <h3 className="text-white/50 text-sm uppercase tracking-wider mb-5">How to use</h3>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3">
             <Button
               variant="outline"
               size="sm"
-              className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2"
+              className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(usageCode, 'Prompt')}
             >
               <Copy size={14} className="mr-2" />
@@ -72,7 +72,7 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2"
+              className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(importCode + '\n\n' + usageCode, 'Code')}
             >
               <Copy size={14} className="mr-2" />
