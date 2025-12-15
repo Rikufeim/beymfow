@@ -135,7 +135,7 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[420px] max-w-[520px] h-[300px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
+                className={`relative min-w-[520px] max-w-[620px] h-[340px] rounded-2xl border border-white/10 bg-gradient-to-b from-[#0d0d0d] via-[#0c0c0c] to-[#0b0b0b] overflow-hidden flex-shrink-0 ${isComponentCard ? `cursor-pointer hover:border-${componentData.accentColor}-500/50 transition-colors group` : ''}`}
               >
                 <div className="absolute inset-0 opacity-50">
                   <GlowingEffect
