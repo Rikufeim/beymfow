@@ -626,26 +626,18 @@ textarea:-webkit-autofill {
 .gradient-button {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.gradient-button > * {
-  position: relative;
-  z-index: 10;
 }
 
 .gradient-button::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 25%, #7c3aed 50%, #6366f1 75%, #8b5cf6 100%);
-  background-size: 200% 200%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 30%, transparent 60%, transparent 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: 1;
 }
 
 .gradient-button:hover::before {
@@ -655,17 +647,22 @@ textarea:-webkit-autofill {
 
 .gradient-button:hover {
   border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 4px 25px rgba(138, 43, 226, 0.4);
+  box-shadow: 0 4px 25px rgba(138, 43, 226, 0.3);
+}
+
+.gradient-button span,
+.gradient-button {
+  color: white;
+  font-weight: 600;
 }
 
 .gradient-button-variant::before {
-  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 25%, #0ea5e9 50%, #38bdf8 75%, #06b6d4 100%);
-  background-size: 200% 200%;
+  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 30%, transparent 60%, transparent 100%);
 }
 
 .gradient-button-variant:hover {
   border-color: rgba(34, 211, 238, 0.5);
-  box-shadow: 0 4px 25px rgba(6, 182, 212, 0.4);
+  box-shadow: 0 4px 25px rgba(6, 182, 212, 0.3);
 }
 
 @keyframes gradientMove {
