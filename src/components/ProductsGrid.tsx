@@ -42,7 +42,7 @@ const ProductsGrid = () => {
             const Icon = product.icon;
             return (
               <div key={idx} className="flex flex-col items-start gap-4 group">
-                <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-all duration-300 group-hover:border-teal-400/30 group-hover:bg-gradient-to-r group-hover:from-teal-400/10 group-hover:to-purple-600/10">
+                <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-all duration-300">
                   <Icon className="h-10 w-10 text-white transition-colors duration-300 group-hover:text-teal-400" 
                     style={{
                       filter: 'drop-shadow(0 0 0px transparent)',
