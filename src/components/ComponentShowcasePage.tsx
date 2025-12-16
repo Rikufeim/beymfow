@@ -66,7 +66,10 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(usageCode, 'Prompt')}
             >
-              {copiedButton === 'Prompt' ? <Check size={14} className="mr-2 text-green-400" /> : <Copy size={14} className="mr-2" />}
+              <span className="mr-2 relative w-[14px] h-[14px]">
+                <Copy size={14} className={`absolute inset-0 transition-all duration-300 ${copiedButton === 'Prompt' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`} />
+                <Check size={14} className={`absolute inset-0 transition-all duration-300 ${copiedButton === 'Prompt' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+              </span>
               Copy prompt
             </Button>
             <Button
@@ -75,7 +78,10 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(importCode + '\n\n' + usageCode, 'Code')}
             >
-              {copiedButton === 'Code' ? <Check size={14} className="mr-2 text-green-400" /> : <Copy size={14} className="mr-2" />}
+              <span className="mr-2 relative w-[14px] h-[14px]">
+                <Copy size={14} className={`absolute inset-0 transition-all duration-300 ${copiedButton === 'Code' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`} />
+                <Check size={14} className={`absolute inset-0 transition-all duration-300 ${copiedButton === 'Code' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+              </span>
               Copy code
             </Button>
           </div>
