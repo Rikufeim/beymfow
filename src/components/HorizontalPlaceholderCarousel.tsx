@@ -22,7 +22,7 @@ const landingPageComponents: ComponentData[] = [
     creator: { name: "Beymflow", username: "beymflow" },
     installCommand: "https://beymflow.com/templates/modern-landing",
     importCode: "@/pages/ModernLanding",
-    usageCode: "<ModernLanding />",
+    usageCode: `Create a landing page with a stark, high-contrast black and white theme, using a full-screen, dramatic monochrome photograph of a vast natural landscape (like a canyon or mountains) as the background. At the top, a semi-transparent black navigation bar features a white, 8-bit pixel-style logo ("SMALL WRLD") on the left, followed by bold, uppercase sans-serif menu links, and a solid black button with a white Discord icon and text "JOIN DISCORD" on the far right. Centered in the hero section is the large headline "THE WEB3 TRAVEL AGENCY" in an extra-bold, extended uppercase sans-serif font with "WEB3" in solid black and the rest in white, positioned above a central black rectangular "EXPLORE" button and a vertical bar of circular social media icons fixed to the right edge.`,
     accentColor: "emerald"
   },
   {
