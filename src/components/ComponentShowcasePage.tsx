@@ -1,5 +1,5 @@
-import React from 'react';
-import { Copy, Home, Maximize2, Sun, RotateCcw, Code, Bookmark, MoreVertical } from 'lucide-react';
+import React, { useState } from 'react';
+import { Copy, Home, Maximize2, Sun, RotateCcw, Code, Bookmark, MoreVertical, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -27,9 +27,12 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
   importCode,
   usageCode,
 }) => {
+  const [copiedButton, setCopiedButton] = useState<string | null>(null);
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} copied to clipboard`);
+    setCopiedButton(label);
+    setTimeout(() => setCopiedButton(null), 2000);
   };
 
   return (
@@ -63,7 +66,7 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(usageCode, 'Prompt')}
             >
-              <Copy size={14} className="mr-2" />
+              {copiedButton === 'Prompt' ? <Check size={14} className="mr-2 text-green-400" /> : <Copy size={14} className="mr-2" />}
               Copy prompt
             </Button>
             <Button
@@ -72,7 +75,7 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               className="bg-transparent border-white/20 hover:bg-white/10 text-white px-4 py-2 w-fit"
               onClick={() => copyToClipboard(importCode + '\n\n' + usageCode, 'Code')}
             >
-              <Copy size={14} className="mr-2" />
+              {copiedButton === 'Code' ? <Check size={14} className="mr-2 text-green-400" /> : <Copy size={14} className="mr-2" />}
               Copy code
             </Button>
           </div>
