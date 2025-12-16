@@ -31,6 +31,7 @@ import Humanizer from "./pages/promptlab/Humanizer";
 import PromptLibraryPage from "./pages/promptlab/PromptLibraryPage";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import Multiagentpage from "./pages/Multiagentpage";
+import TemplatesPage from "./pages/TemplatesPage";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,11 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={
           <Layout>
             <About />
+          </Layout>
+        } />
+        <Route path="/templates" element={
+          <Layout>
+            <TemplatesPage />
           </Layout>
         } />
         <Route path="/business-prompts" element={<BusinessPrompts />} />

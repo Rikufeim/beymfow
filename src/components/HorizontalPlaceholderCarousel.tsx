@@ -347,6 +347,16 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showComponentPage]);
 
+  // Ensure all videos start playing
+  React.useEffect(() => {
+    const videos = rowRef.current?.querySelectorAll('video');
+    videos?.forEach((video) => {
+      video.play().catch(() => {
+        // Ignore autoplay errors
+      });
+    });
+  }, [title, itemCount]);
+
   // Lock body scroll and ensure header is hidden when showcase is open
   React.useEffect(() => {
     if (showComponentPage !== null) {
@@ -415,14 +425,14 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
           <div className="flex items-center gap-2">
             <button
               onClick={() => scrollByAmount(-1)}
-              className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
+              className="h-8 w-8 rounded-full bg-[#0f0f0f] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
               aria-label="Scroll left"
             >
               <ArrowLeft size={16} />
             </button>
             <button
               onClick={() => scrollByAmount(1)}
-              className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
+              className="h-8 w-8 rounded-full bg-[#0f0f0f] border border-white/10 text-white/70 hover:bg-[#252525] hover:text-white flex items-center justify-center transition-all"
               aria-label="Scroll right"
             >
               <ArrowRight size={16} />
@@ -448,28 +458,29 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
               <div
                 key={`${title}-${idx}`}
                 onClick={() => handleCardClick(idx)}
-                className={`relative min-w-[380px] max-w-[420px] rounded-2xl bg-[#1a1a1a] overflow-hidden flex-shrink-0 flex flex-col shadow-2xl shadow-black/50 backdrop-blur-sm transition-all duration-300 ${isComponentCard ? `cursor-pointer hover:opacity-90 hover:shadow-black/70 group` : ''}`}
+                className={`relative min-w-[380px] max-w-[420px] rounded-2xl bg-[#0f0f0f] overflow-hidden flex-shrink-0 flex flex-col shadow-2xl shadow-black/50 backdrop-blur-sm transition-all duration-300 ${isComponentCard ? `cursor-pointer hover:opacity-90 hover:shadow-black/70 group` : ''}`}
               >
                 {isComponentCard ? (
                   <>
                     {/* Header Section */}
-                    <div className="px-4 py-3 bg-[#1a1a1a]">
+                    <div className="px-4 py-3 bg-[#0f0f0f]">
                       <h4 className="text-white font-semibold text-sm truncate text-left">{componentData.title}</h4>
                     </div>
                     {/* Video Section */}
-                    <div className="relative w-full h-[220px] bg-[#1a1a1a] flex items-center justify-center p-3">
+                    <div className="relative w-full h-[220px] bg-[#0f0f0f] flex items-center justify-center p-3">
                       <div className="relative w-full h-full rounded-lg overflow-hidden bg-black">
                         <video
                           src={componentData.videoSrc}
                           muted
                           loop
                           playsInline
-                          preload="none"
+                          autoPlay
+                          preload="auto"
                           className="w-full h-full object-contain"
-                          onMouseEnter={(e) => e.currentTarget.play()}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.pause();
-                            e.currentTarget.currentTime = 0;
+                          onLoadedData={(e) => {
+                            e.currentTarget.play().catch(() => {
+                              // Ignore autoplay errors
+                            });
                           }}
                         />
                       </div>
@@ -478,11 +489,11 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                 ) : (
                   <div className="flex flex-col w-full">
                     {/* Placeholder header */}
-                    <div className="px-4 py-3 bg-[#1a1a1a]">
+                    <div className="px-4 py-3 bg-[#0f0f0f]">
                       <div className="h-4 w-32 rounded-full bg-white/10" />
                     </div>
                     {/* Placeholder video area */}
-                    <div className="relative w-full h-[220px] bg-[#1a1a1a] p-3">
+                    <div className="relative w-full h-[220px] bg-[#0f0f0f] p-3">
                       <div className="w-full h-full rounded-lg bg-black" />
                     </div>
                   </div>

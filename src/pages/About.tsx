@@ -4,9 +4,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GlassButton } from "@/components/ui/glass-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { ChevronUp } from "lucide-react";
 
 // --- TYPES ---
 type InfoCard = {
+  question: string;
+  answer: string;
+};
+
+type FAQItem = {
   question: string;
   answer: string;
 };
@@ -28,6 +35,30 @@ const infoCards: InfoCard[] = [{
   question: "ALWAYS EVOLVING",
   answer: "We continuously add new generators and tools to support your creativity. Join us on the frontier of AI creation and see how easy it is to Beymflow your potential."
 }];
+
+// --- FAQ DATA ---
+const faqItems: FAQItem[] = [
+  {
+    question: "What is lifetime access?",
+    answer: "Lifetime access means you get unlimited access to all features and updates of Beymflow forever, with no recurring fees or subscriptions."
+  },
+  {
+    question: "What happens when I buy lifetime access?",
+    answer: "After purchasing lifetime access, you'll immediately gain access to all premium features, including all prompt generators, AI tools, and future updates. Your account will be upgraded automatically."
+  },
+  {
+    question: "How to access code for templates and Component Blocks?",
+    answer: "Once you have lifetime access, you can access all templates and component blocks through your dashboard. Simply navigate to the Templates section and download or copy the code for any template you need."
+  },
+  {
+    question: "Do you offer refunds?",
+    answer: "We offer a 30-day money-back guarantee. If you're not satisfied with your purchase, contact us within 30 days for a full refund."
+  },
+  {
+    question: "I'm stuck, how do I get help?",
+    answer: "We're here to help! You can reach out to us at contact@beymflow.com or use the support chat in your dashboard. Our team typically responds within 24 hours."
+  }
+];
 
 // --- COMPONENTS ---
 
@@ -213,6 +244,46 @@ const About = () => {
             <GlassButton onClick={handleStartCreating} size="lg">
               Start creating
             </GlassButton>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="pt-16 pb-32 px-4 sm:px-6 lg:px-8 relative">
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                Frequently asked questions
+              </h2>
+              <p className="text-lg text-white/70 max-w-2xl mx-auto">
+                We are here to help you with any questions you may have. If you don't find what you need, please contact us at{" "}
+                <a 
+                  href="mailto:contact@beymflow.com" 
+                  className="text-blue-400 hover:text-blue-300 transition-colors underline"
+                >
+                  contact@beymflow.com
+                </a>
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              {faqItems.map((item, index) => (
+                <AccordionItem 
+                  key={index} 
+                  value={`item-${index}`}
+                  className="border border-white/10 rounded-lg bg-white/5 px-6 data-[state=open]:bg-white/10 transition-colors"
+                >
+                  <AccordionTrigger className="text-white hover:no-underline py-6 [&>svg]:hidden [&[data-state=open]_svg]:rotate-180">
+                    <div className="flex items-center gap-4 w-full">
+                      <ChevronUp className="h-5 w-5 shrink-0 text-white/70 transition-transform duration-200" />
+                      <span className="text-left font-medium text-lg">{item.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70 pb-6 pl-9 leading-relaxed">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </section>
       </div>
