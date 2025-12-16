@@ -464,8 +464,13 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                           muted
                           loop
                           playsInline
-                          autoPlay
+                          preload="none"
                           className="w-full h-full object-contain"
+                          onMouseEnter={(e) => e.currentTarget.play()}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
                         />
                       </div>
                     </div>
