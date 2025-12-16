@@ -207,6 +207,16 @@ const landingPageComponents: ComponentData[] = [
 
 const componentsData: ComponentData[] = [
   {
+    title: "Component Demo",
+    description: "A stylish component demonstration with smooth animations.",
+    videoSrc: "/videos/components-demo-3.mp4",
+    creator: { name: "Beymflow", username: "beymflow" },
+    installCommand: "https://beymflow.com/components/demo",
+    importCode: "@/components/ui/component-demo",
+    usageCode: "<ComponentDemo />",
+    accentColor: "purple"
+  },
+  {
     title: "New Component",
     description: "A fresh new component demo.",
     videoSrc: "/videos/components-new-1.mp4",
