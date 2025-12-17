@@ -7,7 +7,6 @@ import { GlassButton } from "@/components/ui/glass-button";
 import {
   Copy,
   Sparkles,
-  Home,
   Search,
   Wand2,
   X,
@@ -25,6 +24,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
+import Header from "@/components/Header";
 
 interface VideoComponentData {
   title: string;
@@ -1267,32 +1267,17 @@ Before finalizing, verify:
 
       {/* Conditional Rendering Based on Current View */}
       {currentView === "landing" && (
-        <motion.main
-          key="landing"
-          className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white"
-        >
-          <button
-            onClick={() => navigate("/")}
-            className="absolute top-6 left-6 z-50 p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+        <>
+          <Header />
+          <motion.main
+            key="landing"
+            className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white"
           >
-            <Home size={20} />
-            <span className="text-sm font-medium">Home</span>
-          </button>
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full flex flex-col items-center justify-center text-center px-4 pt-16 pb-8"
-          >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              <span className="block text-white mb-2">The Most Powerful Prompt</span>
-              <span className="block bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
-                AI Workflow
-              </span>
-            </h1>
-            <div className="inline-block bg-white/5 backdrop-blur-md rounded-2xl px-6 py-2 mb-12 border border-white/10">
-              <p className="text-sm text-white/90 font-medium text-center">By Beymflow</p>
-            </div>
-
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full flex flex-col items-center px-4 pt-4 pb-8"
+            >
             {/* Prompt Bundles with arrow-only scroll */}
             <div className="w-full max-w-6xl mx-auto mb-12 px-2">
               <div className="flex items-center justify-between px-1 mb-4">
@@ -1570,6 +1555,7 @@ Before finalizing, verify:
             )}
           </AnimatePresence>
         </motion.main>
+        </>
       )}
 
       {/* Generator View */}
