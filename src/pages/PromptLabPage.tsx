@@ -1276,7 +1276,7 @@ Before finalizing, verify:
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full flex flex-col items-center px-4 pt-4 pb-8"
+              className="w-full flex flex-col items-center px-4 pt-16 pb-8"
             >
             {/* Prompt Bundles with arrow-only scroll */}
             <div className="w-full max-w-6xl mx-auto mb-12 px-2">
