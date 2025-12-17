@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
 import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 
 interface VideoComponentData {
   title: string;
@@ -1251,14 +1252,9 @@ Before finalizing, verify:
 
   // --- RENDER ---
   return (
-    <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-100">
+    <div className="relative min-h-screen w-full bg-black text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
       {/* CSS INJECTION FOR SCROLLBARS & SLIDERS */}
       <style>{`
-        body { overflow: hidden; margin: 0; }
-        ::-webkit-scrollbar { width: 0px; height: 0px; }
-        ::-webkit-scrollbar-track { background: transparent; } 
-        ::-webkit-scrollbar-thumb { background: transparent; }
-        ::-webkit-scrollbar-thumb:hover { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
@@ -1268,19 +1264,12 @@ Before finalizing, verify:
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #262626; border-radius: 2px; }
         input[type=range]:focus { outline: none; }
         .caret-transparent { caret-color: transparent; }
-        * { scrollbar-width: none; }
       `}</style>
 
       {/* Conditional Rendering Based on Current View */}
       {currentView === "landing" && (
-        <>
-          <div className="fixed top-0 left-0 right-0 z-[100]">
-            <Header />
-          </div>
-          <motion.main
-            key="landing"
-            className="flex-1 flex flex-col items-center w-full z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white mt-[80px]"
-          >
+        <Layout hideFooter>
+          <main className="relative overflow-y-auto bg-black min-h-screen">
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1566,8 +1555,8 @@ Before finalizing, verify:
               </motion.section>
             )}
           </AnimatePresence>
-        </motion.main>
-        </>
+          </main>
+        </Layout>
       )}
 
       {/* Generator View */}
