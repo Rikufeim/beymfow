@@ -284,6 +284,10 @@ const fullLandingPagesData: VideoComponentData[] = [
   }
 ];
 
+// Empty data arrays for upcoming sections
+const mobileAppsData: VideoComponentData[] = [];
+const gamesData: VideoComponentData[] = [];
+
 const PROMPT_BUNDLES = [
   {
     title: "Landing Pages",
@@ -653,6 +657,8 @@ function PromptWorkspaceInner() {
   const componentsCarouselRef = useRef<HTMLDivElement>(null);
   const landingPageHeroCarouselRef = useRef<HTMLDivElement>(null);
   const fullLandingPagesCarouselRef = useRef<HTMLDivElement>(null);
+  const mobileAppsCarouselRef = useRef<HTMLDivElement>(null);
+  const gamesCarouselRef = useRef<HTMLDivElement>(null);
   
   // Video showcase state
   const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
@@ -1268,10 +1274,12 @@ Before finalizing, verify:
       {/* Conditional Rendering Based on Current View */}
       {currentView === "landing" && (
         <>
-          <Header />
+          <div className="fixed top-0 left-0 right-0 z-[100]">
+            <Header />
+          </div>
           <motion.main
             key="landing"
-            className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white"
+            className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white mt-[80px]"
           >
             <motion.section
               initial={{ opacity: 0, y: 20 }}
@@ -1354,6 +1362,8 @@ Before finalizing, verify:
               { title: "Hero templates", ref: landingPageHeroCarouselRef, data: landingPageHeroData },
               { title: "Landing page template", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData },
               { title: "Components", ref: componentsCarouselRef, data: componentsVideoData },
+              { title: "Mobile apps", ref: mobileAppsCarouselRef, data: mobileAppsData },
+              { title: "Games", ref: gamesCarouselRef, data: gamesData },
             ].map(({ title, ref, data }) => {
               const scrollBy = (dir: number) => {
                 const el = ref.current;
@@ -1456,6 +1466,8 @@ Before finalizing, verify:
               if (activeVideoSection === "Hero templates") return landingPageHeroData;
               if (activeVideoSection === "Components") return componentsVideoData;
               if (activeVideoSection === "Landing page template") return fullLandingPagesData;
+              if (activeVideoSection === "Mobile apps") return mobileAppsData;
+              if (activeVideoSection === "Games") return gamesData;
               return [];
             };
             const sectionData = getDataForSection();
