@@ -1279,16 +1279,16 @@ Before finalizing, verify:
           </div>
           <motion.main
             key="landing"
-            className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white mt-[80px]"
+            className="flex-1 flex flex-col items-center w-full z-10 relative h-full overflow-y-auto custom-scrollbar [&_input]:caret-transparent [&_input:focus]:caret-white [&_textarea]:caret-transparent [&_textarea:focus]:caret-white mt-[80px]"
           >
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full flex flex-col items-center px-4 pt-16 pb-8"
+              className="w-full flex flex-col px-6 md:px-10 pt-12 pb-8"
             >
             {/* Prompt Bundles with arrow-only scroll */}
-            <div className="w-full max-w-6xl mx-auto mb-12 px-2">
-              <div className="flex items-center justify-between px-1 mb-4">
+            <div className="w-full mb-12">
+              <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white/85 font-semibold text-lg">Prompt Packs</h3>
                 <div className="flex items-center gap-4">
                   <button
@@ -1323,7 +1323,7 @@ Before finalizing, verify:
               <div
                 ref={bundlesCarouselRef}
                 onWheel={(e) => e.preventDefault()}
-                className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
+                className="flex flex-nowrap gap-6 overflow-hidden pb-2"
               >
                 {PROMPT_BUNDLES.map((bundle) => (
                   <div key={bundle.title} className="relative min-w-[260px] max-w-[320px] flex-shrink-0">
@@ -1380,8 +1380,8 @@ Before finalizing, verify:
               };
               
               return (
-                <div key={title} className="w-full max-w-6xl mx-auto mb-10">
-                  <div className="flex items-center justify-between px-1 mb-4">
+                <div key={title} className="w-full mb-10">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-white/85 font-semibold text-lg">{title}</h3>
                     <div className="flex items-center gap-2">
                       <button
@@ -1406,7 +1406,7 @@ Before finalizing, verify:
                   <div
                     ref={ref}
                     onWheel={(e) => e.preventDefault()}
-                    className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
+                    className="flex flex-nowrap gap-6 overflow-hidden pb-2"
                   >
                     {Array.from({ length: 6 }).map((_, idx) => {
                       const componentData = idx < data.length ? data[idx] : null;
