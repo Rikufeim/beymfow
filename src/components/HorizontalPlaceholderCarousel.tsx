@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, memo, useMemo, useCallback } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ComponentShowcasePage from "@/components/ComponentShowcasePage";
@@ -287,7 +287,7 @@ interface HorizontalPlaceholderCarouselProps {
   className?: string;
 }
 
-export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarouselProps> = ({
+const HorizontalPlaceholderCarouselComponent: React.FC<HorizontalPlaceholderCarouselProps> = ({
   title,
   itemCount = 6,
   className = "",
@@ -297,44 +297,42 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
   const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 0) {
       e.preventDefault();
       const el = rowRef.current;
       if (!el) return;
       el.scrollBy({ left: e.deltaX, behavior: "smooth" });
     }
-  };
+  }, []);
 
-  const scrollByAmount = (dir: number) => {
+  const scrollByAmount = useCallback((dir: number) => {
     const el = rowRef.current;
     if (!el) return;
     const amount = el.clientWidth * 0.7 * dir;
     el.scrollBy({ left: amount, behavior: "smooth" });
-  };
+  }, []);
 
-  const getDataArray = (): ComponentData[] => {
+  const getDataArray = useMemo((): ComponentData[] => {
     if (title === "Hero templates") return landingPageComponents;
     if (title === "Components") return componentsData;
     if (title === "Landing page template") return readyToUseLandingPagesData;
     return [];
-  };
+  }, [title]);
 
-  const handleCardClick = (idx: number) => {
-    const dataArray = getDataArray();
-    if (idx < dataArray.length) {
+  const handleCardClick = useCallback((idx: number) => {
+    if (idx < getDataArray.length) {
       setShowComponentPage(idx);
       setActiveSection(title);
     }
-  };
+  }, [getDataArray.length, title]);
 
-  const getComponentData = (idx: number): ComponentData | null => {
-    const dataArray = getDataArray();
-    if (idx < dataArray.length) {
-      return dataArray[idx];
+  const getComponentData = useCallback((idx: number): ComponentData | null => {
+    if (idx < getDataArray.length) {
+      return getDataArray[idx];
     }
     return null;
-  };
+  }, [getDataArray]);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -414,7 +412,13 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     };
   }, [showComponentPage, activeSection]);
 
-  const dataArray = getDataArray();
+  // Safety guard: ensure getDataArray is an array
+  if (!Array.isArray(getDataArray)) {
+    console.error("getDataArray is not an array. Actual value:", getDataArray);
+    return null;
+  }
+  
+  const dataArray = getDataArray;
   const selectedComponent = showComponentPage !== null && activeSection === title ? dataArray[showComponentPage] : null;
 
   return (
@@ -475,12 +479,16 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
                           loop
                           playsInline
                           autoPlay
-                          preload="auto"
+                          preload="metadata"
+                          loading="lazy"
                           className="w-full h-full object-contain"
                           onLoadedData={(e) => {
                             e.currentTarget.play().catch(() => {
                               // Ignore autoplay errors
                             });
+                          }}
+                          onError={(e) => {
+                            console.error('Video load error:', e);
                           }}
                         />
                       </div>
@@ -556,3 +564,5 @@ export const HorizontalPlaceholderCarousel: React.FC<HorizontalPlaceholderCarous
     </>
   );
 };
+
+export const HorizontalPlaceholderCarousel = memo(HorizontalPlaceholderCarouselComponent);

@@ -1,22 +1,22 @@
 "use client";
 
 import { Link, useLocation } from "react-router-dom";
-import { LogOut, Menu, Workflow, FlaskConical } from "lucide-react";
-import { useState } from "react";
+import { LogOut, Menu } from "lucide-react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const isAuthPage = location.pathname === "/auth";
+  const { prefetchRoute } = usePrefetchRoute();
 
   return (
     <header
       className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black transition-all duration-500"
+      style={{ fontSize: '16px' }}
     >
       {/* ================= VASEN: LOGO ================= */}
       <div className="flex justify-start flex-1">
@@ -24,9 +24,9 @@ const Header = () => {
           <img
             src="/images/BeymflowlogoREAL.png"
             alt="Beymflow Logo"
-            className="h-[50px] sm:h-[60px] object-contain"
+            className="h-[60px] object-contain"
           />
-          <span className="relative text-sm sm:text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1">
+          <span className="relative text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1" style={{ fontSize: '16px' }}>
             Beymflow
           </span>
         </Link>
@@ -37,51 +37,39 @@ const Header = () => {
         {/* 1. Pricing */}
         <Link
           to="/premium"
+          onMouseEnter={() => prefetchRoute("/premium")}
           className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
         >
           Pricing
         </Link>
 
-        {/* 2. Products */}
+        {/* 2. Prompts */}
         <Link
           to="/prompt-lab-page"
+          onMouseEnter={() => prefetchRoute("/prompt-lab-page")}
           className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
         >
-          Products
+          Prompts
         </Link>
 
-        {/* 3. Tools Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm focus:outline-none cursor-pointer">
-            Tools
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="bg-black rounded-xl p-2 min-w-[180px] z-[1000]"
-            align="center"
-          >
-            <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-              <Link
-                to="/flow-engine"
-                className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-              >
-                <Workflow className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Flow Engine</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="focus:bg-transparent focus:text-white">
-              <Link
-                to="/prompt-lab-page"
-                className="flex items-center gap-3 px-3 py-2 text-gray-300 hover:text-white rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 group"
-              >
-                <FlaskConical className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> <span className="transition-all duration-300 group-hover:font-semibold">Prompt Lab</span>
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* 3. Flow */}
+        <Link
+          to="/flow-engine"
+          onMouseEnter={() => prefetchRoute("/flow-engine")}
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
+        >
+          Flow
+        </Link>
 
         {/* Templates */}
         <Link
           to="/templates"
+          onMouseEnter={() => prefetchRoute("/templates")}
           className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
         >
           Templates
         </Link>
@@ -89,7 +77,9 @@ const Header = () => {
         {/* 4. About Us */}
         <Link
           to="/about"
+          onMouseEnter={() => prefetchRoute("/about")}
           className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
         >
           About Us
         </Link>
@@ -121,7 +111,7 @@ const Header = () => {
               ) : (
                 !isAuthPage && (
                   <div className="flex flex-col gap-3">
-                    <Link to="/auth" className="w-full text-left text-gray-300 hover:text-white transition">
+                    <Link to="/auth" className="w-full text-left text-gray-300 hover:text-white transition" style={{ fontSize: '14px' }}>
                       Login
                     </Link>
                     <Link to="/premium" className="w-full">
@@ -140,58 +130,41 @@ const Header = () => {
               <>
                 <Link
                   to="/prompt-lab-page"
+                  onMouseEnter={() => prefetchRoute("/prompt-lab-page")}
                   className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
                 >
-                  Products
+                  Prompts
                 </Link>
-                <div className="px-4">
-                  <button
-                    onClick={() => setIsToolsOpen(!isToolsOpen)}
-                    className="flex items-center justify-between w-full text-gray-300 hover:text-white transition-colors text-lg font-medium mb-3"
-                  >
-                    Tools
-                    <svg
-                      className="w-4 h-4 transition-transform"
-                      style={{ transform: isToolsOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {isToolsOpen && (
-                    <div className="flex flex-col gap-3 pl-2 border-l border-white/10 ml-1">
-                      <Link
-                        to="/flow-engine"
-                        className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors p-2"
-                      >
-                        <Workflow className="h-5 w-5" /> <span>Flow Engine</span>
-                      </Link>
-                      <Link
-                        to="/prompt-lab-page"
-                        className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors p-2"
-                      >
-                        <FlaskConical className="h-5 w-5" /> <span>Prompt Lab</span>
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                <Link
+                  to="/flow-engine"
+                  onMouseEnter={() => prefetchRoute("/flow-engine")}
+                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
+                >
+                  Flow
+                </Link>
                 <Link
                   to="/templates"
+                  onMouseEnter={() => prefetchRoute("/templates")}
                   className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
                 >
                   Templates
                 </Link>
                 <Link
                   to="/about"
+                  onMouseEnter={() => prefetchRoute("/about")}
                   className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
                 >
                   About Us
                 </Link>
                 <Link
                   to="/premium"
+                  onMouseEnter={() => prefetchRoute("/premium")}
                   className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
                 >
                   Pricing
                 </Link>
@@ -213,7 +186,7 @@ const Header = () => {
               </GlassButton>
             ) : (
               <>
-                <Link to="/auth" className="text-gray-300 hover:text-white transition">
+                <Link to="/auth" className="text-gray-300 hover:text-white transition" style={{ fontSize: '14px' }}>
                   Login
                 </Link>
                 <Link to="/premium">

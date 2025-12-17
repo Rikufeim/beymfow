@@ -1,6 +1,5 @@
 import { useState } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -288,10 +287,9 @@ const PromptLab = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Header />
-      
-      <div className="max-w-5xl mx-auto px-4 pt-32 pb-16">
+    <Layout>
+      <div className="min-h-screen bg-black text-white">
+        <div className="max-w-5xl mx-auto px-4 pt-32 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -495,9 +493,9 @@ const PromptLab = () => {
           </div>
         )}
 
-        <Footer />
       </div>
     </div>
+    </Layout>
   );
 };
 

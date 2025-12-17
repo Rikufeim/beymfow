@@ -45,7 +45,7 @@ export const FlowFeaturesSection = ({
       <div className="w-full space-y-16 md:space-y-24">
         {/* Your vibe coding flow text */}
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 lg:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 lg:mb-8">
             <span className="text-white/85 font-semibold" style={{ fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif' }}>Your </span>
             <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium" style={{ fontFamily: "Outfit, sans-serif" }}>vibe coding tools</span>
           </h2>
@@ -104,7 +104,7 @@ export const FlowFeaturesSection = ({
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden'
             }} onClick={() => navigate("/flow-engine")}>
-                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" />
+                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" />
               </div>
             </div>
           </div>

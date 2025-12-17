@@ -1,69 +1,56 @@
-import Products from "@/components/Products";
-import ProductsGrid from "@/components/ProductsGrid";
-import Footer from "@/components/Footer";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
-import promptLabLogo from "@/assets/prompt-lab-logo.jpg";
-import coolCharacter from "@/assets/cool-character-new.png";
 import { GlowingEffectDemo } from "@/components/ui/glowing-effect-demo";
-import BeymflowPremiumSection from "@/components/ui/beymflow-premium-section";
 import { FlowFeaturesSection } from "@/components/FlowFeaturesSection";
 import PricingCarousel from "@/components/PricingCarousel";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
-import { useRef } from "react";
+import { useMemo, lazy, Suspense } from "react";
 import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholderCarousel";
 import HolographicCard from "@/components/demo/HolographicCard";
 import HyperTextCard from "@/components/demo/HyperTextCard";
 import UploadTile from "@/components/demo/UploadTile";
 import { GradientButton } from "@/components/ui/gradient-button";
 
+// Lazy load heavy components
+const Products = lazy(() => import("@/components/Products"));
+const ProductsGrid = lazy(() => import("@/components/ProductsGrid"));
+
 const Index = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  // Transform scroll progress to darken background - page gets darker as you scroll
-  const backgroundOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.5, 1]);
 
   // Preload all homepage images for instant loading
-  const homepageImages = [
-  // Products section card backgrounds
-  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
-  // CRYPTO GUIDES
-  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
-  ];
+  // Memoize to prevent re-creation on every render
+  const homepageImages = useMemo(() => [
+    // Products section card backgrounds
+    "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+    // CRYPTO GUIDES
+    "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
+  ], []);
   useImagePreloader({
     images: homepageImages
   });
-  return <>
-      <Layout>
-        <main ref={containerRef} className="relative overflow-y-auto bg-black min-h-screen pt-4 sm:pt-6 md:pt-8">
-          {/* Darkening overlay - page gets darker as you scroll */}
-          <motion.div
-            className="fixed inset-0 pointer-events-none z-0 bg-black"
-            style={{
-              opacity: backgroundOpacity,
-            }}
-          />
-          <div className="relative z-10">
-            {/* Hero Section */}
-            <Hero />
+  
+  return (
+    <Layout>
+      <main className="relative min-h-screen">
+        {/* Hero Section */}
+        <div className="relative">
+          <Hero />
+        </div>
+        
+        {/* Content after Hero */}
+        <div className="relative bg-black">
 
             {/* Start Building showcase */}
-            <section className="relative w-full px-6 md:px-8 lg:px-12 mt-14 mb-14">
+            <section className="relative w-full px-6 md:px-8 lg:px-12 py-16 sm:py-20 md:py-24 lg:py-32">
               <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-2 items-center">
                 <div className="space-y-6">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
                     Start Building
                   </h2>
                   <p className="text-white/65 max-w-xl">
@@ -115,17 +102,27 @@ const Index = () => {
             </section>
 
             {/* Prompt Packs (placeholder carousels) */}
-            <section className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 mt-16">
+            <section className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-16 sm:py-20 md:py-24 lg:py-32">
+              <div className="text-center mb-8 sm:mb-12">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
+                  The biggest collection<br />of <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium">prompt templates</span>
+                </h2>
+                <p className="text-gray-400 text-lg sm:text-xl md:text-2xl mt-4">
+                  growing collection of prompts
+                </p>
+              </div>
               <HorizontalPlaceholderCarousel title="Hero templates" />
               <HorizontalPlaceholderCarousel title="Landing page template" />
               <HorizontalPlaceholderCarousel title="Components" />
             </section>
 
             {/* Flow Features Section */}
-            <FlowFeaturesSection className="my-[100px] py-[300px]" />
+            <FlowFeaturesSection className="py-16 sm:py-20 md:py-24 lg:py-32" />
 
             {/* Products Grid Section */}
-            <ProductsGrid />
+            <div className="py-16 sm:py-20 md:py-24 lg:py-32">
+              <ProductsGrid />
+            </div>
 
             {/* Beymflow Premium highlight */}
             
@@ -136,48 +133,30 @@ const Index = () => {
             
 
             {/* Engineered for Flow Section */}
-            <section className="px-4 sm:px-6 lg:px-8 xl:px-12 pb-8 sm:pb-12 md:pb-16 lg:pb-24 py-[30px]">
-              <motion.div initial={{
-              opacity: 0,
-              y: 20
-            }} whileInView={{
-              opacity: 1,
-              y: 0
-            }} viewport={{
-              once: true,
-              amount: 0.3
-            }} transition={{
-              duration: 0.6
-            }} className="max-w-7xl mx-auto">
+            <section className="px-4 sm:px-6 lg:px-8 xl:px-12 py-16 sm:py-20 md:py-24 lg:py-32">
+              <div className="max-w-7xl mx-auto">
                 <GlowingEffectDemo />
-              </motion.div>
+              </div>
             </section>
 
             {/* Pricing Section */}
-            <PricingCarousel />
+            <div className="py-16 sm:py-20 md:py-24 lg:py-32">
+              <PricingCarousel />
+            </div>
             {/* Prompt Lab Section */}
 
 
             {/* How It Works Section */}
-            <section className="py-8 sm:py-12 md:py-16 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
+            <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
               <div className="max-w-7xl mx-auto">
-                <motion.div initial={{
-                opacity: 0
-              }} whileInView={{
-                opacity: 1
-              }} viewport={{
-                once: true,
-                amount: 0.3
-              }} transition={{
-                duration: 0.6
-              }} className="text-center mb-10 sm:mb-12 lg:mb-16">
+                <div className="text-center mb-10 sm:mb-12 lg:mb-16">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
                     Create Perfect AI Prompts in Seconds
                   </h2>
                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 max-w-3xl mx-auto">
                     Follow these simple steps to create optimized prompts for AI models in seconds
                   </p>
-                </motion.div>
+                </div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   {[{
@@ -219,25 +198,16 @@ const Index = () => {
             </section>
 
             {/* Essential Steps Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
+            <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
               <div className="max-w-6xl mx-auto">
-                <motion.div initial={{
-                opacity: 0
-              }} whileInView={{
-                opacity: 1
-              }} viewport={{
-                once: true,
-                amount: 0.3
-              }} transition={{
-                duration: 0.6
-              }} className="text-center mb-12 sm:mb-16">
+                <div className="text-center mb-12 sm:mb-16">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
                     Essential Steps for Writing AI Prompts
                   </h2>
                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
                     Follow these proven steps to create effective AI prompts
                   </p>
-                </motion.div>
+                </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[{
@@ -290,18 +260,9 @@ const Index = () => {
             </section>
 
             {/* Why Choose Section */}
-            <section className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
+            <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
               <div className="max-w-6xl mx-auto">
-                <motion.div initial={{
-                opacity: 0
-              }} whileInView={{
-                opacity: 1
-              }} viewport={{
-                once: true,
-                amount: 0.3
-              }} transition={{
-                duration: 0.6
-              }} className="text-center mb-16">
+                <div className="text-center mb-16">
                   <h2 className="text-4xl md:text-5xl font-bold mb-4">
                     {["Why", "Choose", "BEYMFLOW", "Prompt", "Generators?"].map((word, index) => <span key={index} className="inline-block transition-all duration-200 ease-out hover:translate-y-2 hover:scale-105 cursor-pointer mr-2 last:mr-0" style={{
                     willChange: "transform"
@@ -309,7 +270,7 @@ const Index = () => {
                         {word}
                       </span>)}
                   </h2>
-                </motion.div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                   {[{
@@ -324,17 +285,7 @@ const Index = () => {
                   icon: <CheckCircle className="h-4 w-4 text-pink-400" />,
                   title: "Precision Results",
                   description: "Get accurate and relevant responses from AI with our enhanced prompts."
-                }].map((item, idx) => <motion.div key={idx} initial={{
-                  opacity: 0
-                }} whileInView={{
-                  opacity: 1
-                }} viewport={{
-                  once: true,
-                  amount: 0.3
-                }} transition={{
-                  duration: 0.6,
-                  delay: idx * 0.1
-                }} className="min-h-[11rem]">
+                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
                       <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                         <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                         <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
@@ -355,49 +306,53 @@ const Index = () => {
                           </div>
                         </div>
                       </div>
-                    </motion.div>)}
+                    </div>)}
                 </div>
               </div>
             </section>
 
-            <Products />
+            <div className="py-16 sm:py-20 md:py-24 lg:py-32">
+              <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>}>
+                <Products />
+              </Suspense>
+            </div>
 
             {/* CTA Section Before Footer */}
-            <section className="py-24 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
+            <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
               <div className="max-w-4xl mx-auto text-center">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.6 }}
-                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 tracking-tight"
-                >
-                  <motion.span
-                    animate={{
-                      backgroundPosition: ["0% center", "-200% center"],
-                    }}
-                    transition={{
-                      backgroundPosition: { duration: 6, ease: "easeInOut", repeat: Infinity },
-                    }}
-                    className="text-transparent bg-clip-text bg-[length:200%_auto] inline-block"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(to right, #a855f7 0%, #06b6d4 25%, #a855f7 50%, #06b6d4 75%, #a855f7 100%)",
-                    }}
-                  >
-                    IT'S ALL ABOUT THE PROMPT
-                  </motion.span>
-                </motion.h2>
+                <style>{`
+                  @keyframes gradient-shift {
+                    0% {
+                      background-position: 0% 50%;
+                    }
+                    50% {
+                      background-position: 100% 50%;
+                    }
+                    100% {
+                      background-position: 0% 50%;
+                    }
+                  }
+                  .animated-gradient-text {
+                    background-image: linear-gradient(to right, #a855f7 0%, #06b6d4 25%, #a855f7 50%, #06b6d4 75%, #a855f7 100%);
+                    background-size: 200% auto;
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    animation: gradient-shift 3s ease infinite;
+                    padding-bottom: 0.2em;
+                    line-height: 1.2;
+                  }
+                `}</style>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 tracking-tight">
+                  <span className="animated-gradient-text inline-block leading-tight">
+                    This website is made by<br />
+                    100% prompting
+                  </span>
+                </h2>
                 <p className="text-white/70 text-lg mb-10">
-                  This website is made by 100% prompting.
+                  IT'S ALL ABOUT THE PROMPT
                 </p>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-                >
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <div className="relative w-full sm:w-auto">
                     <GlassButton
                       size="default"
@@ -418,12 +373,12 @@ const Index = () => {
                       Beymflow Premium
                     </GlassButton>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </section>
           </div>
         </main>
-      </Layout>
-    </>;
+    </Layout>
+  );
 };
 export default Index;

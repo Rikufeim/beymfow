@@ -1,6 +1,5 @@
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { ImageOff } from "lucide-react";
 
 interface CardImageProps {
@@ -9,6 +8,7 @@ interface CardImageProps {
   className?: string;
   style?: React.CSSProperties;
   onLoadCallback?: (ok?: boolean) => void;
+  priority?: boolean; // For critical images that should load eagerly
 }
 
 const CardImage: React.FC<CardImageProps> = ({
@@ -17,41 +17,30 @@ const CardImage: React.FC<CardImageProps> = ({
   className = "",
   style = {},
   onLoadCallback,
+  priority = false,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  // Preload image for better performance
-  React.useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setImageLoaded(true);
-      if (onLoadCallback) {
-        onLoadCallback(true);
-      }
-    };
-    img.onerror = () => {
-      setError(true);
-      if (onLoadCallback) {
-        onLoadCallback(false);
-      }
-    };
-    img.src = src;
-  }, [src, onLoadCallback]);
-
-  const handleLoad = () => {
+  const handleLoad = useCallback(() => {
     setImageLoaded(true);
-    if (onLoadCallback) {
-      onLoadCallback(true);
-    }
-  };
+    onLoadCallback?.(true);
+  }, [onLoadCallback]);
 
-  const handleError = () => {
+  const handleError = useCallback(() => {
     setError(true);
-    if (onLoadCallback) {
-      onLoadCallback(false);
-    }
-  };
+    onLoadCallback?.(false);
+  }, [onLoadCallback]);
+
+  // Preload image for better performance
+  useEffect(() => {
+    if (error) return;
+    
+    const img = new Image();
+    img.onload = handleLoad;
+    img.onerror = handleError;
+    img.src = src;
+  }, [src, handleLoad, handleError, error]);
 
   if (error) {
     return (
@@ -77,7 +66,7 @@ const CardImage: React.FC<CardImageProps> = ({
           imageLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         draggable={false}
-        loading="eager"
+        loading={priority ? "eager" : "lazy"}
         decoding="async"
         onLoad={handleLoad}
         onError={handleError}
@@ -94,5 +83,5 @@ const CardImage: React.FC<CardImageProps> = ({
   );
 };
 
-export default CardImage;
+export default memo(CardImage);
 

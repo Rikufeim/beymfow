@@ -26,10 +26,10 @@ const products = [
   },
   {
     icon: Package,
-    title: "Digital Products",
+    title: "Community",
     description: "Supercharge your workflow with ultimate AI resources.",
-    buttonText: "Shop Now >",
-    link: "/premium",
+    buttonText: "Join Now >",
+    link: "/community",
   },
 ];
 

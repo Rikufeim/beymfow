@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback, memo, startTransition } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -287,46 +287,8 @@ const fullLandingPagesData: VideoComponentData[] = [
 
 // Empty data arrays for upcoming sections
 const mobileAppsData: VideoComponentData[] = [];
-const gamesData: VideoComponentData[] = [];
-
-const PROMPT_BUNDLES = [
-  {
-    title: "Landing Pages",
-    tag: "Landing",
-    bullets: [
-      "Generate a base landing page layout",
-      "Includes hero, features, CTA scaffolding",
-      "Extend with your product details",
-    ],
-  },
-  {
-    title: "Mobile App",
-    tag: "App",
-    bullets: [
-      "Starter prompt for core mobile app screens",
-      "Flows for auth, dashboard, and settings",
-      "Structure you can refine per feature",
-    ],
-  },
-  {
-    title: "Mobile Games",
-    tag: "Games",
-    bullets: [
-      "Kickoff prompt for casual mobile games",
-      "Loops, levels, and core gameplay beats",
-      "Extend with art style and monetization",
-    ],
-  },
-  {
-    title: "Prompts for business",
-    tag: "UI",
-    bullets: [
-      "Generate reusable UI component structures",
-      "Props, variants, and accessibility hints",
-      "Plug into landing, app, or game flows",
-    ],
-  },
-];
+const beatsData: VideoComponentData[] = [];
+const cryptosData: VideoComponentData[] = [];
 
 const copyToClipboard = (text: string) => {
   if (!text) return;
@@ -653,13 +615,25 @@ function PromptWorkspaceInner() {
 
   // Bundle scroller state
   const bundlesRef = useRef<HTMLDivElement>(null);
-  const bundlesCarouselRef = useRef<HTMLDivElement>(null);
   const [bundleScroll, setBundleScroll] = useState({ scroll: 0, max: 1 });
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+
+  // Subcategories for each main category
+  const subcategories: Record<string, string[]> = {
+    Website: ["Hero", "Footer", "Landing page"],
+    Apps: ["Apps-mobile", "Apps-web", "Apps-desktop"],
+    Beats: ["House", "Trap", "R&B", "Hiphop"],
+    Cryptos: ["Bitcoin", "Ethereum", "DeFi", "NFT"],
+    Business: ["Business-marketing", "Business-sales", "Business-strategy"],
+    Components: ["Components-ui", "Components-animation", "Components-interactive"],
+  };
   const componentsCarouselRef = useRef<HTMLDivElement>(null);
   const landingPageHeroCarouselRef = useRef<HTMLDivElement>(null);
   const fullLandingPagesCarouselRef = useRef<HTMLDivElement>(null);
   const mobileAppsCarouselRef = useRef<HTMLDivElement>(null);
-  const gamesCarouselRef = useRef<HTMLDivElement>(null);
+  const beatsCarouselRef = useRef<HTMLDivElement>(null);
+  const cryptosCarouselRef = useRef<HTMLDivElement>(null);
   
   // Video showcase state
   const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
@@ -668,6 +642,15 @@ function PromptWorkspaceInner() {
   // --- EFFECTS ---
   // Lock body scroll and ensure header is hidden when showcase is open
   useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement;
+    if (!header) return;
+    
+    // Store original header styles
+    const originalDisplay = header.style.display || '';
+    const originalVisibility = header.style.visibility || '';
+    const originalOpacity = header.style.opacity || '';
+    const originalPointerEvents = header.style.pointerEvents || '';
+    
     if (showComponentPage !== null) {
       // Store current scroll position
       const scrollY = window.scrollY;
@@ -678,14 +661,11 @@ function PromptWorkspaceInner() {
       // Prevent scrolling on html element too
       document.documentElement.style.overflow = 'hidden';
       
-      // Ensure header is hidden
-      const header = document.querySelector('header');
-      if (header) {
-        (header as HTMLElement).style.display = 'none';
-        (header as HTMLElement).style.visibility = 'hidden';
-        (header as HTMLElement).style.opacity = '0';
-        (header as HTMLElement).style.pointerEvents = 'none';
-      }
+      // Hide header
+      header.style.display = 'none';
+      header.style.visibility = 'hidden';
+      header.style.opacity = '0';
+      header.style.pointerEvents = 'none';
     } else {
       // Restore scroll position
       const scrollY = document.body.style.top;
@@ -698,14 +678,11 @@ function PromptWorkspaceInner() {
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       }
       
-      // Restore header
-      const header = document.querySelector('header');
-      if (header) {
-        (header as HTMLElement).style.display = '';
-        (header as HTMLElement).style.visibility = '';
-        (header as HTMLElement).style.opacity = '';
-        (header as HTMLElement).style.pointerEvents = '';
-      }
+      // Restore header to original state (remove inline styles to use CSS classes)
+      header.style.removeProperty('display');
+      header.style.removeProperty('visibility');
+      header.style.removeProperty('opacity');
+      header.style.removeProperty('pointer-events');
     }
     return () => {
       document.body.style.position = '';
@@ -713,12 +690,13 @@ function PromptWorkspaceInner() {
       document.body.style.width = '';
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      const header = document.querySelector('header');
+      
+      // Restore header to original state
       if (header) {
-        (header as HTMLElement).style.display = '';
-        (header as HTMLElement).style.visibility = '';
-        (header as HTMLElement).style.opacity = '';
-        (header as HTMLElement).style.pointerEvents = '';
+        header.style.removeProperty('display');
+        header.style.removeProperty('visibility');
+        header.style.removeProperty('opacity');
+        header.style.removeProperty('pointer-events');
       }
     };
   }, [showComponentPage, activeVideoSection]);
@@ -1271,89 +1249,103 @@ Before finalizing, verify:
         <Layout hideFooter>
           <main className="relative overflow-y-auto bg-black min-h-screen">
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
               className="w-full flex flex-col px-6 md:px-10 pt-12 pb-8"
             >
-            {/* Prompt Bundles with arrow-only scroll */}
+            {/* Search and Categories Section */}
             <div className="w-full mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white/85 font-semibold text-lg">Prompt Packs</h3>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => {
-                      const el = bundlesCarouselRef.current;
-                      if (!el) return;
-                      const amount = el.clientWidth * 0.7;
-                      el.scrollBy({ left: -amount, behavior: "smooth" });
-                    }}
-                    className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
-                    aria-label="Scroll left"
+              {/* Header */}
+              <div className="mb-8 text-center">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight">
+                  <span className="block">
+                    <span className="text-white/85">Discover </span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Prompt Templates</span>
+                  </span>
+                  <span className="block text-white/85 mt-2">
+                    that Build for You
+                  </span>
+                </h2>
+                <p className="text-white/85 text-sm sm:text-base">
+                  Copy a prompt. Run it in your AI tool. Stay in flow. #VibeCodingWithBeym.
+                </p>
+                <p className="text-white/85 text-sm sm:text-base">
+                  <span>Looking for </span>
+                  <button 
+                    onClick={() => {}}
+                    className="text-cyan-400 hover:text-cyan-300 underline transition-colors"
                   >
-                    <ArrowLeft size={16} />
+                    templates?
                   </button>
-                  <button
-                    onClick={() => {
-                      const el = bundlesCarouselRef.current;
-                      if (!el) return;
-                      const amount = el.clientWidth * 0.7;
-                      el.scrollBy({ left: amount, behavior: "smooth" });
-                    }}
-                    className="h-9 w-9 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:border-white/40 flex items-center justify-center transition-all shadow-lg shadow-black/20"
-                    aria-label="Scroll right"
-                  >
-                    <ArrowRight size={16} />
-                  </button>
-                  <button className="text-white/80 text-sm font-semibold hover:text-white transition-colors flex items-center gap-1">
-                    View all <ArrowRight size={14} />
-                  </button>
+                </p>
+              </div>
+
+              {/* Search Bar */}
+              <div className="mb-8 max-w-2xl mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search templates..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
+                  />
                 </div>
               </div>
-              <div
-                ref={bundlesCarouselRef}
-                onWheel={(e) => e.preventDefault()}
-                className="flex flex-nowrap gap-6 overflow-hidden pb-2"
-              >
-                {PROMPT_BUNDLES.map((bundle) => (
-                  <div key={bundle.title} className="relative min-w-[260px] max-w-[320px] flex-shrink-0">
-                    <div className="relative h-full rounded-2xl border border-white/10 p-[1px]">
-                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                      <div className="relative rounded-[1.05rem] bg-gradient-to-b from-[#0b0b0b] via-[#0c0c0c] to-[#0a0a0a] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.35)] h-full flex flex-col">
-                        <div className="flex items-start justify-between gap-3 mb-4">
-                          <h3 className="text-xl font-extrabold text-white leading-tight">{bundle.title}</h3>
-                          <span className="text-xs font-black uppercase px-3 py-1 rounded-full bg-white text-black shadow">{bundle.tag}</span>
-                        </div>
-                        <ul className="space-y-2 mb-6">
-                          {bundle.bullets.map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-white/85 text-sm leading-snug">
-                              <CheckCircle2 className="text-white mt-0.5" size={16} />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <GlassButton
-                          size="sm"
-                          isSelected={false}
-                          className="mt-auto w-full"
-                          contentClassName="w-full flex items-center justify-center gap-2"
-                        >
-                          Learn More <ArrowRight size={16} />
-                        </GlassButton>
-                      </div>
-                    </div>
+
+              {/* Categories Filter Buttons */}
+              <div className="w-full mb-8">
+                <div className="flex flex-wrap gap-3 justify-center mb-4">
+                  {["All", "Website", "Apps", "Beats", "Cryptos", "Business", "Components"].map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        setSelectedCategory(category);
+                        setSelectedSubcategory(null);
+                      }}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        selectedCategory === category
+                          ? "bg-white/10 border-2 border-blue-800 text-white/85"
+                          : "bg-white/5 border border-white/10 text-white/85"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Subcategories */}
+                {selectedCategory !== "All" && subcategories[selectedCategory] && (
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    {subcategories[selectedCategory].map((subcategory) => (
+                      <button
+                        key={subcategory}
+                        onClick={() => setSelectedSubcategory(subcategory)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                          selectedSubcategory === subcategory
+                            ? "bg-white/10 border-2 border-blue-800 text-white/85"
+                            : "bg-white/5 border border-white/10 text-white/85"
+                        }`}
+                      >
+                        {subcategory}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
             {/* Video Carousels - Same as homepage */}
             {[
-              { title: "Hero templates", ref: landingPageHeroCarouselRef, data: landingPageHeroData },
-              { title: "Landing page template", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData },
-              { title: "Components", ref: componentsCarouselRef, data: componentsVideoData },
-              { title: "Mobile apps", ref: mobileAppsCarouselRef, data: mobileAppsData },
-              { title: "Games", ref: gamesCarouselRef, data: gamesData },
-            ].map(({ title, ref, data }) => {
+              { title: "Hero templates", ref: landingPageHeroCarouselRef, data: landingPageHeroData, urlSlug: "hero-templates" },
+              { title: "Landing page templates", ref: fullLandingPagesCarouselRef, data: fullLandingPagesData, urlSlug: "landing-page-templates" },
+              { title: "Components", ref: componentsCarouselRef, data: componentsVideoData, urlSlug: "components" },
+              { title: "Mobile apps", ref: mobileAppsCarouselRef, data: mobileAppsData, urlSlug: "mobile-apps" },
+              { title: "Beats", ref: beatsCarouselRef, data: beatsData, urlSlug: "beats" },
+              { title: "Cryptos", ref: cryptosCarouselRef, data: cryptosData, urlSlug: "cryptos" },
+            ].map(({ title, ref, data, urlSlug }) => {
               const scrollBy = (dir: number) => {
                 const el = ref.current;
                 if (!el) return;
@@ -1387,9 +1379,14 @@ Before finalizing, verify:
                       >
                         <ArrowRight size={16} />
                       </button>
-                      <button className="text-white/60 text-sm font-medium hover:text-white transition-colors ml-2">
-                        Open lab
-                      </button>
+                      {data.length > 0 && (
+                        <button
+                          onClick={() => navigate(`/prompt-lab-page/category/${urlSlug}`)}
+                          className="text-white/60 text-sm font-medium hover:text-white transition-colors ml-2"
+                        >
+                          View all
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div
@@ -1411,7 +1408,7 @@ Before finalizing, verify:
                             <>
                               {/* Header Section */}
                               <div className="px-4 py-3 bg-[#1a1a1a]">
-                                <h4 className="text-white font-semibold text-sm truncate text-left">{componentData.title}</h4>
+                                <h4 className="text-white/85 font-semibold text-sm truncate text-left">{componentData.title}</h4>
                               </div>
                               {/* Video Section */}
                               <div className="relative w-full h-[220px] bg-[#1a1a1a] flex items-center justify-center p-3">
@@ -1422,7 +1419,12 @@ Before finalizing, verify:
                                     loop
                                     playsInline
                                     autoPlay
+                                    preload="metadata"
+                                    loading="lazy"
                                     className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      console.error('Video load error:', e);
+                                    }}
                                   />
                                 </div>
                               </div>
@@ -1454,9 +1456,10 @@ Before finalizing, verify:
             const getDataForSection = () => {
               if (activeVideoSection === "Hero templates") return landingPageHeroData;
               if (activeVideoSection === "Components") return componentsVideoData;
-              if (activeVideoSection === "Landing page template") return fullLandingPagesData;
+              if (activeVideoSection === "Landing page templates") return fullLandingPagesData;
               if (activeVideoSection === "Mobile apps") return mobileAppsData;
-              if (activeVideoSection === "Games") return gamesData;
+              if (activeVideoSection === "Beats") return beatsData;
+              if (activeVideoSection === "Cryptos") return cryptosData;
               return [];
             };
             const sectionData = getDataForSection();
@@ -1518,9 +1521,10 @@ Before finalizing, verify:
             {generatedPrompts.length > 0 && (
               <motion.section
                 id="prompt-alternatives"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="w-full max-w-7xl mx-auto px-4 mb-16"
               >
                 <div className="mb-8 text-center">
@@ -1531,9 +1535,9 @@ Before finalizing, verify:
                   {generatedPrompts.map((alt, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.15, delay: index * 0.05 }}
                       className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-6 flex flex-col hover:border-white/20 hover:shadow-xl hover:shadow-purple-500/10 transition-all"
                     >
                       <h3 className="text-xl font-bold text-white mb-4">{alt.title}</h3>
@@ -1584,8 +1588,9 @@ Before finalizing, verify:
             />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl px-4">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15 }}
                 className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 shadow-2xl"
               >
                 <div className="mb-6">
@@ -1611,9 +1616,9 @@ Before finalizing, verify:
                     {generatorPrompts.map((prompt, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.15, delay: index * 0.05 }}
                         className="bg-black/40 border border-white/10 rounded-xl p-5 hover:border-purple-500/50 transition-all cursor-pointer group"
                         onClick={() => setSelectedPrompt(prompt)}
                       >
@@ -1649,13 +1654,15 @@ Before finalizing, verify:
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                   onClick={() => setSelectedPrompt(null)}
                   className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
                 />
                 <motion.div
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
                   className="w-full max-w-3xl bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
                 >
                   <button
@@ -1884,8 +1891,9 @@ Before finalizing, verify:
           </div>
           <motion.main className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar mt-20">
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
               className="w-full py-12 px-4"
             >
               <div className="max-w-6xl mx-auto flex flex-col gap-8">

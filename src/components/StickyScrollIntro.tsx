@@ -89,6 +89,8 @@ const StickyScrollIntro = () => {
             animate={{ opacity: imageLoaded ? 1 : 0, scale: imageLoaded ? 1 : 1.05 }}
             transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
             onLoad={() => setImageLoaded(true)}
+            loading="eager"
+            decoding="async"
           />
           <motion.div 
             className="absolute inset-0 bg-black/40"

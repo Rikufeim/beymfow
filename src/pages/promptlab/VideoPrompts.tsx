@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import Header from "@/components/Header";
+import Layout from "@/components/Layout";
 import CreditsDisplay from "@/components/CreditsDisplay";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -126,10 +125,9 @@ const VideoPrompts = () => {
   return (
     <>
       <CreditsDisplay />
-      <div className="min-h-screen bg-black text-white flex flex-col items-center">
-        <Header />
-        
-        <div className="w-full flex flex-col items-center pt-[160px] pb-16 px-4">
+      <Layout>
+        <div className="min-h-screen bg-black text-white flex flex-col items-center">
+          <div className="w-full flex flex-col items-center pt-[80px] pb-16 px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -281,11 +279,9 @@ const VideoPrompts = () => {
             </motion.div>
           </motion.div>
 
-          <div className="mt-32">
-            <Footer />
-          </div>
         </div>
       </div>
+      </Layout>
     </>
   );
 };

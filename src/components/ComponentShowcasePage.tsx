@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { Copy, Maximize2, Code, Bookmark, MoreVertical, Check, X, ArrowLeft, ArrowRight, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -180,7 +180,11 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
                 loop
                 muted
                 playsInline
+                preload="metadata"
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.error('Video load error:', e);
+                }}
               />
             </div>
           </div>
@@ -230,7 +234,12 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
                         loop
                         playsInline
                         autoPlay
+                        preload="metadata"
+                        loading="lazy"
                         className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] object-contain rounded-lg"
+                        onError={(e) => {
+                          console.error('Video load error:', e);
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                       <div className="relative h-full w-full px-6 py-5 flex flex-col justify-end z-10">
@@ -265,7 +274,11 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
               loop
               muted
               playsInline
+              preload="auto"
               className="w-full h-full object-contain"
+              onError={(e) => {
+                console.error('Video load error:', e);
+              }}
             />
           </div>
         </div>
@@ -274,4 +287,4 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
   );
 };
 
-export default ComponentShowcasePage;
+export default memo(ComponentShowcasePage);
