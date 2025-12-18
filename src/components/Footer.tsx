@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Twitter } from "lucide-react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -14,18 +14,24 @@ const fadeUp = {
 
 const Footer = () => {
   return (
-    <footer className="relative py-16 px-4 overflow-hidden">
-      {/* Background Pattern */}
+    <footer className="relative py-16 px-4 overflow-hidden bg-black">
+      {/* Purple Glow Background */}
       <div className="absolute inset-0 -z-10">
-        <div
-          className={cn(
-            "absolute inset-0",
-            "[background-size:20px_20px]",
-            "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
-            "dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
-          )}
+        {/* Main dark background */}
+        <div className="absolute inset-0 bg-black" />
+        {/* Bottom purple glow */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 80% 50% at 50% 100%, rgba(88, 28, 135, 0.8) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 40% at 0% 100%, rgba(124, 58, 237, 0.5) 0%, transparent 50%),
+              radial-gradient(ellipse 60% 40% at 100% 100%, rgba(124, 58, 237, 0.5) 0%, transparent 50%),
+              radial-gradient(ellipse 40% 30% at 0% 50%, rgba(88, 28, 135, 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse 40% 30% at 100% 50%, rgba(88, 28, 135, 0.3) 0%, transparent 50%)
+            `
+          }}
         />
-        <div className="pointer-events-none absolute inset-0 bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
       </div>
 
       <div className="relative max-w-7xl mx-auto">
