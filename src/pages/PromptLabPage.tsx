@@ -1565,23 +1565,9 @@ Before finalizing, verify:
 
       {/* Generator View */}
       {currentView === "generator" && (
-        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
-          <div className="absolute top-4 left-4 z-30">
-            <button
-              onClick={() => navigate("/prompt-lab-page")}
-              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
-            >
-              <ArrowLeft size={18} />
-              <span className="text-sm font-medium">Back</span>
-            </button>
-          </div>
-          <div className="absolute top-4 right-4 z-30">
-            <div className="flex items-center gap-2">
-              <Wand2 className="text-purple-400" size={24} />
-              <h1 className="text-xl font-bold">Prompt Generator</h1>
-            </div>
-          </div>
-          <div ref={canvasRef} className="flex-1 relative overflow-auto z-0 mt-20">
+        <Layout hideFooter>
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+            <div className="flex-1 relative overflow-auto z-0" ref={canvasRef}>
             <div
               className="absolute inset-0 pointer-events-none opacity-10"
               style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "24px 24px" }}
@@ -1646,75 +1632,62 @@ Before finalizing, verify:
                 )}
               </motion.div>
             </div>
-          </div>
-          <AnimatePresence>
-            {selectedPrompt && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  onClick={() => setSelectedPrompt(null)}
-                  className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
-                />
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="w-full max-w-3xl bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
-                >
-                  <button
+            </div>
+            <AnimatePresence>
+              {selectedPrompt && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                     onClick={() => setSelectedPrompt(null)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors z-20"
+                    className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="w-full max-w-3xl bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl p-8 relative z-10 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
                   >
-                    <X size={20} />
-                  </button>
-                  <h3 className="text-2xl font-bold text-white mb-4">Generated Prompt</h3>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <pre className="text-sm text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed bg-black/30 rounded-xl p-6 border border-white/10">
-                      {selectedPrompt}
-                    </pre>
-                  </div>
-                  <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
                     <button
-                      onClick={() => {
-                        copyToClipboard(selectedPrompt);
-                        setSelectedPrompt(null);
-                      }}
-                      className="flex-1 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                      onClick={() => setSelectedPrompt(null)}
+                      className="absolute top-4 right-4 p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-colors z-20"
                     >
-                      <Copy size={16} />
-                      <span>Copy Prompt</span>
+                      <X size={20} />
                     </button>
-                  </div>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">Generated Prompt</h3>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      <pre className="text-sm text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed bg-black/30 rounded-xl p-6 border border-white/10">
+                        {selectedPrompt}
+                      </pre>
+                    </div>
+                    <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
+                      <button
+                        onClick={() => {
+                          copyToClipboard(selectedPrompt);
+                          setSelectedPrompt(null);
+                        }}
+                        className="flex-1 py-3 bg-white text-black rounded-xl font-bold text-sm hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Copy size={16} />
+                        <span>Copy Prompt</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </Layout>
       )}
 
       {/* Scanner View */}
       {currentView === "scanner" && (
-        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
-          <div className="absolute top-4 left-4 z-30">
-            <button
-              onClick={() => navigate("/prompt-lab-page")}
-              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
-            >
-              <ArrowLeft size={18} />
-              <span className="text-sm font-medium">Back</span>
-            </button>
-          </div>
-          <div className="absolute top-4 right-4 z-30">
-            <div className="flex items-center gap-2">
-              <Search className="text-cyan-400" size={24} />
-              <h1 className="text-xl font-bold">Prompt Scanner</h1>
-            </div>
-          </div>
-          <div className="flex-1 flex flex-col items-center justify-center p-8 mt-20 overflow-y-auto">
+        <Layout hideFooter>
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
             <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div>
@@ -1858,38 +1831,25 @@ Before finalizing, verify:
             </div>
           </div>
         </div>
-      )}
+      </Layout>
+    )}
 
       {/* Library View */}
       {currentView === "library" && (
-        <div className="relative h-screen w-full bg-black text-white flex flex-col font-sans overflow-hidden">
-          <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
-            <span className="text-[10px] text-neutral-500 font-mono uppercase">Simulate Subscription</span>
-            <button
-              onClick={() => setIsPremiumUnlocked(!isPremiumUnlocked)}
-              className={`w-10 h-5 rounded-full p-1 transition-colors ${isPremiumUnlocked ? "bg-amber-500" : "bg-neutral-800"}`}
-            >
-              <div
-                className={`w-3 h-3 bg-white rounded-full transition-transform ${isPremiumUnlocked ? "translate-x-5" : "translate-x-0"}`}
-              />
-            </button>
-          </div>
-          <div className="absolute top-4 left-4 z-30">
-            <button
-              onClick={() => navigate("/prompt-lab-page")}
-              className="h-10 px-4 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-neutral-300 hover:bg-white/10 hover:text-white flex items-center gap-2 transition-all shadow-lg"
-            >
-              <ArrowLeft size={18} />
-              <span className="text-sm font-medium">Back</span>
-            </button>
-          </div>
-          <div className="absolute top-4 right-20 z-30">
-            <div className="flex items-center gap-2">
-              <Sparkles className="text-amber-400" size={24} />
-              <h1 className="text-xl font-bold">Prompt Library</h1>
+        <Layout hideFooter>
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+            <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
+              <span className="text-[10px] text-neutral-500 font-mono uppercase">Simulate Subscription</span>
+              <button
+                onClick={() => setIsPremiumUnlocked(!isPremiumUnlocked)}
+                className={`w-10 h-5 rounded-full p-1 transition-colors ${isPremiumUnlocked ? "bg-amber-500" : "bg-neutral-800"}`}
+              >
+                <div
+                  className={`w-3 h-3 bg-white rounded-full transition-transform ${isPremiumUnlocked ? "translate-x-5" : "translate-x-0"}`}
+                />
+              </button>
             </div>
-          </div>
-          <motion.main className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar mt-20">
+            <motion.main className="flex-1 flex flex-col items-center p-4 w-full max-w-7xl mx-auto z-10 relative h-full overflow-y-auto custom-scrollbar">
             <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2189,7 +2149,8 @@ Before finalizing, verify:
             </AnimatePresence>
           </motion.main>
         </div>
-      )}
+      </Layout>
+    )}
     </div>
   );
 }
