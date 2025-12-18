@@ -2,12 +2,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
+import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PageTransition } from "./components/PageTransition";
 
 // Lazy load all pages for better code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -70,62 +72,66 @@ const PageLoader = () => (
   </div>
 );
 
-// AnimatedRoutes component - no animations for instant page transitions
+// AnimatedRoutes component with smooth page transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
   
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes location={location}>
-              <Route path="/" element={
-                <ErrorBoundary>
-                  <Index />
-                </ErrorBoundary>
-              } />
-              <Route path="/features" element={<Features />} />
-              <Route path="/premium" element={<Premium />} />
-              <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
-              <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
-              <Route path="/prompt-lab-page/library" element={<PromptLibraryPage />} />
-              <Route path="/prompt-lab-page/category/:categoryName" element={<ProtectedRoute><CategoryViewPage /></ProtectedRoute>} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/about" element={
-                <Layout>
-                  <About />
-                </Layout>
-              } />
-              <Route path="/templates" element={
-                <Layout>
-                  <TemplatesPage />
-                </Layout>
-              } />
-              <Route path="/community" element={
-                <Layout>
-                  <Community />
-                </Layout>
-              } />
-              <Route path="/business-prompts" element={<BusinessPrompts />} />
-              <Route path="/prompt-lab" element={<PromptLab />} />
-              <Route path="/prompt-library" element={<PromptLibrary />} />
-              <Route path="/image-generator" element={<ImageGenerator />} />
-              <Route path="/planningsystem" element={<PlanningSystem />} />
-              <Route path="/prompt-lab/ai-generator" element={<AIGenerator />} />
-              <Route path="/prompt-lab/checking" element={<PromptChecking />} />
-              <Route path="/prompt-lab/image-prompts" element={<ImagePrompts />} />
-              <Route path="/prompt-lab/video-prompts" element={<VideoPrompts />} />
-              <Route path="/prompt-lab/text-detector" element={<TextDetector />} />
-              <Route path="/prompt-lab/humanizer" element={<Humanizer />} />
-              <Route path="/multiagentpage" element={<Multiagentpage />} />
-              
-              {/* Custom routes above the catch-all */}
-              <Route path="*" element={
-                <Layout>
-                  <NotFound />
-                </Layout>
-              } />
-            </Routes>
-    </Suspense>
+    <AnimatePresence mode="wait" initial={false}>
+      <Suspense fallback={<PageLoader />}>
+        <PageTransition key={location.pathname}>
+          <Routes location={location}>
+            <Route path="/" element={
+              <ErrorBoundary>
+                <Index />
+              </ErrorBoundary>
+            } />
+            <Route path="/features" element={<Features />} />
+            <Route path="/premium" element={<Premium />} />
+            <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
+            <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
+            <Route path="/prompt-lab-page/library" element={<PromptLibraryPage />} />
+            <Route path="/prompt-lab-page/category/:categoryName" element={<ProtectedRoute><CategoryViewPage /></ProtectedRoute>} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/about" element={
+              <Layout>
+                <About />
+              </Layout>
+            } />
+            <Route path="/templates" element={
+              <Layout>
+                <TemplatesPage />
+              </Layout>
+            } />
+            <Route path="/community" element={
+              <Layout>
+                <Community />
+              </Layout>
+            } />
+            <Route path="/business-prompts" element={<BusinessPrompts />} />
+            <Route path="/prompt-lab" element={<PromptLab />} />
+            <Route path="/prompt-library" element={<PromptLibrary />} />
+            <Route path="/image-generator" element={<ImageGenerator />} />
+            <Route path="/planningsystem" element={<PlanningSystem />} />
+            <Route path="/prompt-lab/ai-generator" element={<AIGenerator />} />
+            <Route path="/prompt-lab/checking" element={<PromptChecking />} />
+            <Route path="/prompt-lab/image-prompts" element={<ImagePrompts />} />
+            <Route path="/prompt-lab/video-prompts" element={<VideoPrompts />} />
+            <Route path="/prompt-lab/text-detector" element={<TextDetector />} />
+            <Route path="/prompt-lab/humanizer" element={<Humanizer />} />
+            <Route path="/multiagentpage" element={<Multiagentpage />} />
+            
+            {/* Custom routes above the catch-all */}
+            <Route path="*" element={
+              <Layout>
+                <NotFound />
+              </Layout>
+            } />
+          </Routes>
+        </PageTransition>
+      </Suspense>
+    </AnimatePresence>
   );
 };
 
