@@ -27,6 +27,8 @@ import { AVAILABLE_FONTS } from "@/components/flow-nodes/FontSelect";
 import { getLayoutedElements } from "@/lib/flowLayout";
 import { ResizableNodeWrapper } from "@/components/flow-nodes/ResizableNodeWrapper";
 import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
+import { ProjectTypeSelector, ProjectType } from "@/components/flow-engine/ProjectTypeSelector";
+import { HeroBackgroundWorkspace } from "@/components/flow-engine/HeroBackgroundWorkspace";
 
 import {
   ArrowRight,
@@ -929,6 +931,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [activePageSpec, setActivePageSpec] = useState<any | null>(null);
   const [showPageSpecPreview, setShowPageSpecPreview] = useState(false);
 
+  // --- Project Type Selector State ---
+  const [showProjectTypeSelector, setShowProjectTypeSelector] = useState(false);
+  const [activeWorkspace, setActiveWorkspace] = useState<"flow" | "hero-background" | null>(null);
+
   // --- Workspace Tool State ---
   type ToolType = "select" | "hand" | "text";
   const [activeTool, setActiveTool] = useState<ToolType>("select");
@@ -1499,13 +1505,30 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   };
 
   const createNewProject = () => {
-    setCurrentProjectId(null);
-    setProjectName("Untitled Project");
-    setWidgets([]); // Start with empty workspace
-    setEdges([]);
-    setNodeOutputMap({});
-    setMainPromptState({ sections: [], combinedPrompt: "" });
-    setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    // Show project type selector instead of immediately creating
+    setShowProjectTypeSelector(true);
+  };
+
+  const handleProjectTypeSelect = (type: ProjectType) => {
+    setShowProjectTypeSelector(false);
+    
+    if (type === "hero-background") {
+      setActiveWorkspace("hero-background");
+    } else {
+      // Default flow workspace behavior
+      setActiveWorkspace(null);
+      setCurrentProjectId(null);
+      setProjectName("Untitled Project");
+      setWidgets([]);
+      setEdges([]);
+      setNodeOutputMap({});
+      setMainPromptState({ sections: [], combinedPrompt: "" });
+      setCanvasTransform({ translateX: 0, translateY: 0, scale: 1 });
+    }
+  };
+
+  const handleHeroWorkspaceBack = () => {
+    setActiveWorkspace(null);
     // Stay in landing view - workspace removed
   };
 
@@ -3071,6 +3094,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Project Type Selector Modal */}
+      <ProjectTypeSelector
+        isOpen={showProjectTypeSelector}
+        onClose={() => setShowProjectTypeSelector(false)}
+        onSelect={handleProjectTypeSelect}
+      />
+
+      {/* Hero Background Workspace */}
+      {activeWorkspace === "hero-background" && (
+        <HeroBackgroundWorkspace
+          projectName="Hero Background Generator"
+          onBack={handleHeroWorkspaceBack}
+        />
+      )}
 
     </div>
   );
