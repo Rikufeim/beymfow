@@ -1230,7 +1230,7 @@ Before finalizing, verify:
 
   // --- RENDER ---
   return (
-    <div className="relative min-h-screen w-full bg-black text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100">
+    <div className="relative min-h-screen w-full bg-black text-white selection:bg-cyan-500/30 selection:text-cyan-100">
       {/* CSS INJECTION FOR SCROLLBARS & SLIDERS */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
