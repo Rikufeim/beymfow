@@ -1,8 +1,17 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Square, Triangle, Hexagon, Wind } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Code, Save, Check } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
+import { HeroExportPanel } from "./HeroExportPanel";
+import { 
+  saveProject, 
+  saveDraft, 
+  generateThumbnail, 
+  generateProjectName,
+  type HeroBackgroundProject 
+} from "@/lib/heroProjectStore";
+import { toast } from "sonner";
 
 // --- Types ---
 export interface HeroBackgroundSettings {
@@ -26,7 +35,7 @@ export interface HeroBackgroundSettings {
   motionSpeed: number;
 }
 
-const DEFAULT_SETTINGS: HeroBackgroundSettings = {
+export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   color1: "#000000",
   color2: "#1a1a1a",
   color3: "#389cff",
@@ -51,9 +60,12 @@ const COLOR_PRESETS = {
 };
 
 interface HeroBackgroundWorkspaceProps {
+  projectId?: string;
   projectName?: string;
+  initialSettings?: HeroBackgroundSettings;
+  isLoggedIn?: boolean;
   onBack: () => void;
-  onSave?: (settings: HeroBackgroundSettings) => void;
+  onSave?: (project: HeroBackgroundProject) => void;
 }
 
 type TabId = "shape" | "colors" | "motion" | "view";
@@ -67,14 +79,115 @@ const GRADIENT_STYLES = [
 ];
 
 export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = ({
-  projectName = "Hero Background Generator",
+  projectId,
+  projectName: initialProjectName,
+  initialSettings,
+  isLoggedIn = false,
   onBack,
   onSave,
 }) => {
-  const [settings, setSettings] = useState<HeroBackgroundSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<HeroBackgroundSettings>(initialSettings || DEFAULT_SETTINGS);
   const [activeTab, setActiveTab] = useState<TabId>("colors");
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  
+  // Project state
+  const [currentProjectId, setCurrentProjectId] = useState(projectId || `hero-${Date.now()}`);
+  const [currentProjectName, setCurrentProjectName] = useState(initialProjectName || generateProjectName());
+  
+  // Save state
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedSettingsRef = useRef<string>(JSON.stringify(settings));
+
+  // Auto-save with debounce
+  const triggerAutoSave = useCallback(async () => {
+    const currentSettingsString = JSON.stringify(settings);
+    
+    // Skip if settings haven't changed
+    if (currentSettingsString === lastSavedSettingsRef.current) {
+      return;
+    }
+
+    setSaveStatus("saving");
+
+    try {
+      const thumbnail = await generateThumbnail(settings);
+      
+      const project: HeroBackgroundProject = {
+        id: currentProjectId,
+        name: currentProjectName,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        settings,
+        thumbnail,
+      };
+
+      if (isLoggedIn) {
+        saveProject(project);
+      } else {
+        saveDraft({ ...project, id: currentProjectId });
+      }
+
+      lastSavedSettingsRef.current = currentSettingsString;
+      setSaveStatus("saved");
+      
+      if (onSave) {
+        onSave(project);
+      }
+
+      setTimeout(() => setSaveStatus("idle"), 1500);
+    } catch (error) {
+      console.error("Auto-save failed:", error);
+      setSaveStatus("idle");
+    }
+  }, [settings, currentProjectId, currentProjectName, isLoggedIn, onSave]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      triggerAutoSave();
+    }, 800);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [settings, triggerAutoSave]);
+
+  // Save on tab change / export close
+  useEffect(() => {
+    triggerAutoSave();
+  }, [activeTab]);
+
+  // Save before unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Synchronous save attempt
+      const project: HeroBackgroundProject = {
+        id: currentProjectId,
+        name: currentProjectName,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        settings,
+      };
+
+      if (isLoggedIn) {
+        saveProject(project);
+      } else {
+        saveDraft({ ...project, id: currentProjectId });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [settings, currentProjectId, currentProjectName, isLoggedIn]);
 
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
@@ -95,14 +208,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }));
   }, []);
 
+  const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
+    setSettings(importedSettings);
+    toast.success("Settings imported!");
+  }, []);
+
   // Generate gradient CSS based on settings
   const generateGradientStyle = useCallback((): React.CSSProperties => {
     const { color1, color2, color3, color4, singleColorMode, brightness, gradientStyle, environmentEnabled } = settings;
     
     const brightnessFilter = `brightness(${brightness})`;
-    const colors = singleColorMode 
-      ? [color1] 
-      : [color1, color2, color3, color4].filter(Boolean);
 
     let background: string;
 
@@ -188,9 +303,20 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         <span className="text-sm font-medium">Back</span>
       </button>
 
-      {/* Project name (top-center) */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
-        <h1 className="text-white/80 text-lg font-medium tracking-tight">{projectName}</h1>
+      {/* Project name + save status (top-center) */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
+        <h1 className="text-white/80 text-lg font-medium tracking-tight">{currentProjectName}</h1>
+        <div className={cn(
+          "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all",
+          saveStatus === "saving" && "bg-yellow-500/20 text-yellow-400",
+          saveStatus === "saved" && "bg-green-500/20 text-green-400",
+          saveStatus === "idle" && "bg-white/5 text-white/40"
+        )}>
+          {saveStatus === "saving" && <Save size={12} className="animate-pulse" />}
+          {saveStatus === "saved" && <Check size={12} />}
+          {saveStatus === "idle" && <Save size={12} />}
+          <span>{saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Auto-save"}</span>
+        </div>
       </div>
 
       {/* Hints overlay */}
@@ -210,22 +336,33 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         className="absolute bottom-0 left-0 right-0 z-50"
       >
         <div className="bg-neutral-900/95 backdrop-blur-xl border-t border-white/10">
-          {/* Tabs */}
-          <div className="flex items-center justify-center gap-1 px-4 py-2 border-b border-white/5">
-            {(["shape", "colors", "motion", "view"] as TabId[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize",
-                  activeTab === tab
-                    ? "bg-white/10 text-white"
-                    : "text-white/50 hover:text-white/80 hover:bg-white/5"
-                )}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Tabs + Export button */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+            <div className="flex items-center gap-1">
+              {(["shape", "colors", "motion", "view"] as TabId[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize",
+                    activeTab === tab
+                      ? "bg-white/10 text-white"
+                      : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Export button */}
+            <button
+              onClick={() => setShowExport(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500/30 transition-all"
+            >
+              <Code size={16} />
+              <span className="text-sm font-medium">&lt;/&gt;</span>
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -450,6 +587,17 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           </div>
         </div>
       </motion.div>
+
+      {/* Export Panel */}
+      <HeroExportPanel
+        isOpen={showExport}
+        onClose={() => {
+          setShowExport(false);
+          triggerAutoSave();
+        }}
+        settings={settings}
+        onImportSettings={handleImportSettings}
+      />
     </div>
   );
 };

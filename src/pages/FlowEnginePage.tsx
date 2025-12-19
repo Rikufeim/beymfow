@@ -28,7 +28,13 @@ import { getLayoutedElements } from "@/lib/flowLayout";
 import { ResizableNodeWrapper } from "@/components/flow-nodes/ResizableNodeWrapper";
 import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
 import { ProjectTypeSelector, ProjectType } from "@/components/flow-engine/ProjectTypeSelector";
-import { HeroBackgroundWorkspace } from "@/components/flow-engine/HeroBackgroundWorkspace";
+import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-engine/HeroBackgroundWorkspace";
+import { 
+  loadLocalProjects as loadHeroProjects, 
+  deleteProject as deleteHeroProject,
+  generateProjectName as generateHeroProjectName,
+  type HeroBackgroundProject 
+} from "@/lib/heroProjectStore";
 
 import {
   ArrowRight,
@@ -934,6 +940,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // --- Project Type Selector State ---
   const [showProjectTypeSelector, setShowProjectTypeSelector] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState<"flow" | "hero-background" | null>(null);
+  
+  // --- Hero Background Projects State ---
+  const [heroProjects, setHeroProjects] = useState<HeroBackgroundProject[]>([]);
+  const [selectedHeroProject, setSelectedHeroProject] = useState<HeroBackgroundProject | null>(null);
+
+  // Load hero projects on mount
+  useEffect(() => {
+    setHeroProjects(loadHeroProjects());
+  }, []);
 
   // --- Workspace Tool State ---
   type ToolType = "select" | "hand" | "text";
@@ -1513,6 +1528,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setShowProjectTypeSelector(false);
     
     if (type === "hero-background") {
+      // Create new hero project
+      setSelectedHeroProject(null);
       setActiveWorkspace("hero-background");
     } else {
       // Default flow workspace behavior
@@ -1527,9 +1544,25 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     }
   };
 
+  const handleOpenHeroProject = (project: HeroBackgroundProject) => {
+    setSelectedHeroProject(project);
+    setActiveWorkspace("hero-background");
+  };
+
+  const handleDeleteHeroProject = (projectId: string) => {
+    deleteHeroProject(projectId);
+    setHeroProjects(loadHeroProjects());
+  };
+
   const handleHeroWorkspaceBack = () => {
     setActiveWorkspace(null);
-    // Stay in landing view - workspace removed
+    setSelectedHeroProject(null);
+    // Reload hero projects to show updated list
+    setHeroProjects(loadHeroProjects());
+  };
+
+  const handleHeroProjectSave = (project: HeroBackgroundProject) => {
+    setHeroProjects(loadHeroProjects());
   };
 
   const getMainPromptNodeId = (): string | null => {
@@ -2813,8 +2846,52 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         transition={{ duration: 0.2 }}
                         className="w-full"
                       >
-                        {user && savedProjects.length > 0 ? (
+                        {(user && (savedProjects.length > 0 || heroProjects.length > 0)) ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Hero Background Projects */}
+                        {heroProjects.map((project) => (
+                          <div key={project.id} className="min-h-[11rem]">
+                            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                              <div
+                                className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
+                                style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                                onClick={() => handleOpenHeroProject(project)}
+                              >
+                                {/* Thumbnail background */}
+                                {project.thumbnail ? (
+                                  <div className="absolute inset-0 z-0">
+                                    <img src={project.thumbnail} alt="" className="w-full h-full object-cover opacity-60" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                                  </div>
+                                ) : (
+                                  <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]" />
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteHeroProject(project.id);
+                                  }}
+                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
+                                >
+                                  <X size={14} />
+                                </button>
+                                <div className="relative z-10 flex flex-col justify-end gap-2 h-full p-5 sm:p-6">
+                                  <div className="flex items-center gap-2">
+                                    <div className="px-2 py-0.5 rounded text-[10px] bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                      Hero BG
+                                    </div>
+                                  </div>
+                                  <h3 className="text-lg font-semibold tracking-tight text-white/90 truncate">{project.name}</h3>
+                                  <p className="text-xs text-neutral-400">
+                                    {new Date(project.updatedAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Flow Projects */}
                         {savedProjects.map((project) => {
                           const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
                           return (
@@ -3105,8 +3182,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       {/* Hero Background Workspace */}
       {activeWorkspace === "hero-background" && (
         <HeroBackgroundWorkspace
-          projectName="Hero Background Generator"
+          projectId={selectedHeroProject?.id}
+          projectName={selectedHeroProject?.name || generateHeroProjectName()}
+          initialSettings={selectedHeroProject?.settings || DEFAULT_SETTINGS}
+          isLoggedIn={!!user}
           onBack={handleHeroWorkspaceBack}
+          onSave={handleHeroProjectSave}
         />
       )}
 
