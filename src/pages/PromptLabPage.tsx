@@ -1247,12 +1247,12 @@ Before finalizing, verify:
       {/* Conditional Rendering Based on Current View */}
       {currentView === "landing" && (
         <Layout hideFooter>
-          <main className="relative overflow-y-auto bg-black min-h-screen">
+          <main className="relative overflow-y-auto bg-black min-h-screen pt-[80px]">
             <motion.section
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
-              className="w-full flex flex-col px-6 md:px-10 pt-12 pb-8"
+              className="w-full flex flex-col px-6 md:px-10 pt-8 pb-8"
             >
             {/* Search and Categories Section */}
             <div className="w-full mb-12">
@@ -1566,7 +1566,7 @@ Before finalizing, verify:
       {/* Generator View */}
       {currentView === "generator" && (
         <Layout hideFooter>
-          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans pt-[80px]">
             <div className="flex-1 relative overflow-auto z-0" ref={canvasRef}>
             <div
               className="absolute inset-0 pointer-events-none opacity-10"
@@ -1686,7 +1686,7 @@ Before finalizing, verify:
       {/* Scanner View */}
       {currentView === "scanner" && (
         <Layout hideFooter>
-          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans pt-[80px]">
             <div className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
             <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-4">
@@ -1837,7 +1837,7 @@ Before finalizing, verify:
       {/* Library View */}
       {currentView === "library" && (
         <Layout hideFooter>
-          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans">
+          <div className="relative min-h-screen w-full bg-black text-white flex flex-col font-sans pt-[80px]">
             <div className="fixed top-4 right-4 z-[60] flex items-center gap-2">
               <span className="text-[10px] text-neutral-500 font-mono uppercase">Simulate Subscription</span>
               <button
