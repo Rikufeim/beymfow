@@ -1,41 +1,101 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { HexColorPicker } from "react-colorful";
+import { createPortal } from "react-dom";
 
 type ColorPickerFieldProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onOpenChange?: (isOpen: boolean) => void;
+  forceClose?: boolean;
 };
 
 const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
   label,
   value,
   onChange,
+  onOpenChange,
+  forceClose,
 }) => {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0 });
+
+  // Force close from parent
+  useEffect(() => {
+    if (forceClose && open) {
+      setOpen(false);
+    }
+  }, [forceClose, open]);
+
+  // Calculate position for picker to open ABOVE the button
+  const updatePosition = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const pickerHeight = 280; // Approximate height of picker
+      const pickerWidth = 220;
+      
+      // Position above the button
+      let top = rect.top - pickerHeight - 8;
+      let left = rect.left + (rect.width / 2) - (pickerWidth / 2);
+      
+      // Keep within viewport bounds
+      if (top < 10) {
+        top = rect.bottom + 8; // Fall back to below if not enough space above
+      }
+      if (left < 10) {
+        left = 10;
+      }
+      if (left + pickerWidth > window.innerWidth - 10) {
+        left = window.innerWidth - pickerWidth - 10;
+      }
+      
+      setPickerPosition({ top, left });
+    }
+  }, []);
 
   // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        buttonRef.current && 
+        !buttonRef.current.contains(event.target as Node) &&
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target as Node)
+      ) {
         setOpen(false);
+        onOpenChange?.(false);
       }
     };
 
     if (open) {
+      updatePosition();
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
     }
-  }, [open]);
+  }, [open, updatePosition, onOpenChange]);
 
   const displayColor = value || "#ffffff";
 
+  const handleToggle = () => {
+    const newOpen = !open;
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
+
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleToggle}
         onMouseDown={(e) => e.stopPropagation()}
         className="flex flex-col items-start gap-1 w-full"
       >
@@ -52,31 +112,43 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
           </span>
         </div>
       </button>
-      {open && (
+      
+      {open && createPortal(
         <div 
-          className="absolute z-50 mt-2 rounded-lg border border-white/10 bg-[#111] p-3 shadow-xl"
+          ref={pickerRef}
+          className="fixed z-[100] rounded-xl border border-white/10 bg-neutral-900 p-4 shadow-2xl"
+          style={{ 
+            top: pickerPosition.top, 
+            left: pickerPosition.left,
+            minWidth: 220,
+          }}
           onMouseDown={(e) => e.stopPropagation()}
         >
+          <div className="mb-3">
+            <span className="text-xs text-white/50 uppercase tracking-wider">{label}</span>
+          </div>
           <HexColorPicker color={displayColor} onChange={onChange} />
           <input
             type="text"
-            className="mt-2 w-full rounded-md border border-white/15 bg-black/60 px-2 py-1 text-xs text-white/90 outline-none focus:border-white/30"
+            className="mt-3 w-full rounded-lg border border-white/15 bg-black/60 px-3 py-2 text-sm text-white/90 outline-none focus:border-white/30 transition-colors"
             value={value || ""}
             onMouseDown={(e) => e.stopPropagation()}
             onChange={(e) => {
               const hex = e.target.value;
-              // Validate hex color
-              if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex) || hex === "") {
+              // Allow partial input for hex colors
+              if (hex === "" || hex.startsWith("#")) {
                 onChange(hex);
+              } else {
+                onChange("#" + hex);
               }
             }}
             placeholder="#ffffff"
           />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 };
 
 export default ColorPickerField;
-

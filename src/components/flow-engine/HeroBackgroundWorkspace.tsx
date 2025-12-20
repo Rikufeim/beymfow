@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Code, Save, Check } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
@@ -78,6 +78,72 @@ const GRADIENT_STYLES = [
   { id: "noise-wash" as const, label: "Noise Wash", icon: Layers },
 ];
 
+// Generate React component code for live preview
+const generateLiveCode = (settings: HeroBackgroundSettings): string => {
+  const { color1, color2, color3, color4, singleColorMode, gradientStyle, brightness, grainEnabled, grainIntensity, environmentEnabled } = settings;
+  
+  let bgValue: string;
+  switch (gradientStyle) {
+    case "halo":
+      bgValue = singleColorMode
+        ? `"${color1}"`
+        : `"radial-gradient(ellipse 120% 80% at 50% 50%, ${color3}50 0%, ${color2}80 35%, ${color1} 100%)"`;
+      break;
+    case "soft-sweep":
+      bgValue = singleColorMode
+        ? `"${color1}"`
+        : `"linear-gradient(135deg, ${color1} 0%, ${color2} 30%, ${color3}60 60%, ${color4}40 100%)"`;
+      break;
+    case "orb":
+      bgValue = singleColorMode
+        ? `"${color1}"`
+        : `"radial-gradient(circle at 30% 70%, ${color3}70 0%, transparent 45%), radial-gradient(circle at 70% 30%, ${color4}70 0%, transparent 45%), linear-gradient(180deg, ${color1} 0%, ${color2} 100%)"`;
+      break;
+    case "diagonal-blend":
+      bgValue = singleColorMode
+        ? `"${color1}"`
+        : `"linear-gradient(45deg, ${color1} 0%, ${color2} 25%, ${color3}90 50%, ${color4}70 75%, ${color1} 100%)"`;
+      break;
+    case "noise-wash":
+      bgValue = singleColorMode
+        ? `"${color1}"`
+        : `"linear-gradient(180deg, ${color1} 0%, ${color2}95 30%, ${color3}50 70%, ${color1} 100%)"`;
+      break;
+    default:
+      bgValue = `"${color1}"`;
+  }
+
+  return `<div
+  style={{
+    background: ${bgValue},
+    filter: "brightness(${brightness})",
+    width: "100%",
+    height: "100vh",
+  }}
+>
+  ${grainEnabled ? `{/* Grain overlay */}
+  <div style={{ opacity: ${(grainIntensity * 0.3).toFixed(2)} }} />` : ""}
+  ${environmentEnabled ? `{/* Environment glow */}
+  <div style={{ background: "radial-gradient(...)" }} />` : ""}
+</div>`;
+};
+
+// Generate JSON settings for export
+const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
+  return JSON.stringify({
+    gradientStyle: settings.gradientStyle,
+    colors: {
+      color1: settings.color1,
+      color2: settings.color2,
+      color3: settings.color3,
+      color4: settings.color4,
+    },
+    brightness: settings.brightness,
+    grain: settings.grainEnabled ? settings.grainIntensity : 0,
+    environment: settings.environmentEnabled,
+  }, null, 2);
+};
+
 export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = ({
   projectId,
   projectName: initialProjectName,
@@ -91,6 +157,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [minimizedBar, setMinimizedBar] = useState(false);
+  const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
   
   // Project state
   const [currentProjectId, setCurrentProjectId] = useState(projectId || `hero-${Date.now()}`);
@@ -100,6 +168,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedSettingsRef = useRef<string>(JSON.stringify(settings));
+  
+  // Copy state
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedJSON, setCopiedJSON] = useState(false);
+
+  // Live code and JSON
+  const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
+  const liveJSON = useMemo(() => generateSettingsJSON(settings), [settings]);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(async () => {
@@ -213,7 +289,30 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     toast.success("Settings imported!");
   }, []);
 
-  // Generate gradient CSS based on settings
+  const handleCopyCode = useCallback(async () => {
+    await navigator.clipboard.writeText(liveCode);
+    setCopiedCode(true);
+    toast.success("Code copied!");
+    setTimeout(() => setCopiedCode(false), 2000);
+  }, [liveCode]);
+
+  const handleCopyJSON = useCallback(async () => {
+    await navigator.clipboard.writeText(liveJSON);
+    setCopiedJSON(true);
+    toast.success("JSON copied!");
+    setTimeout(() => setCopiedJSON(false), 2000);
+  }, [liveJSON]);
+
+  // Handle color picker open (only one at a time)
+  const handleColorPickerOpen = useCallback((colorKey: string, isOpen: boolean) => {
+    if (isOpen) {
+      setActiveColorPicker(colorKey);
+    } else if (activeColorPicker === colorKey) {
+      setActiveColorPicker(null);
+    }
+  }, [activeColorPicker]);
+
+  // Generate gradient CSS based on settings (improved quality)
   const generateGradientStyle = useCallback((): React.CSSProperties => {
     const { color1, color2, color3, color4, singleColorMode, brightness, gradientStyle, environmentEnabled } = settings;
     
@@ -223,31 +322,36 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     switch (gradientStyle) {
       case "halo":
+        // Improved halo with smoother transitions
         background = singleColorMode
           ? color1
-          : `radial-gradient(ellipse at 50% 50%, ${color3}40 0%, ${color2}60 40%, ${color1} 100%)`;
+          : `radial-gradient(ellipse 120% 80% at 50% 50%, ${color3}50 0%, ${color2}80 35%, ${color1} 100%)`;
         break;
       case "soft-sweep":
+        // Enhanced sweep with better color distribution
         background = singleColorMode
           ? color1
-          : `linear-gradient(135deg, ${color1} 0%, ${color2} 30%, ${color3}50 60%, ${color4}30 100%)`;
+          : `linear-gradient(135deg, ${color1} 0%, ${color2} 30%, ${color3}60 60%, ${color4}40 100%)`;
         break;
       case "orb":
+        // More vibrant orbs
         background = singleColorMode
           ? color1
-          : `radial-gradient(circle at 30% 70%, ${color3}60 0%, transparent 50%), 
-             radial-gradient(circle at 70% 30%, ${color4}60 0%, transparent 50%),
+          : `radial-gradient(circle at 30% 70%, ${color3}70 0%, transparent 45%), 
+             radial-gradient(circle at 70% 30%, ${color4}70 0%, transparent 45%),
              linear-gradient(180deg, ${color1} 0%, ${color2} 100%)`;
         break;
       case "diagonal-blend":
+        // Richer diagonal blend
         background = singleColorMode
           ? color1
-          : `linear-gradient(45deg, ${color1} 0%, ${color2} 25%, ${color3}80 50%, ${color4}60 75%, ${color1} 100%)`;
+          : `linear-gradient(45deg, ${color1} 0%, ${color2} 25%, ${color3}90 50%, ${color4}70 75%, ${color1} 100%)`;
         break;
       case "noise-wash":
+        // Enhanced wash effect
         background = singleColorMode
           ? color1
-          : `linear-gradient(180deg, ${color1} 0%, ${color2}90 30%, ${color3}40 70%, ${color1} 100%)`;
+          : `linear-gradient(180deg, ${color1} 0%, ${color2}95 30%, ${color3}50 70%, ${color1} 100%)`;
         break;
       default:
         background = color1;
@@ -255,7 +359,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     // Add environment glow if enabled
     if (environmentEnabled && !singleColorMode) {
-      background = `${background}, radial-gradient(ellipse at 50% 0%, ${color3}20 0%, transparent 70%)`;
+      background = `${background}, radial-gradient(ellipse 150% 60% at 50% 0%, ${color3}25 0%, transparent 60%)`;
     }
 
     return {
@@ -271,24 +375,24 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         className="absolute inset-0 transition-all duration-500"
         style={generateGradientStyle()}
       >
-        {/* Grain overlay */}
+        {/* Grain overlay - improved quality */}
         {settings.grainEnabled && (
           <div 
             className="absolute inset-0 pointer-events-none"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-              opacity: settings.grainIntensity * 0.3,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              opacity: settings.grainIntensity * 0.25,
               mixBlendMode: "overlay",
             }}
           />
         )}
 
-        {/* Environment light halo */}
+        {/* Environment light halo - enhanced */}
         {settings.environmentEnabled && (
           <div 
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: `radial-gradient(ellipse at 50% 30%, ${settings.color3}15 0%, transparent 60%)`,
+              background: `radial-gradient(ellipse 100% 50% at 50% 25%, ${settings.color3}20 0%, transparent 70%)`,
             }}
           />
         )}
@@ -336,13 +440,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         className="absolute bottom-0 left-0 right-0 z-50"
       >
         <div className="bg-neutral-900/95 backdrop-blur-xl border-t border-white/10">
-          {/* Tabs + Export button */}
+          {/* Tabs + Minimize button */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
             <div className="flex items-center gap-1">
               {(["shape", "colors", "motion", "view"] as TabId[]).map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (minimizedBar) setMinimizedBar(false);
+                  }}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize",
                     activeTab === tab
@@ -355,236 +462,312 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               ))}
             </div>
 
-            {/* Export button */}
+            {/* Minimize button */}
             <button
-              onClick={() => setShowExport(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500/30 transition-all"
+              onClick={() => setMinimizedBar(!minimizedBar)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white transition-all"
             >
-              <Code size={16} />
-              <span className="text-sm font-medium">&lt;/&gt;</span>
+              {minimizedBar ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              <span className="text-xs font-medium">{minimizedBar ? "Expand" : "Minimize"}</span>
             </button>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-4 min-h-[140px]">
-            <AnimatePresence mode="wait">
-              {activeTab === "shape" && (
-                <motion.div
-                  key="shape"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex flex-wrap items-center justify-center gap-3"
-                >
-                  {GRADIENT_STYLES.map((style) => {
-                    const Icon = style.icon;
-                    return (
-                      <button
-                        key={style.id}
-                        onClick={() => updateSetting("gradientStyle", style.id)}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
-                          settings.gradientStyle === style.id
-                            ? "bg-white/10 border-white/30 text-white"
-                            : "bg-black/30 border-white/10 text-white/60 hover:text-white hover:border-white/20"
-                        )}
+          {/* Tab Content - collapsible */}
+          <AnimatePresence>
+            {!minimizedBar && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="p-4 min-h-[140px]">
+                  <AnimatePresence mode="wait">
+                    {activeTab === "shape" && (
+                      <motion.div
+                        key="shape"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="flex flex-wrap items-center justify-center gap-3"
                       >
-                        <Icon size={18} />
-                        <span className="text-sm font-medium">{style.label}</span>
-                      </button>
-                    );
-                  })}
-                </motion.div>
-              )}
-
-              {activeTab === "colors" && (
-                <motion.div
-                  key="colors"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  {/* Color pickers row */}
-                  <div className="flex flex-wrap items-start justify-center gap-4">
-                    <div className="w-32">
-                      <ColorPickerField
-                        label="Color 1"
-                        value={settings.color1}
-                        onChange={(v) => updateSetting("color1", v)}
-                      />
-                    </div>
-                    {!settings.singleColorMode && (
-                      <>
-                        <div className="w-32">
-                          <ColorPickerField
-                            label="Color 2"
-                            value={settings.color2}
-                            onChange={(v) => updateSetting("color2", v)}
-                          />
-                        </div>
-                        <div className="w-32">
-                          <ColorPickerField
-                            label="Color 3"
-                            value={settings.color3}
-                            onChange={(v) => updateSetting("color3", v)}
-                          />
-                        </div>
-                        <div className="w-32">
-                          <ColorPickerField
-                            label="Color 4"
-                            value={settings.color4}
-                            onChange={(v) => updateSetting("color4", v)}
-                          />
-                        </div>
-                      </>
+                        {GRADIENT_STYLES.map((style) => {
+                          const Icon = style.icon;
+                          return (
+                            <button
+                              key={style.id}
+                              onClick={() => updateSetting("gradientStyle", style.id)}
+                              className={cn(
+                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                                settings.gradientStyle === style.id
+                                  ? "bg-white/10 border-white/30 text-white"
+                                  : "bg-black/30 border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                              )}
+                            >
+                              <Icon size={18} />
+                              <span className="text-sm font-medium">{style.label}</span>
+                            </button>
+                          );
+                        })}
+                      </motion.div>
                     )}
-                  </div>
 
-                  {/* Toggles and presets */}
-                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-white/5">
-                    {/* Single color mode toggle */}
-                    <button
-                      onClick={() => updateSetting("singleColorMode", !settings.singleColorMode)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
-                        settings.singleColorMode
-                          ? "bg-white/10 border-white/30 text-white"
-                          : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
-                      )}
-                    >
-                      Single Color
-                    </button>
-
-                    <div className="w-px h-6 bg-white/10" />
-
-                    {/* Presets */}
-                    <span className="text-xs text-white/40 uppercase tracking-wider">Presets:</span>
-                    {Object.keys(COLOR_PRESETS).map((key) => (
-                      <button
-                        key={key}
-                        onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/30 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all capitalize"
+                    {activeTab === "colors" && (
+                      <motion.div
+                        key="colors"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-4"
                       >
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                        {/* Color pickers row */}
+                        <div className="flex flex-wrap items-start justify-center gap-4">
+                          <div className="w-32">
+                            <ColorPickerField
+                              label="Color 1"
+                              value={settings.color1}
+                              onChange={(v) => updateSetting("color1", v)}
+                              onOpenChange={(isOpen) => handleColorPickerOpen("color1", isOpen)}
+                              forceClose={activeColorPicker !== null && activeColorPicker !== "color1"}
+                            />
+                          </div>
+                          {!settings.singleColorMode && (
+                            <>
+                              <div className="w-32">
+                                <ColorPickerField
+                                  label="Color 2"
+                                  value={settings.color2}
+                                  onChange={(v) => updateSetting("color2", v)}
+                                  onOpenChange={(isOpen) => handleColorPickerOpen("color2", isOpen)}
+                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color2"}
+                                />
+                              </div>
+                              <div className="w-32">
+                                <ColorPickerField
+                                  label="Color 3"
+                                  value={settings.color3}
+                                  onChange={(v) => updateSetting("color3", v)}
+                                  onOpenChange={(isOpen) => handleColorPickerOpen("color3", isOpen)}
+                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color3"}
+                                />
+                              </div>
+                              <div className="w-32">
+                                <ColorPickerField
+                                  label="Color 4"
+                                  value={settings.color4}
+                                  onChange={(v) => updateSetting("color4", v)}
+                                  onOpenChange={(isOpen) => handleColorPickerOpen("color4", isOpen)}
+                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color4"}
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
 
-              {activeTab === "motion" && (
-                <motion.div
-                  key="motion"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  {/* Brightness */}
-                  <div className="flex items-center justify-center gap-6">
-                    <div className="flex items-center gap-3">
-                      <Sun size={16} className="text-white/50" />
-                      <span className="text-xs text-white/50 uppercase tracking-wider w-20">Brightness</span>
-                      <input
-                        type="range"
-                        min="0.6"
-                        max="1.6"
-                        step="0.05"
-                        value={settings.brightness}
-                        onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))}
-                        className="w-32 accent-white/50"
-                      />
-                      <span className="text-sm text-white/70 w-10">{settings.brightness.toFixed(2)}</span>
-                    </div>
-                  </div>
+                        {/* Toggles and presets */}
+                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-white/5">
+                          {/* Single color mode toggle */}
+                          <button
+                            onClick={() => updateSetting("singleColorMode", !settings.singleColorMode)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+                              settings.singleColorMode
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
+                            )}
+                          >
+                            Single Color
+                          </button>
 
-                  {/* Grain */}
-                  <div className="flex items-center justify-center gap-6">
-                    <button
-                      onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
-                        settings.grainEnabled
-                          ? "bg-white/10 border-white/30 text-white"
-                          : "bg-black/30 border-white/10 text-white/50"
-                      )}
-                    >
-                      <Layers size={16} />
-                      <span className="text-xs font-medium">Grain</span>
-                    </button>
-                    {settings.grainEnabled && (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-white/50">Intensity</span>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.05"
-                          value={settings.grainIntensity}
-                          onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))}
-                          className="w-24 accent-white/50"
-                        />
-                        <span className="text-sm text-white/70 w-8">{settings.grainIntensity.toFixed(2)}</span>
-                      </div>
+                          <div className="w-px h-6 bg-white/10" />
+
+                          {/* Presets */}
+                          <span className="text-xs text-white/40 uppercase tracking-wider">Presets:</span>
+                          {Object.keys(COLOR_PRESETS).map((key) => (
+                            <button
+                              key={key}
+                              onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/30 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all capitalize"
+                            >
+                              {key.replace(/([A-Z])/g, " $1").trim()}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
                     )}
-                  </div>
 
-                  {/* Environment */}
-                  <div className="flex items-center justify-center gap-6">
-                    <button
-                      onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
-                        settings.environmentEnabled
-                          ? "bg-white/10 border-white/30 text-white"
-                          : "bg-black/30 border-white/10 text-white/50"
-                      )}
-                    >
-                      <Cloudy size={16} />
-                      <span className="text-xs font-medium">Environment Light</span>
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+                    {activeTab === "motion" && (
+                      <motion.div
+                        key="motion"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-4"
+                      >
+                        {/* Brightness */}
+                        <div className="flex items-center justify-center gap-6">
+                          <div className="flex items-center gap-3">
+                            <Sun size={16} className="text-white/50" />
+                            <span className="text-xs text-white/50 uppercase tracking-wider w-20">Brightness</span>
+                            <input
+                              type="range"
+                              min="0.6"
+                              max="1.6"
+                              step="0.05"
+                              value={settings.brightness}
+                              onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))}
+                              className="w-32 accent-white/50"
+                            />
+                            <span className="text-sm text-white/70 w-10">{settings.brightness.toFixed(2)}</span>
+                          </div>
+                        </div>
 
-              {activeTab === "view" && (
-                <motion.div
-                  key="view"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center justify-center gap-4"
-                >
-                  <button
-                    onClick={() => setFullscreen(!fullscreen)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
-                      fullscreen
-                        ? "bg-white/10 border-white/30 text-white"
-                        : "bg-black/30 border-white/10 text-white/60"
+                        {/* Grain */}
+                        <div className="flex items-center justify-center gap-6">
+                          <button
+                            onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                              settings.grainEnabled
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-black/30 border-white/10 text-white/50"
+                            )}
+                          >
+                            <Layers size={16} />
+                            <span className="text-xs font-medium">Grain</span>
+                          </button>
+                          {settings.grainEnabled && (
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-white/50">Intensity</span>
+                              <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={settings.grainIntensity}
+                                onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))}
+                                className="w-24 accent-white/50"
+                              />
+                              <span className="text-sm text-white/70 w-8">{settings.grainIntensity.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Environment */}
+                        <div className="flex items-center justify-center gap-6">
+                          <button
+                            onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                              settings.environmentEnabled
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-black/30 border-white/10 text-white/50"
+                            )}
+                          >
+                            <Cloudy size={16} />
+                            <span className="text-xs font-medium">Environment Light</span>
+                          </button>
+                        </div>
+                      </motion.div>
                     )}
-                  >
-                    {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                    <span className="text-sm font-medium">Fullscreen</span>
-                  </button>
 
-                  <button
-                    onClick={() => setShowHints(!showHints)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
-                      showHints
-                        ? "bg-white/10 border-white/30 text-white"
-                        : "bg-black/30 border-white/10 text-white/60"
+                    {activeTab === "view" && (
+                      <motion.div
+                        key="view"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="flex items-start gap-6"
+                      >
+                        {/* Left side - View toggles */}
+                        <div className="flex flex-col items-start gap-3">
+                          <span className="text-xs text-white/40 uppercase tracking-wider">Display</span>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setFullscreen(!fullscreen)}
+                              className={cn(
+                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                                fullscreen
+                                  ? "bg-white/10 border-white/30 text-white"
+                                  : "bg-black/30 border-white/10 text-white/60"
+                              )}
+                            >
+                              {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                              <span className="text-sm font-medium">Fullscreen</span>
+                            </button>
+
+                            <button
+                              onClick={() => setShowHints(!showHints)}
+                              className={cn(
+                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                                showHints
+                                  ? "bg-white/10 border-white/30 text-white"
+                                  : "bg-black/30 border-white/10 text-white/60"
+                              )}
+                            >
+                              {showHints ? <Eye size={18} /> : <EyeOff size={18} />}
+                              <span className="text-sm font-medium">UI Hints</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-24 bg-white/10 self-center" />
+
+                        {/* Right side - Live code export */}
+                        <div className="flex-1 flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-white/40 uppercase tracking-wider">Export Component</span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={handleCopyCode}
+                                className={cn(
+                                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                                  copiedCode
+                                    ? "bg-green-500/20 border-green-500/30 text-green-400"
+                                    : "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
+                                )}
+                              >
+                                {copiedCode ? <Check size={12} /> : <Code size={12} />}
+                                Code
+                              </button>
+                              <button
+                                onClick={handleCopyJSON}
+                                className={cn(
+                                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                                  copiedJSON
+                                    ? "bg-green-500/20 border-green-500/30 text-green-400"
+                                    : "bg-purple-500/20 border-purple-500/30 text-purple-400 hover:bg-purple-500/30"
+                                )}
+                              >
+                                {copiedJSON ? <Check size={12} /> : <FileJson size={12} />}
+                                JSON
+                              </button>
+                              <button
+                                onClick={() => setShowExport(true)}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500/30 transition-all"
+                              >
+                                <Copy size={12} />
+                                Full Export
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Live code preview */}
+                          <div className="bg-black/50 rounded-lg p-3 border border-white/5 max-h-[80px] overflow-y-auto">
+                            <pre className="text-[10px] text-white/60 whitespace-pre-wrap font-mono leading-relaxed">
+                              {liveCode}
+                            </pre>
+                          </div>
+                        </div>
+                      </motion.div>
                     )}
-                  >
-                    {showHints ? <Eye size={18} /> : <EyeOff size={18} />}
-                    <span className="text-sm font-medium">UI Hints</span>
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
