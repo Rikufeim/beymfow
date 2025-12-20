@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Share2, Download, Image } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
@@ -68,7 +68,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "motion" | "view";
+type TabId = "shape" | "colors" | "motion" | "view" | "share";
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -172,6 +172,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   // Copy state
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedJSON, setCopiedJSON] = useState(false);
+  
+  // Download state
+  const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
+  const [downloadScale, setDownloadScale] = useState(1);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Live code and JSON
   const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
@@ -302,6 +307,126 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     toast.success("JSON copied!");
     setTimeout(() => setCopiedJSON(false), 2000);
   }, [liveJSON]);
+
+  // Generate live thumbnail for share preview
+  const generateLiveThumbnail = useCallback(async (): Promise<string> => {
+    const canvas = document.createElement("canvas");
+    const width = 1920 * downloadScale;
+    const height = 1080 * downloadScale;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return "";
+
+    const { color1, color2, color3, color4, singleColorMode, gradientStyle, brightness, environmentEnabled } = settings;
+
+    // Draw gradient background
+    let gradient: CanvasGradient;
+    switch (gradientStyle) {
+      case "halo":
+        gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.6);
+        if (singleColorMode) {
+          gradient.addColorStop(0, color1);
+          gradient.addColorStop(1, color1);
+        } else {
+          gradient.addColorStop(0, color3 + "80");
+          gradient.addColorStop(0.35, color2 + "CC");
+          gradient.addColorStop(1, color1);
+        }
+        break;
+      case "soft-sweep":
+        gradient = ctx.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.3, color2);
+        gradient.addColorStop(0.6, color3 + "99");
+        gradient.addColorStop(1, singleColorMode ? color1 : color4 + "66");
+        break;
+      case "diagonal-blend":
+        gradient = ctx.createLinearGradient(0, height, width, 0);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.25, color2);
+        gradient.addColorStop(0.5, color3 + "E6");
+        gradient.addColorStop(0.75, singleColorMode ? color2 : color4 + "B3");
+        gradient.addColorStop(1, color1);
+        break;
+      default:
+        gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(0.5, color2);
+        gradient.addColorStop(1, color1);
+    }
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Environment glow
+    if (environmentEnabled && !singleColorMode) {
+      const glowGrad = ctx.createRadialGradient(width / 2, height * 0.25, 0, width / 2, height * 0.25, height * 0.5);
+      glowGrad.addColorStop(0, color3 + "40");
+      glowGrad.addColorStop(1, "transparent");
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    // Apply brightness via compositing
+    if (brightness !== 1) {
+      ctx.globalCompositeOperation = brightness > 1 ? "lighter" : "multiply";
+      ctx.globalAlpha = Math.abs(brightness - 1) * 0.3;
+      ctx.fillStyle = brightness > 1 ? "#ffffff" : "#000000";
+      ctx.fillRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+    }
+
+    return canvas.toDataURL(downloadFormat === "png" ? "image/png" : "image/jpeg", 0.95);
+  }, [settings, downloadScale, downloadFormat]);
+
+  const handleDownloadImage = useCallback(async () => {
+    const dataUrl = await generateLiveThumbnail();
+    if (!dataUrl) return;
+    
+    const link = document.createElement("a");
+    link.download = `${currentProjectName.replace(/\s+/g, "-").toLowerCase()}.${downloadFormat}`;
+    link.href = dataUrl;
+    link.click();
+    toast.success("Image downloaded!");
+  }, [generateLiveThumbnail, currentProjectName, downloadFormat]);
+
+  // Live preview thumbnail (small version)
+  const [liveThumbnail, setLiveThumbnail] = useState<string>("");
+  
+  useEffect(() => {
+    const generatePreview = async () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 320;
+      canvas.height = 180;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const { color1, color2, color3, gradientStyle, singleColorMode } = settings;
+      
+      let gradient: CanvasGradient;
+      switch (gradientStyle) {
+        case "halo":
+          gradient = ctx.createRadialGradient(160, 90, 0, 160, 90, 160);
+          gradient.addColorStop(0, singleColorMode ? color1 : color3 + "80");
+          gradient.addColorStop(0.4, color2 + "CC");
+          gradient.addColorStop(1, color1);
+          break;
+        default:
+          gradient = ctx.createLinearGradient(0, 0, 320, 180);
+          gradient.addColorStop(0, color1);
+          gradient.addColorStop(0.5, color2);
+          gradient.addColorStop(1, singleColorMode ? color1 : color3 + "80");
+      }
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 320, 180);
+      setLiveThumbnail(canvas.toDataURL("image/png"));
+    };
+    
+    generatePreview();
+  }, [settings]);
 
   // Handle color picker open (only one at a time)
   const handleColorPickerOpen = useCallback((colorKey: string, isOpen: boolean) => {
@@ -460,6 +585,23 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                   {tab}
                 </button>
               ))}
+              
+              {/* Share Tab - Special styling */}
+              <button
+                onClick={() => {
+                  setActiveTab("share");
+                  if (minimizedBar) setMinimizedBar(false);
+                }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ml-2 border",
+                  activeTab === "share"
+                    ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
+                    : "bg-white/5 border-white/10 text-white/60 hover:text-white/80 hover:bg-white/10"
+                )}
+              >
+                <Share2 size={14} />
+                Share
+              </button>
             </div>
 
             {/* Minimize button */}
@@ -678,85 +820,161 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
+                        className="flex items-center justify-center gap-6"
+                      >
+                        {/* View toggles */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setFullscreen(!fullscreen)}
+                            className={cn(
+                              "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                              fullscreen
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-black/30 border-white/10 text-white/60"
+                            )}
+                          >
+                            {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                            <span className="text-sm font-medium">Fullscreen</span>
+                          </button>
+
+                          <button
+                            onClick={() => setShowHints(!showHints)}
+                            className={cn(
+                              "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                              showHints
+                                ? "bg-white/10 border-white/30 text-white"
+                                : "bg-black/30 border-white/10 text-white/60"
+                            )}
+                          >
+                            {showHints ? <Eye size={18} /> : <EyeOff size={18} />}
+                            <span className="text-sm font-medium">UI Hints</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {activeTab === "share" && (
+                      <motion.div
+                        key="share"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
                         className="flex items-start gap-6"
                       >
-                        {/* Left side - View toggles */}
-                        <div className="flex flex-col items-start gap-3">
-                          <span className="text-xs text-white/40 uppercase tracking-wider">Display</span>
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => setFullscreen(!fullscreen)}
-                              className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
-                                fullscreen
-                                  ? "bg-white/10 border-white/30 text-white"
-                                  : "bg-black/30 border-white/10 text-white/60"
-                              )}
-                            >
-                              {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                              <span className="text-sm font-medium">Fullscreen</span>
-                            </button>
-
-                            <button
-                              onClick={() => setShowHints(!showHints)}
-                              className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
-                                showHints
-                                  ? "bg-white/10 border-white/30 text-white"
-                                  : "bg-black/30 border-white/10 text-white/60"
-                              )}
-                            >
-                              {showHints ? <Eye size={18} /> : <EyeOff size={18} />}
-                              <span className="text-sm font-medium">UI Hints</span>
-                            </button>
+                        {/* Left side - Live preview thumbnail */}
+                        <div className="flex flex-col gap-3">
+                          <span className="text-xs text-white/40 uppercase tracking-wider">Preview</span>
+                          <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                            {liveThumbnail ? (
+                              <img 
+                                src={liveThumbnail} 
+                                alt="Live preview" 
+                                className="w-48 h-28 object-cover"
+                              />
+                            ) : (
+                              <div className="w-48 h-28 flex items-center justify-center">
+                                <Image size={24} className="text-white/20" />
+                              </div>
+                            )}
+                            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-[9px] text-white/50">
+                              {1920 * downloadScale} × {1080 * downloadScale}
+                            </div>
+                          </div>
+                          
+                          {/* Size slider */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-white/40">Size</span>
+                            <input
+                              type="range"
+                              min="0.5"
+                              max="2"
+                              step="0.5"
+                              value={downloadScale}
+                              onChange={(e) => setDownloadScale(parseFloat(e.target.value))}
+                              className="w-20 accent-purple-500"
+                            />
+                            <span className="text-[10px] text-white/60 w-6">{downloadScale}x</span>
                           </div>
                         </div>
 
                         {/* Divider */}
-                        <div className="w-px h-24 bg-white/10 self-center" />
+                        <div className="w-px h-32 bg-white/10 self-center" />
 
-                        {/* Right side - Live code export */}
+                        {/* Center - Download options */}
+                        <div className="flex flex-col gap-3">
+                          <span className="text-xs text-white/40 uppercase tracking-wider">Download Image</span>
+                          
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setDownloadFormat("png")}
+                              className={cn(
+                                "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                                downloadFormat === "png"
+                                  ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
+                                  : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
+                              )}
+                            >
+                              PNG
+                            </button>
+                            <button
+                              onClick={() => setDownloadFormat("jpg")}
+                              className={cn(
+                                "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                                downloadFormat === "jpg"
+                                  ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
+                                  : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
+                              )}
+                            >
+                              JPG
+                            </button>
+                          </div>
+                          
+                          <button
+                            onClick={handleDownloadImage}
+                            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium transition-all"
+                          >
+                            <Download size={16} />
+                            Download
+                          </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-32 bg-white/10 self-center" />
+
+                        {/* Right side - Code export */}
                         <div className="flex-1 flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-white/40 uppercase tracking-wider">Export Component</span>
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={handleCopyCode}
-                                className={cn(
-                                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                                  copiedCode
-                                    ? "bg-green-500/20 border-green-500/30 text-green-400"
-                                    : "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
-                                )}
-                              >
-                                {copiedCode ? <Check size={12} /> : <Code size={12} />}
-                                Code
-                              </button>
-                              <button
-                                onClick={handleCopyJSON}
-                                className={cn(
-                                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                                  copiedJSON
-                                    ? "bg-green-500/20 border-green-500/30 text-green-400"
-                                    : "bg-purple-500/20 border-purple-500/30 text-purple-400 hover:bg-purple-500/30"
-                                )}
-                              >
-                                {copiedJSON ? <Check size={12} /> : <FileJson size={12} />}
-                                JSON
-                              </button>
-                              <button
-                                onClick={() => setShowExport(true)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500/30 transition-all"
-                              >
-                                <Copy size={12} />
-                                Full Export
-                              </button>
-                            </div>
+                          <span className="text-xs text-white/40 uppercase tracking-wider">Copy Code</span>
+                          
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handleCopyCode}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                                copiedCode
+                                  ? "bg-green-500/20 border-green-500/30 text-green-400"
+                                  : "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
+                              )}
+                            >
+                              {copiedCode ? <Check size={12} /> : <Code size={12} />}
+                              React Component
+                            </button>
+                            <button
+                              onClick={handleCopyJSON}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                                copiedJSON
+                                  ? "bg-green-500/20 border-green-500/30 text-green-400"
+                                  : "bg-orange-500/20 border-orange-500/30 text-orange-400 hover:bg-orange-500/30"
+                              )}
+                            >
+                              {copiedJSON ? <Check size={12} /> : <FileJson size={12} />}
+                              JSON Settings
+                            </button>
                           </div>
                           
                           {/* Live code preview */}
-                          <div className="bg-black/50 rounded-lg p-3 border border-white/5 max-h-[80px] overflow-y-auto">
-                            <pre className="text-[10px] text-white/60 whitespace-pre-wrap font-mono leading-relaxed">
+                          <div className="bg-black/50 rounded-lg p-2 border border-white/5 max-h-[70px] overflow-y-auto">
+                            <pre className="text-[9px] text-white/50 whitespace-pre-wrap font-mono leading-relaxed">
                               {liveCode}
                             </pre>
                           </div>
