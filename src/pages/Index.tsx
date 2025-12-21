@@ -10,7 +10,7 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { useMemo, lazy, Suspense } from "react";
-import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholderCarousel";
+// HorizontalPlaceholderCarousel moved to Hero component
 import HolographicCard from "@/components/demo/HolographicCard";
 import HyperTextCard from "@/components/demo/HyperTextCard";
 import UploadTile from "@/components/demo/UploadTile";
@@ -101,20 +101,7 @@ const Index = () => {
               </div>
             </section>
 
-            {/* Prompt Packs (placeholder carousels) */}
-            <section className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-16 sm:py-20 md:py-24 lg:py-32">
-              <div className="text-center mb-8 sm:mb-12">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
-                  The biggest collection<br />of <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium">prompt templates</span>
-                </h2>
-                <p className="text-gray-400 text-lg sm:text-xl md:text-2xl mt-4">
-                  growing collection of prompts
-                </p>
-              </div>
-              <HorizontalPlaceholderCarousel title="Hero templates" />
-              <HorizontalPlaceholderCarousel title="Landing page template" />
-              <HorizontalPlaceholderCarousel title="Components" />
-            </section>
+            {/* Video carousels moved to Hero component */}
 
             {/* Flow Features Section */}
             <FlowFeaturesSection className="py-16 sm:py-20 md:py-24 lg:py-32" />
