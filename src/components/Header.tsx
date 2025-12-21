@@ -22,9 +22,9 @@ const Header = () => {
       <div className="flex justify-start flex-1">
         <Link to="/" className="flex items-center gap-0 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
           <img
-            src="/images/BeymflowlogoREAL.png"
+            src="/lovable-uploads/beymflow-logo-new.png"
             alt="Beymflow Logo"
-            className="h-[60px] object-contain"
+            className="h-[50px] object-contain"
           />
           <span className="relative text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1" style={{ fontSize: '16px' }}>
             Beymflow
