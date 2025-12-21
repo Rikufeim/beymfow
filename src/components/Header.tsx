@@ -6,12 +6,24 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
+import { useEffect, useState } from "react";
+
+// Preload logo to prevent flickering
+const LOGO_URL = "/images/beymflow-logo.png";
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
   const { prefetchRoute } = usePrefetchRoute();
+  const [logoLoaded, setLogoLoaded] = useState(false);
+
+  // Preload logo on mount
+  useEffect(() => {
+    const img = new Image();
+    img.src = LOGO_URL;
+    img.onload = () => setLogoLoaded(true);
+  }, []);
 
   return (
     <header
@@ -22,9 +34,11 @@ const Header = () => {
       <div className="flex justify-start flex-1">
         <Link to="/" className="flex items-center gap-0 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
           <img
-            src="/images/beymflow-logo.png"
+            src={LOGO_URL}
             alt="Beymflow Logo"
-            className="h-10 sm:h-11 md:h-12 w-auto object-contain flex-shrink-0"
+            className={`h-10 sm:h-11 md:h-12 w-auto object-contain flex-shrink-0 transition-opacity duration-200 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
+            loading="eager"
+            decoding="async"
           />
           <span className="relative text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1" style={{ fontSize: '16px' }}>
             Beymflow
