@@ -135,9 +135,9 @@ const Auth = () => {
           <div className="p-6 sm:p-8">
             <Link to="/" className="flex items-center gap-2">
               <img 
-                src="/lovable-uploads/BeymflowlogoREAL.png" 
+                src="/images/beymflow-logo.png" 
                 alt="Beymflow" 
-                className="h-12 w-auto"
+                className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
               />
             </Link>
           </div>

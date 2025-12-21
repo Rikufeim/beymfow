@@ -2730,9 +2730,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 {/* 1. Beymflow Brand Section */}
                 <div className="flex items-center justify-center gap-0 mt-4 mb-3 w-full max-w-3xl mx-auto">
                   <img
-                    src="/lovable-uploads/beymflow-logo-new.png"
+                    src="/images/beymflow-logo.png"
                     alt="Beymflow Logo"
-                    className="h-16 w-auto object-contain"
+                    className="h-14 sm:h-16 md:h-20 w-auto object-contain flex-shrink-0"
                   />
                   <span className="text-white font-semibold text-4xl -ml-1">
                     Beymflow
