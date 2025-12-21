@@ -1,106 +1,115 @@
-import { motion } from "framer-motion";
-import { PromptSidebar } from "@/components/ui/prompt-sidebar";
-import heroWallpaper from "@/assets/hero-wallpaper.png";
-import heroWallpaperMobile from "@/assets/hero-wallpaper-mobile.png";
+import { Search } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-// 3D Carousel component - continuous smooth rotating carousel
-const DynamicLines = () => {
-  const items = ["Landing pages", "Mobile Apps", "Beats", "Web Apps", "Components", "Templates"];
-
-  return (
-    <div 
-      className="relative h-16 sm:h-20 md:h-24 flex items-center justify-center overflow-hidden"
-      style={{ perspective: "1000px" }}
-    >
-      <motion.div 
-        className="relative w-full flex items-center justify-center"
-        style={{ 
-          transformStyle: "preserve-3d",
-        }}
-        animate={{
-          rotateY: 360,
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      >
-        {items.map((item, index) => {
-          const angle = (index * 360) / items.length;
-          const radius = 100;
-          const x = Math.sin((angle * Math.PI) / 180) * radius;
-          const z = Math.cos((angle * Math.PI) / 180) * radius;
-          const isFront = z > 50;
-          
-          return (
-            <motion.span
-              key={item}
-              style={{
-                position: "absolute",
-                transformStyle: "preserve-3d",
-                transform: `translate3d(${x}px, 0, ${z}px) rotateY(${-angle}deg)`,
-                opacity: isFront ? 1 : 0.2,
-                scale: isFront ? 1 : 0.6,
-              }}
-              className="inline-block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium text-sm sm:text-base md:text-lg lg:text-xl whitespace-nowrap"
-            >
-              {item}
-            </motion.span>
-          );
-        })}
-      </motion.div>
-    </div>
-  );
-};
+// Feature cards data - you can add images later
+const FEATURE_CARDS = [
+  {
+    id: 1,
+    title: "Explore the Marketplace",
+    description: "Browse 240k+ quality, tested prompts",
+    placeholder: true,
+  },
+  {
+    id: 2,
+    title: "Sell Your Prompts",
+    description: "Create, share and earn",
+    placeholder: true,
+  },
+  {
+    id: 3,
+    title: "Get a Custom Prompt",
+    description: "Work with expert prompt engineers",
+    placeholder: true,
+  },
+  {
+    id: 4,
+    title: "Generate AI Content",
+    description: "Create images, videos & more",
+    placeholder: true,
+  },
+];
 
 export default function Hero() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/prompt-library?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
-    <section
-      id="hero"
-      className="relative w-full min-h-screen px-6 md:px-8 flex flex-col items-center justify-center pt-20 pb-16 text-center"
-      style={{ position: 'relative', zIndex: 1 }}
-    >
-      {/* Mobile background */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-[center_25%] bg-no-repeat md:hidden"
-        style={{
-          backgroundImage: `url(${heroWallpaperMobile})`,
-        }}
-      />
-      {/* Desktop background */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-no-repeat hidden md:block bg-[center_-15%]"
-        style={{
-          backgroundImage: `url(${heroWallpaper})`,
-        }}
-      />
-      {/* Top gradient fade to black */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black to-transparent z-[1]" />
+    <section className="relative w-full min-h-[70vh] bg-background pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-background/80" />
       
-      <div className="relative z-10 w-full flex flex-col items-center gap-6">
-        {/* Otsikko */}
-        <h1
-          className="mx-auto max-w-6xl text-5xl font-bold leading-none tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-        >
-          <span className="block text-white/90 text-center text-5xl sm:text-6xl md:text-7xl font-semibold" style={{ fontFamily: "Outfit, sans-serif" }}>
-            Make powerful
-          </span>
-          <span className="block bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent text-center text-5xl sm:text-6xl md:text-7xl font-medium mt-1 pb-2">
-            prompts with pure flow
-          </span>
-        </h1>
-
-        {/* Dynamic Lines */}
-        <div className="mx-auto mt-2 max-w-4xl mb-6">
-          <DynamicLines />
+      <div className="relative z-10 max-w-6xl mx-auto">
+        {/* Main heading */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground mb-4">
+            Prompt Marketplace
+          </h1>
+          <p className="text-lg sm:text-xl text-muted-foreground mb-2">
+            Access 240k high-quality AI prompts
+          </p>
+          <p className="text-lg sm:text-xl bg-gradient-to-r from-teal-400 via-purple-500 to-pink-500 bg-clip-text text-transparent font-medium">
+            Midjourney, ChatGPT, Veo, Gemini & more
+          </p>
         </div>
 
+        {/* Large Search Window */}
+        <form onSubmit={handleSearch} className="w-full max-w-2xl mx-auto mb-12">
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Search prompts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-14 pl-5 pr-16 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            />
+            <button
+              type="submit"
+              className="absolute right-2 h-10 w-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+        </form>
 
-        {/* PROMPT CARDS BANNER - Below QuickPromptGenerator */}
-        <div className="w-full max-w-7xl mx-auto relative z-20 mt-8">
-          <PromptSidebar />
+        {/* Feature Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {FEATURE_CARDS.map((card) => (
+            <div
+              key={card.id}
+              className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-card/60 backdrop-blur-sm border border-border/30 hover:border-border/60 transition-all cursor-pointer"
+            >
+              {/* Placeholder for future images */}
+              <div className="absolute inset-0 bg-gradient-to-br from-muted/20 to-muted/40 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-lg bg-muted/30 border border-border/20" />
+              </div>
+              
+              {/* Card content overlay */}
+              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-background/90 to-transparent">
+                <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {card.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* Bottom text - outside hero */}
+      <div className="relative z-10 text-center mt-8">
+        <p className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent">
+          The biggest collection of prompt templates
+        </p>
       </div>
     </section>
   );
