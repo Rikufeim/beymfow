@@ -74,13 +74,10 @@ serve(async (req) => {
       }
     }
 
-    // Check if user is admin OR super admin email
-    const SUPER_ADMIN_EMAIL = 'rikum.miettinen@live.fi';
-    const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL;
-    
+    // Check if user is admin using proper role-based access control
     const { data: adminCheck } = await supabaseClient
       .rpc('has_role', { _user_id: user.id, _role: 'admin' });
-    const isAdmin = adminCheck === true || isSuperAdmin;
+    const isAdmin = adminCheck === true;
 
     // Admin or Super Admin has unlimited access
     if (isAdmin) {
