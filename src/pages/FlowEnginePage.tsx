@@ -3302,7 +3302,7 @@ const FlowEngineUnified: React.FC<FlowEngineProps> = (props) => {
   return (
     <MockAuthProvider>
       <FlowStateProvider>
-        <Toaster position="top-center" />
+        <Toaster />
         <FlowEngineContent {...props} />
       </FlowStateProvider>
     </MockAuthProvider>

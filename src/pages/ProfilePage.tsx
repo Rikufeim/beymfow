@@ -259,7 +259,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      <Footer compact={true} />
+      <Footer />
     </Layout>
   );
 }

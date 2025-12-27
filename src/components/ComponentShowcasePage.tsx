@@ -235,7 +235,6 @@ const ComponentShowcasePage: React.FC<ComponentShowcasePageProps> = ({
                         playsInline
                         autoPlay
                         preload="metadata"
-                        loading="lazy"
                         className="absolute inset-2 w-[calc(100%-16px)] h-[calc(100%-16px)] object-contain rounded-lg"
                         onError={(e) => {
                           console.error('Video load error:', e);

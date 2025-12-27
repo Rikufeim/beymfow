@@ -480,7 +480,6 @@ const HorizontalPlaceholderCarouselComponent: React.FC<HorizontalPlaceholderCaro
                           playsInline
                           autoPlay
                           preload="metadata"
-                          loading="lazy"
                           className="w-full h-full object-contain"
                           onLoadedData={(e) => {
                             e.currentTarget.play().catch(() => {

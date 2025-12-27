@@ -759,11 +759,10 @@ function PromptWorkspaceInner() {
   // --- HELPERS & HANDLERS ---
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setLandingInput(e.target.value);
-    setCursorPos(e.target.selectionStart || e.target.value.length);
   }, []);
 
   const handleInputSelect = useCallback((e: React.SyntheticEvent<HTMLInputElement, Event>) => {
-    setCursorPos((e.target as HTMLInputElement).selectionStart || 0);
+    // No-op for now
   }, []);
 
   // Generate 3 high-quality prompt alternatives based on user input
@@ -1420,7 +1419,6 @@ Before finalizing, verify:
                                     playsInline
                                     autoPlay
                                     preload="metadata"
-                                    loading="lazy"
                                     className="w-full h-full object-contain"
                                     onError={(e) => {
                                       console.error('Video load error:', e);
