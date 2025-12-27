@@ -213,8 +213,8 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                             className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden will-change-transform hover:bg-gradient-to-br hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
                             style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                           >
-                            <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-colors">
-                              <solution.icon className="w-7 h-7 text-teal-400" />
+                            <div className="w-14 h-14 rounded-xl flex items-center justify-center">
+                              <solution.icon className="w-7 h-7 text-white/80 group-hover:text-white transition-colors" />
                             </div>
                             <div className="text-center">
                               <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
