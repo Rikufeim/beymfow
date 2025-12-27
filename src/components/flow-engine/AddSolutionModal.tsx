@@ -181,14 +181,14 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               {solutionTypes.map((solution) => (
                 <div key={solution.id} className="min-h-[10rem]">
                   <div 
-                    className={cn("relative h-full rounded-2xl border border-white/10 cursor-pointer hover:border-white/20 transition-colors")} 
+                    className={cn("relative h-full rounded-2xl border border-teal-500/20 cursor-pointer hover:border-teal-500/40 transition-colors")} 
                     onClick={() => handleSelectType(solution.id)}
                   >
                     <div 
                       className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[0.95rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
                     >
-                      <div className="w-14 h-14 rounded-xl flex items-center justify-center">
-                        <solution.icon className="w-7 h-7 text-white/80 group-hover:text-white transition-colors" />
+                      <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                        <solution.icon className="w-7 h-7 text-teal-400 group-hover:text-teal-300 transition-colors" />
                       </div>
                       <div className="text-center">
                         <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
