@@ -39,39 +39,27 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border border-white/10 overflow-hidden bg-card ${className}`}
+      className={`relative rounded-2xl border border-white/10 overflow-hidden bg-neutral-950 ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Gradient Preview Area */}
+      {/* Gradient Preview Area - fixed height to prevent layout shift */}
       <div
-        className="relative flex-1 min-h-[200px]"
+        className="w-full h-full min-h-[200px]"
         style={{
           ...gradientStyle,
-          transition: "background 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       />
 
-      {/* Bottom Control Bar - Absolute positioned */}
-      <div
-        className="absolute bottom-0 left-0 right-0 bg-neutral-900 border-t border-white/10 overflow-hidden"
-        style={{
-          transform: isHovered ? "translateY(0)" : "translateY(100%)",
-          opacity: isHovered ? 1 : 0,
-          visibility: isHovered ? "visible" : "hidden",
-          pointerEvents: isHovered ? "auto" : "none",
-          willChange: "transform",
-          transition:
-            "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s",
-        }}
-      >
-        <div 
-          className="p-3 space-y-3"
+      {/* Bottom Control Bar - only render when hovered to avoid layout artifacts */}
+      {isHovered && (
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-neutral-900 border-t border-white/10"
           style={{
-            transform: isHovered ? "translateY(0)" : "translateY(10px)",
-            transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s",
+            animation: "fadeSlideUp 0.25s ease-out forwards",
           }}
         >
+          <div className="p-3 space-y-3">
           {/* Color Picker Row */}
           <div className="flex items-center gap-3">
             {/* Color Buttons */}
@@ -135,8 +123,9 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
               />
             </div>
           )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
