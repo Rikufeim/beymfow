@@ -95,18 +95,22 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
-      {/* All workspaces button */}
-      <button
-        onClick={onBack}
-        className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium mb-6 hover:bg-neutral-700 transition-colors"
-      >
-        All workspaces
-      </button>
+      {/* Tabs row */}
+      <div className="flex items-center gap-2 mb-6">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium hover:bg-neutral-700 transition-colors"
+        >
+          All workspaces
+        </button>
+        <button className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium">
+          All projects
+        </button>
+      </div>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          {/* Workspace icon */}
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
             style={{ backgroundColor: workspace.iconColor || "#f97316" }}
@@ -200,12 +204,6 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         <span className="text-neutral-500 text-sm">{projectsList.length} projects</span>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-4 mb-6">
-        <button className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium">
-          All projects
-        </button>
-      </div>
 
       {/* Content */}
       {projectsList.length === 0 ? (
