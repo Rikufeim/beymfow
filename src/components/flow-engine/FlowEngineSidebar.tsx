@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Clock,
-  Users,
   FileText,
   FolderKanban,
   Layers,
@@ -11,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
-  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,12 +23,12 @@ interface SidebarItem {
 interface FlowEngineSidebarProps {
   activeTab: "projects" | "templates";
   onTabChange: (tab: "projects" | "templates") => void;
+  onNavigate?: (view: string) => void;
   className?: string;
 }
 
 const mainItems: SidebarItem[] = [
   { id: "recents", label: "Recents", icon: Clock },
-  { id: "community", label: "Community", icon: Users },
   { id: "drafts", label: "Drafts", icon: FileText },
   { id: "all-projects", label: "All projects", icon: FolderKanban },
   { id: "resources", label: "Resources", icon: Layers },
@@ -44,13 +42,20 @@ const starredItems: SidebarItem[] = [
 export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
   activeTab,
   onTabChange,
+  onNavigate,
   className,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("recents");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const sidebarWidth = isCollapsed ? "w-14" : "w-56";
+  const handleItemClick = (itemId: string) => {
+    setActiveItem(itemId);
+    if (itemId === "all-projects") {
+      onTabChange("projects");
+      onNavigate?.("all-projects");
+    }
+  };
 
   return (
     <motion.aside
@@ -58,7 +63,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
       animate={{ width: isCollapsed ? 56 : 224 }}
       transition={{ duration: 0.2, ease: "easeInOut" }}
       className={cn(
-        "h-full bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800/50 flex flex-col z-40 overflow-hidden",
+        "h-full bg-black border-r border-neutral-800/50 flex flex-col z-40 overflow-hidden",
         className
       )}
     >
@@ -67,7 +72,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
         {isCollapsed ? (
           <button
             onClick={() => setIsCollapsed(false)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-800 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-900 transition-colors"
           >
             <Search size={18} className="text-neutral-400" />
           </button>
@@ -82,7 +87,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search"
-              className="w-full bg-neutral-800/60 border border-neutral-700/50 rounded-lg pl-9 pr-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-600"
+              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-9 pr-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-700"
             />
           </div>
         )}
@@ -97,12 +102,12 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveItem(item.id)}
+                  onClick={() => handleItemClick(item.id)}
                   className={cn(
                     "w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors",
                     isActive
-                      ? "bg-neutral-700/60 text-white"
-                      : "text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-200"
+                      ? "bg-neutral-800 text-white"
+                      : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
                   )}
                 >
                   <Icon size={18} className="flex-shrink-0" />
@@ -145,12 +150,12 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
                   return (
                     <li key={item.id}>
                       <button
-                        onClick={() => setActiveItem(item.id)}
+                        onClick={() => handleItemClick(item.id)}
                         className={cn(
                           "w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors",
                           activeItem === item.id
-                            ? "bg-neutral-700/60 text-white"
-                            : "text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-200"
+                            ? "bg-neutral-800 text-white"
+                            : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
                         )}
                       >
                         <Icon size={18} className="flex-shrink-0" />
@@ -170,7 +175,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={cn(
-            "flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-200 transition-colors",
+            "flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200 transition-colors",
             isCollapsed ? "w-8 justify-center" : "w-full"
           )}
         >
