@@ -35,7 +35,7 @@ import {
   generateProjectName as generateHeroProjectName,
   type HeroBackgroundProject 
 } from "@/lib/heroProjectStore";
-import { FlowEngineSidebar } from "@/components/flow-engine/FlowEngineSidebar";
+import { FlowEngineSidebar, type FlowEngineView } from "@/components/flow-engine/FlowEngineSidebar";
 
 import {
   ArrowRight,
@@ -915,6 +915,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const projectsTabRef = useRef<HTMLButtonElement>(null);
   const templatesTabRef = useRef<HTMLButtonElement>(null);
   const [activeTabWidth, setActiveTabWidth] = useState<number | null>(null);
+  
+  // Sidebar view state
+  const [activeView, setActiveView] = useState<FlowEngineView>("recents");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Update active tab width when tab changes
   useEffect(() => {
@@ -2691,8 +2695,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     <div className="h-screen bg-black text-neutral-200 relative flex font-sans overflow-hidden selection:bg-neutral-800 selection:text-white">
       {/* Sidebar */}
       <FlowEngineSidebar
-        activeTab={landingTab}
-        onTabChange={setLandingTab}
+        activeView={activeView}
+        onViewChange={setActiveView}
+        isCollapsed={isSidebarCollapsed}
+        onCollapsedChange={setIsSidebarCollapsed}
         className="flex-shrink-0"
       />
 
@@ -2730,117 +2736,146 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
             {/* Main Content Container - Centered with max-width */}
             <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                className="flex flex-col gap-8"
-              >
-                {/* 1. Beymflow Brand Section */}
-                <div className="flex items-center justify-center gap-0 mt-4 mb-3 w-full max-w-3xl mx-auto">
-                  <img
-                    src="/images/beymflow-logo.png"
-                    alt="Beymflow Logo"
-                    className="h-14 sm:h-16 md:h-20 w-auto object-contain flex-shrink-0"
-                  />
-                  <span className="text-white font-semibold text-4xl -ml-1">
-                    Beymflow
-                  </span>
-                </div>
+              <AnimatePresence mode="wait">
+                {activeView === "prompt-generator" ? (
+                  <motion.div 
+                    key="prompt-generator"
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex flex-col gap-8"
+                  >
+                    {/* Beymflow Brand Section */}
+                    <div className="flex items-center justify-center gap-0 mt-4 mb-3 w-full max-w-3xl mx-auto">
+                      <img
+                        src="/images/beymflow-logo.png"
+                        alt="Beymflow Logo"
+                        className="h-14 sm:h-16 md:h-20 w-auto object-contain flex-shrink-0"
+                      />
+                      <span className="text-white font-semibold text-4xl -ml-1">
+                        Beymflow
+                      </span>
+                    </div>
 
-                {/* 2. Prompt Input Section */}
-                <div className="w-full max-w-4xl mx-auto">
-                  <QuickPromptGenerator />
-                </div>
+                    {/* Prompt Input Section */}
+                    <div className="w-full max-w-4xl mx-auto">
+                      <QuickPromptGenerator />
+                    </div>
 
-                {/* 3. Bottom Mode Buttons - Outside but linked to the same state */}
-                <div className="mt-6 flex items-center justify-center gap-4">
-                  {MODES.map((mode) => {
-                    const Icon = mode.icon;
-                    return (
+                    {/* Mode Buttons */}
+                    <div className="mt-6 flex items-center justify-center gap-4">
+                      {MODES.map((mode) => {
+                        const Icon = mode.icon;
+                        return (
+                          <button
+                            key={mode.id}
+                            type="button"
+                            onClick={() => {
+                              const domainMap: Record<"website" | "app" | "game", "Website" | "App" | "Game"> = {
+                                website: "Website",
+                                app: "App",
+                                game: "Game",
+                              };
+                              setSelectedMode(mode.id as Exclude<ModeId, null>);
+                              setActiveDomain(domainMap[mode.id]);
+                            }}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 rounded-full px-6 py-2 text-sm bg-white/5 border border-white/15 hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Icon className="w-4 h-4 text-white/70" />
+                            <span className="text-white/70">{mode.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="projects-view"
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex flex-col gap-8"
+                  >
+                    {/* Page Title */}
+                    <div className="mt-4 mb-3">
+                      <h1 className="text-3xl font-semibold text-white">
+                        {activeView === "recents" ? "Recent Projects" : 
+                         activeView === "all-projects" ? "All Projects" :
+                         activeView === "drafts" ? "Drafts" :
+                         activeView === "resources" ? "Resources" :
+                         activeView === "trash" ? "Trash" : "Projects"}
+                      </h1>
+                      <p className="text-neutral-400 mt-2">
+                        {activeView === "recents" ? "Your recently opened projects" : 
+                         activeView === "all-projects" ? "All your projects in one place" :
+                         activeView === "drafts" ? "Work in progress" :
+                         activeView === "resources" ? "Templates and resources" :
+                         activeView === "trash" ? "Deleted projects" : ""}
+                      </p>
+                    </div>
+
+                    {/* Tabs (My Projects / Templates) */}
+                    <div className="flex items-center gap-6 pb-2 relative">
                       <button
-                        key={mode.id}
-                        type="button"
-                        onClick={() => {
-                          const domainMap: Record<"website" | "app" | "game", "Website" | "App" | "Game"> = {
-                            website: "Website",
-                            app: "App",
-                            game: "Game",
-                          };
-                          setSelectedMode(mode.id as Exclude<ModeId, null>);
-                          setActiveDomain(domainMap[mode.id]);
-                          // Input cleared by QuickPromptGenerator
+                        ref={projectsTabRef}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setLandingTab("projects");
+                          if (projectsTabRef.current) {
+                            setActiveTabWidth(projectsTabRef.current.offsetWidth);
+                          }
                         }}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 rounded-full px-6 py-2 text-sm bg-white/5 border border-white/15 hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
+                          landingTab === "projects" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                        }`}
                       >
-                        <Icon className="w-4 h-4 text-white/70" />
-                        <span className="text-white/70">{mode.label}</span>
+                        My Projects
+                        {landingTab === "projects" && (
+                          <motion.div 
+                            layoutId="activeTab" 
+                            initial={false}
+                            transition={{ 
+                              type: "spring", 
+                              stiffness: 500, 
+                              damping: 30,
+                              mass: 0.5
+                            }}
+                            className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
+                            style={{ width: activeTabWidth || "auto" }}
+                          />
+                        )}
                       </button>
-                    );
-                  })}
-                </div>
-
-                {/* 4. Tabs (My Projects / Templates) */}
-                <div className="flex items-center justify-center gap-6 pb-2 relative">
-                  <button
-                    ref={projectsTabRef}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setLandingTab("projects");
-                      if (projectsTabRef.current) {
-                        setActiveTabWidth(projectsTabRef.current.offsetWidth);
-                      }
-                    }}
-                    className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
-                      landingTab === "projects" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                    }`}
-                  >
-                    My Projects
-                    {landingTab === "projects" && (
-                      <motion.div 
-                        layoutId="activeTab" 
-                        initial={false}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 500, 
-                          damping: 30,
-                          mass: 0.5
+                      <button
+                        ref={templatesTabRef}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setLandingTab("templates");
+                          if (templatesTabRef.current) {
+                            setActiveTabWidth(templatesTabRef.current.offsetWidth);
+                          }
                         }}
-                        className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
-                        style={{ width: activeTabWidth || "auto" }}
-                      />
-                    )}
-                  </button>
-                  <button
-                    ref={templatesTabRef}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setLandingTab("templates");
-                      if (templatesTabRef.current) {
-                        setActiveTabWidth(templatesTabRef.current.offsetWidth);
-                      }
-                    }}
-                    className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
-                      landingTab === "templates" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                    }`}
-                  >
-                    Templates
-                    {landingTab === "templates" && (
-                      <motion.div
-                        layoutId="activeTab"
-                        initial={false}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 500, 
-                          damping: 30,
-                          mass: 0.5
-                        }}
-                        className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
-                        style={{ width: activeTabWidth || "auto" }}
-                      />
-                    )}
-                  </button>
-                </div>
+                        className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
+                          landingTab === "templates" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                        }`}
+                      >
+                        Templates
+                        {landingTab === "templates" && (
+                          <motion.div
+                            layoutId="activeTab"
+                            initial={false}
+                            transition={{ 
+                              type: "spring", 
+                              stiffness: 500, 
+                              damping: 30,
+                              mass: 0.5
+                            }}
+                            className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
+                            style={{ width: activeTabWidth || "auto" }}
+                          />
+                        )}
+                      </button>
+                    </div>
 
                 {/* 5. Cards Container - Left-aligned grid */}
                 <div className="w-full pb-20">
@@ -3116,7 +3151,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     )}
                   </AnimatePresence>
                 </div>
-              </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </main>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,15 +21,19 @@ interface SidebarItem {
   isActive?: boolean;
 }
 
+export type FlowEngineView = "recents" | "prompt-generator" | "drafts" | "all-projects" | "resources" | "trash";
+
 interface FlowEngineSidebarProps {
-  activeTab: "projects" | "templates";
-  onTabChange: (tab: "projects" | "templates") => void;
-  onNavigate?: (view: string) => void;
+  activeView: FlowEngineView;
+  onViewChange: (view: FlowEngineView) => void;
+  isCollapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
   className?: string;
 }
 
 const mainItems: SidebarItem[] = [
   { id: "recents", label: "Recents", icon: Clock },
+  { id: "prompt-generator", label: "Prompt generator", icon: Sparkles },
   { id: "drafts", label: "Drafts", icon: FileText },
   { id: "all-projects", label: "All projects", icon: FolderKanban },
   { id: "resources", label: "Resources", icon: Layers },
@@ -40,21 +45,16 @@ const starredItems: SidebarItem[] = [
 ];
 
 export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
-  activeTab,
-  onTabChange,
-  onNavigate,
+  activeView,
+  onViewChange,
+  isCollapsed,
+  onCollapsedChange,
   className,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState("recents");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   const handleItemClick = (itemId: string) => {
-    setActiveItem(itemId);
-    if (itemId === "all-projects") {
-      onTabChange("projects");
-      onNavigate?.("all-projects");
-    }
+    onViewChange(itemId as FlowEngineView);
   };
 
   return (
@@ -71,7 +71,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
       <div className="p-3 border-b border-neutral-800/50">
         {isCollapsed ? (
           <button
-            onClick={() => setIsCollapsed(false)}
+            onClick={() => onCollapsedChange(false)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-900 transition-colors"
           >
             <Search size={18} className="text-neutral-400" />
@@ -98,7 +98,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
         <ul className="space-y-0.5">
           {mainItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeItem === item.id;
+            const isActive = activeView === item.id;
             return (
               <li key={item.id}>
                 <button
@@ -153,7 +153,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
                         onClick={() => handleItemClick(item.id)}
                         className={cn(
                           "w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors",
-                          activeItem === item.id
+                          activeView === item.id
                             ? "bg-neutral-800 text-white"
                             : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
                         )}
@@ -173,7 +173,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
       {/* Collapse Toggle */}
       <div className="p-3 border-t border-neutral-800/50">
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => onCollapsedChange(!isCollapsed)}
           className={cn(
             "flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200 transition-colors",
             isCollapsed ? "w-8 justify-center" : "w-full"
