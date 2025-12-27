@@ -39,23 +39,36 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 ${className}`}
+      className={`relative flex flex-col rounded-2xl border border-white/10 overflow-hidden ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{ transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
     >
       {/* Gradient Preview Area */}
       <div
-        className="relative flex-1 min-h-[200px] transition-all duration-500"
-        style={gradientStyle}
+        className="relative flex-1 min-h-[200px]"
+        style={{
+          ...gradientStyle,
+          transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       />
 
       {/* Bottom Control Bar */}
       <div
-        className={`bg-neutral-900/95 border-t border-white/10 transition-all duration-300 overflow-hidden ${
-          isHovered ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className="bg-neutral-900/95 border-t border-white/10 overflow-hidden"
+        style={{
+          maxHeight: isHovered ? 200 : 0,
+          opacity: isHovered ? 1 : 0,
+          transition: "max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
-        <div className="p-3 space-y-3">
+        <div 
+          className="p-3 space-y-3"
+          style={{
+            transform: isHovered ? "translateY(0)" : "translateY(10px)",
+            transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s",
+          }}
+        >
           {/* Color Picker Row */}
           <div className="flex items-center gap-3">
             {/* Color Buttons */}
@@ -64,12 +77,16 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
                 <button
                   key={index}
                   onClick={() => setActiveColorIndex(activeColorIndex === index ? null : index)}
-                  className={`w-7 h-7 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
+                  className={`w-7 h-7 rounded-full border-2 ${
                     activeColorIndex === index
-                      ? "border-white ring-2 ring-white/30 scale-110"
+                      ? "border-white ring-2 ring-white/30"
                       : "border-white/30 hover:border-white/60"
                   }`}
-                  style={{ backgroundColor: color }}
+                  style={{
+                    backgroundColor: color,
+                    transform: activeColorIndex === index ? "scale(1.15)" : "scale(1)",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
                   title={`Color ${index + 1}`}
                 />
               ))}
@@ -84,7 +101,8 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
                 <button
                   key={preset.name}
                   onClick={() => applyPreset(preset.colors)}
-                  className="px-2 py-1 text-[9px] uppercase tracking-wider rounded-full border border-white/10 bg-black/40 text-white/60 hover:bg-white/10 hover:text-white/90 transition-all duration-200"
+                  className="px-2 py-1 text-[9px] uppercase tracking-wider rounded-full border border-white/10 bg-black/40 text-white/60 hover:bg-white/10 hover:text-white/90"
+                  style={{ transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)" }}
                 >
                   {preset.name}
                 </button>
@@ -93,24 +111,34 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
           </div>
 
           {/* Horizontal Color Picker (appears when color selected) */}
-          {activeColorIndex !== null && (
-            <div className="animate-fade-in flex items-center gap-3 pt-2 border-t border-white/10">
-              <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
-                Color {activeColorIndex + 1}
-              </span>
-              <div className="flex-1">
-                <HexColorPicker
-                  color={colors[activeColorIndex]}
-                  onChange={handleColorChange}
-                  style={{ width: "100%", height: 80 }}
-                />
-              </div>
-              <div
-                className="w-10 h-10 rounded-lg border border-white/20"
-                style={{ backgroundColor: colors[activeColorIndex] }}
+          <div
+            className="flex items-center gap-3 pt-2 border-t border-white/10 overflow-hidden"
+            style={{
+              maxHeight: activeColorIndex !== null ? 100 : 0,
+              opacity: activeColorIndex !== null ? 1 : 0,
+              marginTop: activeColorIndex !== null ? 12 : 0,
+              paddingTop: activeColorIndex !== null ? 8 : 0,
+              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
+              Color {(activeColorIndex ?? 0) + 1}
+            </span>
+            <div className="flex-1">
+              <HexColorPicker
+                color={colors[activeColorIndex ?? 0]}
+                onChange={handleColorChange}
+                style={{ width: "100%", height: 80 }}
               />
             </div>
-          )}
+            <div
+              className="w-10 h-10 rounded-lg border border-white/20"
+              style={{
+                backgroundColor: colors[activeColorIndex ?? 0],
+                transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
