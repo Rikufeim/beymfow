@@ -31,6 +31,7 @@ export const QuickPromptGenerator = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
   );
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image">("lovable");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
@@ -433,6 +434,7 @@ export const QuickPromptGenerator = () => {
         userInput: finalInput,
         model: selectedModel,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
+        promptType: promptType,
       };
 
       // If images are present, include them in the request
@@ -507,6 +509,47 @@ export const QuickPromptGenerator = () => {
         movementDuration={3}
       />
       <div className="relative z-10">
+        {/* Prompt Type Selector */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+          <button
+            onClick={() => setPromptType("lovable")}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
+              promptType === "lovable"
+                ? "bg-pink-500/20 border-pink-500/60 text-pink-300"
+                : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            🌐 Lovable Prompts
+          </button>
+          <button
+            onClick={() => setPromptType("gemini")}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
+              promptType === "gemini"
+                ? "bg-blue-500/20 border-blue-500/60 text-blue-300"
+                : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            ✨ Gemini Prompts
+          </button>
+          <button
+            onClick={() => setPromptType("image")}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
+              promptType === "image"
+                ? "bg-purple-500/20 border-purple-500/60 text-purple-300"
+                : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
+            }`}
+          >
+            🖼️ Image Prompts
+          </button>
+        </div>
+
+        {/* Prompt Type Description */}
+        <p className="text-white/40 text-xs text-center mb-6">
+          {promptType === "lovable" && "Optimized for building websites and apps with Lovable"}
+          {promptType === "gemini" && "Structured prompts compatible with Google Gemini models"}
+          {promptType === "image" && "Crafted prompts for high-quality AI image generation"}
+        </p>
+
         <div className="text-center space-y-2"></div>
 
       <div className="relative">
