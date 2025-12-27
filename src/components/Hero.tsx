@@ -54,7 +54,7 @@ export default function Hero() {
                 Access 240k high-quality AI prompts
               </p>
               <p className="text-lg sm:text-xl bg-gradient-to-r from-teal-400 via-purple-500 to-pink-500 bg-clip-text text-transparent font-medium">
-                Midjourney, ChatGPT, Veo, Gemini & more
+                ChatGPT, Gemini, Lovable & more
               </p>
             </div>
 
