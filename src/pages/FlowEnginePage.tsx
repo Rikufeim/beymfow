@@ -49,6 +49,7 @@ import { WorkspaceDetailView } from "@/components/flow-engine/WorkspaceDetailVie
 import { AddSolutionModal } from "@/components/flow-engine/AddSolutionModal";
 import { getSolutions, Solution } from "@/lib/solutionStore";
 import { SolutionCard, SolutionPreviewModal } from "@/components/flow-engine/SolutionCard";
+import { TrashView } from "@/components/flow-engine/TrashView";
 
 import {
   ArrowRight,
@@ -2932,19 +2933,15 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           )}
                         </>
                       )
+                    ) : activeView === "trash" ? (
+                      <TrashView />
                     ) : (
                       <div className="mt-4 mb-3">
                         <h1 className="text-3xl font-semibold text-white">
-                          {activeView === "recents" ? "Recent Projects" : 
-                           activeView === "drafts" ? "Drafts" :
-                           activeView === "resources" ? "Resources" :
-                           activeView === "trash" ? "Trash" : "Projects"}
+                          {activeView === "recents" ? "Recent Projects" : "Projects"}
                         </h1>
                         <p className="text-neutral-400 mt-2">
-                          {activeView === "recents" ? "Your recently opened projects" : 
-                           activeView === "drafts" ? "Work in progress" :
-                           activeView === "resources" ? "Templates and resources" :
-                           activeView === "trash" ? "Deleted projects" : ""}
+                          {activeView === "recents" ? "Your recently opened projects" : ""}
                         </p>
                       </div>
                     )}

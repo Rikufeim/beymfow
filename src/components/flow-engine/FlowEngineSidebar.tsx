@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Clock,
-  FileText,
   FolderKanban,
-  Layers,
   Trash2,
   ChevronLeft,
   ChevronRight,
@@ -21,7 +19,7 @@ interface SidebarItem {
   isActive?: boolean;
 }
 
-export type FlowEngineView = "recents" | "prompt-generator" | "drafts" | "all-projects" | "resources" | "trash";
+export type FlowEngineView = "recents" | "prompt-generator" | "all-projects" | "trash";
 
 interface FlowEngineSidebarProps {
   activeView: FlowEngineView;
@@ -34,9 +32,7 @@ interface FlowEngineSidebarProps {
 const mainItems: SidebarItem[] = [
   { id: "recents", label: "Recents", icon: Clock },
   { id: "prompt-generator", label: "Prompt generator", icon: Sparkles },
-  { id: "drafts", label: "Drafts", icon: FileText },
   { id: "all-projects", label: "All projects", icon: FolderKanban },
-  { id: "resources", label: "Resources", icon: Layers },
   { id: "trash", label: "Trash", icon: Trash2 },
 ];
 

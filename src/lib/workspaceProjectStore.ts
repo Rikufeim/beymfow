@@ -18,6 +18,7 @@ export interface WorkspaceProject {
   thumbnail?: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string; // soft delete timestamp
 }
 
 const WORKSPACES_KEY = "beymflow.workspaces";
@@ -109,7 +110,43 @@ function saveAllProjects(projects: WorkspaceProject[]) {
 }
 
 export function getWorkspaceProjects(workspaceId: string): WorkspaceProject[] {
-  return loadAllProjects().filter((p) => p.workspaceId === workspaceId);
+  return loadAllProjects().filter((p) => p.workspaceId === workspaceId && !p.deletedAt);
+}
+
+export function getTrashedProjects(): WorkspaceProject[] {
+  return loadAllProjects().filter((p) => !!p.deletedAt);
+}
+
+export function softDeleteProject(id: string): boolean {
+  const projects = loadAllProjects();
+  const idx = projects.findIndex((p) => p.id === id);
+  
+  if (idx === -1) return false;
+  
+  projects[idx] = {
+    ...projects[idx],
+    deletedAt: new Date().toISOString(),
+  };
+  
+  saveAllProjects(projects);
+  return true;
+}
+
+export function restoreProject(id: string): boolean {
+  const projects = loadAllProjects();
+  const idx = projects.findIndex((p) => p.id === id);
+  
+  if (idx === -1) return false;
+  
+  const { deletedAt, ...rest } = projects[idx];
+  projects[idx] = rest as WorkspaceProject;
+  
+  saveAllProjects(projects);
+  return true;
+}
+
+export function permanentlyDeleteProject(id: string): boolean {
+  return deleteWorkspaceProject(id);
 }
 
 export function createWorkspaceProject(

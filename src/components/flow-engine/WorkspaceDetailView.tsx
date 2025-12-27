@@ -26,6 +26,7 @@ import {
   getWorkspaceInitials,
   deleteWorkspace,
   updateWorkspace,
+  softDeleteProject,
 } from "@/lib/workspaceProjectStore";
 import { toast } from "@/lib/notifications";
 
@@ -46,7 +47,23 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
 }) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(workspace.name);
-  const projects = getWorkspaceProjects(workspace.id);
+  const [projectsList, setProjectsList] = useState<WorkspaceProject[]>([]);
+
+  // Load projects
+  React.useEffect(() => {
+    setProjectsList(getWorkspaceProjects(workspace.id));
+  }, [workspace.id]);
+
+  const refreshProjects = () => {
+    setProjectsList(getWorkspaceProjects(workspace.id));
+  };
+
+  const handleDeleteProject = (e: React.MouseEvent, project: WorkspaceProject) => {
+    e.stopPropagation();
+    softDeleteProject(project.id);
+    refreshProjects();
+    toast.success(`"${project.name}" moved to trash`);
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(`${window.location.origin}/flow-engine?workspace=${workspace.id}`);
@@ -180,7 +197,7 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         </div>
 
         {/* Right side - project count */}
-        <span className="text-neutral-500 text-sm">{projects.length} projects</span>
+        <span className="text-neutral-500 text-sm">{projectsList.length} projects</span>
       </div>
 
       {/* Tabs */}
@@ -191,7 +208,7 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
       </div>
 
       {/* Content */}
-      {projects.length === 0 ? (
+      {projectsList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-16 h-16 rounded-xl bg-neutral-800 flex items-center justify-center mb-4">
             <FolderOpen className="w-8 h-8 text-neutral-500" />
@@ -207,12 +224,21 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {projects.map((project) => (
+          {projectsList.map((project) => (
             <div
               key={project.id}
-              className="rounded-xl border border-neutral-700/50 bg-neutral-900/80 p-3 cursor-pointer hover:border-neutral-600 transition-all"
+              className="group rounded-xl border border-neutral-700/50 bg-neutral-900/80 p-3 cursor-pointer hover:border-neutral-600 transition-all relative"
               onClick={() => onOpenProject(project)}
             >
+              {/* Delete button */}
+              <button
+                onClick={(e) => handleDeleteProject(e, project)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-all z-10"
+                title="Move to trash"
+              >
+                <Trash2 size={14} />
+              </button>
+              
               <div className="aspect-video rounded-md overflow-hidden bg-neutral-800 border border-neutral-700/30 mb-3">
                 {project.thumbnail ? (
                   <img src={project.thumbnail} alt="" className="w-full h-full object-cover" />
