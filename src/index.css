@@ -694,16 +694,17 @@ textarea:-webkit-autofill {
   box-shadow: none !important;
 }
 
+/* remove the default checkboard pattern */
 .react-colorful__alpha,
 .react-colorful__alpha-pointer {
-  background-color: #0a0a0a !important;
+  background-color: hsl(var(--card)) !important;
   background-image: none !important;
 }
 
 .react-colorful__pointer {
   width: 20px !important;
   height: 20px !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 2px 10px hsl(var(--foreground) / 0.12) !important;
 }
 
 /* Animation for color workspace panel */
