@@ -33,9 +33,8 @@ export const AllWorkspacesView: React.FC<AllWorkspacesViewProps> = ({
       {/* Header - simplified, buttons moved to global header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-1">
-          {getGreeting()}, Platform.
+          {getGreeting()}
         </h1>
-        <p className="text-blue-400 text-sm">Solution Showcase environment.</p>
       </div>
 
       {/* Tabs - Design/FigJam style */}
