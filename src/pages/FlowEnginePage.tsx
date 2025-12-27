@@ -46,7 +46,9 @@ import {
 import { CreateWorkspaceModal } from "@/components/flow-engine/CreateWorkspaceModal";
 import { AllWorkspacesView } from "@/components/flow-engine/AllWorkspacesView";
 import { WorkspaceDetailView } from "@/components/flow-engine/WorkspaceDetailView";
-import { AddSolutionModal, type SolutionType } from "@/components/flow-engine/AddSolutionModal";
+import { AddSolutionModal } from "@/components/flow-engine/AddSolutionModal";
+import { getSolutions, Solution } from "@/lib/solutionStore";
+import { SolutionCard, SolutionPreviewModal } from "@/components/flow-engine/SolutionCard";
 
 import {
   ArrowRight,
@@ -964,16 +966,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Add Solution Modal state
   const [showAddSolutionModal, setShowAddSolutionModal] = useState(false);
   
-  const handleSolutionSelect = (type: SolutionType) => {
-    if (type === "ai-tool") {
-      // Open prompt generator or AI tool creator
-      setActiveView("prompt-generator");
-    } else if (type === "website-ui") {
-      // Create new website project
-      createNewProject();
-    } else if (type === "import-package") {
-      toast.info("Import package coming soon");
-    }
+  // Solutions state
+  const [solutions, setSolutions] = useState<Solution[]>([]);
+  const [previewSolution, setPreviewSolution] = useState<Solution | null>(null);
+  
+  // Load solutions on mount
+  useEffect(() => {
+    setSolutions(getSolutions());
+  }, []);
+  
+  const refreshSolutions = () => {
+    setSolutions(getSolutions());
+  };
+  
+  const handlePreviewSolution = (solution: Solution) => {
+    setPreviewSolution(solution);
   };
 
   // Update active tab width when tab changes
@@ -2919,11 +2926,30 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           onWorkspaceUpdated={refreshWorkspaces}
                         />
                       ) : (
-                        <AllWorkspacesView
-                          workspaces={workspaces}
-                          onCreateWorkspace={() => setShowCreateWorkspaceModal(true)}
-                          onOpenWorkspace={handleOpenWorkspace}
-                        />
+                        <>
+                          <AllWorkspacesView
+                            workspaces={workspaces}
+                            onCreateWorkspace={() => setShowCreateWorkspaceModal(true)}
+                            onOpenWorkspace={handleOpenWorkspace}
+                          />
+                          
+                          {/* Solutions Grid */}
+                          {solutions.length > 0 && (
+                            <div className="mt-8">
+                              <h2 className="text-xl font-semibold text-white mb-4">Imported Solutions</h2>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {solutions.map((solution) => (
+                                  <SolutionCard
+                                    key={solution.id}
+                                    solution={solution}
+                                    onPreview={handlePreviewSolution}
+                                    onDeleted={refreshSolutions}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )
                     ) : (
                       <div className="mt-4 mb-3">
@@ -3164,7 +3190,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       <AddSolutionModal
         isOpen={showAddSolutionModal}
         onClose={() => setShowAddSolutionModal(false)}
-        onSelect={handleSolutionSelect}
+        onSolutionCreated={refreshSolutions}
+      />
+
+      {/* Solution Preview Modal */}
+      <SolutionPreviewModal
+        solution={previewSolution}
+        onClose={() => setPreviewSolution(null)}
       />
 
     </div>
