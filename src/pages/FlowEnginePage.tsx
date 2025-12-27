@@ -219,57 +219,14 @@ const FlowEngineContent: React.FC = () => {
             <span className="text-white font-semibold text-lg">Beymflow</span>
           </Link>
 
-          {/* Center - Recents Label */}
-          <div className="hidden md:flex items-center">
-            <span className="text-cyan-400 font-medium text-sm">Recents</span>
-          </div>
-
-          {/* Right - Category Tabs */}
-          <div className="flex items-center gap-2">
-            {CATEGORY_TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeCategory === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveCategory(tab.id)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-white/10 text-white border border-white/20"
-                      : "text-neutral-400 hover:text-white hover:bg-white/5"
-                  )}
-                >
-                  <Icon size={16} />
-                  <span className="hidden lg:inline">{tab.label}</span>
-                </button>
-              );
-            })}
-            
-            {/* New Project Button */}
-            <button
-              onClick={() => toast.info("Create new project")}
-              className="ml-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all text-sm font-medium"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline">New</span>
-            </button>
-
-            {/* Login/User */}
-            {!user ? (
-              <button
-                onClick={login}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition text-sm"
-              >
-                <LogIn size={16} />
-                <span className="hidden sm:inline">Sign in</span>
-              </button>
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-xs font-bold">
-                {user.email[0].toUpperCase()}
-              </div>
-            )}
-          </div>
+          {/* Right - Project Button Only */}
+          <button
+            onClick={() => navigate("/flow-engine/workspace")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 transition-all text-sm font-medium"
+          >
+            <Plus size={16} />
+            <span>Project</span>
+          </button>
         </div>
       </header>
 
