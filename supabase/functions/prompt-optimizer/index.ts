@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { validateAuth, createUnauthorizedResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,6 +9,13 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate authentication
+  const { user, error: authError } = await validateAuth(req);
+  if (authError || !user) {
+    console.log("Unauthorized request to prompt-optimizer");
+    return createUnauthorizedResponse(corsHeaders, authError || "Authentication required");
   }
 
   try {
