@@ -538,9 +538,9 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Image Previews - Multiple images support */}
+          {/* Image Previews - Simple display */}
           {uploadedImages.length > 0 && (
-            <div className="flex items-start gap-2 mb-2 flex-wrap">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               {uploadedImages.map((img, index) => (
                 <div key={index} className="relative group">
                   <button
@@ -568,34 +568,6 @@ export const QuickPromptGenerator = () => {
                   </button>
                 </div>
               ))}
-              {/* Add more button if under limit */}
-              {uploadedImages.length < MAX_IMAGES && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-10 h-10 rounded-lg border border-dashed border-white/20 hover:border-white/40 flex items-center justify-center text-white/40 hover:text-white/60 transition-all"
-                  title={`Add more images (${uploadedImages.length}/${MAX_IMAGES})`}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              )}
-              {/* Analyze button */}
-              <button
-                onClick={handleAnalyzeImage}
-                disabled={isAnalyzingImage}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm flex items-center gap-2 h-10"
-              >
-                {isAnalyzingImage ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="w-3 h-3" />
-                    Analyze
-                  </>
-                )}
-              </button>
             </div>
           )}
 
@@ -756,38 +728,36 @@ export const QuickPromptGenerator = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
-              <div className="px-2 py-2 space-y-1">
-                <button
-                  onClick={() => setPromptType("lovable")}
-                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
-                    promptType === "lovable" 
-                      ? "bg-white/15 text-white" 
-                      : "text-white/70 hover:bg-white/10"
-                  }`}
-                >
-                  Lovable Prompts
-                </button>
-                <button
-                  onClick={() => setPromptType("gemini")}
-                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
-                    promptType === "gemini" 
-                      ? "bg-white/15 text-white" 
-                      : "text-white/70 hover:bg-white/10"
-                  }`}
-                >
-                  Gemini Prompts
-                </button>
-                <button
-                  onClick={() => setPromptType("image")}
-                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
-                    promptType === "image" 
-                      ? "bg-white/15 text-white" 
-                      : "text-white/70 hover:bg-white/10"
-                  }`}
-                >
-                  Image Prompts
-                </button>
-              </div>
+              <DropdownMenuItem 
+                onClick={() => setPromptType("lovable")}
+                className={`px-3 py-2 text-sm cursor-pointer ${
+                  promptType === "lovable" 
+                    ? "bg-white/15 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                Lovable Prompts
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setPromptType("gemini")}
+                className={`px-3 py-2 text-sm cursor-pointer ${
+                  promptType === "gemini" 
+                    ? "bg-white/15 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                Gemini Prompts
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setPromptType("image")}
+                className={`px-3 py-2 text-sm cursor-pointer ${
+                  promptType === "image" 
+                    ? "bg-white/15 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                Image Prompts
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
