@@ -3,6 +3,8 @@ import { X, Bot, Layout, Package, ArrowLeft, Clipboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createSolution, SolutionType, RuntimeType } from "@/lib/solutionStore";
 import { toast } from "sonner";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 interface AddSolutionModalProps {
   isOpen: boolean;
@@ -16,21 +18,18 @@ const solutionTypes = [
     title: "AI Tool",
     description: "AI-powered tool or automation.",
     icon: Bot,
-    color: "teal",
   },
   {
     id: "website-ui" as SolutionType,
     title: "Website / UI",
     description: "Landing page or web interface.",
     icon: Layout,
-    color: "teal",
   },
   {
     id: "import-package" as SolutionType,
     title: "Import Package",
     description: "Import from package file.",
     icon: Package,
-    color: "teal",
   },
 ];
 
@@ -195,17 +194,35 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 >
                   <div className="grid grid-cols-3 gap-4 mt-6">
                     {solutionTypes.map((solution) => (
-                      <button
-                        key={solution.id}
-                        onClick={() => handleSelectType(solution.id)}
-                        className="flex flex-col items-center p-6 rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-teal-500/50 hover:bg-neutral-800/50 transition-all group"
-                      >
-                        <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4 group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-colors">
-                          <solution.icon className="w-7 h-7 text-teal-400" />
+                      <div key={solution.id} className="min-h-[10rem]">
+                        <div 
+                          className={cn("relative h-full rounded-2xl border border-white/10 p-[1px] cursor-pointer")} 
+                          style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+                          onClick={() => handleSelectType(solution.id)}
+                        >
+                          <GlowingEffect 
+                            spread={40} 
+                            glow 
+                            disabled={false} 
+                            proximity={64} 
+                            inactiveZone={0.01} 
+                            borderWidth={2} 
+                            className="opacity-70" 
+                          />
+                          <div 
+                            className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden will-change-transform hover:bg-gradient-to-br hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
+                            style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                          >
+                            <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-colors">
+                              <solution.icon className="w-7 h-7 text-teal-400" />
+                            </div>
+                            <div className="text-center">
+                              <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
+                              <p className="text-neutral-500 text-xs">{solution.description}</p>
+                            </div>
+                          </div>
                         </div>
-                        <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
-                        <p className="text-neutral-500 text-xs text-center">{solution.description}</p>
-                      </button>
+                      </div>
                     ))}
                   </div>
                   <div className="mt-6 pt-4 border-t border-neutral-800/50">
