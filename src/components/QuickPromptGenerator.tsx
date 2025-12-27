@@ -538,9 +538,19 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Image Previews - Simple display */}
-          {uploadedImages.length > 0 && (
+          {/* Selected Tool & Image Previews */}
+          {(promptType || uploadedImages.length > 0) && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {/* Selected Tool Chip */}
+              <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-1.5">
+                <span className="text-xs text-white/80">
+                  {promptType === "lovable" && "Lovable Prompts"}
+                  {promptType === "gemini" && "Gemini Prompts"}
+                  {promptType === "image" && "Image Prompts"}
+                </span>
+              </div>
+              
+              {/* Image Previews */}
               {uploadedImages.map((img, index) => (
                 <div key={index} className="relative group">
                   <button
