@@ -39,13 +39,13 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
   return (
     <div
-      className={`relative rounded-2xl border border-white/10 overflow-hidden ${className}`}
+      className={`relative flex flex-col rounded-2xl border border-white/10 overflow-hidden bg-card ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Gradient Preview Area */}
       <div
-        className="w-full h-full min-h-[200px]"
+        className="relative flex-1 min-h-[200px]"
         style={{
           ...gradientStyle,
           transition: "background 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
