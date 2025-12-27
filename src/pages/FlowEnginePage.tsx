@@ -2797,90 +2797,112 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     exit={{ opacity: 0, y: -20 }}
                     className="flex flex-col gap-8"
                   >
-                    {/* Page Title */}
-                    <div className="mt-4 mb-3">
-                      <h1 className="text-3xl font-semibold text-white">
-                        {activeView === "recents" ? "Recent Projects" : 
-                         activeView === "all-projects" ? "All Projects" :
-                         activeView === "drafts" ? "Drafts" :
-                         activeView === "resources" ? "Resources" :
-                         activeView === "trash" ? "Trash" : "Projects"}
-                      </h1>
-                      <p className="text-neutral-400 mt-2">
-                        {activeView === "recents" ? "Your recently opened projects" : 
-                         activeView === "all-projects" ? "All your projects in one place" :
-                         activeView === "drafts" ? "Work in progress" :
-                         activeView === "resources" ? "Templates and resources" :
-                         activeView === "trash" ? "Deleted projects" : ""}
-                      </p>
-                    </div>
+                    {/* Page Header with Team Project Title */}
+                    {activeView === "all-projects" ? (
+                      <div className="mt-4 mb-6">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <h1 className="text-2xl font-bold text-white tracking-wide">BEYMFLOW PAGES</h1>
+                          <ChevronDown className="w-5 h-5 text-neutral-400" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 mb-3">
+                        <h1 className="text-3xl font-semibold text-white">
+                          {activeView === "recents" ? "Recent Projects" : 
+                           activeView === "drafts" ? "Drafts" :
+                           activeView === "resources" ? "Resources" :
+                           activeView === "trash" ? "Trash" : "Projects"}
+                        </h1>
+                        <p className="text-neutral-400 mt-2">
+                          {activeView === "recents" ? "Your recently opened projects" : 
+                           activeView === "drafts" ? "Work in progress" :
+                           activeView === "resources" ? "Templates and resources" :
+                           activeView === "trash" ? "Deleted projects" : ""}
+                        </p>
+                      </div>
+                    )}
 
-                    {/* Tabs (My Projects / Templates) */}
-                    <div className="flex items-center gap-6 pb-2 relative">
-                      <button
-                        ref={projectsTabRef}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setLandingTab("projects");
-                          if (projectsTabRef.current) {
-                            setActiveTabWidth(projectsTabRef.current.offsetWidth);
-                          }
-                        }}
-                        className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
-                          landingTab === "projects" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                        }`}
-                      >
-                        My Projects
-                        {landingTab === "projects" && (
-                          <motion.div 
-                            layoutId="activeTab" 
-                            initial={false}
-                            transition={{ 
-                              type: "spring", 
-                              stiffness: 500, 
-                              damping: 30,
-                              mass: 0.5
-                            }}
-                            className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
-                            style={{ width: activeTabWidth || "auto" }}
-                          />
-                        )}
-                      </button>
-                      <button
-                        ref={templatesTabRef}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setLandingTab("templates");
-                          if (templatesTabRef.current) {
-                            setActiveTabWidth(templatesTabRef.current.offsetWidth);
-                          }
-                        }}
-                        className={`pb-2 px-2 text-sm font-medium transition-colors relative ${
-                          landingTab === "templates" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                        }`}
-                      >
-                        Templates
-                        {landingTab === "templates" && (
-                          <motion.div
-                            layoutId="activeTab"
-                            initial={false}
-                            transition={{ 
-                              type: "spring", 
-                              stiffness: 500, 
-                              damping: 30,
-                              mass: 0.5
-                            }}
-                            className="absolute bottom-0 left-0 h-0.5 bg-cyan-500"
-                            style={{ width: activeTabWidth || "auto" }}
-                          />
-                        )}
-                      </button>
-                    </div>
-
-                {/* 5. Cards Container - Left-aligned grid */}
+                {/* 5. Cards Container - Team Project Style for All Projects */}
                 <div className="w-full pb-20">
-                  <AnimatePresence mode="wait">
-                    {landingTab === "projects" ? (
+                  {activeView === "all-projects" ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Team Project Card - Contains multiple files */}
+                      <div 
+                        className="rounded-2xl border border-neutral-700/50 bg-neutral-900/80 p-4 cursor-pointer hover:border-neutral-600 transition-all group"
+                        onClick={createNewProject}
+                      >
+                        <div className="relative">
+                          {/* Star icon */}
+                          <button 
+                            className="absolute -top-1 -right-1 z-10 text-amber-400 hover:text-amber-300 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                          </button>
+                          
+                          {/* Grid of project thumbnails */}
+                          <div className="grid grid-cols-2 gap-2 mb-4">
+                            {heroProjects.slice(0, 4).map((project, idx) => (
+                              <div 
+                                key={project.id} 
+                                className="aspect-[4/3] rounded-lg overflow-hidden bg-neutral-800 border border-neutral-700/30"
+                              >
+                                {project.thumbnail ? (
+                                  <img src={project.thumbnail} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900" />
+                                )}
+                              </div>
+                            ))}
+                            {/* Fill empty slots */}
+                            {Array.from({ length: Math.max(0, 4 - heroProjects.length) }).map((_, idx) => (
+                              <div 
+                                key={`empty-${idx}`}
+                                className="aspect-[4/3] rounded-lg bg-neutral-800 border border-neutral-700/30"
+                              />
+                            ))}
+                          </div>
+                          
+                          {/* Project info */}
+                          <h3 className="text-white font-medium">Team project</h3>
+                          <p className="text-neutral-500 text-sm">
+                            {heroProjects.length + savedProjects.length} files
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Upgrade Card */}
+                      <div className="rounded-2xl border border-neutral-700/30 border-dashed bg-neutral-900/40 p-4 flex flex-col items-center justify-center min-h-[280px]">
+                        <div className="grid grid-cols-2 gap-2 mb-4 opacity-40">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div 
+                              key={i}
+                              className="aspect-[4/3] rounded-lg bg-neutral-800 border border-neutral-700/30 w-24"
+                            />
+                          ))}
+                        </div>
+                        
+                        {/* Plus button */}
+                        <button 
+                          onClick={createNewProject}
+                          className="w-10 h-10 rounded-full bg-cyan-500 hover:bg-cyan-400 flex items-center justify-center text-white transition-colors mb-4"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                        
+                        <p className="text-white font-medium text-center">Upgrade to create more projects</p>
+                        <p className="text-neutral-500 text-sm text-center">
+                          Get unlimited everything on the <span className="text-cyan-400 cursor-pointer hover:underline">Professional plan</span>.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <AnimatePresence mode="wait">
                       <motion.div
                         key="projects"
                         initial={{ opacity: 0 }}
@@ -2891,265 +2913,115 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       >
                         {(user && (savedProjects.length > 0 || heroProjects.length > 0)) ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Hero Background Projects */}
-                        {heroProjects.map((project) => (
-                          <div key={project.id} className="min-h-[11rem]">
-                            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                              <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                              <div
-                                className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
-                                style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                                onClick={() => handleOpenHeroProject(project)}
-                              >
-                                {/* Thumbnail background */}
-                                {project.thumbnail ? (
-                                  <div className="absolute inset-0 z-0">
-                                    <img src={project.thumbnail} alt="" className="w-full h-full object-cover opacity-60" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                                  </div>
-                                ) : (
-                                  <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]" />
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteHeroProject(project.id);
-                                  }}
-                                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
-                                >
-                                  <X size={14} />
-                                </button>
-                                <div className="relative z-10 flex flex-col justify-end gap-2 h-full p-5 sm:p-6">
-                                  <div className="flex items-center gap-2">
-                                    <div className="px-2 py-0.5 rounded text-[10px] bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                                      Hero BG
-                                    </div>
-                                  </div>
-                                  <h3 className="text-lg font-semibold tracking-tight text-white/90 truncate">{project.name}</h3>
-                                  <p className="text-xs text-neutral-400">
-                                    {new Date(project.updatedAt).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {/* Flow Projects */}
-                        {savedProjects.map((project) => {
-                          const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
-                          return (
+                            {/* Hero Background Projects */}
+                            {heroProjects.map((project) => (
                               <div key={project.id} className="min-h-[11rem]">
                                 <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                                   <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                            <div
-                                    className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                  <div
+                                    className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
                                     style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                              onClick={() => loadProject(project)}
-                            >
+                                    onClick={() => handleOpenHeroProject(project)}
+                                  >
+                                    {/* Thumbnail background */}
+                                    {project.thumbnail ? (
+                                      <div className="absolute inset-0 z-0">
+                                        <img src={project.thumbnail} alt="" className="w-full h-full object-cover opacity-60" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                                      </div>
+                                    ) : (
+                                      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]" />
+                                    )}
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteProject(project.id);
+                                        handleDeleteHeroProject(project.id);
                                       }}
                                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
                                     >
                                       <X size={14} />
                                     </button>
-                                    <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                                      <div className="flex flex-col gap-3">
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                            <DomainIcon className="w-5 h-5 text-white" />
-                                          </div>
-                                          <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{project.name}</h3>
+                                    <div className="relative z-10 flex flex-col justify-end gap-2 h-full p-5 sm:p-6">
+                                      <div className="flex items-center gap-2">
+                                        <div className="px-2 py-0.5 rounded text-[10px] bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                          Hero BG
                                         </div>
-                                        <div className="space-y-2">
-                                          <p className="text-xs text-neutral-500">
-                                            {new Date(project.updatedAt).toLocaleDateString()}
-                                          </p>
+                                      </div>
+                                      <h3 className="text-lg font-semibold tracking-tight text-white/90 truncate">{project.name}</h3>
+                                      <p className="text-xs text-neutral-400">
+                                        {new Date(project.updatedAt).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {/* Flow Projects */}
+                            {savedProjects.map((project) => {
+                              const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
+                              return (
+                                <div key={project.id} className="min-h-[11rem]">
+                                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                                    <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                                    <div
+                                      className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                      style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                                      onClick={() => loadProject(project)}
+                                    >
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          deleteProject(project.id);
+                                        }}
+                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                      <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                                        <div className="flex flex-col gap-3">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                              <DomainIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{project.name}</h3>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <p className="text-xs text-neutral-500">
+                                              {new Date(project.updatedAt).toLocaleDateString()}
+                                            </p>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                  ) : (
-                        <div className="text-neutral-500 py-20 text-center">
-                      {user ? "No saved projects yet." : "Sign in to see your projects."}
-                    </div>
-                  )}
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-neutral-500 py-20 text-center">
+                            {user ? "No saved projects yet." : "Sign in to see your projects."}
+                          </div>
+                        )}
 
-                  {/* Login prompt for non-logged in users */}
-                  {!user && (
-                        <div className="w-full mt-8">
-                      <div className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800 text-center">
-                        <LogIn className="w-8 h-8 text-neutral-500 mx-auto mb-3" />
-                        <p className="text-neutral-400 mb-4">Sign in to save projects</p>
-                        <button
-                          onClick={login}
-                          className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all"
-                        >
-                          Sign in
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-                  ) : (
-                <motion.div
-                      key="templates"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                  className="w-full"
-                >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {/* Website Template */}
-                    <div className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div
-                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
-                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                      onClick={() => !isLoading && handleLoadTemplate("Website")}
-                    >
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
-                              Complete Flow
+                        {/* Login prompt for non-logged in users */}
+                        {!user && (
+                          <div className="w-full mt-8">
+                            <div className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800 text-center">
+                              <LogIn className="w-8 h-8 text-neutral-500 mx-auto mb-3" />
+                              <p className="text-neutral-400 mb-4">Sign in to save projects</p>
+                              <button
+                                onClick={login}
+                                className="px-6 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium transition-all"
+                              >
+                                Sign in
+                              </button>
                             </div>
                           </div>
-                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                  <LayoutTemplate className="w-5 h-5 text-white" />
-                                </div>
-                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
-                                  Website Builder Flow
-                                </h3>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
-                                  Complete workflow for website design. Includes idea structuring, module planning, and SEO optimization.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* App Template */}
-                    <div className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div
-                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
-                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                      onClick={() => !isLoading && handleLoadTemplate("App")}
-                    >
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
-                              Mobile Flow
-                            </div>
-                          </div>
-                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                  <Smartphone className="w-5 h-5 text-white" />
-                                </div>
-                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
-                                  Mobile App Flow
-                                </h3>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
-                                  Mobile app development pipeline. Feature mapping, screen design, and technical requirements.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Game Template */}
-                    <div className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div
-                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
-                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                      onClick={() => !isLoading && handleLoadTemplate("Game")}
-                    >
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
-                              Game Design
-                            </div>
-                          </div>
-                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                  <Gamepad2 className="w-5 h-5 text-white" />
-                                </div>
-                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
-                                  Game Development Flow
-                                </h3>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
-                                  Game design workflow. Concept development, mechanics planning, and technical architecture.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Add Template */}
-                    <div className="min-h-[11rem]">
-                      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div
-                          className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-default text-left"
-                          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                    >
-                          <div className="absolute top-2 right-2 z-20">
-                            <div className="px-2 py-0.5 rounded text-[10px] bg-white/5 text-white/70 border border-white/10">
-                              Coming Soon
-                            </div>
-                          </div>
-                          <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                  <Plus className="w-5 h-5 text-white" />
-                                </div>
-                                <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
-                                  Add Template
-                                </h3>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-xs leading-relaxed text-white/70 md:text-base">
-                                  Bring your own flow template. Upload and reuse custom workflows (coming soon).
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                        </div>
+                        )}
                       </motion.div>
-                    )}
-                  </AnimatePresence>
+                    </AnimatePresence>
+                  )}
                 </div>
                   </motion.div>
                 )}
