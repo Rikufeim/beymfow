@@ -2795,9 +2795,12 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 Prompt generator
               </button>
               <button
-                onClick={() => setActiveView("color-workspace")}
+                onClick={() => {
+                  setSelectedHeroProject(null);
+                  setActiveWorkspace("hero-background");
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  activeView === "color-workspace"
+                  activeWorkspace === "hero-background"
                     ? "bg-neutral-800 border-neutral-700 text-white"
                     : "bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800/50"
                 }`}
@@ -2878,28 +2881,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </button>
                         );
                       })}
-                    </div>
-                  </motion.div>
-                ) : activeView === "color-workspace" ? (
-                  <motion.div
-                    key="color-workspace"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="flex flex-col gap-8"
-                  >
-                    <div className="mb-6">
-                      <h1 className="text-3xl font-bold text-white mb-1">Color Workspace</h1>
-                      <p className="text-blue-400 text-sm">Manage your color themes and palettes.</p>
-                    </div>
-                    <div className="flex flex-col items-center justify-center py-20">
-                      <div className="w-16 h-16 rounded-xl bg-neutral-800 flex items-center justify-center mb-4">
-                        <svg className="w-8 h-8 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
-                        </svg>
-                      </div>
-                      <p className="text-neutral-400 mb-4">Color workspace coming soon</p>
                     </div>
                   </motion.div>
                 ) : (
