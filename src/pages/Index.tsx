@@ -61,12 +61,6 @@ const Index = () => {
                     >
                       Flow Engine
                     </button>
-                    <button
-                      onClick={() => navigate("/prompt-lab-page")}
-                      className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
-                    >
-                      Prompt Lab
-                    </button>
                   </div>
                 </div>
 

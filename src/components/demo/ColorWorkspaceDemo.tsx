@@ -47,26 +47,7 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
       <div
         className="relative flex-1 min-h-[200px] transition-all duration-500"
         style={gradientStyle}
-      >
-        {/* Header */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
-          <span className="text-[10px] uppercase tracking-wider text-white/40">
-            Hero Background Preview
-          </span>
-          {isHovered && (
-            <span className="text-[10px] text-white/50 animate-fade-in">
-              Select colors below
-            </span>
-          )}
-        </div>
-
-        {/* Center text */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-white/70 text-lg font-medium">
-            {isHovered ? "Try it out" : "Hover over me"}
-          </span>
-        </div>
-      </div>
+      />
 
       {/* Bottom Control Bar */}
       <div
