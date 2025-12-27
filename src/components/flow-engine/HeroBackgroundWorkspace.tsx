@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Share2, Download, Image } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Download, Image } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
@@ -68,7 +68,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "motion" | "view" | "share";
+type TabId = "shape" | "colors" | "motion" | "view";
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -586,22 +586,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                 </button>
               ))}
               
-              {/* Share Tab - Special styling */}
-              <button
-                onClick={() => {
-                  setActiveTab("share");
-                  if (minimizedBar) setMinimizedBar(false);
-                }}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ml-2 border",
-                  activeTab === "share"
-                    ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
-                    : "bg-white/5 border-white/10 text-white/60 hover:text-white/80 hover:bg-white/10"
-                )}
-              >
-                <Share2 size={14} />
-                Share
-              </button>
             </div>
 
             {/* Minimize button */}
@@ -853,134 +837,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                       </motion.div>
                     )}
 
-                    {activeTab === "share" && (
-                      <motion.div
-                        key="share"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="flex items-start gap-6"
-                      >
-                        {/* Left side - Live preview thumbnail */}
-                        <div className="flex flex-col gap-3">
-                          <span className="text-xs text-white/40 uppercase tracking-wider">Preview</span>
-                          <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/40">
-                            {liveThumbnail ? (
-                              <img 
-                                src={liveThumbnail} 
-                                alt="Live preview" 
-                                className="w-48 h-28 object-cover"
-                              />
-                            ) : (
-                              <div className="w-48 h-28 flex items-center justify-center">
-                                <Image size={24} className="text-white/20" />
-                              </div>
-                            )}
-                            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/60 text-[9px] text-white/50">
-                              {1920 * downloadScale} × {1080 * downloadScale}
-                            </div>
-                          </div>
-                          
-                          {/* Size slider */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-white/40">Size</span>
-                            <input
-                              type="range"
-                              min="0.5"
-                              max="2"
-                              step="0.5"
-                              value={downloadScale}
-                              onChange={(e) => setDownloadScale(parseFloat(e.target.value))}
-                              className="w-20 accent-purple-500"
-                            />
-                            <span className="text-[10px] text-white/60 w-6">{downloadScale}x</span>
-                          </div>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="w-px h-32 bg-white/10 self-center" />
-
-                        {/* Center - Download options */}
-                        <div className="flex flex-col gap-3">
-                          <span className="text-xs text-white/40 uppercase tracking-wider">Download Image</span>
-                          
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setDownloadFormat("png")}
-                              className={cn(
-                                "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
-                                downloadFormat === "png"
-                                  ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
-                                  : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
-                              )}
-                            >
-                              PNG
-                            </button>
-                            <button
-                              onClick={() => setDownloadFormat("jpg")}
-                              className={cn(
-                                "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
-                                downloadFormat === "jpg"
-                                  ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
-                                  : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
-                              )}
-                            >
-                              JPG
-                            </button>
-                          </div>
-                          
-                          <button
-                            onClick={handleDownloadImage}
-                            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium transition-all"
-                          >
-                            <Download size={16} />
-                            Download
-                          </button>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="w-px h-32 bg-white/10 self-center" />
-
-                        {/* Right side - Code export */}
-                        <div className="flex-1 flex flex-col gap-3">
-                          <span className="text-xs text-white/40 uppercase tracking-wider">Copy Code</span>
-                          
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={handleCopyCode}
-                              className={cn(
-                                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
-                                copiedCode
-                                  ? "bg-green-500/20 border-green-500/30 text-green-400"
-                                  : "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
-                              )}
-                            >
-                              {copiedCode ? <Check size={12} /> : <Code size={12} />}
-                              React Component
-                            </button>
-                            <button
-                              onClick={handleCopyJSON}
-                              className={cn(
-                                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
-                                copiedJSON
-                                  ? "bg-green-500/20 border-green-500/30 text-green-400"
-                                  : "bg-orange-500/20 border-orange-500/30 text-orange-400 hover:bg-orange-500/30"
-                              )}
-                            >
-                              {copiedJSON ? <Check size={12} /> : <FileJson size={12} />}
-                              JSON Settings
-                            </button>
-                          </div>
-                          
-                          {/* Live code preview */}
-                          <div className="bg-black/50 rounded-lg p-2 border border-white/5 max-h-[70px] overflow-y-auto">
-                            <pre className="text-[9px] text-white/50 whitespace-pre-wrap font-mono leading-relaxed">
-                              {liveCode}
-                            </pre>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
                   </AnimatePresence>
                 </div>
               </motion.div>
