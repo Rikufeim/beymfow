@@ -564,7 +564,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         animate={{ y: 0, opacity: 1 }}
         className="absolute bottom-0 left-0 right-0 z-50"
       >
-        <div className="bg-neutral-900/95 backdrop-blur-xl border-t border-white/10">
+        <div className="bg-black backdrop-blur-xl border-t border-white/10">
           {/* Tabs + Minimize button */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
             <div className="flex items-center gap-1">

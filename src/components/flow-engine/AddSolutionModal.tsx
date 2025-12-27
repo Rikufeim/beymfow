@@ -225,7 +225,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 value={aiToolName}
                 onChange={(e) => setAiToolName(e.target.value)}
                 placeholder="My AI Tool"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus-visible:outline-none focus:border-neutral-600 focus:ring-0 focus-visible:ring-0 transition-all"
               />
             </div>
             
@@ -234,7 +234,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               <select
                 value={aiToolRuntime}
                 onChange={(e) => setAiToolRuntime(e.target.value as RuntimeType)}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus-visible:outline-none focus:border-neutral-600 focus:ring-0 focus-visible:ring-0 transition-all"
               >
                 {runtimeTypes.map((rt) => (
                   <option key={rt.id} value={rt.id}>{rt.label}</option>
@@ -281,7 +281,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 value={websiteName}
                 onChange={(e) => setWebsiteName(e.target.value)}
                 placeholder="My Sales Landing Page"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus-visible:outline-none focus:border-neutral-600 focus:ring-0 focus-visible:ring-0 transition-all"
               />
             </div>
             
@@ -292,7 +292,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 onChange={(e) => setWebsiteCode(e.target.value)}
                 placeholder="<!DOCTYPE html><html>..."
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 font-mono text-sm resize-none transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus-visible:outline-none focus:border-neutral-600 focus:ring-0 focus-visible:ring-0 font-mono text-sm resize-none transition-all"
               />
             </div>
 
@@ -345,7 +345,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 onChange={(e) => setManifestJson(e.target.value)}
                 placeholder='{ "name": "My Tool", "runtime": { ... } }'
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 font-mono text-sm resize-none transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus-visible:outline-none focus:border-neutral-600 focus:ring-0 focus-visible:ring-0 font-mono text-sm resize-none transition-all"
               />
             </div>
 

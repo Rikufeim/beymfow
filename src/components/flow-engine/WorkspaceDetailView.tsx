@@ -113,7 +113,7 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-            style={{ backgroundColor: workspace.iconColor || "#f97316" }}
+            style={{ backgroundColor: workspace.iconColor || "#000000" }}
           >
             <Users className="w-6 h-6" />
           </div>
@@ -127,7 +127,7 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
                 onChange={(e) => setNewName(e.target.value)}
                 onBlur={handleRename}
                 onKeyDown={(e) => e.key === "Enter" && handleRename()}
-                className="text-2xl font-bold text-white bg-transparent border-b border-blue-500 focus:outline-none"
+                className="text-2xl font-bold text-white bg-transparent border-b border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
                 autoFocus
               />
             ) : (

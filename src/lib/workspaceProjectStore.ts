@@ -54,7 +54,7 @@ export function createWorkspace(name: string, description?: string): Workspace {
     id: crypto.randomUUID(),
     name,
     description,
-    iconColor: getRandomIconColor(),
+    iconColor: "#000000", // Default to black, can be changed in settings
     createdAt: now,
     updatedAt: now,
   };
@@ -204,7 +204,7 @@ export function deleteWorkspaceProject(id: string): boolean {
 
 function getRandomIconColor(): string {
   const colors = [
-    "#f97316", // orange
+    "#000000", // black
     "#ef4444", // red
     "#22c55e", // green
     "#3b82f6", // blue

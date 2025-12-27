@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search,
+  Home,
   Clock,
   FolderKanban,
   Trash2,
@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface SidebarItem {
@@ -43,7 +44,7 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
   onCollapsedChange,
   className,
 }) => {
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const navigate = useNavigate();
 
   const handleItemClick = (itemId: string) => {
     onViewChange(itemId as FlowEngineView);
@@ -59,29 +60,23 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
         className
       )}
     >
-      {/* Search / Collapsed Header */}
+      {/* Home Button / Collapsed Header */}
       <div className="p-3 border-b border-neutral-800/50">
         {isCollapsed ? (
           <button
             onClick={() => onCollapsedChange(false)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-900 transition-colors"
           >
-            <Search size={18} className="text-neutral-400" />
+            <Home size={18} className="text-neutral-400" />
           </button>
         ) : (
-          <div className="relative">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search"
-              className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-9 pr-3 py-2 text-sm text-neutral-200 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-700"
-            />
-          </div>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
+          >
+            <Home size={18} className="flex-shrink-0" />
+            <span>Home</span>
+          </button>
         )}
       </div>
 

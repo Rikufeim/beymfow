@@ -83,7 +83,7 @@ const BrandIdentityNode: React.FC<BrandIdentityNodeProps> = ({ id, data }) => {
             Style / Moodboard
           </p>
           <textarea
-            className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:border-white/30 leading-relaxed"
+            className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:outline-none focus-visible:outline-none focus:border-white/30 focus:ring-0 focus-visible:ring-0 leading-relaxed"
             placeholder="Modern, minimal, high contrast, bold headings..."
             value={fields.styleMood}
             onChange={(e) => updateField("styleMood", e.target.value)}
@@ -97,7 +97,7 @@ const BrandIdentityNode: React.FC<BrandIdentityNodeProps> = ({ id, data }) => {
             Tone of voice
           </p>
           <textarea
-            className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:border-white/30 leading-relaxed"
+            className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/90 placeholder:text-white/30 resize-none outline-none focus:outline-none focus-visible:outline-none focus:border-white/30 focus:ring-0 focus-visible:ring-0 leading-relaxed"
             placeholder="Friendly, expert, playful, premium..."
             value={fields.toneOfVoice}
             onChange={(e) => updateField("toneOfVoice", e.target.value)}

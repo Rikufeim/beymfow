@@ -504,6 +504,8 @@ textarea:-webkit-autofill {
 
 .dark-select:focus {
   border-color: rgba(255, 255, 255, 0.3) !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Dropdown panel */

@@ -23,7 +23,6 @@ const PromptLabPage = lazy(() => import("./pages/PromptLabPage"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const BusinessPrompts = lazy(() => import("./pages/BusinessPrompts"));
 const PromptLab = lazy(() => import("./pages/PromptLab"));
-const PromptLibrary = lazy(() => import("./pages/PromptLibrary"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const AIGenerator = lazy(() => import("./pages/promptlab/AIGenerator"));
@@ -106,7 +105,6 @@ const AnimatedRoutes = () => {
             } />
             <Route path="/business-prompts" element={<BusinessPrompts />} />
             <Route path="/prompt-lab" element={<PromptLab />} />
-            <Route path="/prompt-library" element={<PromptLibrary />} />
             <Route path="/image-generator" element={<ImageGenerator />} />
             <Route path="/planningsystem" element={<PlanningSystem />} />
             <Route path="/prompt-lab/ai-generator" element={<AIGenerator />} />

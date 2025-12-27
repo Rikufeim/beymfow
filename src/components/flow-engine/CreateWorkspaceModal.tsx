@@ -58,7 +58,7 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. AI Solutions, Websites, Marketing..."
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-600 focus:border-blue-500 focus:outline-none text-white placeholder-neutral-500 transition-colors"
+                  className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-600 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 text-white placeholder-neutral-500 transition-colors"
                   autoFocus
                 />
               </div>
@@ -72,7 +72,7 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="What kind of projects will this workspace contain?"
                   rows={3}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-600 focus:border-blue-500 focus:outline-none text-white placeholder-neutral-500 resize-none transition-colors"
+                  className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-600 focus:border-blue-500 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 text-white placeholder-neutral-500 resize-none transition-colors"
                 />
               </div>
 

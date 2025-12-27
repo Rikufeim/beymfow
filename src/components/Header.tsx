@@ -108,6 +108,7 @@ const Header = () => {
                   onClick={signOut}
                   contentClassName="flex items-center justify-center gap-2 w-full"
                   className="w-full"
+                  size="sm"
                 >
                   <LogOut className="h-4 w-4" />
                   Sign Out
@@ -176,6 +177,7 @@ const Header = () => {
               <GlassButton
                 onClick={signOut}
                 contentClassName="flex items-center gap-2"
+                size="sm"
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out

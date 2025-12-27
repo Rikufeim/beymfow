@@ -345,7 +345,7 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                       value={importJSON}
                       onChange={(e) => setImportJSON(e.target.value)}
                       placeholder="Paste settings JSON here..."
-                      className="w-full h-24 bg-black/50 rounded-lg p-3 border border-white/10 text-xs text-white/80 font-mono resize-none focus:outline-none focus:border-white/20"
+                      className="w-full h-24 bg-black/50 rounded-lg p-3 border border-white/10 text-xs text-white/80 font-mono resize-none focus:outline-none focus-visible:outline-none focus:border-white/20 focus:ring-0 focus-visible:ring-0"
                     />
                     <button
                       onClick={handleImport}

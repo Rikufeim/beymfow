@@ -51,16 +51,6 @@ export const TrashView: React.FC<TrashViewProps> = ({ onRefresh }) => {
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-1 flex items-center gap-3">
-          <Trash2 className="w-8 h-8 text-neutral-400" />
-          Trash
-        </h1>
-        <p className="text-neutral-400 text-sm">
-          Deleted projects can be restored or permanently deleted.
-        </p>
-      </div>
 
       {/* Content */}
       {trashedProjects.length === 0 ? (

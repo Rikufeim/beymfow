@@ -15,7 +15,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast, Toaster } from "@/lib/notifications";
 import { HexColorPicker } from "react-colorful";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
@@ -66,7 +66,6 @@ import {
   X,
   Check,
   ArrowLeft,
-  Home,
   Globe,
   Smartphone,
   Gamepad2,
@@ -1012,7 +1011,23 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
   // --- Project Type Selector State ---
   const [showProjectTypeSelector, setShowProjectTypeSelector] = useState(false);
+  const [searchParams] = useSearchParams();
   const [activeWorkspace, setActiveWorkspace] = useState<"flow" | "hero-background" | null>(null);
+  
+  // Handle query parameters on mount
+  useEffect(() => {
+    const view = searchParams.get("view");
+    const workspace = searchParams.get("workspace");
+    
+    if (view === "prompt-generator") {
+      setActiveView("prompt-generator");
+    }
+    
+    if (workspace === "hero-background") {
+      setActiveWorkspace("hero-background");
+      setSelectedHeroProject(null);
+    }
+  }, [searchParams]);
   
   // --- Hero Background Projects State ---
   const [heroProjects, setHeroProjects] = useState<HeroBackgroundProject[]>([]);
@@ -1077,7 +1092,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
 
   // Drawer State
-  const [searchQuery, setSearchQuery] = useState("");
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     domain: false,
     general: false,
@@ -2684,11 +2698,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const filterCategories = (cats: Category[]) => {
-    if (!searchQuery) return cats;
-    return cats.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  };
-
   // --- Connection Handlers ---
   const handleHandleMouseDown = (e: React.MouseEvent, nodeId: string, handleType: "input" | "output") => {
     e.stopPropagation();
@@ -2777,20 +2786,44 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       />
 
       <main className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
-            {/* Home Button - Top Left */}
-            <button
-              onClick={() => {
-                if (onBack) onBack();
-                else navigate("/");
-              }}
-              className="absolute top-6 left-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
-            >
-              <Home size={20} />
-              <span className="text-sm font-medium pr-1">Home</span>
-            </button>
-
-            {/* Header Buttons - Top Right */}
-            <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
+            {/* Header - Top */}
+            <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-50">
+              {/* Left: Title Section - Show for recents, projects and all-projects views */}
+              <div className="flex flex-col">
+                {activeView === "recents" && (
+                  <>
+                    <h1 className="text-3xl font-semibold text-white">
+                      Recent Projects
+                    </h1>
+                    <p className="text-neutral-400 mt-1">
+                      Your recently opened projects
+                    </p>
+                  </>
+                )}
+                {activeView === "all-projects" && (
+                  <h1 className="text-3xl font-semibold text-white">
+                    All projects
+                  </h1>
+                )}
+                {activeView === "trash" && (
+                  <div className="flex flex-col">
+                    <h1 className="text-3xl font-semibold text-white">
+                      Trash
+                    </h1>
+                    <p className="text-neutral-400 mt-1">
+                      Deleted projects can be restored or permanently deleted.
+                    </p>
+                  </div>
+                )}
+                {activeView !== "recents" && activeView !== "all-projects" && activeView !== "prompt-generator" && activeView !== "trash" && (
+                  <h1 className="text-3xl font-semibold text-white">
+                    Projects
+                  </h1>
+                )}
+              </div>
+              
+              {/* Right: Header Buttons */}
+              <div className="flex items-center gap-3">
               {/* Separate nav buttons */}
               <button
                 onClick={() => setActiveView("prompt-generator")}
@@ -2833,6 +2866,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 </svg>
                 Import
               </button>
+              </div>
             </div>
 
             {/* Main Content Container - Centered with max-width */}
@@ -2863,32 +2897,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       <QuickPromptGenerator />
                     </div>
 
-                    {/* Mode Buttons */}
-                    <div className="mt-6 flex items-center justify-center gap-4">
-                      {MODES.map((mode) => {
-                        const Icon = mode.icon;
-                        return (
-                          <button
-                            key={mode.id}
-                            type="button"
-                            onClick={() => {
-                              const domainMap: Record<"website" | "app" | "game", "Website" | "App" | "Game"> = {
-                                website: "Website",
-                                app: "App",
-                                game: "Game",
-                              };
-                              setSelectedMode(mode.id as Exclude<ModeId, null>);
-                              setActiveDomain(domainMap[mode.id]);
-                            }}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 rounded-full px-6 py-2 text-sm bg-white/5 border border-white/15 hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Icon className="w-4 h-4 text-white/70" />
-                            <span className="text-white/70">{mode.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
                   </motion.div>
                 ) : (
                   <motion.div 
@@ -2943,13 +2951,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       <TrashView />
                     ) : (
                       <div className="mt-4 mb-6">
-                        <h1 className="text-3xl font-semibold text-white">
-                          {activeView === "recents" ? "Recent Projects" : "Projects"}
-                        </h1>
-                        <p className="text-neutral-400 mt-2 mb-6">
-                          {activeView === "recents" ? "Your recently opened projects" : ""}
-                        </p>
-                        
                         {/* Category Filter Tabs */}
                         <div className="flex items-center gap-2 p-1 rounded-lg bg-neutral-900/80 border border-neutral-800 w-fit">
                           <button
@@ -3163,7 +3164,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             </div>
                           ) : (
                             <div className="text-neutral-500 py-20 text-center">
-                              {user ? (activeCategory === "all" ? "No saved projects yet." : `No ${activeCategory.replace("-", " ")} yet.`) : "Sign in to see your projects."}
+                              {user ? (activeCategory === "all" ? "" : `No ${activeCategory.replace("-", " ")} yet.`) : "Sign in to see your projects."}
                             </div>
                           );
                         })()}

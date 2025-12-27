@@ -25,7 +25,7 @@ const FontSelect: React.FC<FontSelectProps> = ({ value, onChange }) => {
   return (
     <div className="space-y-2">
       <select
-        className="dark-select w-full"
+        className="dark-select w-full focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
         value={current.value}
         onChange={(e) => onChange(e.target.value)}
         style={{ fontFamily: current.value }}
