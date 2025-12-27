@@ -54,11 +54,12 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
       {/* Bottom Control Bar - Absolute positioned */}
       <div
-        className="absolute bottom-0 left-0 right-0 bg-neutral-900/95 border-t border-white/10 overflow-hidden"
+        className="absolute bottom-0 left-0 right-0 bg-neutral-900 border-t border-white/10"
         style={{
           transform: isHovered ? "translateY(0)" : "translateY(100%)",
           opacity: isHovered ? 1 : 0,
-          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          visibility: isHovered ? "visible" : "hidden",
+          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s",
         }}
       >
         <div 
