@@ -423,7 +423,6 @@ const CategoryViewPage = () => {
                         playsInline
                         autoPlay
                         preload="metadata"
-                        loading="lazy"
                         className="w-full h-full object-contain"
                         onError={(e) => {
                           console.error('Video load error:', e);

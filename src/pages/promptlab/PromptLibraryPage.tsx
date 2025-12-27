@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, memo } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { GlassButton } from "@/components/ui/glass-button";
 import { Search, Lock, Copy, Check, Tag, Expand, ShoppingCart, X, CheckCircle2 } from "lucide-react";

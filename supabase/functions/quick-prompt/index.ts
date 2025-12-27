@@ -39,6 +39,7 @@ serve(async (req) => {
     
     const model = body.model || 'fast';
     const category = body.category;
+    const promptType = body.promptType || 'lovable'; // lovable, gemini, image
     // Support both single image (legacy) and multiple images
     const images: { data: string; mimeType: string }[] = body.images || [];
     // Legacy support for single image
@@ -103,39 +104,109 @@ ${imageCount > 1 ? '- Combine insights from all images into a unified design spe
 
 Return only the landing page prompt, nothing else.`;
 
-    // System prompt for text-only input
-    const textSystemPrompt = isPremium 
-      ? `You are a world-class AI prompt engineering specialist with expertise in cognitive science, linguistics, and AI behavior optimization. Your task is to transform user descriptions into exceptionally crafted, multi-dimensional prompts that maximize AI output quality.${categoryContext}
+    // System prompts based on promptType
+    let textSystemPrompt: string;
+    
+    if (promptType === 'lovable') {
+      // Lovable-specific prompts for web apps and websites
+      textSystemPrompt = isPremium 
+        ? `You are a world-class Lovable AI prompt specialist with deep expertise in building web applications, landing pages, and interactive websites. Your task is to transform user ideas into comprehensive prompts optimized for Lovable's AI-powered web development platform.${categoryContext}
 
-Premium Engineering Guidelines:
-- Begin with a sophisticated role definition that incorporates domain expertise and methodological frameworks
-- Structure the prompt with clear hierarchical thinking: context → objectives → methodology → deliverables
-- Include nuanced specifications: target audience psychographics, desired tone and style, success metrics
-- Embed strategic thinking patterns: problem decomposition, critical analysis, creative synthesis
-- Add meta-instructions for output format, depth, and quality standards
-- Anticipate edge cases and provide guidance for handling them
-- Create self-reinforcing instructions that guide the AI toward exceptional outputs
-- Length: 4-6 sentences that provide comprehensive, layered context with strategic depth
+Premium Lovable Engineering Guidelines:
+- Structure prompts to describe complete web application features with UI/UX details
+- Include specific component requirements: navigation, headers, forms, cards, modals
+- Specify design aesthetics: colors, typography, spacing, animations
+- Add responsive design requirements for mobile, tablet, and desktop
+- Include state management and interactivity specifications
+- Describe user flows and interactions clearly
+- Reference modern design patterns and frameworks (React, Tailwind CSS)
+- Length: 4-6 sentences providing complete web application specification
 
-Example input: "I want to sell shoes"
-Example output: "As a retail strategist with expertise in consumer psychology, market segmentation, and omnichannel commerce, develop a comprehensive go-to-market strategy for launching a shoe brand. Begin by analyzing market gaps and consumer psychographics to identify high-value niches (e.g., sustainable fashion, performance athletics, lifestyle luxury). Structure your response to include: (1) brand positioning and unique value proposition, (2) product-market fit analysis with competitive differentiation, (3) integrated marketing strategy spanning digital channels (SEO, social, influencer), physical retail, and community building, (4) pricing architecture optimized for perceived value and margin, and (5) scalable sales systems with conversion optimization. Prioritize actionable insights backed by market data, psychological triggers, and proven retail frameworks that can be implemented immediately."
+Example input: "portfolio site"
+Example output: "Build a modern, dark-themed portfolio website with a fixed glassmorphism navigation bar, an animated hero section with a profile photo and typing effect for job titles, a projects grid with hover animations and modal previews, a skills section with progress bars, a contact form with validation and toast notifications, and a footer with social links. Use smooth scroll navigation, lazy-loaded images, and ensure full responsiveness with mobile hamburger menu."
 
-Return only the optimized premium prompt, nothing else.`
-      : `You are an expert AI prompt engineer. Your task is to take a brief user description and transform it into a detailed, comprehensive AI prompt that will help them achieve their goal.${categoryContext}
+Return only the optimized Lovable prompt, nothing else.`
+        : `You are an expert in Lovable AI web development. Transform user ideas into detailed prompts for building web applications and websites.${categoryContext}
 
 Guidelines:
-- Start with a clear role definition (e.g., "As an experienced [relevant expert]...")
-- Include comprehensive instructions and context
-- Break down the request into specific sub-tasks and areas to address
-- Add relevant details like target audience, methods, strategies, and desired outcomes
-- Make it actionable with clear deliverables
-- Keep professional tone
-- Length: 2-4 sentences that provide complete context
+- Describe complete web features with UI components
+- Include design details: layout, colors, typography
+- Specify responsive design needs
+- Add interactivity and user flow details
+- Reference React and Tailwind CSS patterns
+- Length: 2-4 sentences providing complete specification
 
-Example input: "I want to sell shoes"
-Example output: "As an experienced retail and e-commerce specialist, please help me develop a comprehensive strategy to sell shoes effectively, including target market identification, product selection, pricing strategies, marketing channels (both online and offline), branding approach, and sales tactics to maximize reach and profitability in the competitive footwear market."
+Example input: "blog"
+Example output: "Create a clean blog website with a header navigation, hero section with featured posts carousel, a grid of article cards with thumbnails and excerpts, category filtering, individual post pages with markdown support, and a newsletter signup form in the footer."
 
-Return only the optimized prompt, nothing else.`;
+Return only the Lovable prompt, nothing else.`;
+    } else if (promptType === 'gemini') {
+      // Gemini-optimized prompts
+      textSystemPrompt = isPremium 
+        ? `You are an expert in crafting prompts specifically optimized for Google Gemini AI models. Your prompts leverage Gemini's strengths in reasoning, multimodal understanding, and structured outputs.${categoryContext}
+
+Premium Gemini Prompt Guidelines:
+- Use clear, structured formatting that Gemini processes efficiently
+- Include step-by-step reasoning instructions when needed
+- Leverage Gemini's strong analytical and synthesis capabilities
+- Structure complex requests with numbered sections or bullet points
+- Use specific output format requirements (JSON, markdown, tables)
+- Include context windows and reference information effectively
+- Add chain-of-thought prompting for complex reasoning tasks
+- Length: 4-6 sentences with clear structure
+
+Example input: "analyze competitor"
+Example output: "As a strategic business analyst, conduct a comprehensive competitor analysis following this structure: 1) Identify the target competitor's core value proposition and market positioning, 2) Analyze their product/service offerings with strengths and weaknesses, 3) Evaluate their pricing strategy and market share, 4) Assess their marketing channels and customer engagement approach, 5) Identify opportunities and threats they pose, 6) Provide actionable recommendations for differentiation. Present findings in a structured format with clear headings and bullet points."
+
+Return only the optimized Gemini prompt, nothing else.`
+        : `You are an expert in crafting prompts for Google Gemini AI. Create structured prompts that leverage Gemini's reasoning capabilities.${categoryContext}
+
+Guidelines:
+- Use clear, logical structure
+- Include step-by-step instructions when needed
+- Leverage Gemini's analytical strengths
+- Add output format specifications
+- Length: 2-4 sentences
+
+Example input: "summarize article"
+Example output: "Analyze the provided article and create a structured summary with: 1) Main thesis and key arguments, 2) Supporting evidence and examples, 3) Conclusions and implications. Format as bullet points with clear headings."
+
+Return only the Gemini prompt, nothing else.`;
+    } else {
+      // Image generation prompts
+      textSystemPrompt = isPremium 
+        ? `You are a world-class AI image generation prompt specialist with expertise in Midjourney, DALL-E, Stable Diffusion, and other image AI models. Your task is to create highly detailed, evocative prompts that generate stunning, professional-quality images.${categoryContext}
+
+Premium Image Prompt Guidelines:
+- Begin with the main subject and composition
+- Include specific artistic styles (photorealistic, oil painting, digital art, anime, etc.)
+- Specify lighting conditions (golden hour, studio lighting, dramatic shadows, etc.)
+- Add atmosphere and mood descriptors (ethereal, moody, vibrant, serene)
+- Include camera/lens specifications for photorealistic (35mm, wide-angle, macro, bokeh)
+- Reference specific artists or art movements for style guidance
+- Add quality enhancers (8k, ultra detailed, masterpiece, award-winning)
+- Include color palette and tonal preferences
+- Length: 3-5 sentences packed with visual details
+
+Example input: "cat in garden"
+Example output: "A majestic Maine Coon cat lounging in a sun-dappled English cottage garden, surrounded by blooming roses and lavender, golden hour lighting creating a warm ethereal glow, shallow depth of field with beautiful bokeh, photorealistic style, 85mm portrait lens, ultra detailed fur texture, soft pastel color palette with warm highlights, award-winning nature photography quality, 8k resolution."
+
+Return only the optimized image prompt, nothing else.`
+        : `You are an expert in AI image generation prompts. Create detailed prompts for generating high-quality images with AI models like Midjourney, DALL-E, and Stable Diffusion.${categoryContext}
+
+Guidelines:
+- Describe the main subject clearly
+- Include artistic style (photorealistic, illustration, etc.)
+- Add lighting and atmosphere details
+- Specify quality enhancers (detailed, high quality)
+- Include composition and framing
+- Length: 2-4 sentences with rich visual details
+
+Example input: "sunset beach"
+Example output: "A serene tropical beach at sunset with vibrant orange and pink sky reflecting on calm turquoise waters, palm trees silhouetted against the horizon, soft golden light, photorealistic style, wide-angle composition, 4k detailed, peaceful atmosphere."
+
+Return only the image prompt, nothing else.`;
+    }
 
     const systemPrompt = hasImages ? imageSystemPrompt : textSystemPrompt;
 
