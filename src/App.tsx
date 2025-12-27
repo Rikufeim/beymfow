@@ -21,7 +21,6 @@ const Features = lazy(() => import("./pages/Features"));
 const Premium = lazy(() => import("./pages/Premium"));
 const PromptLabPage = lazy(() => import("./pages/PromptLabPage"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const FlowEngineWorkspace = lazy(() => import("./pages/FlowEngineWorkspace"));
 const BusinessPrompts = lazy(() => import("./pages/BusinessPrompts"));
 const PromptLab = lazy(() => import("./pages/PromptLab"));
 const PromptLibrary = lazy(() => import("./pages/PromptLibrary"));
@@ -90,7 +89,6 @@ const AnimatedRoutes = () => {
             <Route path="/features" element={<Features />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
-            <Route path="/flow-engine/workspace" element={<ProtectedRoute><FlowEngineWorkspace /></ProtectedRoute>} />
             <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
             <Route path="/prompt-lab-page/library" element={<PromptLibraryPage />} />
             <Route path="/prompt-lab-page/category/:categoryName" element={<ProtectedRoute><CategoryViewPage /></ProtectedRoute>} />
