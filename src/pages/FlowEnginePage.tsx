@@ -386,20 +386,6 @@ const FlowEngineContent: React.FC = () => {
 
         </div>
 
-        {/* Empty State */}
-        {allProjects.length === 0 && (
-          <div className="text-center py-20">
-            <Sparkles className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
-            <p className="text-neutral-500 mb-4">No projects yet. Create your first one!</p>
-            <button
-              onClick={() => navigate("/flow-engine/workspace")}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 transition-all font-medium"
-            >
-              <Plus size={18} />
-              <span>Create Project</span>
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
