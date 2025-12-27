@@ -20,11 +20,11 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
   const getIcon = () => {
     switch (solution.type) {
       case "ai-tool":
-        return <Bot className="w-5 h-5 text-purple-400" />;
+        return <Bot className="w-5 h-5 text-teal-400" />;
       case "website-ui":
-        return <Layout className="w-5 h-5 text-blue-400" />;
+        return <Layout className="w-5 h-5 text-teal-400" />;
       case "import-package":
-        return <Package className="w-5 h-5 text-green-400" />;
+        return <Package className="w-5 h-5 text-teal-400" />;
       default:
         return <Layout className="w-5 h-5 text-neutral-400" />;
     }
@@ -75,17 +75,17 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
     >
       <div
         onClick={() => onPreview(solution)}
-        className="cursor-pointer rounded-xl border border-neutral-800 bg-neutral-900/50 hover:border-neutral-700 transition-all overflow-hidden"
+        className="cursor-pointer rounded-xl border border-neutral-800 bg-[#0a0a0a] hover:border-teal-500/30 transition-all overflow-hidden"
       >
         {/* Preview area */}
-        <div className="relative h-40 bg-neutral-900 flex items-center justify-center">
+        <div className="relative h-40 bg-neutral-900/50 flex items-center justify-center">
           {solution.type === "website-ui" && solution.htmlCode ? (
-            <div className="w-full h-full bg-white/5 flex items-center justify-center text-neutral-600">
+            <div className="w-full h-full bg-teal-500/5 flex items-center justify-center text-teal-500/50">
               <Eye className="w-8 h-8" />
             </div>
           ) : (
-            <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
-              <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center">
+            <div className="w-full h-full bg-neutral-900/50 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
                 {getIcon()}
               </div>
             </div>
@@ -98,20 +98,20 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/60 flex items-center justify-center gap-3"
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center gap-3"
               >
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onPreview(solution);
                   }}
-                  className="p-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                  className="p-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors shadow-lg shadow-teal-900/30"
                 >
                   <Eye className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="p-2 rounded-lg bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white transition-colors"
+                  className="p-2.5 rounded-lg bg-neutral-800 hover:bg-red-600 text-neutral-400 hover:text-white transition-colors"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
@@ -121,8 +121,8 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
         </div>
         
         {/* Info section */}
-        <div className="p-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center flex-shrink-0">
+        <div className="p-4 flex items-center gap-3 bg-[#0a0a0a]">
+          <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center flex-shrink-0">
             {getIcon()}
           </div>
           <div className="min-w-0 flex-1">
@@ -160,25 +160,25 @@ export const SolutionPreviewModal: React.FC<SolutionPreviewModalProps> = ({
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="w-full max-w-6xl h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col overflow-hidden"
+          className="w-full max-w-6xl h-[90vh] bg-[#0a0a0a] border border-neutral-800 rounded-2xl flex flex-col overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="h-14 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 flex-shrink-0">
+          <div className="h-14 bg-[#0a0a0a] border-b border-neutral-800 flex items-center justify-between px-4 flex-shrink-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-neutral-800 rounded transition-colors"
+                className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 <X size={20} className="text-neutral-400" />
               </button>
               <h2 className="text-white font-semibold">{solution.name}</h2>
-              <span className="px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              <span className="px-2 py-0.5 rounded text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20">
                 {solution.type === "website-ui" ? "Website / UI" : solution.type === "ai-tool" ? "AI Tool" : "Package"}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-neutral-800 rounded transition-colors text-neutral-400 hover:text-white">
+              <button className="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400 hover:text-white">
                 <ExternalLink size={18} />
               </button>
             </div>
@@ -194,18 +194,22 @@ export const SolutionPreviewModal: React.FC<SolutionPreviewModalProps> = ({
                 sandbox="allow-scripts allow-same-origin"
               />
             ) : solution.type === "ai-tool" ? (
-              <div className="flex flex-col items-center justify-center h-full bg-neutral-900 text-neutral-400 p-8 text-center">
-                <Bot size={48} className="mb-4 text-purple-400" />
-                <p className="text-lg mb-2">AI Tool: {solution.name}</p>
+              <div className="flex flex-col items-center justify-center h-full bg-[#0a0a0a] text-neutral-400 p-8 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4">
+                  <Bot size={32} className="text-teal-400" />
+                </div>
+                <p className="text-lg mb-2 text-white">AI Tool: {solution.name}</p>
                 <p className="text-sm text-neutral-500">
                   Runtime: {solution.runtimeType || "Not specified"}
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full bg-neutral-900 text-neutral-400 p-8 text-center">
-                <Package size={48} className="mb-4 text-green-400" />
-                <p className="text-lg mb-2">Imported Package</p>
-                <pre className="text-xs text-left bg-neutral-800 p-4 rounded-lg max-w-lg overflow-auto">
+              <div className="flex flex-col items-center justify-center h-full bg-[#0a0a0a] text-neutral-400 p-8 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4">
+                  <Package size={32} className="text-teal-400" />
+                </div>
+                <p className="text-lg mb-2 text-white">Imported Package</p>
+                <pre className="text-xs text-left bg-neutral-900 border border-neutral-800 p-4 rounded-lg max-w-lg overflow-auto text-teal-300/80">
                   {JSON.stringify(solution.manifest, null, 2)}
                 </pre>
               </div>

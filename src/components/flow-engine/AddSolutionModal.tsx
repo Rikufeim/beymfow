@@ -16,18 +16,21 @@ const solutionTypes = [
     title: "AI Tool",
     description: "AI-powered tool or automation.",
     icon: Bot,
+    color: "teal",
   },
   {
     id: "website-ui" as SolutionType,
     title: "Website / UI",
     description: "Landing page or web interface.",
     icon: Layout,
+    color: "teal",
   },
   {
     id: "import-package" as SolutionType,
     title: "Import Package",
     description: "Import from package file.",
     icon: Package,
+    color: "teal",
   },
 ];
 
@@ -156,7 +159,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={handleClose}
         >
           <motion.div
@@ -164,18 +167,18 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-2xl rounded-xl border border-neutral-700 bg-neutral-900 p-6 shadow-2xl"
+            className="relative w-full max-w-2xl rounded-2xl border border-neutral-800 bg-[#0a0a0a] p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h2 className="text-lg font-semibold text-white">Add New Solution</h2>
-                <p className="text-sm text-neutral-400">Select solution type</p>
+                <p className="text-sm text-neutral-500">Select solution type</p>
               </div>
               <button
                 onClick={handleClose}
-                className="p-1 rounded-lg hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-500 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -195,18 +198,18 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                       <button
                         key={solution.id}
                         onClick={() => handleSelectType(solution.id)}
-                        className="flex flex-col items-center p-6 rounded-xl bg-neutral-800/50 border border-neutral-700/50 hover:border-blue-500/50 hover:bg-neutral-800 transition-all group"
+                        className="flex flex-col items-center p-6 rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-teal-500/50 hover:bg-neutral-800/50 transition-all group"
                       >
-                        <div className="w-14 h-14 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors">
-                          <solution.icon className="w-7 h-7 text-blue-400" />
+                        <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4 group-hover:bg-teal-500/20 group-hover:border-teal-500/40 transition-colors">
+                          <solution.icon className="w-7 h-7 text-teal-400" />
                         </div>
                         <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
                         <p className="text-neutral-500 text-xs text-center">{solution.description}</p>
                       </button>
                     ))}
                   </div>
-                  <div className="mt-6 pt-4 border-t border-neutral-800">
-                    <p className="text-neutral-500 text-xs">Select solution type</p>
+                  <div className="mt-6 pt-4 border-t border-neutral-800/50">
+                    <p className="text-neutral-600 text-xs">Select solution type</p>
                   </div>
                 </motion.div>
               )}
@@ -227,7 +230,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                       value={aiToolName}
                       onChange={(e) => setAiToolName(e.target.value)}
                       placeholder="My AI Tool"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
                     />
                   </div>
                   
@@ -236,7 +239,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                     <select
                       value={aiToolRuntime}
                       onChange={(e) => setAiToolRuntime(e.target.value as RuntimeType)}
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
                     >
                       {runtimeTypes.map((rt) => (
                         <option key={rt.id} value={rt.id}>{rt.label}</option>
@@ -244,17 +247,17 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800/50">
                     <button
                       onClick={handleBack}
-                      className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm"
+                      className="flex items-center gap-2 text-neutral-500 hover:text-white transition-colors text-sm"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       Back
                     </button>
                     <button
                       onClick={handleCreateAiTool}
-                      className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+                      className="px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
                     >
                       Create
                     </button>
@@ -272,8 +275,8 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                   className="mt-6 space-y-5"
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                      <Layout className="w-5 h-5 text-blue-400" />
+                    <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                      <Layout className="w-5 h-5 text-teal-400" />
                     </div>
                     <div>
                       <h3 className="text-white font-medium">Add UI Solution</h3>
@@ -288,7 +291,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                       value={websiteName}
                       onChange={(e) => setWebsiteName(e.target.value)}
                       placeholder="My Sales Landing Page"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
                     />
                   </div>
                   
@@ -299,21 +302,21 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                       onChange={(e) => setWebsiteCode(e.target.value)}
                       placeholder="<!DOCTYPE html><html>..."
                       rows={6}
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-none focus:border-blue-500 font-mono text-sm resize-none"
+                      className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 font-mono text-sm resize-none transition-all"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800/50">
                     <button
                       onClick={handleBack}
-                      className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm"
+                      className="flex items-center gap-2 text-neutral-500 hover:text-white transition-colors text-sm"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       Back
                     </button>
                     <button
                       onClick={handleCreateWebsite}
-                      className="flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
                     >
                       <Layout className="w-4 h-4" />
                       Save and Preview
@@ -333,7 +336,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 >
                   <button
                     onClick={handlePasteManifest}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
                   >
                     <Clipboard className="w-4 h-4" />
                     Paste Manifest
@@ -348,21 +351,21 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                       onChange={(e) => setManifestJson(e.target.value)}
                       placeholder='{ "name": "My Tool", "runtime": { ... } }'
                       rows={6}
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-none focus:border-blue-500 font-mono text-sm resize-none"
+                      className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 font-mono text-sm resize-none transition-all"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                  <div className="flex items-center justify-between pt-4 border-t border-neutral-800/50">
                     <button
                       onClick={handleBack}
-                      className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm"
+                      className="flex items-center gap-2 text-neutral-500 hover:text-white transition-colors text-sm"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       Back
                     </button>
                     <button
                       onClick={handleCreateFromManifest}
-                      className="flex items-center gap-2 px-5 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
                     >
                       Create from Manifest
                     </button>
