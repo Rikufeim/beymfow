@@ -181,14 +181,14 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               {solutionTypes.map((solution) => (
                 <div key={solution.id} className="min-h-[10rem]">
                   <div 
-                    className={cn("relative h-full rounded-2xl border border-teal-500/20 cursor-pointer hover:border-teal-500/40 transition-colors")} 
+                    className={cn("relative h-full rounded-2xl border border-neutral-700/50 cursor-pointer hover:border-neutral-600 transition-colors")} 
                     onClick={() => handleSelectType(solution.id)}
                   >
                     <div 
                       className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[0.95rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
                     >
-                      <div className="w-14 h-14 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-                        <solution.icon className="w-7 h-7 text-teal-400 group-hover:text-teal-300 transition-colors" />
+                      <div className="w-14 h-14 rounded-xl bg-neutral-800/50 border border-neutral-700/50 flex items-center justify-center">
+                        <solution.icon className="w-7 h-7 text-neutral-400 group-hover:text-neutral-300 transition-colors" />
                       </div>
                       <div className="text-center">
                         <h3 className="text-white font-medium text-sm mb-1">{solution.title}</h3>
@@ -209,8 +209,8 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
         {step === "ai-tool" && (
           <div className="mt-6 space-y-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-teal-400" />
+              <div className="w-10 h-10 rounded-lg bg-neutral-800/50 border border-neutral-700/50 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-neutral-400" />
               </div>
               <div>
                 <h3 className="text-white font-medium">Add AI Tool</h3>
@@ -225,7 +225,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 value={aiToolName}
                 onChange={(e) => setAiToolName(e.target.value)}
                 placeholder="My AI Tool"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
               />
             </div>
             
@@ -234,7 +234,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               <select
                 value={aiToolRuntime}
                 onChange={(e) => setAiToolRuntime(e.target.value as RuntimeType)}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
               >
                 {runtimeTypes.map((rt) => (
                   <option key={rt.id} value={rt.id}>{rt.label}</option>
@@ -252,7 +252,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               </button>
               <button
                 onClick={handleCreateAiTool}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white text-sm font-medium transition-colors shadow-lg shadow-neutral-900/20"
               >
                 <Bot className="w-4 h-4" />
                 Create
@@ -265,8 +265,8 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
         {step === "website-ui" && (
           <div className="mt-6 space-y-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-                <Layout className="w-5 h-5 text-teal-400" />
+              <div className="w-10 h-10 rounded-lg bg-neutral-800/50 border border-neutral-700/50 flex items-center justify-center">
+                <Layout className="w-5 h-5 text-neutral-400" />
               </div>
               <div>
                 <h3 className="text-white font-medium">Add UI Solution</h3>
@@ -281,7 +281,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 value={websiteName}
                 onChange={(e) => setWebsiteName(e.target.value)}
                 placeholder="My Sales Landing Page"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 transition-all"
               />
             </div>
             
@@ -292,7 +292,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 onChange={(e) => setWebsiteCode(e.target.value)}
                 placeholder="<!DOCTYPE html><html>..."
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 font-mono text-sm resize-none transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 font-mono text-sm resize-none transition-all"
               />
             </div>
 
@@ -306,7 +306,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               </button>
               <button
                 onClick={handleCreateWebsite}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white text-sm font-medium transition-colors shadow-lg shadow-neutral-900/20"
               >
                 <Layout className="w-4 h-4" />
                 Save and Preview
@@ -319,8 +319,8 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
         {step === "import-package" && (
           <div className="mt-6 space-y-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-                <Package className="w-5 h-5 text-teal-400" />
+              <div className="w-10 h-10 rounded-lg bg-neutral-800/50 border border-neutral-700/50 flex items-center justify-center">
+                <Package className="w-5 h-5 text-neutral-400" />
               </div>
               <div>
                 <h3 className="text-white font-medium">Import Package</h3>
@@ -330,7 +330,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
 
             <button
               onClick={handlePasteManifest}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white text-sm font-medium transition-colors shadow-lg shadow-neutral-900/20"
             >
               <Clipboard className="w-4 h-4" />
               Paste Manifest
@@ -345,7 +345,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                 onChange={(e) => setManifestJson(e.target.value)}
                 placeholder='{ "name": "My Tool", "runtime": { ... } }'
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 font-mono text-sm resize-none transition-all"
+                className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600/20 font-mono text-sm resize-none transition-all"
               />
             </div>
 
@@ -359,7 +359,7 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
               </button>
               <button
                 onClick={handleCreateFromManifest}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium transition-colors shadow-lg shadow-teal-900/20"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white text-sm font-medium transition-colors shadow-lg shadow-neutral-900/20"
               >
                 Create from Manifest
               </button>
