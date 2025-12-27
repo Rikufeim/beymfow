@@ -11,9 +11,7 @@ import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { useMemo, lazy, Suspense } from "react";
 // HorizontalPlaceholderCarousel moved to Hero component
-import HolographicCard from "@/components/demo/HolographicCard";
-import HyperTextCard from "@/components/demo/HyperTextCard";
-import UploadTile from "@/components/demo/UploadTile";
+import ColorWorkspaceDemo from "@/components/demo/ColorWorkspaceDemo";
 import { GradientButton } from "@/components/ui/gradient-button";
 
 // Lazy load heavy components
@@ -83,19 +81,8 @@ const Index = () => {
                       backgroundPosition: "0 0, 0 0",
                     }}
                   />
-                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 lg:gap-6 items-stretch">
-                    <HolographicCard className="md:row-span-1" />
-                    <HyperTextCard className="md:row-span-1" />
-                    <UploadTile className="md:row-span-1" />
-                    {/* Buttons in empty space */}
-                    <div className="md:row-span-1 flex items-center justify-center gap-4">
-                      <GradientButton>
-                        GET
-                      </GradientButton>
-                      <GradientButton variant="variant">
-                        FLOW
-                      </GradientButton>
-                    </div>
+                  <div className="relative z-10">
+                    <ColorWorkspaceDemo className="min-h-[280px]" />
                   </div>
                 </div>
               </div>
