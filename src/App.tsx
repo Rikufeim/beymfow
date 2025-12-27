@@ -34,7 +34,7 @@ const TextDetector = lazy(() => import("./pages/promptlab/TextDetector"));
 const Humanizer = lazy(() => import("./pages/promptlab/Humanizer"));
 const PromptLibraryPage = lazy(() => import("./pages/promptlab/PromptLibraryPage"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
-const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
+
 const CategoryViewPage = lazy(() => import("./pages/CategoryViewPage"));
 const Community = lazy(() => import("./pages/Community"));
 
@@ -97,11 +97,6 @@ const AnimatedRoutes = () => {
             <Route path="/about" element={
               <Layout>
                 <About />
-              </Layout>
-            } />
-            <Route path="/templates" element={
-              <Layout>
-                <TemplatesPage />
               </Layout>
             } />
             <Route path="/community" element={

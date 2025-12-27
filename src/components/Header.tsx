@@ -78,16 +78,6 @@ const Header = () => {
           Flow
         </Link>
 
-        {/* Templates */}
-        <Link
-          to="/templates"
-          onMouseEnter={() => prefetchRoute("/templates")}
-          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
-          style={{ fontSize: '14px' }}
-        >
-          Templates
-        </Link>
-
         {/* 4. About Us */}
         <Link
           to="/about"
@@ -157,14 +147,6 @@ const Header = () => {
                   style={{ fontSize: '18px' }}
                 >
                   Flow
-                </Link>
-                <Link
-                  to="/templates"
-                  onMouseEnter={() => prefetchRoute("/templates")}
-                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
-                  style={{ fontSize: '18px' }}
-                >
-                  Templates
                 </Link>
                 <Link
                   to="/about"
