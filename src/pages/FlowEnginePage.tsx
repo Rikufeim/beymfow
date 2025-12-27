@@ -113,7 +113,7 @@ import {
   Edit3,
   Clipboard,
   Paperclip,
-  
+  Package,
 } from "lucide-react";
 
 // --- Mock Auth Context (Local Implementation) ---
@@ -934,6 +934,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Sidebar view state
   const [activeView, setActiveView] = useState<FlowEngineView>("recents");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Category filter state
+  type ProjectCategory = "all" | "landing-pages" | "ai-tools" | "solutions";
+  const [activeCategory, setActiveCategory] = useState<ProjectCategory>("all");
   
   // Workspace state
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -2938,13 +2942,60 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     ) : activeView === "trash" ? (
                       <TrashView />
                     ) : (
-                      <div className="mt-4 mb-3">
+                      <div className="mt-4 mb-6">
                         <h1 className="text-3xl font-semibold text-white">
                           {activeView === "recents" ? "Recent Projects" : "Projects"}
                         </h1>
-                        <p className="text-neutral-400 mt-2">
+                        <p className="text-neutral-400 mt-2 mb-6">
                           {activeView === "recents" ? "Your recently opened projects" : ""}
                         </p>
+                        
+                        {/* Category Filter Tabs */}
+                        <div className="flex items-center gap-2 p-1 rounded-lg bg-neutral-900/80 border border-neutral-800 w-fit">
+                          <button
+                            onClick={() => setActiveCategory("all")}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                              activeCategory === "all"
+                                ? "bg-neutral-800 text-white"
+                                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                            }`}
+                          >
+                            All
+                          </button>
+                          <button
+                            onClick={() => setActiveCategory("landing-pages")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                              activeCategory === "landing-pages"
+                                ? "bg-neutral-800 text-white"
+                                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                            }`}
+                          >
+                            <Layout className="w-4 h-4" />
+                            Landing Pages
+                          </button>
+                          <button
+                            onClick={() => setActiveCategory("ai-tools")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                              activeCategory === "ai-tools"
+                                ? "bg-neutral-800 text-white"
+                                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                            }`}
+                          >
+                            <Bot className="w-4 h-4" />
+                            AI Tools
+                          </button>
+                          <button
+                            onClick={() => setActiveCategory("solutions")}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                              activeCategory === "solutions"
+                                ? "bg-neutral-800 text-white"
+                                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                            }`}
+                          >
+                            <Package className="w-4 h-4" />
+                            Solutions
+                          </button>
+                        </div>
                       </div>
                     )}
 
@@ -2961,98 +3012,161 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         transition={{ duration: 0.2 }}
                         className="w-full"
                       >
-                        {(user && (savedProjects.length > 0 || heroProjects.length > 0)) ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Hero Background Projects */}
-                            {heroProjects.map((project) => (
-                              <div key={project.id} className="min-h-[11rem]">
-                                <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                                  <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                                  <div
-                                    className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
-                                    style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                                    onClick={() => handleOpenHeroProject(project)}
-                                  >
-                                    {/* Thumbnail background */}
-                                    {project.thumbnail ? (
-                                      <div className="absolute inset-0 z-0">
-                                        <img src={project.thumbnail} alt="" className="w-full h-full object-cover opacity-60" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-                                      </div>
-                                    ) : (
-                                      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]" />
-                                    )}
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteHeroProject(project.id);
-                                      }}
-                                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
-                                    >
-                                      <X size={14} />
-                                    </button>
-                                    <div className="relative z-10 flex flex-col justify-end gap-2 h-full p-5 sm:p-6">
-                                      <div className="flex items-center gap-2">
-                                        <div className="px-2 py-0.5 rounded text-[10px] bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                                          Hero BG
-                                        </div>
-                                      </div>
-                                      <h3 className="text-lg font-semibold tracking-tight text-white/90 truncate">{project.name}</h3>
-                                      <p className="text-xs text-neutral-400">
-                                        {new Date(project.updatedAt).toLocaleDateString()}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                            {/* Flow Projects */}
-                            {savedProjects.map((project) => {
-                              const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
-                              return (
+                        {(() => {
+                          // Filter projects based on category
+                          const filteredHeroProjects = activeCategory === "all" || activeCategory === "landing-pages" 
+                            ? heroProjects : [];
+                          const filteredFlowProjects = activeCategory === "all" || activeCategory === "landing-pages" 
+                            ? savedProjects : [];
+                          const filteredSolutions = activeCategory === "all" || activeCategory === "solutions" || activeCategory === "ai-tools"
+                            ? solutions.filter(s => {
+                                if (activeCategory === "ai-tools") return s.type === "ai-tool";
+                                if (activeCategory === "solutions") return s.type === "website-ui" || s.type === "import-package";
+                                return true;
+                              })
+                            : [];
+                          
+                          const hasAnyProjects = filteredHeroProjects.length > 0 || filteredFlowProjects.length > 0 || filteredSolutions.length > 0;
+                          
+                          return user && hasAnyProjects ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {/* Hero Background Projects */}
+                              {filteredHeroProjects.map((project) => (
                                 <div key={project.id} className="min-h-[11rem]">
                                   <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
                                     <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                                     <div
-                                      className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                      className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
                                       style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
-                                      onClick={() => loadProject(project)}
+                                      onClick={() => handleOpenHeroProject(project)}
                                     >
+                                      {/* Thumbnail background */}
+                                      {project.thumbnail ? (
+                                        <div className="absolute inset-0 z-0">
+                                          <img src={project.thumbnail} alt="" className="w-full h-full object-cover opacity-60" />
+                                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                                        </div>
+                                      ) : (
+                                        <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]" />
+                                      )}
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          deleteProject(project.id);
+                                          handleDeleteHeroProject(project.id);
                                         }}
                                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
                                       >
                                         <X size={14} />
                                       </button>
-                                      <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                                        <div className="flex flex-col gap-3">
-                                          <div className="flex items-center gap-3">
-                                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                                              <DomainIcon className="w-5 h-5 text-white" />
-                                            </div>
-                                            <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{project.name}</h3>
+                                      <div className="relative z-10 flex flex-col justify-end gap-2 h-full p-5 sm:p-6">
+                                        <div className="flex items-center gap-2">
+                                          <div className="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                            Landing Page
                                           </div>
-                                          <div className="space-y-2">
-                                            <p className="text-xs text-neutral-500">
-                                              {new Date(project.updatedAt).toLocaleDateString()}
-                                            </p>
+                                        </div>
+                                        <h3 className="text-lg font-semibold tracking-tight text-white/90 truncate">{project.name}</h3>
+                                        <p className="text-xs text-neutral-400">
+                                          {new Date(project.updatedAt).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {/* Flow Projects */}
+                              {filteredFlowProjects.map((project) => {
+                                const DomainIcon = suggestionChips.find((c) => c.label === project.domain)?.icon || Globe;
+                                return (
+                                  <div key={project.id} className="min-h-[11rem]">
+                                    <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                                      <div
+                                        className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                        style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                                        onClick={() => loadProject(project)}
+                                      >
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteProject(project.id);
+                                          }}
+                                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all z-20"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                        <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                                          <div className="flex flex-col gap-3">
+                                            <div className="flex items-center gap-3">
+                                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                                <DomainIcon className="w-5 h-5 text-white" />
+                                              </div>
+                                              <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{project.name}</h3>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <div className="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                                Landing Page
+                                              </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <p className="text-xs text-neutral-500">
+                                                {new Date(project.updatedAt).toLocaleDateString()}
+                                              </p>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="text-neutral-500 py-20 text-center">
-                            {user ? "No saved projects yet." : "Sign in to see your projects."}
-                          </div>
-                        )}
+                                );
+                              })}
+                              {/* Solutions */}
+                              {filteredSolutions.map((solution) => {
+                                const isAiTool = solution.type === "ai-tool";
+                                return (
+                                  <div key={solution.id} className="min-h-[11rem]">
+                                    <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
+                                      <div
+                                        className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
+                                        style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                                        onClick={() => handlePreviewSolution(solution)}
+                                      >
+                                        <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
+                                          <div className="flex flex-col gap-3">
+                                            <div className="flex items-center gap-3">
+                                              <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+                                                {isAiTool ? <Bot className="w-5 h-5 text-white" /> : <Package className="w-5 h-5 text-white" />}
+                                              </div>
+                                              <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85 truncate">{solution.name}</h3>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <div className={`px-2 py-0.5 rounded text-[10px] ${
+                                                isAiTool 
+                                                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                  : "bg-green-500/20 text-green-400 border border-green-500/30"
+                                              }`}>
+                                                {isAiTool ? "AI Tool" : "Solution"}
+                                              </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <p className="text-xs text-neutral-500">
+                                                {new Date(solution.updatedAt).toLocaleDateString()}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="text-neutral-500 py-20 text-center">
+                              {user ? (activeCategory === "all" ? "No saved projects yet." : `No ${activeCategory.replace("-", " ")} yet.`) : "Sign in to see your projects."}
+                            </div>
+                          );
+                        })()}
 
                         {/* Login prompt for non-logged in users */}
                         {!user && (
