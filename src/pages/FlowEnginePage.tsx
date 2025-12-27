@@ -113,7 +113,7 @@ import {
   Edit3,
   Clipboard,
   Paperclip,
-  Share2,
+  
 } from "lucide-react";
 
 // --- Mock Auth Context (Local Implementation) ---
@@ -2828,10 +2828,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Import
-              </button>
-              <button className="px-3 py-2 text-neutral-300 hover:text-white transition-colors flex items-center gap-2 text-sm">
-                <Share2 size={16} />
-                Share
               </button>
             </div>
 
