@@ -196,22 +196,11 @@ export const AddSolutionModal: React.FC<AddSolutionModalProps> = ({
                     {solutionTypes.map((solution) => (
                       <div key={solution.id} className="min-h-[10rem]">
                         <div 
-                          className={cn("relative h-full rounded-2xl border border-white/10 p-[1px] cursor-pointer")} 
-                          style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+                          className={cn("relative h-full rounded-2xl border border-white/10 cursor-pointer hover:border-white/20 transition-colors")} 
                           onClick={() => handleSelectType(solution.id)}
                         >
-                          <GlowingEffect 
-                            spread={40} 
-                            glow 
-                            disabled={false} 
-                            proximity={64} 
-                            inactiveZone={0.01} 
-                            borderWidth={2} 
-                            className="opacity-70" 
-                          />
                           <div 
-                            className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden will-change-transform hover:bg-gradient-to-br hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
-                            style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+                            className="group relative flex h-full flex-col items-center justify-center gap-4 rounded-[0.95rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 overflow-hidden hover:from-[#050505] hover:via-[#0a0a0a] hover:to-[#050505] transition-all"
                           >
                             <div className="w-14 h-14 rounded-xl flex items-center justify-center">
                               <solution.icon className="w-7 h-7 text-white/80 group-hover:text-white transition-colors" />
