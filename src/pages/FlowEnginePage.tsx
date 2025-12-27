@@ -2773,6 +2773,36 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
 
             {/* Header Buttons - Top Right */}
             <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
+              {/* Tab buttons group */}
+              <div className="flex items-center gap-1 p-1 rounded-lg bg-neutral-900/80 border border-neutral-800">
+                <button
+                  onClick={() => setActiveView("prompt-generator")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeView === "prompt-generator"
+                      ? "bg-neutral-800 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                  }`}
+                >
+                  <svg className="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                  </svg>
+                  Prompt generator
+                </button>
+                <button
+                  onClick={() => setActiveView("all-projects")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeView === "all-projects"
+                      ? "bg-neutral-800 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                  }`}
+                >
+                  <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+                  </svg>
+                  Color codes
+                </button>
+              </div>
               <button
                 onClick={() => setShowAddSolutionModal(true)}
                 className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
