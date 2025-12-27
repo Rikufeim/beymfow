@@ -38,11 +38,23 @@ export const AllWorkspacesView: React.FC<AllWorkspacesViewProps> = ({
         <p className="text-blue-400 text-sm">Solution Showcase environment.</p>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Design/FigJam style */}
       <div className="flex items-center justify-between mb-6">
-        <button className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium">
-          All workspaces
-        </button>
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-neutral-900/80 border border-neutral-800">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-md bg-neutral-800 text-white text-sm font-medium transition-colors">
+            <svg className="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            All projects
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800/50 text-sm font-medium transition-colors">
+            <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+            </svg>
+            All workspaces
+          </button>
+        </div>
         <span className="text-neutral-500 text-sm">{workspaces.length} workspaces</span>
       </div>
 
