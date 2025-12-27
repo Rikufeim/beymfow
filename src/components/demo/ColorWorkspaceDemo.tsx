@@ -54,12 +54,15 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
       {/* Bottom Control Bar - Absolute positioned */}
       <div
-        className="absolute bottom-0 left-0 right-0 bg-neutral-900 border-t border-white/10"
+        className="absolute bottom-0 left-0 right-0 bg-neutral-900 border-t border-white/10 overflow-hidden"
         style={{
           transform: isHovered ? "translateY(0)" : "translateY(100%)",
           opacity: isHovered ? 1 : 0,
           visibility: isHovered ? "visible" : "hidden",
-          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s",
+          pointerEvents: isHovered ? "auto" : "none",
+          willChange: "transform",
+          transition:
+            "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s",
         }}
       >
         <div 
@@ -110,35 +113,28 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
             </div>
           </div>
 
-          {/* Horizontal Color Picker (appears when color selected) */}
-          <div
-            className="flex items-center gap-3 pt-2 border-t border-white/10 overflow-hidden"
-            style={{
-              maxHeight: activeColorIndex !== null ? 100 : 0,
-              opacity: activeColorIndex !== null ? 1 : 0,
-              marginTop: activeColorIndex !== null ? 12 : 0,
-              paddingTop: activeColorIndex !== null ? 8 : 0,
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
-              Color {(activeColorIndex ?? 0) + 1}
-            </span>
-            <div className="flex-1">
-              <HexColorPicker
-                color={colors[activeColorIndex ?? 0]}
-                onChange={handleColorChange}
-                style={{ width: "100%", height: 80 }}
+          {/* Horizontal Color Picker (only mounted when open to avoid lag/layout artifacts) */}
+          {isHovered && activeColorIndex !== null && (
+            <div className="flex items-center gap-3 pt-2 border-t border-white/10 overflow-hidden">
+              <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
+                Color {(activeColorIndex ?? 0) + 1}
+              </span>
+              <div className="flex-1">
+                <HexColorPicker
+                  color={colors[activeColorIndex]}
+                  onChange={handleColorChange}
+                  style={{ width: "100%", height: 80 }}
+                />
+              </div>
+              <div
+                className="w-10 h-10 rounded-lg border border-white/20"
+                style={{
+                  backgroundColor: colors[activeColorIndex],
+                  transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
               />
             </div>
-            <div
-              className="w-10 h-10 rounded-lg border border-white/20"
-              style={{
-                backgroundColor: colors[activeColorIndex ?? 0],
-                transition: "background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}
-            />
-          </div>
+          )}
         </div>
       </div>
     </div>
