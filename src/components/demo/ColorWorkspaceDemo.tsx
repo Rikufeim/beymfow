@@ -39,27 +39,26 @@ const ColorWorkspaceDemo: React.FC<ColorWorkspaceDemoProps> = ({ className }) =>
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border border-white/10 overflow-hidden ${className}`}
+      className={`relative rounded-2xl border border-white/10 overflow-hidden ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
     >
       {/* Gradient Preview Area */}
       <div
-        className="relative flex-1 min-h-[200px]"
+        className="w-full h-full min-h-[200px]"
         style={{
           ...gradientStyle,
-          transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+          transition: "background 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       />
 
-      {/* Bottom Control Bar */}
+      {/* Bottom Control Bar - Absolute positioned */}
       <div
-        className="bg-neutral-900/95 border-t border-white/10 overflow-hidden"
+        className="absolute bottom-0 left-0 right-0 bg-neutral-900/95 border-t border-white/10 overflow-hidden"
         style={{
-          maxHeight: isHovered ? 200 : 0,
+          transform: isHovered ? "translateY(0)" : "translateY(100%)",
           opacity: isHovered ? 1 : 0,
-          transition: "max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <div 
