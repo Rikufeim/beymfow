@@ -542,13 +542,22 @@ export const QuickPromptGenerator = () => {
           {(promptType || uploadedImages.length > 0) && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {/* Selected Tool Chip */}
-              <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-1.5">
-                <span className="text-xs text-white/80">
-                  {promptType === "lovable" && "Lovable Prompts"}
-                  {promptType === "gemini" && "Gemini Prompts"}
-                  {promptType === "image" && "Image Prompts"}
-                </span>
-              </div>
+              {promptType && (
+                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-1.5 gap-2">
+                  <span className="text-xs text-white/80">
+                    {promptType === "lovable" && "Lovable Prompts"}
+                    {promptType === "gemini" && "Gemini Prompts"}
+                    {promptType === "image" && "Image Prompts"}
+                  </span>
+                  <button
+                    onClick={() => setPromptType("lovable")}
+                    className="text-white/40 hover:text-white/70 transition-colors"
+                    title="Remove tool"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
               
               {/* Image Previews */}
               {uploadedImages.map((img, index) => (
