@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Zap, Settings, Send, Plus, Crown, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Zap, Settings, Send, Plus, Crown, X, Image as ImageIcon, Loader2, ChevronDown, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,9 @@ export const QuickPromptGenerator = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [contextText, setContextText] = useState("");
+  const [showContextInput, setShowContextInput] = useState(false);
+  const contextInputRef = useRef<HTMLTextAreaElement>(null);
   
   const MAX_IMAGES = 3;
 
@@ -205,10 +208,10 @@ export const QuickPromptGenerator = () => {
   }, [isFocused, input]);
 
   useEffect(() => {
-    if (!input.trim() && uploadedImages.length === 0) {
+    if (!input.trim() && uploadedImages.length === 0 && !contextText.trim()) {
       setGeneratedPrompt("");
     }
-  }, [input, uploadedImages]);
+  }, [input, uploadedImages, contextText]);
 
   // Handle paste image
   useEffect(() => {
@@ -424,9 +427,17 @@ export const QuickPromptGenerator = () => {
         ? `Analyze these ${uploadedImages.length} images and create a detailed prompt that can recreate this design with high fidelity.`
         : "Analyze this image and create a detailed prompt that can recreate this design with high fidelity.");
 
+      // Add context text if provided
+      if (contextText.trim()) {
+        finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
+      }
+
       // Add instruction for fast model
       if (selectedModel === "fast" && uploadedImages.length === 0) {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
+        if (contextText.trim()) {
+          finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
+        }
       }
 
       // Prepare body with optional images
@@ -489,6 +500,8 @@ export const QuickPromptGenerator = () => {
     setGeneratedPrompt("");
     setInput("");
     setUploadedImages([]);
+    setContextText("");
+    setShowContextInput(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -509,47 +522,6 @@ export const QuickPromptGenerator = () => {
         movementDuration={3}
       />
       <div className="relative z-10">
-        {/* Prompt Type Selector */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-          <button
-            onClick={() => setPromptType("lovable")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "lovable"
-                ? "bg-white/10 border-white/40 text-white"
-                : "bg-white/5 border-white/20 text-white/50 hover:border-white/30 hover:text-white/70"
-            }`}
-          >
-            Lovable Prompts
-          </button>
-          <button
-            onClick={() => setPromptType("gemini")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "gemini"
-                ? "bg-white/10 border-white/40 text-white"
-                : "bg-white/5 border-white/20 text-white/50 hover:border-white/30 hover:text-white/70"
-            }`}
-          >
-            Gemini Prompts
-          </button>
-          <button
-            onClick={() => setPromptType("image")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "image"
-                ? "bg-white/10 border-white/40 text-white"
-                : "bg-white/5 border-white/20 text-white/50 hover:border-white/30 hover:text-white/70"
-            }`}
-          >
-            Image Prompts
-          </button>
-        </div>
-
-        {/* Prompt Type Description */}
-        <p className="text-white/40 text-xs text-center mb-6">
-          {promptType === "lovable" && "Optimized for building websites and apps with Lovable"}
-          {promptType === "gemini" && "Structured prompts compatible with Google Gemini models"}
-          {promptType === "image" && "Crafted prompts for high-quality AI image generation"}
-        </p>
-
         <div className="text-center space-y-2"></div>
 
       <div className="relative">
@@ -643,33 +615,63 @@ export const QuickPromptGenerator = () => {
                     <Plus className="w-4 h-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-black/60 backdrop-blur-md border-white/10 z-50 w-48">
+                <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
                   <div className="px-2 py-2">
-                    <p className="text-xs font-semibold text-white/50 mb-2 px-2">CATEGORIES</p>
-                    <div className="space-y-1">
-                      {(["all", "creativity", "personal", "business", "crypto"] as const).map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => setSelectedCategory(cat)}
-                          className={`w-full text-left px-3 py-1.5 text-xs rounded transition-all capitalize ${selectedCategory === cat ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10"}`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="border-t border-white/10 my-2"></div>
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadedImages.length >= MAX_IMAGES}
-                      className="w-full text-left px-3 py-1.5 text-xs rounded transition-all text-white/70 hover:bg-white/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <ImageIcon className="w-3 h-3" />
-                      Upload Images ({uploadedImages.length}/{MAX_IMAGES})
+                      <ImageIcon className="w-4 h-4" />
+                      Upload a file
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowContextInput(true);
+                        setTimeout(() => contextInputRef.current?.focus(), 100);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Add text content
                     </button>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
+            {/* Context Text Preview */}
+            {(showContextInput || contextText) && (
+              <div className="flex items-center gap-2 pt-2">
+                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-2 py-1">
+                  <FileText className="w-3 h-3 text-white/50 mr-1" />
+                  <input
+                    ref={contextInputRef as any}
+                    type="text"
+                    value={contextText}
+                    onChange={(e) => setContextText(e.target.value)}
+                    placeholder="Add context..."
+                    className="bg-transparent border-none outline-none text-xs text-white w-20 sm:w-32"
+                    onBlur={() => {
+                      if (!contextText.trim()) {
+                        setShowContextInput(false);
+                      }
+                    }}
+                  />
+                  {contextText && (
+                    <button
+                      onClick={() => {
+                        setContextText("");
+                        setShowContextInput(false);
+                      }}
+                      className="ml-1 text-white/40 hover:text-white/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="relative flex-1 min-w-0">
               <textarea
@@ -744,6 +746,50 @@ export const QuickPromptGenerator = () => {
             <Crown className="w-3 h-3" />
             Beymflow Premium
           </GlassButton>
+          
+          {/* Pick Tool Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 flex items-center gap-2">
+                Pick tool
+                <ChevronDown className="w-3 h-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
+              <div className="px-2 py-2 space-y-1">
+                <button
+                  onClick={() => setPromptType("lovable")}
+                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
+                    promptType === "lovable" 
+                      ? "bg-white/15 text-white" 
+                      : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Lovable Prompts
+                </button>
+                <button
+                  onClick={() => setPromptType("gemini")}
+                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
+                    promptType === "gemini" 
+                      ? "bg-white/15 text-white" 
+                      : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Gemini Prompts
+                </button>
+                <button
+                  onClick={() => setPromptType("image")}
+                  className={`w-full text-left px-3 py-2 text-sm rounded transition-all flex items-center gap-3 ${
+                    promptType === "image" 
+                      ? "bg-white/15 text-white" 
+                      : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Image Prompts
+                </button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <GeneratedPromptDisplay
