@@ -2760,7 +2760,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       {/* Sidebar */}
       <FlowEngineSidebar
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={(view) => {
+          setActiveView(view);
+          // Reset selected workspace when switching views to avoid showing workspace projects in wrong view
+          if (view !== "all-projects") {
+            setSelectedWorkspace(null);
+          }
+        }}
         isCollapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
         className="flex-shrink-0"
