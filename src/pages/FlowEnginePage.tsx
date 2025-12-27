@@ -36,6 +36,16 @@ import {
   type HeroBackgroundProject 
 } from "@/lib/heroProjectStore";
 import { FlowEngineSidebar, type FlowEngineView } from "@/components/flow-engine/FlowEngineSidebar";
+import { 
+  getWorkspaces, 
+  createWorkspace, 
+  Workspace,
+  WorkspaceProject,
+  createWorkspaceProject,
+} from "@/lib/workspaceProjectStore";
+import { CreateWorkspaceModal } from "@/components/flow-engine/CreateWorkspaceModal";
+import { AllWorkspacesView } from "@/components/flow-engine/AllWorkspacesView";
+import { WorkspaceDetailView } from "@/components/flow-engine/WorkspaceDetailView";
 
 import {
   ArrowRight,
@@ -919,6 +929,35 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // Sidebar view state
   const [activeView, setActiveView] = useState<FlowEngineView>("recents");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Workspace state
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  
+  // Load workspaces on mount
+  useEffect(() => {
+    setWorkspaces(getWorkspaces());
+  }, []);
+  
+  const refreshWorkspaces = () => {
+    setWorkspaces(getWorkspaces());
+  };
+  
+  const handleCreateWorkspace = (name: string, description?: string) => {
+    const newWorkspace = createWorkspace(name, description);
+    refreshWorkspaces();
+    setSelectedWorkspace(newWorkspace);
+  };
+  
+  const handleOpenWorkspace = (workspace: Workspace) => {
+    setSelectedWorkspace(workspace);
+  };
+  
+  const handleBackToWorkspaces = () => {
+    setSelectedWorkspace(null);
+    refreshWorkspaces();
+  };
 
   // Update active tab width when tab changes
   useEffect(() => {
@@ -2797,17 +2836,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     exit={{ opacity: 0, y: -20 }}
                     className="flex flex-col gap-8"
                   >
-                    {/* Page Header with Team Project Title */}
+                    {/* Page Header - Show workspace-specific or default */}
                     {activeView === "all-projects" ? (
-                      <div className="mt-4 mb-6">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <h1 className="text-2xl font-bold text-white tracking-wide">BEYMFLOW PAGES</h1>
-                          <ChevronDown className="w-5 h-5 text-neutral-400" />
-                        </div>
-                      </div>
+                      selectedWorkspace ? (
+                        <WorkspaceDetailView
+                          workspace={selectedWorkspace}
+                          onBack={handleBackToWorkspaces}
+                          onCreateProject={() => {
+                            createWorkspaceProject(selectedWorkspace.id, `Project ${Date.now()}`);
+                            refreshWorkspaces();
+                          }}
+                          onOpenProject={(project) => {
+                            toast.info(`Opening project: ${project.name}`);
+                          }}
+                          onWorkspaceUpdated={refreshWorkspaces}
+                        />
+                      ) : (
+                        <AllWorkspacesView
+                          workspaces={workspaces}
+                          onCreateWorkspace={() => setShowCreateWorkspaceModal(true)}
+                          onOpenWorkspace={handleOpenWorkspace}
+                        />
+                      )
                     ) : (
                       <div className="mt-4 mb-3">
                         <h1 className="text-3xl font-semibold text-white">
@@ -2825,83 +2875,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                       </div>
                     )}
 
-                {/* 5. Cards Container - Team Project Style for All Projects */}
+                {/* 5. Cards Container - Only show for non-all-projects views */}
+                {activeView !== "all-projects" && (
                 <div className="w-full pb-20">
-                  {activeView === "all-projects" ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {/* Team Project Card - Contains multiple files */}
-                      <div 
-                        className="rounded-xl border border-neutral-700/50 bg-neutral-900/80 p-3 cursor-pointer hover:border-neutral-600 transition-all group"
-                        onClick={createNewProject}
-                      >
-                        <div className="relative">
-                          {/* Star icon */}
-                          <button 
-                            className="absolute -top-1 -right-1 z-10 text-amber-400 hover:text-amber-300 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
-                          </button>
-                          
-                          {/* Grid of project thumbnails */}
-                          <div className="grid grid-cols-2 gap-1.5 mb-3">
-                            {heroProjects.slice(0, 4).map((project, idx) => (
-                              <div 
-                                key={project.id} 
-                                className="aspect-[4/3] rounded-md overflow-hidden bg-neutral-800 border border-neutral-700/30"
-                              >
-                                {project.thumbnail ? (
-                                  <img src={project.thumbnail} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900" />
-                                )}
-                              </div>
-                            ))}
-                            {/* Fill empty slots */}
-                            {Array.from({ length: Math.max(0, 4 - heroProjects.length) }).map((_, idx) => (
-                              <div 
-                                key={`empty-${idx}`}
-                                className="aspect-[4/3] rounded-md bg-neutral-800 border border-neutral-700/30"
-                              />
-                            ))}
-                          </div>
-                          
-                          {/* Project info */}
-                          <h3 className="text-white font-medium text-sm">Team project</h3>
-                          <p className="text-neutral-500 text-xs">
-                            {heroProjects.length + savedProjects.length} files
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Upgrade Card */}
-                      <div className="rounded-xl border border-neutral-700/30 border-dashed bg-neutral-900/40 p-3 flex flex-col items-center justify-center min-h-[180px]">
-                        <div className="grid grid-cols-2 gap-1.5 mb-3 opacity-40">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div 
-                              key={i}
-                              className="aspect-[4/3] rounded-md bg-neutral-800 border border-neutral-700/30 w-12"
-                            />
-                          ))}
-                        </div>
-                        
-                        {/* Plus button */}
-                        <button 
-                          onClick={createNewProject}
-                          className="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 flex items-center justify-center text-white transition-colors mb-2"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        
-                        <p className="text-white font-medium text-xs text-center">Upgrade to create more</p>
-                        <p className="text-neutral-500 text-[10px] text-center">
-                          <span className="text-cyan-400 cursor-pointer hover:underline">Professional plan</span>
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
+                  {(
                     <AnimatePresence mode="wait">
                       <motion.div
                         key="projects"
@@ -3023,6 +3000,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                     </AnimatePresence>
                   )}
                 </div>
+                )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -3107,6 +3085,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
           onSave={handleHeroProjectSave}
         />
       )}
+
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal
+        isOpen={showCreateWorkspaceModal}
+        onClose={() => setShowCreateWorkspaceModal(false)}
+        onCreate={handleCreateWorkspace}
+      />
 
     </div>
   );
