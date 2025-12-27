@@ -384,45 +384,20 @@ const FlowEngineContent: React.FC = () => {
             </motion.div>
           ))}
 
-          {/* Sample Projects */}
-          {SAMPLE_PROJECTS.map((project) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="group cursor-pointer"
-              onClick={() => toast.info(`Opening: ${project.title}`)}
-            >
-              {/* Card Thumbnail */}
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-3 border border-white/10">
-                <img 
-                  src={project.thumbnail} 
-                  alt={project.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-
-              {/* Card Info */}
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                  <Sparkles size={16} className="text-white/70" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white/90 font-medium truncate">{project.title}</h3>
-                  <p className="text-neutral-500 text-sm">
-                    by {project.author} · ♡ {project.likes} · 👤 {project.uses}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
         </div>
 
         {/* Empty State */}
-        {allProjects.length === 0 && SAMPLE_PROJECTS.length === 0 && (
+        {allProjects.length === 0 && (
           <div className="text-center py-20">
             <Sparkles className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
-            <p className="text-neutral-500">No projects yet. Create your first one!</p>
+            <p className="text-neutral-500 mb-4">No projects yet. Create your first one!</p>
+            <button
+              onClick={() => navigate("/flow-engine/workspace")}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 transition-all font-medium"
+            >
+              <Plus size={18} />
+              <span>Create Project</span>
+            </button>
           </div>
         )}
       </div>
