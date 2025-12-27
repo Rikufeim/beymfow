@@ -7,7 +7,6 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Star,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,9 +35,6 @@ const mainItems: SidebarItem[] = [
   { id: "trash", label: "Trash", icon: Trash2 },
 ];
 
-const starredItems: SidebarItem[] = [
-  { id: "starred-project", label: "Team project", icon: FileText },
-];
 
 export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
   activeView,
@@ -125,45 +121,6 @@ export const FlowEngineSidebar: React.FC<FlowEngineSidebarProps> = ({
             );
           })}
         </ul>
-
-        {/* Starred Section */}
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.15 }}
-              className="mt-6"
-            >
-              <div className="flex items-center gap-2 px-2.5 py-2 text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                <Star size={14} />
-                <span>Starred</span>
-              </div>
-              <ul className="space-y-0.5">
-                {starredItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        onClick={() => handleItemClick(item.id)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors",
-                          activeView === item.id
-                            ? "bg-neutral-800 text-white"
-                            : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-200"
-                        )}
-                      >
-                        <Icon size={18} className="flex-shrink-0" />
-                        <span className="truncate">{item.label}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
 
       {/* Collapse Toggle */}
