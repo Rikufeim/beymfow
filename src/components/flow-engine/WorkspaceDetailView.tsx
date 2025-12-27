@@ -11,7 +11,6 @@ import {
   Trash2,
   Plus,
   FolderOpen,
-  Share2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -79,6 +78,14 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
+      {/* All workspaces button */}
+      <button
+        onClick={onBack}
+        className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium mb-6 hover:bg-neutral-700 transition-colors"
+      >
+        All workspaces
+      </button>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -172,20 +179,8 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onCreateProject}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Project
-          </button>
-          <button className="flex items-center gap-2 px-3 py-2 text-neutral-300 hover:text-white transition-colors">
-            <Share2 className="w-4 h-4" />
-            Share
-          </button>
-        </div>
+        {/* Right side - project count */}
+        <span className="text-neutral-500 text-sm">{projects.length} projects</span>
       </div>
 
       {/* Tabs */}
@@ -193,7 +188,6 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         <button className="px-4 py-2 rounded-lg bg-neutral-800 text-white text-sm font-medium">
           All projects
         </button>
-        <span className="text-neutral-500 text-sm">{projects.length} projects</span>
       </div>
 
       {/* Content */}

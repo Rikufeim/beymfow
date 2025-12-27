@@ -46,6 +46,7 @@ import {
 import { CreateWorkspaceModal } from "@/components/flow-engine/CreateWorkspaceModal";
 import { AllWorkspacesView } from "@/components/flow-engine/AllWorkspacesView";
 import { WorkspaceDetailView } from "@/components/flow-engine/WorkspaceDetailView";
+import { AddSolutionModal, type SolutionType } from "@/components/flow-engine/AddSolutionModal";
 
 import {
   ArrowRight,
@@ -109,6 +110,7 @@ import {
   Edit3,
   Clipboard,
   Paperclip,
+  Share2,
 } from "lucide-react";
 
 // --- Mock Auth Context (Local Implementation) ---
@@ -957,6 +959,21 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   const handleBackToWorkspaces = () => {
     setSelectedWorkspace(null);
     refreshWorkspaces();
+  };
+  
+  // Add Solution Modal state
+  const [showAddSolutionModal, setShowAddSolutionModal] = useState(false);
+  
+  const handleSolutionSelect = (type: SolutionType) => {
+    if (type === "ai-tool") {
+      // Open prompt generator or AI tool creator
+      setActiveView("prompt-generator");
+    } else if (type === "website-ui") {
+      // Create new website project
+      createNewProject();
+    } else if (type === "import-package") {
+      toast.info("Import package coming soon");
+    }
   };
 
   // Update active tab width when tab changes
@@ -2754,24 +2771,36 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               <span className="text-sm font-medium pr-1">Home</span>
             </button>
 
-            {/* Login/New Project Button - Top Right */}
-            {user ? (
+            {/* Header Buttons - Top Right */}
+            <div className="absolute top-6 right-6 flex items-center gap-3 z-50">
               <button
-                onClick={createNewProject}
-                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
+                onClick={() => setShowAddSolutionModal(true)}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
               >
-                <Plus size={20} />
-                <span className="text-sm font-medium pr-1">Project</span>
+                <Plus size={16} />
+                Project
               </button>
-            ) : (
-              <button
-                onClick={login}
-                className="absolute top-6 right-6 p-2 rounded-full bg-neutral-900/50 backdrop-blur-md border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-2 font-sans z-50"
-              >
-                <LogIn size={20} />
-                <span className="text-sm font-medium pr-1">Sign in</span>
+              <button className="px-3 py-2 text-neutral-300 hover:text-white transition-colors flex items-center gap-2 text-sm">
+                <Share2 size={16} />
+                Share
               </button>
-            )}
+              {user ? (
+                <button
+                  onClick={logout}
+                  className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+                >
+                  <LogOut size={18} />
+                </button>
+              ) : (
+                <button
+                  onClick={login}
+                  className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <LogIn size={18} />
+                  <span className="text-sm">Sign in</span>
+                </button>
+              )}
+            </div>
 
             {/* Main Content Container - Centered with max-width */}
             <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
@@ -3091,6 +3120,13 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
         isOpen={showCreateWorkspaceModal}
         onClose={() => setShowCreateWorkspaceModal(false)}
         onCreate={handleCreateWorkspace}
+      />
+
+      {/* Add Solution Modal */}
+      <AddSolutionModal
+        isOpen={showAddSolutionModal}
+        onClose={() => setShowAddSolutionModal(false)}
+        onSelect={handleSolutionSelect}
       />
 
     </div>
