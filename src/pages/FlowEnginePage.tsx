@@ -2828,10 +2828,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 {/* 5. Cards Container - Team Project Style for All Projects */}
                 <div className="w-full pb-20">
                   {activeView === "all-projects" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {/* Team Project Card - Contains multiple files */}
                       <div 
-                        className="rounded-2xl border border-neutral-700/50 bg-neutral-900/80 p-4 cursor-pointer hover:border-neutral-600 transition-all group"
+                        className="rounded-xl border border-neutral-700/50 bg-neutral-900/80 p-3 cursor-pointer hover:border-neutral-600 transition-all group"
                         onClick={createNewProject}
                       >
                         <div className="relative">
@@ -2840,17 +2840,17 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             className="absolute -top-1 -right-1 z-10 text-amber-400 hover:text-amber-300 transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                             </svg>
                           </button>
                           
                           {/* Grid of project thumbnails */}
-                          <div className="grid grid-cols-2 gap-2 mb-4">
+                          <div className="grid grid-cols-2 gap-1.5 mb-3">
                             {heroProjects.slice(0, 4).map((project, idx) => (
                               <div 
                                 key={project.id} 
-                                className="aspect-[4/3] rounded-lg overflow-hidden bg-neutral-800 border border-neutral-700/30"
+                                className="aspect-[4/3] rounded-md overflow-hidden bg-neutral-800 border border-neutral-700/30"
                               >
                                 {project.thumbnail ? (
                                   <img src={project.thumbnail} alt="" className="w-full h-full object-cover" />
@@ -2863,26 +2863,26 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                             {Array.from({ length: Math.max(0, 4 - heroProjects.length) }).map((_, idx) => (
                               <div 
                                 key={`empty-${idx}`}
-                                className="aspect-[4/3] rounded-lg bg-neutral-800 border border-neutral-700/30"
+                                className="aspect-[4/3] rounded-md bg-neutral-800 border border-neutral-700/30"
                               />
                             ))}
                           </div>
                           
                           {/* Project info */}
-                          <h3 className="text-white font-medium">Team project</h3>
-                          <p className="text-neutral-500 text-sm">
+                          <h3 className="text-white font-medium text-sm">Team project</h3>
+                          <p className="text-neutral-500 text-xs">
                             {heroProjects.length + savedProjects.length} files
                           </p>
                         </div>
                       </div>
 
                       {/* Upgrade Card */}
-                      <div className="rounded-2xl border border-neutral-700/30 border-dashed bg-neutral-900/40 p-4 flex flex-col items-center justify-center min-h-[280px]">
-                        <div className="grid grid-cols-2 gap-2 mb-4 opacity-40">
+                      <div className="rounded-xl border border-neutral-700/30 border-dashed bg-neutral-900/40 p-3 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="grid grid-cols-2 gap-1.5 mb-3 opacity-40">
                           {[1, 2, 3, 4].map((i) => (
                             <div 
                               key={i}
-                              className="aspect-[4/3] rounded-lg bg-neutral-800 border border-neutral-700/30 w-24"
+                              className="aspect-[4/3] rounded-md bg-neutral-800 border border-neutral-700/30 w-12"
                             />
                           ))}
                         </div>
@@ -2890,14 +2890,14 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                         {/* Plus button */}
                         <button 
                           onClick={createNewProject}
-                          className="w-10 h-10 rounded-full bg-cyan-500 hover:bg-cyan-400 flex items-center justify-center text-white transition-colors mb-4"
+                          className="w-8 h-8 rounded-full bg-cyan-500 hover:bg-cyan-400 flex items-center justify-center text-white transition-colors mb-2"
                         >
-                          <Plus className="w-5 h-5" />
+                          <Plus className="w-4 h-4" />
                         </button>
                         
-                        <p className="text-white font-medium text-center">Upgrade to create more projects</p>
-                        <p className="text-neutral-500 text-sm text-center">
-                          Get unlimited everything on the <span className="text-cyan-400 cursor-pointer hover:underline">Professional plan</span>.
+                        <p className="text-white font-medium text-xs text-center">Upgrade to create more</p>
+                        <p className="text-neutral-500 text-[10px] text-center">
+                          <span className="text-cyan-400 cursor-pointer hover:underline">Professional plan</span>
                         </p>
                       </div>
                     </div>
