@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Bot, Layout, Package, ExternalLink, Trash2, Eye } from "lucide-react";
 import { Solution, deleteSolution } from "@/lib/solutionStore";
 import { toast } from "sonner";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { cn } from "@/lib/utils";
 
 interface SolutionCardProps {
   solution: Solution;
@@ -69,65 +71,80 @@ export const SolutionCard: React.FC<SolutionCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative group"
+      className="relative min-h-[14rem]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div
+      <div 
+        className={cn("relative h-full rounded-2xl border border-white/10 p-[1px] cursor-pointer")} 
+        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
         onClick={() => onPreview(solution)}
-        className="cursor-pointer rounded-xl border border-neutral-800 bg-[#0a0a0a] hover:border-teal-500/30 transition-all overflow-hidden"
       >
-        {/* Preview area */}
-        <div className="relative h-40 bg-neutral-900/50 flex items-center justify-center">
-          {solution.type === "website-ui" && solution.htmlCode ? (
-            <div className="w-full h-full bg-teal-500/5 flex items-center justify-center text-teal-500/50">
-              <Eye className="w-8 h-8" />
-            </div>
-          ) : (
-            <div className="w-full h-full bg-neutral-900/50 flex items-center justify-center">
-              <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-                {getIcon()}
+        <GlowingEffect 
+          spread={40} 
+          glow 
+          disabled={false} 
+          proximity={64} 
+          inactiveZone={0.01} 
+          borderWidth={2} 
+          className="opacity-70" 
+        />
+        <div 
+          className="group relative flex h-full flex-col rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] overflow-hidden will-change-transform"
+          style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
+        >
+          {/* Preview area */}
+          <div className="relative h-32 flex items-center justify-center">
+            {solution.type === "website-ui" && solution.htmlCode ? (
+              <div className="w-full h-full bg-teal-500/5 flex items-center justify-center text-teal-500/50">
+                <Eye className="w-8 h-8" />
               </div>
-            </div>
-          )}
-          
-          {/* Hover overlay with actions */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center gap-3"
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview(solution);
-                  }}
-                  className="p-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors shadow-lg shadow-teal-900/30"
-                >
-                  <Eye className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="p-2.5 rounded-lg bg-neutral-800 hover:bg-red-600 text-neutral-400 hover:text-white transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </motion.div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                  {getIcon()}
+                </div>
+              </div>
             )}
-          </AnimatePresence>
-        </div>
-        
-        {/* Info section */}
-        <div className="p-4 flex items-center gap-3 bg-[#0a0a0a]">
-          <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center flex-shrink-0">
-            {getIcon()}
+            
+            {/* Hover overlay with actions */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center gap-3"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPreview(solution);
+                    }}
+                    className="p-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors shadow-lg shadow-teal-900/30"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="p-2.5 rounded-lg bg-neutral-800 hover:bg-red-600 text-neutral-400 hover:text-white transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-white font-medium text-sm truncate">{solution.name}</h3>
-            <p className="text-neutral-500 text-xs">{formatDate(solution.updatedAt)}</p>
+          
+          {/* Info section */}
+          <div className="p-4 flex items-center gap-3 border-t border-white/5">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center flex-shrink-0">
+              {getIcon()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-white font-medium text-sm truncate">{solution.name}</h3>
+              <p className="text-neutral-500 text-xs">{formatDate(solution.updatedAt)}</p>
+            </div>
           </div>
         </div>
       </div>
