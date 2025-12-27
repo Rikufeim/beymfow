@@ -2788,9 +2788,9 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 Prompt generator
               </button>
               <button
-                onClick={() => setActiveView("all-projects")}
+                onClick={() => setActiveView("color-workspace")}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  activeView === "all-projects"
+                  activeView === "color-workspace"
                     ? "bg-neutral-800 border-neutral-700 text-white"
                     : "bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800/50"
                 }`}
@@ -2802,18 +2802,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                 Color codes
               </button>
               <button
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Project
-              </button>
-              <button className="px-3 py-2 text-neutral-300 hover:text-white transition-colors flex items-center gap-2 text-sm">
-                <Share2 size={16} />
-                Share
-              </button>
-              <button
                 onClick={() => setShowAddSolutionModal(true)}
-                className="px-3 py-2 text-neutral-300 hover:text-white transition-colors flex items-center gap-2 text-sm"
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -2821,6 +2811,10 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 Import
+              </button>
+              <button className="px-3 py-2 text-neutral-300 hover:text-white transition-colors flex items-center gap-2 text-sm">
+                <Share2 size={16} />
+                Share
               </button>
             </div>
 
@@ -2877,6 +2871,28 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                           </button>
                         );
                       })}
+                    </div>
+                  </motion.div>
+                ) : activeView === "color-workspace" ? (
+                  <motion.div
+                    key="color-workspace"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex flex-col gap-8"
+                  >
+                    <div className="mb-6">
+                      <h1 className="text-3xl font-bold text-white mb-1">Color Workspace</h1>
+                      <p className="text-blue-400 text-sm">Manage your color themes and palettes.</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <div className="w-16 h-16 rounded-xl bg-neutral-800 flex items-center justify-center mb-4">
+                        <svg className="w-8 h-8 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+                        </svg>
+                      </div>
+                      <p className="text-neutral-400 mb-4">Color workspace coming soon</p>
                     </div>
                   </motion.div>
                 ) : (
