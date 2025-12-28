@@ -331,16 +331,6 @@ const Index = () => {
                       Start for free
                     </GlassButton>
                   </div>
-                  <div className="relative w-full sm:w-auto">
-                    <GlassButton
-                      size="default"
-                      onClick={() => navigate("/premium")}
-                      contentClassName="flex items-center gap-1.5"
-                      isSelected={false}
-                    >
-                      Beymflow Premium
-                    </GlassButton>
-                  </div>
                 </div>
               </div>
             </section>

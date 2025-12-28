@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
 import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
+import { useRef } from "react";
 
 const products = [
   {
@@ -35,13 +36,13 @@ const products = [
 
 const ProductsGrid = () => {
   return (
-    <section className="w-full bg-black py-16 sm:py-20 lg:py-24">
+    <section className="w-full bg-black py-16 sm:py-20 lg:py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {products.map((product, idx) => {
             const Icon = product.icon;
             return (
-              <div key={idx} className="flex flex-col items-start gap-4 group">
+              <div key={idx} className="flex flex-col items-start gap-4 group h-full">
                 <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-all duration-300">
                   <Icon className="h-10 w-10 text-white transition-colors duration-300 group-hover:text-teal-400" 
                     style={{
@@ -56,7 +57,7 @@ const ProductsGrid = () => {
                 <p className="text-sm sm:text-base text-white/70 leading-relaxed">
                   {product.description}
                 </p>
-                <Link to={product.link} className="mt-2">
+                <Link to={product.link} className="mt-auto">
                   <GlassButton
                     size="sm"
                     isSelected={false}

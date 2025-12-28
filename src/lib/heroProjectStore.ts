@@ -109,16 +109,16 @@ export function getProject(projectId: string): HeroBackgroundProject | null {
 
 export function generateProjectName(): string {
   const projects = loadLocalProjects();
-  const heroProjects = projects.filter((p) => p.name.startsWith("Hero Background"));
-  const maxNumber = heroProjects.reduce((max, p) => {
-    const match = p.name.match(/Hero Background (\d+)/);
+  const projectProjects = projects.filter((p) => p.name.startsWith("Project"));
+  const maxNumber = projectProjects.reduce((max, p) => {
+    const match = p.name.match(/Project (\d+)/);
     if (match) {
       return Math.max(max, parseInt(match[1], 10));
     }
     return max;
   }, 0);
   
-  return `Hero Background ${String(maxNumber + 1).padStart(3, "0")}`;
+  return `Project ${maxNumber + 1}`;
 }
 
 // --- Thumbnail Generation ---

@@ -113,7 +113,7 @@ export const WorkspaceDetailView: React.FC<WorkspaceDetailViewProps> = ({
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg"
-            style={{ backgroundColor: workspace.iconColor || "#000000" }}
+            style={{ backgroundColor: "#000000" }}
           >
             <Users className="w-6 h-6" />
           </div>

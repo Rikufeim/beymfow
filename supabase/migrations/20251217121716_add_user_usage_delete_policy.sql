@@ -3,3 +3,4 @@
 
 CREATE POLICY "Users cannot delete usage" ON public.user_usage FOR DELETE TO authenticated USING (false);
 
+

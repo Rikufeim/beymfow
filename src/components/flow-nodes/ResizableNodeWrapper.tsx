@@ -129,3 +129,4 @@ export const ResizableNodeWrapper: React.FC<ResizableNodeWrapperProps> = ({
     </NodeScaleContext.Provider>
   );
 };
+

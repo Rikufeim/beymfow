@@ -14,7 +14,7 @@ const FEATURE_CARDS = [
   {
     id: 2,
     title: "Make prompts",
-    description: "With generator",
+    description: "Lovable, Gemini & more",
     route: "/flow-engine?view=prompt-generator",
   },
   {

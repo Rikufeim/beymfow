@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { HexColorPicker } from "react-colorful";
-import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ColorPickerFieldProps = {
   label: string;
@@ -20,7 +20,6 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
-  const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0 });
 
   // Force close from parent
   useEffect(() => {
@@ -28,32 +27,6 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
       setOpen(false);
     }
   }, [forceClose, open]);
-
-  // Calculate position for picker to open ABOVE the button
-  const updatePosition = useCallback(() => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const pickerHeight = 280; // Approximate height of picker
-      const pickerWidth = 220;
-      
-      // Position above the button
-      let top = rect.top - pickerHeight - 8;
-      let left = rect.left + (rect.width / 2) - (pickerWidth / 2);
-      
-      // Keep within viewport bounds
-      if (top < 10) {
-        top = rect.bottom + 8; // Fall back to below if not enough space above
-      }
-      if (left < 10) {
-        left = 10;
-      }
-      if (left + pickerWidth > window.innerWidth - 10) {
-        left = window.innerWidth - pickerWidth - 10;
-      }
-      
-      setPickerPosition({ top, left });
-    }
-  }, []);
 
   // Close picker when clicking outside
   useEffect(() => {
@@ -70,17 +43,12 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
     };
 
     if (open) {
-      updatePosition();
       document.addEventListener("mousedown", handleClickOutside);
-      window.addEventListener("scroll", updatePosition, true);
-      window.addEventListener("resize", updatePosition);
       return () => {
         document.removeEventListener("mousedown", handleClickOutside);
-        window.removeEventListener("scroll", updatePosition, true);
-        window.removeEventListener("resize", updatePosition);
       };
     }
-  }, [open, updatePosition, onOpenChange]);
+  }, [open, onOpenChange]);
 
   const displayColor = value || "#ffffff";
 
@@ -91,7 +59,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         ref={buttonRef}
         type="button"
@@ -113,40 +81,42 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
         </div>
       </button>
       
-      {open && createPortal(
-        <div 
-          ref={pickerRef}
-          className="fixed z-[100] rounded-xl border border-white/10 bg-neutral-900 p-4 shadow-2xl"
-          style={{ 
-            top: pickerPosition.top, 
-            left: pickerPosition.left,
-            minWidth: 220,
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <div className="mb-3">
-            <span className="text-xs text-white/50 uppercase tracking-wider">{label}</span>
-          </div>
-          <HexColorPicker color={displayColor} onChange={onChange} />
-          <input
-            type="text"
-            className="mt-3 w-full rounded-lg border border-white/15 bg-black/60 px-3 py-2 text-sm text-white/90 outline-none focus:outline-none focus-visible:outline-none focus:border-white/30 focus:ring-0 focus-visible:ring-0 transition-colors"
-            value={value || ""}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={pickerRef}
+            initial={{ opacity: 0, scaleX: 0.8, y: -10 }}
+            animate={{ opacity: 1, scaleX: 1, y: 0 }}
+            exit={{ opacity: 0, scaleX: 0.8, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-full left-0 mt-2 w-full"
             onMouseDown={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              const hex = e.target.value;
-              // Allow partial input for hex colors
-              if (hex === "" || hex.startsWith("#")) {
-                onChange(hex);
-              } else {
-                onChange("#" + hex);
-              }
-            }}
-            placeholder="#ffffff"
-          />
-        </div>,
-        document.body
-      )}
+          >
+            <div className="mb-2">
+              <span className="text-[10px] text-white/50 uppercase tracking-wider">{label}</span>
+            </div>
+            <div style={{ transform: 'scale(0.85)', transformOrigin: 'top left' }}>
+              <HexColorPicker color={displayColor} onChange={onChange} />
+            </div>
+            <input
+              type="text"
+              className="mt-2 w-full rounded-lg border border-white/15 bg-black/60 px-2 py-1.5 text-xs text-white/90 outline-none focus:outline-none focus-visible:outline-none focus:border-white/30 focus:ring-0 focus-visible:ring-0 transition-colors"
+              value={value || ""}
+              onMouseDown={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                const hex = e.target.value;
+                // Allow partial input for hex colors
+                if (hex === "" || hex.startsWith("#")) {
+                  onChange(hex);
+                } else {
+                  onChange("#" + hex);
+                }
+              }}
+              placeholder="#ffffff"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

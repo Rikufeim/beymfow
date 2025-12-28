@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Zap, Settings, Send, Plus, Crown, X, Image as ImageIcon, Loader2, ChevronDown, FileText } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,7 @@ export const QuickPromptGenerator = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
   );
-  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image">("lovable");
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image" | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
@@ -550,7 +550,7 @@ export const QuickPromptGenerator = () => {
                     {promptType === "image" && "Image Prompts"}
                   </span>
                   <button
-                    onClick={() => setPromptType("lovable")}
+                    onClick={() => setPromptType(null)}
                     className="text-white/40 hover:text-white/70 transition-colors"
                     title="Remove tool"
                   >
@@ -727,15 +727,6 @@ export const QuickPromptGenerator = () => {
           >
             <Settings className="w-3 h-3" />
             Advanced Model
-          </GlassButton>
-          <GlassButton
-            size="sm"
-            onClick={() => setSelectedModel("premium")}
-            contentClassName="flex items-center gap-1.5"
-            isSelected={selectedModel === "premium"}
-          >
-            <Crown className="w-3 h-3" />
-            Beymflow Premium
           </GlassButton>
           
           {/* Pick Tool Dropdown */}

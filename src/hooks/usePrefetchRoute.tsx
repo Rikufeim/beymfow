@@ -7,6 +7,7 @@ const routeMap: Record<string, () => Promise<any>> = {
   "/premium": () => import("../pages/Premium"),
   "/flow-engine": () => import("../pages/FlowEnginePage"),
   "/prompt-lab-page": () => import("../pages/PromptLabPage"),
+  "/prompt-lab-page/library": () => import("../pages/promptlab/PromptLibraryPage"),
   "/auth": () => import("../pages/Auth"),
   "/about": () => import("../pages/About"),
   "/business-prompts": () => import("../pages/BusinessPrompts"),

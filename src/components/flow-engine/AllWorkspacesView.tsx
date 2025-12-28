@@ -15,14 +15,6 @@ export const AllWorkspacesView: React.FC<AllWorkspacesViewProps> = ({
   onCreateWorkspace,
   onOpenWorkspace,
 }) => {
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,13 +22,6 @@ export const AllWorkspacesView: React.FC<AllWorkspacesViewProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className="w-full"
     >
-      {/* Header - simplified, buttons moved to global header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-1">
-          {getGreeting()}
-        </h1>
-      </div>
-
       {/* Tabs - Design/FigJam style */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-1 p-1 rounded-lg bg-neutral-900/80 border border-neutral-800">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,9 +14,13 @@ const LOGO_URL = "/images/beymflow-logo.png";
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const searchParams = useSearchParams();
   const isAuthPage = location.pathname === "/auth";
   const { prefetchRoute } = usePrefetchRoute();
   const [logoLoaded, setLogoLoaded] = useState(false);
+
+  // Check if we're in hero-background workspace mode
+  const isHeroBackgroundMode = location.pathname === "/flow-engine" && searchParams.get("workspace") === "hero-background";
 
   // Preload logo on mount
   useEffect(() => {
@@ -27,7 +31,9 @@ const Header = () => {
 
   return (
     <header
-      className="relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 bg-black transition-all duration-500"
+      className={`relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 transition-all duration-500 ${
+        isHeroBackgroundMode ? "bg-transparent" : "bg-black"
+      }`}
       style={{ fontSize: '16px' }}
     >
       {/* ================= VASEN: LOGO ================= */}
@@ -58,17 +64,27 @@ const Header = () => {
           Pricing
         </Link>
 
-        {/* 2. Prompts */}
+        {/* 2. Templates */}
         <Link
           to="/prompt-lab-page"
           onMouseEnter={() => prefetchRoute("/prompt-lab-page")}
           className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
           style={{ fontSize: '14px' }}
         >
+          Templates
+        </Link>
+
+        {/* 3. Prompts */}
+        <Link
+          to="/prompt-lab-page/library"
+          onMouseEnter={() => prefetchRoute("/prompt-lab-page/library")}
+          className="text-gray-400 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors duration-300 text-sm"
+          style={{ fontSize: '14px' }}
+        >
           Prompts
         </Link>
 
-        {/* 3. Flow */}
+        {/* 4. Flow */}
         <Link
           to="/flow-engine"
           onMouseEnter={() => prefetchRoute("/flow-engine")}
@@ -78,7 +94,7 @@ const Header = () => {
           Flow
         </Link>
 
-        {/* 4. About Us */}
+        {/* 5. About Us */}
         <Link
           to="/about"
           onMouseEnter={() => prefetchRoute("/about")}
@@ -136,6 +152,14 @@ const Header = () => {
                 <Link
                   to="/prompt-lab-page"
                   onMouseEnter={() => prefetchRoute("/prompt-lab-page")}
+                  className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
+                  style={{ fontSize: '18px' }}
+                >
+                  Templates
+                </Link>
+                <Link
+                  to="/prompt-lab-page/library"
+                  onMouseEnter={() => prefetchRoute("/prompt-lab-page/library")}
                   className="text-gray-300 hover:text-white hover:opacity-100 hover:brightness-105 transition-colors text-lg font-medium px-4"
                   style={{ fontSize: '18px' }}
                 >

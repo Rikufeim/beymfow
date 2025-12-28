@@ -2786,7 +2786,8 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
       />
 
       <main className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
-            {/* Header - Top */}
+            {/* Header - Top - Hide when hero-background workspace is active */}
+            {activeWorkspace !== "hero-background" && (
             <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-50">
               {/* Left: Title Section - Show for recents, projects and all-projects views */}
               <div className="flex flex-col">
@@ -2868,6 +2869,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
               </button>
               </div>
             </div>
+            )}
 
             {/* Main Content Container - Centered with max-width */}
             <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
@@ -3035,7 +3037,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                               {filteredHeroProjects.map((project) => (
                                 <div key={project.id} className="min-h-[11rem]">
                                   <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                                    <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                                     <div
                                       className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] overflow-hidden will-change-transform cursor-pointer text-left"
                                       style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
@@ -3080,7 +3081,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 return (
                                   <div key={project.id} className="min-h-[11rem]">
                                     <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                                       <div
                                         className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
                                         style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
@@ -3126,7 +3126,6 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                                 return (
                                   <div key={solution.id} className="min-h-[11rem]">
                                     <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                                      <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
                                       <div
                                         className="group relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform cursor-pointer text-left"
                                         style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}

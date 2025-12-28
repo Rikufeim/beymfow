@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Download, Image } from "lucide-react";
+import { HexColorPicker } from "react-colorful";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Download, Image, Monitor, Laptop, Smartphone, Globe, Gamepad2, Pencil } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
@@ -68,7 +69,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "motion" | "view";
+type TabId = "shape" | "colors" | "motion" | "view" | "solution" | "export";
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -77,6 +78,25 @@ const GRADIENT_STYLES = [
   { id: "diagonal-blend" as const, label: "Diagonal", icon: Triangle },
   { id: "noise-wash" as const, label: "Noise Wash", icon: Layers },
 ];
+
+// Solution preview constants
+const SOLUTION_TEMPLATES = [
+  { id: "landing-page" as const, label: "Landing page", icon: Globe },
+  { id: "app" as const, label: "App", icon: Smartphone },
+  { id: "mobile-game" as const, label: "Mobile game", icon: Gamepad2 },
+];
+
+const SOLUTION_DEVICES = [
+  { id: "laptop" as const, label: "Laptop", icon: Laptop },
+  { id: "phone" as const, label: "Phone", icon: Smartphone },
+  { id: "desktop" as const, label: "Desktop", icon: Monitor },
+];
+
+const DEVICE_SIZES: Record<"laptop" | "phone" | "desktop", { width: number; height: number }> = {
+  laptop: { width: 1280, height: 800 },
+  phone: { width: 375, height: 812 },
+  desktop: { width: 1920, height: 1080 },
+};
 
 // Generate React component code for live preview
 const generateLiveCode = (settings: HeroBackgroundSettings): string => {
@@ -144,6 +164,83 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
   }, null, 2);
 };
 
+// Generate full project code as a React component
+const generateProjectCode = (settings: HeroBackgroundSettings): string => {
+  const { color1, color2, color3, color4, singleColorMode, gradientStyle, brightness, grainEnabled, grainIntensity, environmentEnabled } = settings;
+  
+  let bgValue: string;
+  switch (gradientStyle) {
+    case "halo":
+      bgValue = singleColorMode
+        ? color1
+        : `radial-gradient(ellipse 120% 80% at 50% 50%, ${color3}50 0%, ${color2}80 35%, ${color1} 100%)`;
+      break;
+    case "soft-sweep":
+      bgValue = singleColorMode
+        ? color1
+        : `linear-gradient(135deg, ${color1} 0%, ${color2} 30%, ${color3}60 60%, ${color4}40 100%)`;
+      break;
+    case "orb":
+      bgValue = singleColorMode
+        ? color1
+        : `radial-gradient(circle at 30% 70%, ${color3}70 0%, transparent 45%), radial-gradient(circle at 70% 30%, ${color4}70 0%, transparent 45%), linear-gradient(180deg, ${color1} 0%, ${color2} 100%)`;
+      break;
+    case "diagonal-blend":
+      bgValue = singleColorMode
+        ? color1
+        : `linear-gradient(45deg, ${color1} 0%, ${color2} 25%, ${color3}90 50%, ${color4}70 75%, ${color1} 100%)`;
+      break;
+    case "noise-wash":
+      bgValue = singleColorMode
+        ? color1
+        : `linear-gradient(180deg, ${color1} 0%, ${color2}95 30%, ${color3}50 70%, ${color1} 100%)`;
+      break;
+    default:
+      bgValue = color1;
+  }
+
+  const grainOverlay = grainEnabled 
+    ? `\n      {/* Grain overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: \`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")\`,
+          opacity: ${(grainIntensity * 0.25).toFixed(2)},
+          mixBlendMode: "overlay",
+        }}
+      />`
+    : '';
+
+  const environmentGlow = environmentEnabled && !singleColorMode
+    ? `\n      {/* Environment light halo */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: \`radial-gradient(ellipse 100% 50% at 50% 25%, ${color3}20 0%, transparent 70%)\`,
+        }}
+      />`
+    : '';
+
+  return `import React from 'react';
+
+export const HeroBackground: React.FC = () => {
+  return (
+    <div 
+      className="fixed inset-0"
+      style={{
+        background: "${bgValue}",
+        filter: "brightness(${brightness})",
+        width: "100%",
+        height: "100vh",
+      }}
+    >${grainOverlay}${environmentGlow}
+    </div>
+  );
+};
+
+export default HeroBackground;`;
+};
+
 export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = ({
   projectId,
   projectName: initialProjectName,
@@ -159,10 +256,29 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
+  const [solutionTemplate, setSolutionTemplate] = useState<"landing-page" | "app" | "mobile-game">("landing-page");
+  const [solutionDevice, setSolutionDevice] = useState<"laptop" | "phone" | "desktop">("laptop");
+  
+  // Preview content state for editing via chat
+  const [previewContent, setPreviewContent] = useState<{
+    heroTitle?: string;
+    heroSubtitle?: string;
+    heroButton1Text?: string;
+    heroButton1Color?: string;
+    heroButton1TextColor?: string;
+    heroButton2Text?: string;
+    heroButton2Color?: string;
+    heroButton2TextColor?: string;
+    heroTextColor?: string;
+    [key: string]: string | undefined;
+  }>({});
+  const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
   
   // Project state
   const [currentProjectId, setCurrentProjectId] = useState(projectId || `hero-${Date.now()}`);
   const [currentProjectName, setCurrentProjectName] = useState(initialProjectName || generateProjectName());
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(currentProjectName);
   
   // Save state
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -172,6 +288,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   // Copy state
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedJSON, setCopiedJSON] = useState(false);
+  const [copiedProjectCode, setCopiedProjectCode] = useState(false);
   
   // Download state
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
@@ -181,6 +298,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   // Live code and JSON
   const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
   const liveJSON = useMemo(() => generateSettingsJSON(settings), [settings]);
+  const projectCode = useMemo(() => generateProjectCode(settings), [settings]);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(async () => {
@@ -297,16 +415,51 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const handleCopyCode = useCallback(async () => {
     await navigator.clipboard.writeText(liveCode);
     setCopiedCode(true);
-    toast.success("Code copied!");
+    toast.success("React code copied to clipboard!");
     setTimeout(() => setCopiedCode(false), 2000);
   }, [liveCode]);
 
   const handleCopyJSON = useCallback(async () => {
     await navigator.clipboard.writeText(liveJSON);
     setCopiedJSON(true);
-    toast.success("JSON copied!");
+    toast.success("Settings JSON copied to clipboard!");
     setTimeout(() => setCopiedJSON(false), 2000);
   }, [liveJSON]);
+
+  const handleCopyProjectCode = useCallback(async () => {
+    await navigator.clipboard.writeText(projectCode);
+    setCopiedProjectCode(true);
+    toast.success("Project code copied to clipboard!");
+    setTimeout(() => setCopiedProjectCode(false), 2000);
+  }, [projectCode]);
+
+  // Handle project name editing
+  const handleStartEditName = useCallback(() => {
+    setIsEditingName(true);
+    setEditedName(currentProjectName);
+  }, [currentProjectName]);
+
+  const handleSaveName = useCallback(() => {
+    if (editedName.trim()) {
+      setCurrentProjectName(editedName.trim());
+      // Trigger auto-save to save the new name
+      lastSavedSettingsRef.current = "";
+      triggerAutoSave();
+    }
+    setIsEditingName(false);
+  }, [editedName, triggerAutoSave]);
+
+  const handleCancelEditName = useCallback(() => {
+    setEditedName(currentProjectName);
+    setIsEditingName(false);
+  }, [currentProjectName]);
+
+  // Update edited name when currentProjectName changes externally
+  useEffect(() => {
+    if (!isEditingName) {
+      setEditedName(currentProjectName);
+    }
+  }, [currentProjectName, isEditingName]);
 
   // Generate live thumbnail for share preview
   const generateLiveThumbnail = useCallback(async (): Promise<string> => {
@@ -429,13 +582,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [settings]);
 
   // Handle color picker open (only one at a time)
-  const handleColorPickerOpen = useCallback((colorKey: string, isOpen: boolean) => {
-    if (isOpen) {
-      setActiveColorPicker(colorKey);
-    } else if (activeColorPicker === colorKey) {
-      setActiveColorPicker(null);
-    }
-  }, [activeColorPicker]);
+  const handleColorPickerOpen = useCallback((colorKey: string) => {
+    setActiveColorPicker((prev) => prev === colorKey ? null : colorKey);
+  }, []);
 
   // Generate gradient CSS based on settings (improved quality)
   const generateGradientStyle = useCallback((): React.CSSProperties => {
@@ -493,60 +642,468 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     };
   }, [settings]);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black">
-      {/* Fullscreen Preview */}
+  // Solution preview component with export panel
+  const renderSolutionPreview = () => {
+    const deviceSize = DEVICE_SIZES[solutionDevice];
+    
+    const getContentValue = (key: string, defaultValue: string) => {
+      return previewContent[key] || defaultValue;
+    };
+    
+    const isHighlighted = (key: string) => highlightedElement === key;
+    
+    const previewContentRender = () => {
+      switch (solutionTemplate) {
+        case "landing-page":
+          return (
+            <div className="relative w-full text-white">
+              {/* Hero Section */}
+              <div className="flex flex-col items-center justify-center min-h-screen p-16 text-center">
+                <h1 
+                  className={cn(
+                    "text-5xl font-bold mb-4 transition-all",
+                    isHighlighted("heroTitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "#ffffff") }}
+                >
+                  {getContentValue("heroTitle", "Welcome to Our Product")}
+                </h1>
+                <p 
+                  className={cn(
+                    "text-xl mb-8 transition-all",
+                    isHighlighted("heroSubtitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "rgba(255, 255, 255, 0.8)") }}
+                >
+                  {getContentValue("heroSubtitle", "Build amazing experiences with our platform")}
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    className={cn(
+                      "px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-all",
+                      isHighlighted("heroButton1Text") || isHighlighted("heroButton1Color") || isHighlighted("heroButton1TextColor") 
+                        ? "ring-4 ring-yellow-400 ring-opacity-70" 
+                        : ""
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton1Color", "#ffffff"),
+                      color: getContentValue("heroButton1TextColor", "#000000")
+                    }}
+                  >
+                    {getContentValue("heroButton1Text", "Get Started")}
+                  </button>
+                  <button 
+                    className={cn(
+                      "px-6 py-3 border rounded-lg font-medium hover:bg-white/10 transition-all",
+                      isHighlighted("heroButton2Text") || isHighlighted("heroButton2Color") || isHighlighted("heroButton2TextColor")
+                        ? "ring-4 ring-yellow-400 ring-opacity-70"
+                        : "border-white/30"
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton2Color", "transparent"),
+                      color: getContentValue("heroButton2TextColor", "#ffffff"),
+                      borderColor: getContentValue("heroButton2Color", "rgba(255, 255, 255, 0.3)")
+                    }}
+                  >
+                    {getContentValue("heroButton2Text", "Learn More")}
+                  </button>
+                </div>
+              </div>
+              
+              {/* Features Section */}
+              <div className="py-20 px-16">
+                <div className="max-w-6xl mx-auto">
+                  <h2 className="text-4xl font-bold mb-12 text-center">Features</h2>
+                  <div className="grid grid-cols-3 gap-8">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <div className="w-12 h-12 bg-white/20 rounded-lg mb-4" />
+                        <div className="h-6 bg-white/30 rounded w-3/4 mb-3" />
+                        <div className="h-4 bg-white/20 rounded w-full mb-2" />
+                        <div className="h-4 bg-white/20 rounded w-2/3" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="py-20 px-16 bg-black/20">
+                <div className="max-w-4xl mx-auto">
+                  <div className="h-8 bg-white/20 rounded w-1/3 mb-6" />
+                  <div className="space-y-4">
+                    <div className="h-4 bg-white/20 rounded w-full" />
+                    <div className="h-4 bg-white/20 rounded w-5/6" />
+                    <div className="h-4 bg-white/20 rounded w-4/5" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="py-12 px-16 border-t border-white/10 pb-20">
+                <div className="max-w-6xl mx-auto flex justify-between items-center">
+                  <div className="h-6 bg-white/20 rounded w-32" />
+                  <div className="flex gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-4 bg-white/20 rounded w-16" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        case "app":
+          return (
+            <div className="relative w-full text-white pb-8">
+              {/* Hero Section */}
+              <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+                <div className="w-20 h-20 bg-white/20 rounded-2xl mb-6 mx-auto flex items-center justify-center border border-white/20">
+                  <Smartphone size={32} className="text-white/60" />
+                </div>
+                <h1 
+                  className={cn(
+                    "text-4xl font-bold mb-4 transition-all",
+                    isHighlighted("heroTitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "#ffffff") }}
+                >
+                  {getContentValue("heroTitle", "App Name")}
+                </h1>
+                <p 
+                  className={cn(
+                    "text-lg mb-8 transition-all",
+                    isHighlighted("heroSubtitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "rgba(255, 255, 255, 0.8)") }}
+                >
+                  {getContentValue("heroSubtitle", "Your personal assistant")}
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <button 
+                    className={cn(
+                      "px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-all",
+                      isHighlighted("heroButton1Text") || isHighlighted("heroButton1Color") || isHighlighted("heroButton1TextColor")
+                        ? "ring-4 ring-yellow-400 ring-opacity-70"
+                        : ""
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton1Color", "#ffffff"),
+                      color: getContentValue("heroButton1TextColor", "#000000")
+                    }}
+                  >
+                    {getContentValue("heroButton1Text", "Download")}
+                  </button>
+                  <button 
+                    className={cn(
+                      "px-6 py-3 border rounded-lg font-medium hover:bg-white/10 transition-all",
+                      isHighlighted("heroButton2Text") || isHighlighted("heroButton2Color") || isHighlighted("heroButton2TextColor")
+                        ? "ring-4 ring-yellow-400 ring-opacity-70"
+                        : "border-white/30"
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton2Color", "transparent"),
+                      color: getContentValue("heroButton2TextColor", "#ffffff"),
+                      borderColor: getContentValue("heroButton2Color", "rgba(255, 255, 255, 0.3)")
+                    }}
+                  >
+                    {getContentValue("heroButton2Text", "Learn More")}
+                  </button>
+                </div>
+              </div>
+
+              {/* Features Section */}
+              <div className="py-20 px-8">
+                <div className="max-w-4xl mx-auto">
+                  <h2 className="text-3xl font-bold mb-12 text-center">Features</h2>
+                  <div className="grid grid-cols-1 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-white/20 rounded-lg flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="h-5 bg-white/30 rounded w-2/3 mb-3" />
+                            <div className="h-3 bg-white/20 rounded w-full mb-2" />
+                            <div className="h-3 bg-white/20 rounded w-4/5" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="py-20 px-8 bg-black/20">
+                <div className="max-w-3xl mx-auto text-center">
+                  <div className="h-8 bg-white/20 rounded w-1/2 mb-6 mx-auto" />
+                  <div className="space-y-4">
+                    <div className="h-4 bg-white/20 rounded w-full" />
+                    <div className="h-4 bg-white/20 rounded w-5/6 mx-auto" />
+                    <div className="h-4 bg-white/20 rounded w-4/5 mx-auto" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="py-12 px-8 border-t border-white/10">
+                <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
+                  <div className="h-6 bg-white/20 rounded w-32" />
+                  <div className="flex gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-4 bg-white/20 rounded w-16" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        case "mobile-game":
+          return (
+            <div className="relative w-full text-white pb-8">
+              {/* Hero Section */}
+              <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
+                <div className="w-24 h-24 bg-white/20 rounded-2xl mb-6 mx-auto flex items-center justify-center border border-white/20">
+                  <Gamepad2 size={48} className="text-white/60" />
+                </div>
+                <h1 
+                  className={cn(
+                    "text-4xl font-bold mb-4 transition-all",
+                    isHighlighted("heroTitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "#ffffff") }}
+                >
+                  {getContentValue("heroTitle", "Game Title")}
+                </h1>
+                <p 
+                  className={cn(
+                    "text-lg mb-8 transition-all",
+                    isHighlighted("heroSubtitle") && "ring-4 ring-yellow-400 ring-opacity-70 rounded-lg"
+                  )}
+                  style={{ color: getContentValue("heroTextColor", "rgba(255, 255, 255, 0.8)") }}
+                >
+                  {getContentValue("heroSubtitle", "Start your adventure")}
+                </p>
+                <div className="flex flex-col gap-4 w-full max-w-sm">
+                  <button 
+                    className={cn(
+                      "w-full py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-all",
+                      isHighlighted("heroButton1Text") || isHighlighted("heroButton1Color") || isHighlighted("heroButton1TextColor")
+                        ? "ring-4 ring-yellow-400 ring-opacity-70"
+                        : ""
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton1Color", "#ffffff"),
+                      color: getContentValue("heroButton1TextColor", "#000000")
+                    }}
+                  >
+                    {getContentValue("heroButton1Text", "Play Now")}
+                  </button>
+                  <button 
+                    className={cn(
+                      "w-full py-4 border rounded-xl font-medium hover:bg-white/10 transition-all",
+                      isHighlighted("heroButton2Text") || isHighlighted("heroButton2Color") || isHighlighted("heroButton2TextColor")
+                        ? "ring-4 ring-yellow-400 ring-opacity-70"
+                        : "border-white/30"
+                    )}
+                    style={{ 
+                      backgroundColor: getContentValue("heroButton2Color", "transparent"),
+                      color: getContentValue("heroButton2TextColor", "#ffffff"),
+                      borderColor: getContentValue("heroButton2Color", "rgba(255, 255, 255, 0.3)")
+                    }}
+                  >
+                    {getContentValue("heroButton2Text", "Leaderboard")}
+                  </button>
+                </div>
+              </div>
+
+              {/* Features Section */}
+              <div className="py-20 px-8">
+                <div className="max-w-4xl mx-auto">
+                  <h2 className="text-3xl font-bold mb-12 text-center">Game Features</h2>
+                  <div className="grid grid-cols-2 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 text-center">
+                        <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 mx-auto" />
+                        <div className="h-5 bg-white/30 rounded w-3/4 mb-3 mx-auto" />
+                        <div className="h-3 bg-white/20 rounded w-full mb-2" />
+                        <div className="h-3 bg-white/20 rounded w-2/3 mx-auto" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="py-20 px-8 bg-black/20">
+                <div className="max-w-3xl mx-auto text-center">
+                  <div className="h-8 bg-white/20 rounded w-1/2 mb-6 mx-auto" />
+                  <div className="space-y-4">
+                    <div className="h-4 bg-white/20 rounded w-full" />
+                    <div className="h-4 bg-white/20 rounded w-5/6 mx-auto" />
+                    <div className="h-4 bg-white/20 rounded w-4/5 mx-auto" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="py-12 px-8 border-t border-white/10">
+                <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
+                  <div className="h-6 bg-white/20 rounded w-32" />
+                  <div className="flex gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-4 bg-white/20 rounded w-16" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+      }
+    };
+
+    return (
       <div 
-        className="absolute inset-0 transition-all duration-500"
-        style={generateGradientStyle()}
+        className="absolute left-0 right-0 bottom-0 pointer-events-auto"
+        style={{ zIndex: 40, top: '72px', maxHeight: 'calc(100vh - 72px)', overflow: 'hidden' }}
       >
-        {/* Grain overlay - improved quality */}
-        {settings.grainEnabled && (
+        <div 
+          className="relative w-full min-h-full bg-transparent flex justify-center"
+        >
+          {/* Content - transparent background, shows the hero background behind */}
           <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-              opacity: settings.grainIntensity * 0.25,
-              mixBlendMode: "overlay",
+            className="relative z-10"
+            style={{ 
+              width: deviceSize.width,
+              maxWidth: "100%",
             }}
-          />
-        )}
-
-        {/* Environment light halo - enhanced */}
-        {settings.environmentEnabled && (
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(ellipse 100% 50% at 50% 25%, ${settings.color3}20 0%, transparent 70%)`,
-            }}
-          />
-        )}
-      </div>
-
-      {/* Back button (top-left) */}
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 z-50 p-3 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all flex items-center gap-2"
-      >
-        <ArrowLeft size={18} />
-        <span className="text-sm font-medium">Back</span>
-      </button>
-
-      {/* Project name + save status (top-center) */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
-        <h1 className="text-white/80 text-lg font-medium tracking-tight">{currentProjectName}</h1>
-        <div className={cn(
-          "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all",
-          saveStatus === "saving" && "bg-yellow-500/20 text-yellow-400",
-          saveStatus === "saved" && "bg-green-500/20 text-green-400",
-          saveStatus === "idle" && "bg-white/5 text-white/40"
-        )}>
-          {saveStatus === "saving" && <Save size={12} className="animate-pulse" />}
-          {saveStatus === "saved" && <Check size={12} />}
-          {saveStatus === "idle" && <Save size={12} />}
-          <span>{saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Auto-save"}</span>
+          >
+            {previewContentRender()}
+          </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Fixed Header Bar - MUST be outside main container to be truly fixed to viewport */}
+      <div 
+        className="flex items-center justify-between px-6 py-4 pointer-events-none"
+        style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          width: '100%'
+        }}
+      >
+        {/* Back button (left) */}
+        <button
+          onClick={onBack}
+          className="px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs"
+        >
+          <ArrowLeft size={14} />
+          <span className="text-xs font-medium">Back</span>
+        </button>
+
+        {/* Project name + save status (center) */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-auto">
+          {isEditingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSaveName();
+                  } else if (e.key === "Escape") {
+                    handleCancelEditName();
+                  }
+                }}
+                className="bg-black/60 border border-white/20 rounded-lg px-3 py-1.5 text-white/80 text-lg font-medium tracking-tight focus:outline-none focus:border-white/40 min-w-[200px]"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 group">
+              <h1 
+                className="text-white/80 text-lg font-medium tracking-tight cursor-pointer hover:text-white transition-colors"
+                onClick={handleStartEditName}
+              >
+                {currentProjectName}
+              </h1>
+              <button
+                onClick={handleStartEditName}
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all"
+                title="Edit name"
+              >
+                <Pencil size={14} className="text-white/60 hover:text-white" />
+              </button>
+            </div>
+          )}
+          <div className={cn(
+            "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all",
+            saveStatus === "saving" && "bg-yellow-500/20 text-yellow-400",
+            saveStatus === "saved" && "bg-green-500/20 text-green-400",
+            saveStatus === "idle" && "bg-white/5 text-white/40"
+          )}>
+            {saveStatus === "saving" && <Save size={12} className="animate-pulse" />}
+            {saveStatus === "saved" && <Check size={12} />}
+            {saveStatus === "idle" && <Save size={12} />}
+            <span>{saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Auto-save"}</span>
+          </div>
+        </div>
+
+        {/* Spacer for right side alignment */}
+        <div className="w-[120px]" />
+      </div>
+
+      <div 
+        className="fixed bg-black overflow-hidden"
+        style={{ 
+          top: '0',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          transform: 'none',
+          willChange: 'auto'
+        }}
+      >
+        {/* Fullscreen Preview */}
+        <div 
+          className="absolute inset-0 transition-all duration-500"
+          style={generateGradientStyle()}
+        >
+          {/* Grain overlay - improved quality */}
+          {settings.grainEnabled && (
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                opacity: settings.grainIntensity * 0.25,
+                mixBlendMode: "overlay",
+              }}
+            />
+          )}
+
+          {/* Environment light halo - enhanced */}
+          {settings.environmentEnabled && !settings.singleColorMode && (
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse 100% 50% at 50% 25%, ${settings.color3}20 0%, transparent 70%)`,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Solution Preview Overlay */}
+        {activeTab === "solution" && renderSolutionPreview()}
+
 
       {/* Hints overlay */}
       {showHints && (
@@ -567,8 +1124,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         <div className="bg-black backdrop-blur-xl border-t border-white/10">
           {/* Tabs + Minimize button */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
-            <div className="flex items-center gap-1">
-              {(["shape", "colors", "motion", "view"] as TabId[]).map((tab) => (
+            <div className="flex items-center gap-4">
+              {(["shape", "colors", "motion", "view", "solution", "export"] as TabId[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => {
@@ -576,24 +1133,23 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                     if (minimizedBar) setMinimizedBar(false);
                   }}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize",
+                    "text-xs font-medium transition-all capitalize cursor-pointer",
                     activeTab === tab
-                      ? "bg-white/10 text-white"
-                      : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                      ? "text-white"
+                      : "text-white/50 hover:text-white/80"
                   )}
                 >
                   {tab}
                 </button>
               ))}
-              
             </div>
 
             {/* Minimize button */}
             <button
               onClick={() => setMinimizedBar(!minimizedBar)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:text-white transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:bg-neutral-800 hover:text-white transition-all text-xs"
             >
-              {minimizedBar ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {minimizedBar ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               <span className="text-xs font-medium">{minimizedBar ? "Expand" : "Minimize"}</span>
             </button>
           </div>
@@ -603,12 +1159,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             {!minimizedBar && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
+                animate={{ height: 200, opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="p-4 min-h-[140px]">
+                <div className="p-4" style={{ minHeight: '200px', maxHeight: '200px' }}>
                   <AnimatePresence mode="wait">
                     {activeTab === "shape" && (
                       <motion.div
@@ -625,14 +1181,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               key={style.id}
                               onClick={() => updateSetting("gradientStyle", style.id)}
                               className={cn(
-                                "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                                "flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-xs",
                                 settings.gradientStyle === style.id
-                                  ? "bg-white/10 border-white/30 text-white"
-                                  : "bg-black/30 border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                                  ? "bg-neutral-900 border-white/20 text-white"
+                                  : "bg-neutral-900 border-white/10 text-white/70 hover:text-white hover:bg-neutral-800"
                               )}
                             >
-                              <Icon size={18} />
-                              <span className="text-sm font-medium">{style.label}</span>
+                              <Icon size={14} />
+                              <span className="text-xs font-medium">{style.label}</span>
                             </button>
                           );
                         })}
@@ -645,81 +1201,119 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="space-y-4"
+                        className="flex flex-col items-start gap-6 w-full"
                       >
-                        {/* Color pickers row */}
-                        <div className="flex flex-wrap items-start justify-center gap-4">
-                          <div className="w-32">
-                            <ColorPickerField
-                              label="Color 1"
-                              value={settings.color1}
-                              onChange={(v) => updateSetting("color1", v)}
-                              onOpenChange={(isOpen) => handleColorPickerOpen("color1", isOpen)}
-                              forceClose={activeColorPicker !== null && activeColorPicker !== "color1"}
-                            />
-                          </div>
-                          {!settings.singleColorMode && (
-                            <>
-                              <div className="w-32">
-                                <ColorPickerField
-                                  label="Color 2"
-                                  value={settings.color2}
-                                  onChange={(v) => updateSetting("color2", v)}
-                                  onOpenChange={(isOpen) => handleColorPickerOpen("color2", isOpen)}
-                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color2"}
-                                />
-                              </div>
-                              <div className="w-32">
-                                <ColorPickerField
-                                  label="Color 3"
-                                  value={settings.color3}
-                                  onChange={(v) => updateSetting("color3", v)}
-                                  onOpenChange={(isOpen) => handleColorPickerOpen("color3", isOpen)}
-                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color3"}
-                                />
-                              </div>
-                              <div className="w-32">
-                                <ColorPickerField
-                                  label="Color 4"
-                                  value={settings.color4}
-                                  onChange={(v) => updateSetting("color4", v)}
-                                  onOpenChange={(isOpen) => handleColorPickerOpen("color4", isOpen)}
-                                  forceClose={activeColorPicker !== null && activeColorPicker !== "color4"}
-                                />
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Toggles and presets */}
-                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-white/5">
-                          {/* Single color mode toggle */}
-                          <button
-                            onClick={() => updateSetting("singleColorMode", !settings.singleColorMode)}
-                            className={cn(
-                              "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
-                              settings.singleColorMode
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-black/30 border-white/10 text-white/50 hover:text-white/80"
-                            )}
-                          >
-                            Single Color
-                          </button>
-
-                          <div className="w-px h-6 bg-white/10" />
-
-                          {/* Presets */}
-                          <span className="text-xs text-white/40 uppercase tracking-wider">Presets:</span>
-                          {Object.keys(COLOR_PRESETS).map((key) => (
+                        {/* Top row: Color swatches and presets */}
+                        <div className="flex items-center gap-4 w-full">
+                          {/* Color swatches */}
+                          <div className="flex items-center gap-2">
                             <button
-                              key={key}
-                              onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-black/30 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all capitalize"
-                            >
-                              {key.replace(/([A-Z])/g, " $1").trim()}
-                            </button>
-                          ))}
+                              onClick={() => handleColorPickerOpen("color1")}
+                              className={cn(
+                                "w-8 h-8 rounded-full border-2 transition-all",
+                                activeColorPicker === "color1"
+                                  ? "border-white"
+                                  : "border-white/40"
+                              )}
+                              style={{ backgroundColor: settings.color1 }}
+                            />
+                            {!settings.singleColorMode && (
+                              <>
+                                <button
+                                  onClick={() => handleColorPickerOpen("color2")}
+                                  className={cn(
+                                    "w-8 h-8 rounded-full border-2 transition-all",
+                                    activeColorPicker === "color2"
+                                      ? "border-white"
+                                      : "border-white/40"
+                                  )}
+                                  style={{ backgroundColor: settings.color2 }}
+                                />
+                                <button
+                                  onClick={() => handleColorPickerOpen("color3")}
+                                  className={cn(
+                                    "w-8 h-8 rounded-full border-2 transition-all",
+                                    activeColorPicker === "color3"
+                                      ? "border-white"
+                                      : "border-white/40"
+                                  )}
+                                  style={{ backgroundColor: settings.color3 }}
+                                />
+                                <button
+                                  onClick={() => handleColorPickerOpen("color4")}
+                                  className={cn(
+                                    "w-8 h-8 rounded-full border-2 transition-all",
+                                    activeColorPicker === "color4"
+                                      ? "border-white"
+                                      : "border-white/40"
+                                  )}
+                                  style={{ backgroundColor: settings.color4 }}
+                                />
+                              </>
+                            )}
+                          </div>
+
+                          {/* Separator */}
+                          <div className="w-px h-8 bg-white/10" />
+
+                          {/* Presets - Two rows */}
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              {Object.keys(COLOR_PRESETS).slice(0, 3).map((key) => (
+                                <button
+                                  key={key}
+                                  onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
+                                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all uppercase"
+                                >
+                                  {key.replace(/([A-Z])/g, " $1").trim()}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {Object.keys(COLOR_PRESETS).slice(3).map((key) => (
+                                <button
+                                  key={key}
+                                  onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
+                                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all uppercase"
+                                >
+                                  {key.replace(/([A-Z])/g, " $1").trim()}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Bottom section: COLOR 1 label + large color picker */}
+                        {activeColorPicker && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="flex items-center gap-3 pt-2 border-t border-white/10 overflow-hidden w-full"
+                          >
+                            <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
+                              {activeColorPicker.toUpperCase().replace("color", "COLOR ")}
+                            </span>
+                            <div className="flex-1">
+                              <HexColorPicker
+                                color={
+                                  activeColorPicker === "color1" ? settings.color1 :
+                                  activeColorPicker === "color2" ? settings.color2 :
+                                  activeColorPicker === "color3" ? settings.color3 :
+                                  settings.color4
+                                }
+                                onChange={(color) => {
+                                  if (activeColorPicker === "color1") updateSetting("color1", color);
+                                  else if (activeColorPicker === "color2") updateSetting("color2", color);
+                                  else if (activeColorPicker === "color3") updateSetting("color3", color);
+                                  else updateSetting("color4", color);
+                                }}
+                                style={{ width: "100%", height: 80 }}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     )}
 
@@ -754,13 +1348,13 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           <button
                             onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
                             className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
                               settings.grainEnabled
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-black/30 border-white/10 text-white/50"
+                                ? "bg-neutral-900 border-white/20 text-white"
+                                : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
                             )}
                           >
-                            <Layers size={16} />
+                            <Layers size={14} />
                             <span className="text-xs font-medium">Grain</span>
                           </button>
                           {settings.grainEnabled && (
@@ -785,13 +1379,13 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           <button
                             onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
                             className={cn(
-                              "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
                               settings.environmentEnabled
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-black/30 border-white/10 text-white/50"
+                                ? "bg-neutral-900 border-white/20 text-white"
+                                : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
                             )}
                           >
-                            <Cloudy size={16} />
+                            <Cloudy size={14} />
                             <span className="text-xs font-medium">Environment Light</span>
                           </button>
                         </div>
@@ -811,28 +1405,311 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           <button
                             onClick={() => setFullscreen(!fullscreen)}
                             className={cn(
-                              "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
                               fullscreen
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-black/30 border-white/10 text-white/60"
+                                ? "bg-neutral-900 border-white/20 text-white"
+                                : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
                             )}
                           >
-                            {fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                            <span className="text-sm font-medium">Fullscreen</span>
+                            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                            <span className="text-xs font-medium">Fullscreen</span>
                           </button>
 
                           <button
                             onClick={() => setShowHints(!showHints)}
                             className={cn(
-                              "flex items-center gap-2 px-4 py-3 rounded-xl border transition-all",
+                              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
                               showHints
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-black/30 border-white/10 text-white/60"
+                                ? "bg-neutral-900 border-white/20 text-white"
+                                : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
                             )}
                           >
-                            {showHints ? <Eye size={18} /> : <EyeOff size={18} />}
-                            <span className="text-sm font-medium">UI Hints</span>
+                            {showHints ? <Eye size={14} /> : <EyeOff size={14} />}
+                            <span className="text-xs font-medium">UI Hints</span>
                           </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {activeTab === "solution" && (
+                      <motion.div
+                        key="solution"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-6"
+                      >
+                        {/* Template Selection */}
+                        <div>
+                          <label className="text-xs text-white/50 uppercase tracking-wider mb-3 block">Template:</label>
+                          <div className="flex flex-wrap items-center justify-center gap-3">
+                            {SOLUTION_TEMPLATES.map((template) => {
+                              const Icon = template.icon;
+                              return (
+                                <button
+                                  key={template.id}
+                                  onClick={() => setSolutionTemplate(template.id)}
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
+                                    solutionTemplate === template.id
+                                      ? "bg-neutral-900 border-white/20 text-white"
+                                      : "bg-neutral-900 border-white/10 text-white/70 hover:text-white hover:bg-neutral-800"
+                                  )}
+                                >
+                                  <Icon size={14} />
+                                  <span className="text-xs font-medium">{template.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Device Selection */}
+                        <div>
+                          <label className="text-xs text-white/50 uppercase tracking-wider mb-3 block">Device:</label>
+                          <div className="flex flex-wrap items-center justify-center gap-3">
+                            {SOLUTION_DEVICES.map((device) => {
+                              const Icon = device.icon;
+                              return (
+                                <button
+                                  key={device.id}
+                                  onClick={() => setSolutionDevice(device.id)}
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
+                                    solutionDevice === device.id
+                                      ? "bg-neutral-900 border-white/20 text-white"
+                                      : "bg-neutral-900 border-white/10 text-white/70 hover:text-white hover:bg-neutral-800"
+                                  )}
+                                >
+                                  <Icon size={14} />
+                                  <span className="text-xs font-medium">{device.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Manual Editor */}
+                        <div className="pt-4 border-t border-white/10 space-y-4">
+                          <label className="text-xs text-white/50 uppercase tracking-wider block">Content Editor:</label>
+                          
+                          {/* Text Color */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/70 block">Text Color:</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={previewContent.heroTextColor || "#ffffff"}
+                                onChange={(e) => setPreviewContent(prev => ({ ...prev, heroTextColor: e.target.value }))}
+                                className="w-10 h-8 rounded border border-white/10 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={previewContent.heroTextColor || "#ffffff"}
+                                onChange={(e) => setPreviewContent(prev => ({ ...prev, heroTextColor: e.target.value }))}
+                                className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                placeholder="#ffffff"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Hero Title */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/70 block">Hero Title:</label>
+                            <input
+                              type="text"
+                              value={previewContent.heroTitle || ""}
+                              onChange={(e) => setPreviewContent(prev => ({ ...prev, heroTitle: e.target.value }))}
+                              className="w-full bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                              placeholder="Enter hero title"
+                            />
+                          </div>
+
+                          {/* Hero Subtitle */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/70 block">Hero Subtitle:</label>
+                            <input
+                              type="text"
+                              value={previewContent.heroSubtitle || ""}
+                              onChange={(e) => setPreviewContent(prev => ({ ...prev, heroSubtitle: e.target.value }))}
+                              className="w-full bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                              placeholder="Enter hero subtitle"
+                            />
+                          </div>
+
+                          {/* Button 1 */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/70 block">Button 1:</label>
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={previewContent.heroButton1Text || ""}
+                                onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton1Text: e.target.value }))}
+                                className="w-full bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                placeholder="Button text"
+                              />
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <label className="text-xs text-white/60 block mb-1">Background:</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={previewContent.heroButton1Color || "#ffffff"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton1Color: e.target.value }))}
+                                      className="w-10 h-8 rounded border border-white/10 cursor-pointer"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={previewContent.heroButton1Color || "#ffffff"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton1Color: e.target.value }))}
+                                      className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                      placeholder="#ffffff"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-xs text-white/60 block mb-1">Text:</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={previewContent.heroButton1TextColor || "#000000"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton1TextColor: e.target.value }))}
+                                      className="w-10 h-8 rounded border border-white/10 cursor-pointer"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={previewContent.heroButton1TextColor || "#000000"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton1TextColor: e.target.value }))}
+                                      className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                      placeholder="#000000"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Button 2 */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/70 block">Button 2:</label>
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={previewContent.heroButton2Text || ""}
+                                onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton2Text: e.target.value }))}
+                                className="w-full bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                placeholder="Button text"
+                              />
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <label className="text-xs text-white/60 block mb-1">Background:</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={previewContent.heroButton2Color || "transparent"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton2Color: e.target.value }))}
+                                      className="w-10 h-8 rounded border border-white/10 cursor-pointer"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={previewContent.heroButton2Color || "transparent"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton2Color: e.target.value }))}
+                                      className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                      placeholder="transparent"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-xs text-white/60 block mb-1">Text:</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={previewContent.heroButton2TextColor || "#ffffff"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton2TextColor: e.target.value }))}
+                                      className="w-10 h-8 rounded border border-white/10 cursor-pointer"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={previewContent.heroButton2TextColor || "#ffffff"}
+                                      onChange={(e) => setPreviewContent(prev => ({ ...prev, heroButton2TextColor: e.target.value }))}
+                                      className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-white/30"
+                                      placeholder="#ffffff"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {activeTab === "export" && (
+                      <motion.div
+                        key="export"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-6"
+                      >
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-1">Copy Code</h3>
+                          <p className="text-sm text-white/60 mb-6">Copy the project code to clipboard</p>
+                        </div>
+
+                        {/* Copy Code */}
+                        <div className="space-y-3">
+                          <div className="flex flex-col gap-3">
+                            <button
+                              onClick={handleCopyProjectCode}
+                              className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${
+                                copiedProjectCode 
+                                  ? "bg-neutral-800 hover:bg-neutral-700" 
+                                  : "bg-neutral-900 hover:bg-neutral-800"
+                              }`}
+                            >
+                              {copiedProjectCode ? <Check size={14} /> : <Code size={14} />}
+                              {copiedProjectCode ? "Project Code Copied!" : "Copy Project Code"}
+                            </button>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={handleCopyCode}
+                                className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${
+                                  copiedCode 
+                                    ? "bg-neutral-800 hover:bg-neutral-700" 
+                                    : "bg-neutral-900 hover:bg-neutral-800"
+                                }`}
+                              >
+                                {copiedCode ? <Check size={14} /> : <Code size={14} />}
+                                {copiedCode ? "Copied!" : "Copy React Code"}
+                              </button>
+                              <button
+                                onClick={handleCopyJSON}
+                                className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${
+                                  copiedJSON 
+                                    ? "bg-neutral-800 hover:bg-neutral-700" 
+                                    : "bg-neutral-900 hover:bg-neutral-800"
+                                }`}
+                              >
+                                {copiedJSON ? <Check size={14} /> : <FileJson size={14} />}
+                                {copiedJSON ? "Copied!" : "Copy JSON Settings"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Settings Summary */}
+                        <div className="pt-4 border-t border-white/10 space-y-2">
+                          <h4 className="text-sm font-medium text-white/80">Current Settings</h4>
+                          <div className="space-y-1 text-xs text-white/60">
+                            <div>Style: <span className="text-white/80">{settings.gradientStyle}</span></div>
+                            <div>Brightness: <span className="text-white/80">{settings.brightness.toFixed(2)}</span></div>
+                            <div>Grain: <span className="text-white/80">{settings.grainEnabled ? 'On' : 'Off'}</span></div>
+                            {settings.grainEnabled && (
+                              <div>Intensity: <span className="text-white/80">{settings.grainIntensity.toFixed(2)}</span></div>
+                            )}
+                            <div>Environment: <span className="text-white/80">{settings.environmentEnabled ? 'On' : 'Off'}</span></div>
+                          </div>
                         </div>
                       </motion.div>
                     )}
@@ -855,7 +1732,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         settings={settings}
         onImportSettings={handleImportSettings}
       />
+
     </div>
+    </>
   );
 };
 
