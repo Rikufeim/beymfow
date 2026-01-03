@@ -14,7 +14,7 @@ const LOGO_URL = "/images/beymflow-logo.png";
 const Header = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const isAuthPage = location.pathname === "/auth";
   const { prefetchRoute } = usePrefetchRoute();
   const [logoLoaded, setLogoLoaded] = useState(false);
