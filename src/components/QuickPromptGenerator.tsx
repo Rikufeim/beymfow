@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,14 +35,17 @@ export const QuickPromptGenerator = () => {
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; name: string; content: string; extension: string }>>([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [contextText, setContextText] = useState("");
   const [showContextInput, setShowContextInput] = useState(false);
   const contextInputRef = useRef<HTMLTextAreaElement>(null);
+  const codeFileInputRef = useRef<HTMLInputElement>(null);
   
   const MAX_IMAGES = 3;
+  const MAX_CODE_FILES = 5;
 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -311,6 +314,53 @@ export const QuickPromptGenerator = () => {
     }
   };
 
+  // Handle code file selection
+  const CODE_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.py', '.html', '.css', '.scss', '.json', '.md', '.txt', '.yaml', '.yml', '.xml', '.sql', '.sh', '.env', '.gitignore', '.dockerfile', '.go', '.rs', '.java', '.kt', '.swift', '.vue', '.svelte'];
+  
+  const handleCodeFileSelect = async (file: File) => {
+    if (uploadedFiles.length >= MAX_CODE_FILES) {
+      toast.error(`Maximum ${MAX_CODE_FILES} code files allowed`);
+      return;
+    }
+
+    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const isCodeFile = CODE_EXTENSIONS.includes(extension) || file.type.startsWith('text/');
+    
+    if (!isCodeFile && file.size > 100 * 1024) {
+      toast.error("File too large. Code files should be under 100KB.");
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      setUploadedFiles(prev => [...prev, {
+        file,
+        name: file.name,
+        content: content.slice(0, 50000), // Limit content to 50k chars
+        extension
+      }]);
+    } catch (error) {
+      toast.error("Could not read file");
+    }
+  };
+
+  const handleCodeFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => handleCodeFileSelect(file));
+    }
+    if (codeFileInputRef.current) {
+      codeFileInputRef.current.value = "";
+    }
+  };
+
+  const handleCodeFileRemove = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    if (codeFileInputRef.current) {
+      codeFileInputRef.current.value = "";
+    }
+  };
+
   const handleAnalyzeImage = async () => {
     if (!isSupabaseConfigured) {
       toast.error("Supabase ei ole konfiguroitu (VITE_SUPABASE_URL / KEY puuttuu).");
@@ -538,8 +588,8 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Selected Tool & Image Previews */}
-          {(promptType || uploadedImages.length > 0) && (
+          {/* Selected Tool, Image Previews & Code Files */}
+          {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0) && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {/* Selected Tool Chip */}
               {promptType && (
@@ -561,7 +611,7 @@ export const QuickPromptGenerator = () => {
               
               {/* Image Previews */}
               {uploadedImages.map((img, index) => (
-                <div key={index} className="relative group">
+                <div key={`img-${index}`} className="relative group">
                   <button
                     onClick={() => {
                       setSelectedImageIndex(index);
@@ -587,6 +637,23 @@ export const QuickPromptGenerator = () => {
                   </button>
                 </div>
               ))}
+
+              {/* Code File Chips */}
+              {uploadedFiles.map((codeFile, index) => (
+                <div key={`file-${index}`} className="relative flex items-center bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2.5 py-1.5 gap-2">
+                  <FileCode className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-xs text-white/80 max-w-24 truncate" title={codeFile.name}>
+                    {codeFile.name}
+                  </span>
+                  <button
+                    onClick={() => handleCodeFileRemove(index)}
+                    className="text-white/40 hover:text-white/70 transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -598,6 +665,14 @@ export const QuickPromptGenerator = () => {
                 accept="image/*"
                 multiple
                 onChange={handleFileInputChange}
+                className="hidden"
+              />
+              <input
+                ref={codeFileInputRef}
+                type="file"
+                accept=".js,.jsx,.ts,.tsx,.py,.html,.css,.scss,.json,.md,.txt,.yaml,.yml,.xml,.sql,.sh,.env,.dockerfile,.go,.rs,.java,.kt,.swift,.vue,.svelte"
+                multiple
+                onChange={handleCodeFileInputChange}
                 className="hidden"
               />
               <DropdownMenu>
@@ -614,7 +689,15 @@ export const QuickPromptGenerator = () => {
                       className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ImageIcon className="w-4 h-4" />
-                      Upload a file
+                      Upload image
+                    </button>
+                    <button
+                      onClick={() => codeFileInputRef.current?.click()}
+                      disabled={uploadedFiles.length >= MAX_CODE_FILES}
+                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FileCode className="w-4 h-4" />
+                      Upload code file
                     </button>
                     <button
                       onClick={() => {

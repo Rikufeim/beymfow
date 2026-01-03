@@ -2844,11 +2844,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
                   setSelectedHeroProject(null);
                   setActiveWorkspace("hero-background");
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  activeWorkspace === "hero-background"
-                    ? "bg-neutral-800 border-neutral-700 text-white"
-                    : "bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800/50"
-                }`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800/50"
               >
                 <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
