@@ -44,6 +44,41 @@ const generateGradientCSS = (settings: HeroBackgroundSettings): string => {
         ? color1
         : `linear-gradient(180deg, ${color1} 0%, ${color2}90 30%, ${color3}40 70%, ${color1} 100%)`;
       break;
+    case "aurora":
+      background = singleColorMode
+        ? color1
+        : `linear-gradient(180deg, ${color1} 0%, ${color2} 20%, transparent 50%), radial-gradient(ellipse 150% 50% at 50% 0%, ${color3}60 0%, transparent 60%), radial-gradient(ellipse 100% 40% at 30% 10%, ${color4}50 0%, transparent 50%), linear-gradient(180deg, ${color1} 0%, ${color2} 100%)`;
+      break;
+    case "mesh":
+      background = singleColorMode
+        ? color1
+        : `radial-gradient(at 40% 20%, ${color3}80 0px, transparent 50%), radial-gradient(at 80% 0%, ${color4}70 0px, transparent 50%), radial-gradient(at 0% 50%, ${color2} 0px, transparent 50%), radial-gradient(at 80% 50%, ${color3}60 0px, transparent 50%), radial-gradient(at 0% 100%, ${color4}80 0px, transparent 50%), radial-gradient(at 80% 100%, ${color2} 0px, transparent 50%), radial-gradient(at 0% 0%, ${color1} 0px, transparent 50%), ${color1}`;
+      break;
+    case "spotlight":
+      background = singleColorMode
+        ? color1
+        : `radial-gradient(ellipse 80% 60% at 50% 30%, ${color3}50 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 50% 30%, ${color4}40 0%, transparent 50%), linear-gradient(180deg, ${color1} 0%, ${color2} 100%)`;
+      break;
+    case "wave":
+      background = singleColorMode
+        ? color1
+        : `linear-gradient(180deg, ${color1} 0%, ${color2} 30%), radial-gradient(ellipse 200% 100% at 50% 100%, ${color3}70 0%, transparent 50%), radial-gradient(ellipse 150% 80% at 50% 120%, ${color4}60 0%, transparent 40%)`;
+      break;
+    case "crystal":
+      background = singleColorMode
+        ? color1
+        : `linear-gradient(125deg, ${color1} 0%, ${color2} 20%, ${color3}40 40%, ${color4}30 60%, ${color2} 80%, ${color1} 100%), linear-gradient(45deg, transparent 30%, ${color3}20 50%, transparent 70%)`;
+      break;
+    case "sunset":
+      background = singleColorMode
+        ? color1
+        : `linear-gradient(180deg, ${color3}90 0%, ${color4}80 25%, ${color2} 50%, ${color1} 100%)`;
+      break;
+    case "cosmic":
+      background = singleColorMode
+        ? color1
+        : `radial-gradient(ellipse at 20% 80%, ${color3}50 0%, transparent 40%), radial-gradient(ellipse at 80% 20%, ${color4}50 0%, transparent 40%), radial-gradient(ellipse at 50% 50%, ${color2}30 0%, transparent 60%), radial-gradient(circle at 30% 30%, ${color3}30 0%, transparent 30%), radial-gradient(circle at 70% 70%, ${color4}30 0%, transparent 30%), ${color1}`;
+      break;
     default:
       background = color1;
   }
