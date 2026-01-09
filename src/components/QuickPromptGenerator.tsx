@@ -36,6 +36,9 @@ export const QuickPromptGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; name: string; content: string; extension: string }>>([]);
+  const [pastedContents, setPastedContents] = useState<Array<{ id: string; content: string; preview: string; lineCount: number; byteSize: string }>>([]);
+  const [showPastedModal, setShowPastedModal] = useState(false);
+  const [selectedPastedIndex, setSelectedPastedIndex] = useState<number>(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
@@ -46,6 +49,7 @@ export const QuickPromptGenerator = () => {
   
   const MAX_IMAGES = 3;
   const MAX_CODE_FILES = 5;
+  const MAX_PASTED = 5;
 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
@@ -216,14 +220,49 @@ export const QuickPromptGenerator = () => {
     }
   }, [input, uploadedImages, contextText]);
 
-  // Handle paste image
+  // Format byte size for display
+  const formatByteSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  // Handle pasted content (text or image)
+  const handlePastedContent = (text: string) => {
+    if (pastedContents.length >= MAX_PASTED) {
+      toast.error(`Maximum ${MAX_PASTED} pasted contents allowed`);
+      return;
+    }
+
+    const lineCount = text.split('\n').length;
+    const byteSize = formatByteSize(new Blob([text]).size);
+    const preview = text.slice(0, 100).replace(/\n/g, ' ');
+
+    setPastedContents(prev => [...prev, {
+      id: `pasted-${Date.now()}`,
+      content: text,
+      preview: preview.length < text.length ? `${preview}...` : preview,
+      lineCount,
+      byteSize
+    }]);
+  };
+
+  const handlePastedRemove = (index: number) => {
+    setPastedContents(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handle paste image or text
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
       if (!items) return;
 
+      let hasImage = false;
+      let textContent = '';
+
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf("image") !== -1) {
+          hasImage = true;
           e.preventDefault();
           const file = items[i].getAsFile();
           if (file) {
@@ -231,12 +270,21 @@ export const QuickPromptGenerator = () => {
           }
           break;
         }
+        if (items[i].type === 'text/plain') {
+          textContent = e.clipboardData?.getData('text/plain') || '';
+        }
+      }
+
+      // If no image and text is substantial (more than 150 chars or has multiple lines), treat as pasted content
+      if (!hasImage && textContent && (textContent.length > 150 || textContent.split('\n').length > 3)) {
+        e.preventDefault();
+        handlePastedContent(textContent);
       }
     };
 
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
-  }, []);
+  }, [pastedContents.length]);
 
   // Handle ESC key to close image modal
   useEffect(() => {
@@ -482,11 +530,39 @@ export const QuickPromptGenerator = () => {
         finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
       }
 
+      // Add pasted contents as reference material
+      if (pastedContents.length > 0) {
+        const pastedSection = pastedContents.map((p, i) => 
+          `[PASTED CONTENT ${i + 1}]:\n${p.content}`
+        ).join('\n\n');
+        finalInput = `${finalInput}\n\n${pastedSection}`;
+      }
+
+      // Add code files as reference material
+      if (uploadedFiles.length > 0) {
+        const codeSection = uploadedFiles.map(f => 
+          `[CODE FILE: ${f.name}]:\n\`\`\`${f.extension.slice(1)}\n${f.content}\n\`\`\``
+        ).join('\n\n');
+        finalInput = `${finalInput}\n\n${codeSection}`;
+      }
+
       // Add instruction for fast model
       if (selectedModel === "fast" && uploadedImages.length === 0) {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
         if (contextText.trim()) {
           finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
+        }
+        if (pastedContents.length > 0) {
+          const pastedSection = pastedContents.map((p, i) => 
+            `[PASTED CONTENT ${i + 1}]:\n${p.content}`
+          ).join('\n\n');
+          finalInput = `${finalInput}\n\n${pastedSection}`;
+        }
+        if (uploadedFiles.length > 0) {
+          const codeSection = uploadedFiles.map(f => 
+            `[CODE FILE: ${f.name}]:\n\`\`\`${f.extension.slice(1)}\n${f.content}\n\`\`\``
+          ).join('\n\n');
+          finalInput = `${finalInput}\n\n${codeSection}`;
         }
       }
 
@@ -550,6 +626,8 @@ export const QuickPromptGenerator = () => {
     setGeneratedPrompt("");
     setInput("");
     setUploadedImages([]);
+    setUploadedFiles([]);
+    setPastedContents([]);
     setContextText("");
     setShowContextInput(false);
     if (textareaRef.current) {
@@ -557,6 +635,9 @@ export const QuickPromptGenerator = () => {
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (codeFileInputRef.current) {
+      codeFileInputRef.current.value = "";
     }
   };
 
@@ -588,8 +669,8 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Selected Tool, Image Previews & Code Files */}
-          {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0) && (
+          {/* Selected Tool, Image Previews, Code Files & Pasted Contents */}
+          {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0) && (
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {/* Selected Tool Chip */}
               {promptType && (
@@ -609,6 +690,38 @@ export const QuickPromptGenerator = () => {
                 </div>
               )}
               
+              {/* Pasted Content Chips */}
+              {pastedContents.map((pasted, index) => (
+                <div key={pasted.id} className="relative group">
+                  <button
+                    onClick={() => {
+                      setSelectedPastedIndex(index);
+                      setShowPastedModal(true);
+                    }}
+                    className="relative flex flex-col items-start bg-neutral-800/80 border border-white/20 rounded-lg px-3 py-2 hover:border-white/30 transition-colors cursor-pointer max-w-[180px]"
+                    title="Click to view full content"
+                  >
+                    <span className="text-[10px] text-white/50 mb-0.5">{pasted.byteSize} • {pasted.lineCount} lines</span>
+                    <span className="text-xs text-white/80 line-clamp-2 text-left leading-tight">
+                      {pasted.preview}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wide text-white/40 mt-1 font-medium border border-white/20 rounded px-1.5 py-0.5">
+                      PASTED
+                    </span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePastedRemove(index);
+                    }}
+                    className="absolute -top-1 -right-1 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
+                    title="Remove pasted content"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              ))}
+
               {/* Image Previews */}
               {uploadedImages.map((img, index) => (
                 <div key={`img-${index}`} className="relative group">
@@ -893,6 +1006,50 @@ export const QuickPromptGenerator = () => {
                 alt="Full size preview"
                 className="w-full h-full object-contain rounded-lg"
               />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pasted Content Modal */}
+      <AnimatePresence>
+        {showPastedModal && pastedContents.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowPastedModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-3xl w-full max-h-[80vh] bg-neutral-900 border border-white/20 rounded-xl overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+                <div className="flex flex-col">
+                  <h3 className="text-white font-medium">Pasted content</h3>
+                  <span className="text-xs text-white/50">
+                    {pastedContents[selectedPastedIndex]?.byteSize} • {pastedContents[selectedPastedIndex]?.lineCount} lines • Formatting may be inconsistent from source
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowPastedModal(false)}
+                  className="p-1 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-5">
+                <pre className="text-sm text-white/80 whitespace-pre-wrap font-mono bg-neutral-800/50 rounded-lg p-4 border border-white/10 leading-relaxed">
+                  {pastedContents[selectedPastedIndex]?.content}
+                </pre>
+              </div>
             </motion.div>
           </motion.div>
         )}
