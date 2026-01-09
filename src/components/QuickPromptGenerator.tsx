@@ -31,7 +31,7 @@ export const QuickPromptGenerator = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
   );
-  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image" | null>(null);
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "canvas" | "image" | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
@@ -669,28 +669,10 @@ export const QuickPromptGenerator = () => {
         <div
           className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
         >
-          {/* Selected Tool, Image Previews, Code Files & Pasted Contents */}
+          {/* Pasted Contents, Code Files, Images & Tool Chip (largest first) */}
           {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0) && (
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {/* Selected Tool Chip */}
-              {promptType && (
-                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-1.5 gap-2">
-                  <span className="text-xs text-white/80">
-                    {promptType === "lovable" && "Lovable Prompts"}
-                    {promptType === "gemini" && "Gemini Prompts"}
-                    {promptType === "image" && "Image Prompts"}
-                  </span>
-                  <button
-                    onClick={() => setPromptType(null)}
-                    className="text-white/40 hover:text-white/70 transition-colors"
-                    title="Remove tool"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-              
-              {/* Pasted Content Chips */}
+            <div className="flex items-start gap-2 mb-2 flex-wrap">
+              {/* Pasted Content Chips - Largest, comes first */}
               {pastedContents.map((pasted, index) => (
                 <div key={pasted.id} className="relative group">
                   <button
@@ -698,14 +680,14 @@ export const QuickPromptGenerator = () => {
                       setSelectedPastedIndex(index);
                       setShowPastedModal(true);
                     }}
-                    className="relative flex flex-col items-start bg-neutral-800/80 border border-white/20 rounded-lg px-3 py-2 hover:border-white/30 transition-colors cursor-pointer max-w-[180px]"
+                    className="relative flex flex-col items-start bg-neutral-800/80 border border-white/20 rounded-lg px-3 py-2 hover:border-white/30 transition-colors cursor-pointer max-w-[200px]"
                     title="Click to view full content"
                   >
                     <span className="text-[10px] text-white/50 mb-0.5">{pasted.byteSize} • {pasted.lineCount} lines</span>
                     <span className="text-xs text-white/80 line-clamp-2 text-left leading-tight">
                       {pasted.preview}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wide text-white/40 mt-1 font-medium border border-white/20 rounded px-1.5 py-0.5">
+                    <span className="text-[10px] uppercase tracking-wide text-white/40 mt-1.5 font-medium border border-white/20 rounded px-1.5 py-0.5">
                       PASTED
                     </span>
                   </button>
@@ -714,15 +696,32 @@ export const QuickPromptGenerator = () => {
                       e.stopPropagation();
                       handlePastedRemove(index);
                     }}
-                    className="absolute -top-1 -right-1 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
+                    className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
                     title="Remove pasted content"
                   >
-                    <X className="w-2.5 h-2.5" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
 
-              {/* Image Previews */}
+              {/* Code File Chips - Medium size */}
+              {uploadedFiles.map((codeFile, index) => (
+                <div key={`file-${index}`} className="relative flex items-center bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 gap-2">
+                  <FileCode className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs text-white/80 max-w-28 truncate" title={codeFile.name}>
+                    {codeFile.name}
+                  </span>
+                  <button
+                    onClick={() => handleCodeFileRemove(index)}
+                    className="text-white/40 hover:text-white/70 transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Image Previews - Medium size */}
               {uploadedImages.map((img, index) => (
                 <div key={`img-${index}`} className="relative group">
                   <button
@@ -730,7 +729,7 @@ export const QuickPromptGenerator = () => {
                       setSelectedImageIndex(index);
                       setShowImageModal(true);
                     }}
-                    className="relative w-10 h-10 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
+                    className="relative w-11 h-11 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
                   >
                     <img
                       src={img.preview}
@@ -743,30 +742,32 @@ export const QuickPromptGenerator = () => {
                       e.stopPropagation();
                       handleImageRemove(index);
                     }}
-                    className="absolute -top-1 -right-1 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
+                    className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
                     title="Remove image"
-                  >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              ))}
-
-              {/* Code File Chips */}
-              {uploadedFiles.map((codeFile, index) => (
-                <div key={`file-${index}`} className="relative flex items-center bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2.5 py-1.5 gap-2">
-                  <FileCode className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-xs text-white/80 max-w-24 truncate" title={codeFile.name}>
-                    {codeFile.name}
-                  </span>
-                  <button
-                    onClick={() => handleCodeFileRemove(index)}
-                    className="text-white/40 hover:text-white/70 transition-colors"
-                    title="Remove file"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
+
+              {/* Selected Tool Chip - Smallest, comes last */}
+              {promptType && (
+                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-2 gap-2">
+                  <span className="text-xs text-white/80">
+                    {promptType === "lovable" && "Lovable Prompts"}
+                    {promptType === "gemini" && "Gemini Prompts"}
+                    {promptType === "canvas" && "Gemini Canvas"}
+                    {promptType === "image" && "Image Prompts"}
+                  </span>
+                  <button
+                    onClick={() => setPromptType(null)}
+                    className="text-white/40 hover:text-white/70 transition-colors"
+                    title="Remove tool"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -953,6 +954,16 @@ export const QuickPromptGenerator = () => {
                 }`}
               >
                 Gemini Prompts
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setPromptType("canvas")}
+                className={`px-3 py-2 text-sm cursor-pointer ${
+                  promptType === "canvas" 
+                    ? "bg-white/15 text-white" 
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                Gemini Canvas
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setPromptType("image")}
