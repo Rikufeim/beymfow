@@ -34,6 +34,18 @@ export interface HeroBackgroundSettings {
   // Motion (future)
   motionEnabled: boolean;
   motionSpeed: number;
+  // Component styling
+  buttonPrimaryBg: string;
+  buttonPrimaryText: string;
+  buttonSecondaryBg: string;
+  buttonSecondaryText: string;
+  buttonSecondaryBorder: string;
+  cardBg: string;
+  cardBorder: string;
+  inputBg: string;
+  inputBorder: string;
+  inputText: string;
+  focusRingColor: string;
 }
 
 export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
@@ -49,6 +61,18 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   gradientStyle: "halo",
   motionEnabled: false,
   motionSpeed: 0.5,
+  // Component defaults
+  buttonPrimaryBg: "#ffffff",
+  buttonPrimaryText: "#000000",
+  buttonSecondaryBg: "transparent",
+  buttonSecondaryText: "#ffffff",
+  buttonSecondaryBorder: "rgba(255,255,255,0.3)",
+  cardBg: "rgba(255,255,255,0.1)",
+  cardBorder: "rgba(255,255,255,0.2)",
+  inputBg: "#1a1a1a",
+  inputBorder: "rgba(255,255,255,0.1)",
+  inputText: "#ffffff",
+  focusRingColor: "#389cff",
 };
 
 // Color presets
@@ -69,7 +93,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "motion" | "view" | "solution" | "export";
+type TabId = "shape" | "colors" | "components" | "motion" | "view" | "solution" | "export";
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -798,8 +822,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         : ""
                     )}
                     style={{ 
-                      backgroundColor: getContentValue("heroButton1Color", "#ffffff"),
-                      color: getContentValue("heroButton1TextColor", "#000000")
+                      backgroundColor: getContentValue("heroButton1Color", settings.buttonPrimaryBg),
+                      color: getContentValue("heroButton1TextColor", settings.buttonPrimaryText)
                     }}
                   >
                     {getContentValue("heroButton1Text", "Get Started")}
@@ -812,9 +836,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         : "border-white/30"
                     )}
                     style={{ 
-                      backgroundColor: getContentValue("heroButton2Color", "transparent"),
-                      color: getContentValue("heroButton2TextColor", "#ffffff"),
-                      borderColor: getContentValue("heroButton2Color", "rgba(255, 255, 255, 0.3)")
+                      backgroundColor: getContentValue("heroButton2Color", settings.buttonSecondaryBg),
+                      color: getContentValue("heroButton2TextColor", settings.buttonSecondaryText),
+                      borderColor: getContentValue("heroButton2Color", settings.buttonSecondaryBorder)
                     }}
                   >
                     {getContentValue("heroButton2Text", "Learn More")}
@@ -828,7 +852,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                   <h2 className="text-4xl font-bold mb-12 text-center">Features</h2>
                   <div className="grid grid-cols-3 gap-8">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                      <div 
+                        key={i} 
+                        className="backdrop-blur-sm rounded-xl p-6 border"
+                        style={{
+                          backgroundColor: settings.cardBg,
+                          borderColor: settings.cardBorder
+                        }}
+                      >
                         <div className="w-12 h-12 bg-white/20 rounded-lg mb-4" />
                         <div className="h-6 bg-white/30 rounded w-3/4 mb-3" />
                         <div className="h-4 bg-white/20 rounded w-full mb-2" />
@@ -899,8 +930,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         : ""
                     )}
                     style={{ 
-                      backgroundColor: getContentValue("heroButton1Color", "#ffffff"),
-                      color: getContentValue("heroButton1TextColor", "#000000")
+                      backgroundColor: getContentValue("heroButton1Color", settings.buttonPrimaryBg),
+                      color: getContentValue("heroButton1TextColor", settings.buttonPrimaryText)
                     }}
                   >
                     {getContentValue("heroButton1Text", "Download")}
@@ -913,9 +944,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         : "border-white/30"
                     )}
                     style={{ 
-                      backgroundColor: getContentValue("heroButton2Color", "transparent"),
-                      color: getContentValue("heroButton2TextColor", "#ffffff"),
-                      borderColor: getContentValue("heroButton2Color", "rgba(255, 255, 255, 0.3)")
+                      backgroundColor: getContentValue("heroButton2Color", settings.buttonSecondaryBg),
+                      color: getContentValue("heroButton2TextColor", settings.buttonSecondaryText),
+                      borderColor: getContentValue("heroButton2Color", settings.buttonSecondaryBorder)
                     }}
                   >
                     {getContentValue("heroButton2Text", "Learn More")}
@@ -929,7 +960,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                   <h2 className="text-3xl font-bold mb-12 text-center">Features</h2>
                   <div className="grid grid-cols-1 gap-6">
                     {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                      <div 
+                        key={i} 
+                        className="backdrop-blur-sm rounded-xl p-6 border"
+                        style={{
+                          backgroundColor: settings.cardBg,
+                          borderColor: settings.cardBorder
+                        }}
+                      >
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-white/20 rounded-lg flex-shrink-0" />
                           <div className="flex-1">
@@ -1237,7 +1275,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           {/* Tabs + Minimize button */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
             <div className="flex items-center gap-4">
-              {(["shape", "colors", "motion", "view", "solution", "export"] as TabId[]).map((tab) => (
+              {(["shape", "colors", "components", "motion", "view", "solution", "export"] as TabId[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => {
@@ -1500,6 +1538,292 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             <Cloudy size={14} />
                             <span className="text-xs font-medium">Environment Light</span>
                           </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {activeTab === "components" && (
+                      <motion.div
+                        key="components"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="overflow-y-auto"
+                        style={{ maxHeight: '180px' }}
+                      >
+                        <div className="grid grid-cols-3 gap-6">
+                          {/* Primary Button */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Primary Button</label>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">BG</span>
+                                  <input
+                                    type="color"
+                                    value={settings.buttonPrimaryBg}
+                                    onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.buttonPrimaryBg}
+                                    onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Text</span>
+                                  <input
+                                    type="color"
+                                    value={settings.buttonPrimaryText}
+                                    onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.buttonPrimaryText}
+                                    onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                              </div>
+                              {/* Preview */}
+                              <button
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                                style={{ 
+                                  backgroundColor: settings.buttonPrimaryBg,
+                                  color: settings.buttonPrimaryText
+                                }}
+                              >
+                                Preview
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Secondary Button */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Secondary Button</label>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">BG</span>
+                                  <input
+                                    type="color"
+                                    value={settings.buttonSecondaryBg === "transparent" ? "#000000" : settings.buttonSecondaryBg}
+                                    onChange={(e) => updateSetting("buttonSecondaryBg", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.buttonSecondaryBg}
+                                    onChange={(e) => updateSetting("buttonSecondaryBg", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Text</span>
+                                  <input
+                                    type="color"
+                                    value={settings.buttonSecondaryText}
+                                    onChange={(e) => updateSetting("buttonSecondaryText", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.buttonSecondaryText}
+                                    onChange={(e) => updateSetting("buttonSecondaryText", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Border</span>
+                                  <input
+                                    type="text"
+                                    value={settings.buttonSecondaryBorder}
+                                    onChange={(e) => updateSetting("buttonSecondaryBorder", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                              </div>
+                              {/* Preview */}
+                              <button
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all border"
+                                style={{ 
+                                  backgroundColor: settings.buttonSecondaryBg,
+                                  color: settings.buttonSecondaryText,
+                                  borderColor: settings.buttonSecondaryBorder
+                                }}
+                              >
+                                Preview
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Card Styling */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Card</label>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">BG</span>
+                                  <input
+                                    type="text"
+                                    value={settings.cardBg}
+                                    onChange={(e) => updateSetting("cardBg", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Border</span>
+                                  <input
+                                    type="text"
+                                    value={settings.cardBorder}
+                                    onChange={(e) => updateSetting("cardBorder", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                              </div>
+                              {/* Preview */}
+                              <div
+                                className="w-16 h-10 rounded-lg border"
+                                style={{ 
+                                  backgroundColor: settings.cardBg,
+                                  borderColor: settings.cardBorder
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Input Styling */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Input</label>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">BG</span>
+                                  <input
+                                    type="color"
+                                    value={settings.inputBg}
+                                    onChange={(e) => updateSetting("inputBg", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.inputBg}
+                                    onChange={(e) => updateSetting("inputBg", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Border</span>
+                                  <input
+                                    type="text"
+                                    value={settings.inputBorder}
+                                    onChange={(e) => updateSetting("inputBorder", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Text</span>
+                                  <input
+                                    type="color"
+                                    value={settings.inputText}
+                                    onChange={(e) => updateSetting("inputText", e.target.value)}
+                                    className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={settings.inputText}
+                                    onChange={(e) => updateSetting("inputText", e.target.value)}
+                                    className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                                  />
+                                </div>
+                              </div>
+                              {/* Preview */}
+                              <input
+                                type="text"
+                                placeholder="Preview"
+                                className="w-20 px-2 py-1.5 rounded text-[10px] border"
+                                style={{ 
+                                  backgroundColor: settings.inputBg,
+                                  borderColor: settings.inputBorder,
+                                  color: settings.inputText
+                                }}
+                                readOnly
+                              />
+                            </div>
+                          </div>
+
+                          {/* Focus Ring */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Focus Ring</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={settings.focusRingColor}
+                                onChange={(e) => updateSetting("focusRingColor", e.target.value)}
+                                className="w-8 h-6 rounded border border-white/10 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={settings.focusRingColor}
+                                onChange={(e) => updateSetting("focusRingColor", e.target.value)}
+                                className="flex-1 bg-neutral-800 border border-white/10 rounded px-2 py-1 text-white text-[10px] focus:outline-none focus:border-white/30"
+                              />
+                              <div
+                                className="w-8 h-8 rounded-lg border-2"
+                                style={{ 
+                                  borderColor: settings.focusRingColor,
+                                  boxShadow: `0 0 0 2px ${settings.focusRingColor}40`
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Quick Component Presets */}
+                          <div className="space-y-2">
+                            <label className="text-xs text-white/50 uppercase tracking-wider block">Presets</label>
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                onClick={() => {
+                                  updateSetting("buttonPrimaryBg", "#ffffff");
+                                  updateSetting("buttonPrimaryText", "#000000");
+                                  updateSetting("buttonSecondaryBg", "transparent");
+                                  updateSetting("buttonSecondaryText", "#ffffff");
+                                  updateSetting("buttonSecondaryBorder", "rgba(255,255,255,0.3)");
+                                }}
+                                className="px-2 py-1 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
+                              >
+                                Light
+                              </button>
+                              <button
+                                onClick={() => {
+                                  updateSetting("buttonPrimaryBg", "#000000");
+                                  updateSetting("buttonPrimaryText", "#ffffff");
+                                  updateSetting("buttonSecondaryBg", "transparent");
+                                  updateSetting("buttonSecondaryText", "#000000");
+                                  updateSetting("buttonSecondaryBorder", "rgba(0,0,0,0.3)");
+                                }}
+                                className="px-2 py-1 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
+                              >
+                                Dark
+                              </button>
+                              <button
+                                onClick={() => {
+                                  updateSetting("buttonPrimaryBg", settings.color3);
+                                  updateSetting("buttonPrimaryText", "#ffffff");
+                                  updateSetting("buttonSecondaryBg", "transparent");
+                                  updateSetting("buttonSecondaryText", settings.color3);
+                                  updateSetting("buttonSecondaryBorder", settings.color3);
+                                  updateSetting("focusRingColor", settings.color3);
+                                }}
+                                className="px-2 py-1 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
+                              >
+                                Match Accent
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </motion.div>
                     )}

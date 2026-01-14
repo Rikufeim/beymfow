@@ -202,6 +202,18 @@ const parseSettingsJSON = (json: string): HeroBackgroundSettings | null => {
         gradientStyle: parsed.settings.style?.gradientStyle || "halo",
         motionEnabled: parsed.settings.style?.motionEnabled || false,
         motionSpeed: parsed.settings.style?.motionSpeed || 0.5,
+        // Component defaults
+        buttonPrimaryBg: parsed.settings.components?.buttonPrimaryBg || "#ffffff",
+        buttonPrimaryText: parsed.settings.components?.buttonPrimaryText || "#000000",
+        buttonSecondaryBg: parsed.settings.components?.buttonSecondaryBg || "transparent",
+        buttonSecondaryText: parsed.settings.components?.buttonSecondaryText || "#ffffff",
+        buttonSecondaryBorder: parsed.settings.components?.buttonSecondaryBorder || "rgba(255,255,255,0.3)",
+        cardBg: parsed.settings.components?.cardBg || "rgba(255,255,255,0.1)",
+        cardBorder: parsed.settings.components?.cardBorder || "rgba(255,255,255,0.2)",
+        inputBg: parsed.settings.components?.inputBg || "#1a1a1a",
+        inputBorder: parsed.settings.components?.inputBorder || "rgba(255,255,255,0.1)",
+        inputText: parsed.settings.components?.inputText || "#ffffff",
+        focusRingColor: parsed.settings.components?.focusRingColor || "#389cff",
       };
     }
     return null;
