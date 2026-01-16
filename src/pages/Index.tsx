@@ -89,7 +89,9 @@ const Index = () => {
 
             {/* Products Grid Section */}
             <div className="py-16 sm:py-20 md:py-24 lg:py-32">
-              <ProductsGrid />
+              <Suspense fallback={<div className="min-h-[200px]" />}>
+                <ProductsGrid />
+              </Suspense>
             </div>
 
             {/* Beymflow Premium highlight */}
