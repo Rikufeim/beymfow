@@ -1,8 +1,9 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import beymflowBg from "@/assets/beymflow-background.png";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 // Määritellään yksinkertainen Button-komponentti tässä tiedostossa,
 // koska emme voi tuoda sitä ulkoisesta tiedostosta esikatselussa.
@@ -24,18 +25,20 @@ const Button = ({
       {children}
     </button>;
 };
-export const FlowFeaturesSection = ({
+export const FlowFeaturesSection = memo(function FlowFeaturesSection({
   className = ""
-}) => {
-  // Hookin käyttö turvallisesti (jos Router ei ole saatavilla esikatselussa, tämä voi vaatia providerin)
-  // Tässä oletetaan, että ympäristössä on Router tai tämä jätetään huomiotta virheen sattuessa.
-  let navigate;
-  try {
-    navigate = useNavigate();
-  } catch (e) {
-    // Fallback jos Router context puuttuu esikatselusta
-    navigate = path => console.log(`Navigating to ${path}`);
-  }
+}: { className?: string }) {
+  const navigate = useNavigate();
+  const { prefetchRoute } = usePrefetchRoute();
+  
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
+
+  const handlePrefetch = useCallback((path: string) => {
+    prefetchRoute(path);
+  }, [prefetchRoute]);
+
   const sharedCardClasses = "grid md:grid-cols-2 items-stretch gap-0";
   const sharedTextClasses = "flex flex-col justify-center gap-6 p-8 md:p-12 lg:p-16 relative overflow-hidden w-full h-full z-10";
   const sharedImageClasses = "relative min-h-[320px] md:min-h-[420px] overflow-hidden w-full h-full cursor-pointer";
@@ -85,7 +88,7 @@ export const FlowFeaturesSection = ({
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale',
                 textRendering: 'optimizeLegibility'
-              }} onClick={() => navigate("/flow-engine")}>
+              }} onClick={() => handleNavigate("/flow-engine")} onMouseEnter={() => handlePrefetch("/flow-engine")}>
                   <span className="text-white group-hover:text-white transition-opacity duration-200">Click to explore</span>
                   <span className="text-white transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
@@ -94,7 +97,7 @@ export const FlowFeaturesSection = ({
           </div>
 
           {/* Image - Right */}
-          <div className="order-2 md:order-2">
+          <div className="order-2 md:order-2" onMouseEnter={() => handlePrefetch("/flow-engine")}>
             <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
             transform: 'translateZ(0)',
             willChange: 'transform'
@@ -103,8 +106,8 @@ export const FlowFeaturesSection = ({
               <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden'
-            }} onClick={() => navigate("/flow-engine")}>
-                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" />
+            }} onClick={() => handleNavigate("/flow-engine")}>
+                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
               </div>
             </div>
           </div>
@@ -113,7 +116,7 @@ export const FlowFeaturesSection = ({
         {/* Prompt Lab Section - Image Left, Text Right */}
         <div className={sharedCardClasses}>
           {/* Image - Left */}
-          <div className="order-2 md:order-1">
+          <div className="order-2 md:order-1" onMouseEnter={() => handlePrefetch("/prompt-lab-page")}>
             <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
             transform: 'translateZ(0)',
             willChange: 'transform'
@@ -122,14 +125,14 @@ export const FlowFeaturesSection = ({
               <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden'
-            }} onClick={() => navigate("/prompt-lab-page")}>
-                <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" />
+            }} onClick={() => handleNavigate("/prompt-lab-page")}>
+                <img src={beymflowBg} alt="Prompt Lab" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
               </div>
             </div>
           </div>
 
           {/* Text Content - Right */}
-          <div className="order-1 md:order-2">
+          <div className="order-1 md:order-2" onMouseEnter={() => handlePrefetch("/prompt-lab-page")}>
             <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
             transform: 'translateZ(0)',
             willChange: 'transform'
@@ -156,7 +159,7 @@ export const FlowFeaturesSection = ({
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale',
                 textRendering: 'optimizeLegibility'
-              }} onClick={() => navigate("/prompt-lab-page")}>
+              }} onClick={() => handleNavigate("/prompt-lab-page")} onMouseEnter={() => handlePrefetch("/prompt-lab-page")}>
                   <span className="text-white group-hover:text-white transition-opacity duration-200">Click to explore</span>
                   <span className="text-white transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
@@ -166,4 +169,4 @@ export const FlowFeaturesSection = ({
         </div>
       </div>
     </section>;
-};
+});

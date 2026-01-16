@@ -1,10 +1,15 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
-export const PricingCarousel = () => {
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
+
+export const PricingCarousel = memo(function PricingCarousel() {
+  const { prefetchRoute } = usePrefetchRoute();
+  
   return <section className="px-4 sm:px-6 lg:px-8 py-24 bg-transparent overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* MUUTOS: gap-12 -> gap-24. Tämä tekee ison välin korttien ja tekstin väliin. */}
@@ -130,5 +135,6 @@ export const PricingCarousel = () => {
         </div>
       </div>
     </section>;
-};
+});
+
 export default PricingCarousel;
