@@ -1,7 +1,8 @@
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { HorizontalPlaceholderCarousel } from "@/components/HorizontalPlaceholderCarousel";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 // Feature cards data - you can add images later
 const FEATURE_CARDS = [
@@ -31,16 +32,25 @@ const FEATURE_CARDS = [
   },
 ];
 
-export default function Hero() {
+const Hero = memo(function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { prefetchRoute } = usePrefetchRoute();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/prompt-lab-page`);
     }
-  };
+  }, [searchQuery, navigate]);
+
+  const handleCardClick = useCallback((route: string) => {
+    navigate(route);
+  }, [navigate]);
+
+  const handleCardHover = useCallback((route: string) => {
+    prefetchRoute(route);
+  }, [prefetchRoute]);
 
   return (
     <>
@@ -84,8 +94,10 @@ export default function Hero() {
             {FEATURE_CARDS.map((card) => (
               <div
                 key={card.id}
-                onClick={() => navigate(card.route)}
-                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-card/60 backdrop-blur-sm border border-border/30 hover:border-border/60 transition-all cursor-pointer flex flex-col"
+                onClick={() => handleCardClick(card.route)}
+                onMouseEnter={() => handleCardHover(card.route)}
+                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-card/60 backdrop-blur-sm border border-border/30 hover:border-border/60 transition-[border-color] duration-200 cursor-pointer flex flex-col will-change-transform"
+                style={{ transform: 'translateZ(0)' }}
               >
                 {/* Placeholder for future images */}
                 <div className="absolute inset-0 bg-gradient-to-br from-muted/20 to-muted/40 flex items-center justify-center">
@@ -130,4 +142,6 @@ export default function Hero() {
       </section>
     </>
   );
-}
+});
+
+export default Hero;

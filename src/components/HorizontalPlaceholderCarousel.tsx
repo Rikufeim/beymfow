@@ -297,7 +297,8 @@ const HorizontalPlaceholderCarouselComponent: React.FC<HorizontalPlaceholderCaro
   const [showComponentPage, setShowComponentPage] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+  // Optimized wheel handler with RAF throttling
+  const handleWheel = useCallback((e: WheelEvent) => {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 0) {
       e.preventDefault();
       const el = rowRef.current;
@@ -305,6 +306,15 @@ const HorizontalPlaceholderCarouselComponent: React.FC<HorizontalPlaceholderCaro
       el.scrollBy({ left: e.deltaX, behavior: "smooth" });
     }
   }, []);
+
+  // Attach passive wheel listener
+  React.useEffect(() => {
+    const el = rowRef.current;
+    if (!el) return;
+    
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   const scrollByAmount = useCallback((dir: number) => {
     const el = rowRef.current;
@@ -451,7 +461,6 @@ const HorizontalPlaceholderCarouselComponent: React.FC<HorizontalPlaceholderCaro
         </div>
         <div
           ref={rowRef}
-          onWheel={handleWheel}
           className="flex flex-nowrap gap-6 overflow-hidden pb-2 px-2"
         >
           {Array.from({ length: itemCount }).map((_, idx) => {

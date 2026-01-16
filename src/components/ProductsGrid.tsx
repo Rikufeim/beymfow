@@ -1,7 +1,8 @@
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
 import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
-import { useRef } from "react";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 const products = [
   {
@@ -34,7 +35,13 @@ const products = [
   },
 ];
 
-const ProductsGrid = () => {
+const ProductsGrid = memo(function ProductsGrid() {
+  const { prefetchRoute } = usePrefetchRoute();
+
+  const handleHover = useCallback((link: string) => {
+    prefetchRoute(link);
+  }, [prefetchRoute]);
+
   return (
     <section className="w-full bg-black py-16 sm:py-20 lg:py-24 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,12 +49,14 @@ const ProductsGrid = () => {
           {products.map((product, idx) => {
             const Icon = product.icon;
             return (
-              <div key={idx} className="flex flex-col items-start gap-4 group h-full">
-                <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-all duration-300">
-                  <Icon className="h-10 w-10 text-white transition-colors duration-300 group-hover:text-teal-400" 
-                    style={{
-                      filter: 'drop-shadow(0 0 0px transparent)',
-                    }}
+              <div 
+                key={idx} 
+                className="flex flex-col items-start gap-4 group h-full"
+                onMouseEnter={() => handleHover(product.link)}
+              >
+                <div className="w-fit rounded-full border border-white/10 bg-white/5 p-4 mb-2 transition-colors duration-200">
+                  <Icon 
+                    className="h-10 w-10 text-white transition-colors duration-200 group-hover:text-teal-400" 
                     strokeWidth={1.5}
                   />
                 </div>
@@ -73,6 +82,6 @@ const ProductsGrid = () => {
       </div>
     </section>
   );
-};
+});
 
 export default ProductsGrid;

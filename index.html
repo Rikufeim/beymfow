@@ -11,12 +11,16 @@
     <!-- Performance: Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://storage.googleapis.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.gpteng.co" />
     
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1JL7W0Q5nw.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v14/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC0O4a0Ew.woff2" as="font" type="font/woff2" crossorigin />
+    
     <!-- Preload critical logo to prevent flickering -->
-    <link rel="preload" href="/images/beymflow-logo.png" as="image" type="image/png" />
+    <link rel="preload" href="/images/beymflow-logo.png" as="image" type="image/png" fetchpriority="high" />
     
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/N7QsiNd5CDQgGQkG5aalJNP8jb63/social-images/social-1763236997097-BeymflowlogoREAL.png">
