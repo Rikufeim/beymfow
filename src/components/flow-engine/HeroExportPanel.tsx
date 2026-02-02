@@ -102,10 +102,36 @@ const generateGradientCSS = (settings: HeroBackgroundSettings): string => {
   return background;
 };
 
-// Generate React component code
+// Generate React component code - Fixed to produce valid JSX
 const generateReactComponent = (settings: HeroBackgroundSettings): string => {
   const gradientCSS = generateGradientCSS(settings);
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
+
+  // Build grain overlay JSX string
+  const grainOverlay = settings.grainEnabled 
+    ? `
+      {/* Grain overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: \`url("${grainSVG}")\`,
+          opacity: ${(settings.grainIntensity * 0.3).toFixed(3)},
+          mixBlendMode: "overlay" as const,
+        }}
+      />`
+    : "";
+
+  // Build environment halo JSX string
+  const environmentHalo = settings.environmentEnabled 
+    ? `
+      {/* Environment light halo */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse at 50% 30%, ${settings.color3}15 0%, transparent 60%)",
+        }}
+      />`
+    : "";
 
   return `import React from "react";
 
@@ -127,27 +153,10 @@ export const HeroBackground: React.FC<HeroBackgroundProps> = ({ children, classN
     <div 
       className={\`relative w-full h-screen overflow-hidden \${className || ""}\`}
       style={{
-        background: \`${gradientCSS}\`,
+        background: "${gradientCSS}",
         filter: "brightness(${settings.brightness})",
       }}
-    >
-      {/* Grain overlay */}
-      ${settings.grainEnabled ? `<div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: \`url("${grainSVG}")\`,
-          opacity: ${(settings.grainIntensity * 0.3).toFixed(3)},
-          mixBlendMode: "overlay",
-        }}
-      />` : ""}
-      
-      {/* Environment light halo */}
-      ${settings.environmentEnabled ? `<div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: \`radial-gradient(ellipse at 50% 30%, ${settings.color3}15 0%, transparent 60%)\`,
-        }}
-      />` : ""}
+    >${grainOverlay}${environmentHalo}
       
       {/* Content */}
       {children && (
