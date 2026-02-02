@@ -87,13 +87,34 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   focusRingColor: "#389cff",
 };
 
-// Color presets
+// Color presets - Premium, balanced palettes
 const COLOR_PRESETS = {
-  carbon: { color1: "#0a0a0a", color2: "#1a1a1a", color3: "#2a2a2a", color4: "#3a3a3a" },
-  graphite: { color1: "#1f1f1f", color2: "#2d2d2d", color3: "#3d3d3d", color4: "#4d4d4d" },
-  void: { color1: "#000000", color2: "#0a0a1a", color3: "#1a1a3a", color4: "#0a0a2a" },
-  neonFog: { color1: "#0a0a0a", color2: "#1a0a2a", color3: "#ff00ff", color4: "#00ffff" },
-  creamPastel: { color1: "#fef3e2", color2: "#fce7f3", color3: "#dbeafe", color4: "#dcfce7" },
+  // Dark & Sophisticated
+  obsidian: { color1: "#0c0c0e", color2: "#18181c", color3: "#3b82f6", color4: "#6366f1" },
+  midnight: { color1: "#0f0f1a", color2: "#1a1a2e", color3: "#4f46e5", color4: "#7c3aed" },
+  charcoal: { color1: "#121214", color2: "#1c1c20", color3: "#64748b", color4: "#94a3b8" },
+  
+  // Vibrant & Modern
+  aurora: { color1: "#0a0a12", color2: "#0f172a", color3: "#06b6d4", color4: "#8b5cf6" },
+  ember: { color1: "#0c0a09", color2: "#1c1917", color3: "#f97316", color4: "#ef4444" },
+  forest: { color1: "#0a0f0a", color2: "#14241a", color3: "#22c55e", color4: "#10b981" },
+  
+  // Premium Accents
+  sapphire: { color1: "#0a0a14", color2: "#101828", color3: "#2563eb", color4: "#3b82f6" },
+  amethyst: { color1: "#0f0a14", color2: "#1a1028", color3: "#a855f7", color4: "#c084fc" },
+  rose: { color1: "#0f0a0c", color2: "#1c1418", color3: "#ec4899", color4: "#f472b6" },
+  
+  // Warm Tones
+  sunset: { color1: "#0c0908", color2: "#1a1410", color3: "#f59e0b", color4: "#fb923c" },
+  copper: { color1: "#0c0a08", color2: "#1c1610", color3: "#d97706", color4: "#ea580c" },
+  
+  // Cool Tones
+  arctic: { color1: "#0a0e12", color2: "#0f1720", color3: "#38bdf8", color4: "#22d3ee" },
+  slate: { color1: "#0f1115", color2: "#1e2128", color3: "#475569", color4: "#64748b" },
+  
+  // Light Themes
+  pearl: { color1: "#f8fafc", color2: "#f1f5f9", color3: "#e2e8f0", color4: "#cbd5e1" },
+  cream: { color1: "#fefdfb", color2: "#faf8f5", color3: "#f5d0c5", color4: "#dcd0ff" },
 };
 
 interface HeroBackgroundWorkspaceProps {
