@@ -5,32 +5,26 @@ import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageTransition } from "./components/PageTransition";
 
-// Lazy load all pages for better code splitting
+// Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const About = lazy(() => import("./pages/About"));
-const Auth = lazy(() => import("./pages/Auth"));
-const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
-const Features = lazy(() => import("./pages/Features"));
-const Premium = lazy(() => import("./pages/Premium"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 const Community = lazy(() => import("./pages/Community"));
 
-// Optimized QueryClient with better defaults for performance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       retry: 1,
@@ -38,12 +32,10 @@ const queryClient = new QueryClient({
   },
 });
 
-// ScrollToTop component that handles scroll behavior - optimized for performance
 const ScrollToTop = () => {
   const location = useLocation();
   
   useEffect(() => {
-    // Use requestAnimationFrame for smoother, non-blocking scroll
     requestAnimationFrame(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     });
@@ -52,14 +44,12 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Loading fallback component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-black">
     <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
   </div>
 );
 
-// AnimatedRoutes component with smooth page transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
   
@@ -73,11 +63,7 @@ const AnimatedRoutes = () => {
                 <Index />
               </ErrorBoundary>
             } />
-            <Route path="/features" element={<Features />} />
-            <Route path="/premium" element={<Premium />} />
             <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/about" element={
               <Layout>
                 <About />
@@ -91,8 +77,6 @@ const AnimatedRoutes = () => {
             <Route path="/image-generator" element={<ImageGenerator />} />
             <Route path="/planningsystem" element={<PlanningSystem />} />
             <Route path="/multiagentpage" element={<Multiagentpage />} />
-            
-            {/* Custom routes above the catch-all */}
             <Route path="*" element={
               <Layout>
                 <NotFound />
@@ -105,12 +89,9 @@ const AnimatedRoutes = () => {
   );
 };
 
-// Global image preloader for critical images
-// Memoize images array to prevent unnecessary re-runs
 const CRITICAL_IMAGES: string[] = [
-  // Homepage critical images
-  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png", // CRYPTO GUIDES
-  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png", // PROMPTS
+  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png",
 ];
 
 const GlobalImagePreloader = () => {
@@ -124,11 +105,9 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <BrowserRouter>
-            <AuthProvider>
-              <GlobalImagePreloader />
-              <ScrollToTop />
-              <AnimatedRoutes />
-            </AuthProvider>
+            <GlobalImagePreloader />
+            <ScrollToTop />
+            <AnimatedRoutes />
           </BrowserRouter>
         </LanguageProvider>
       </TooltipProvider>
