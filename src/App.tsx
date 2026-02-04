@@ -89,7 +89,7 @@ const AnimatedRoutes = () => {
             <Route path="/premium" element={<Premium />} />
             <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
             <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
-            <Route path="/prompt-lab-page/library" element={<PromptLibraryPage />} />
+            <Route path="/prompt-lab-page/library" element={<ProtectedRoute><PromptLibraryPage /></ProtectedRoute>} />
             <Route path="/prompt-lab-page/category/:categoryName" element={<ProtectedRoute><CategoryViewPage /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
@@ -103,8 +103,8 @@ const AnimatedRoutes = () => {
                 <Community />
               </Layout>
             } />
-            <Route path="/business-prompts" element={<BusinessPrompts />} />
-            <Route path="/prompt-lab" element={<PromptLab />} />
+            <Route path="/business-prompts" element={<ProtectedRoute><BusinessPrompts /></ProtectedRoute>} />
+            <Route path="/prompt-lab" element={<ProtectedRoute><PromptLab /></ProtectedRoute>} />
             <Route path="/image-generator" element={<ImageGenerator />} />
             <Route path="/planningsystem" element={<PlanningSystem />} />
             <Route path="/prompt-lab/ai-generator" element={<AIGenerator />} />

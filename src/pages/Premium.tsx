@@ -26,6 +26,7 @@ const pricingPlans = [
     ],
     buttonText: "Get started",
     isPopular: false,
+    comingSoon: false,
   },
   {
     name: "Starter",
@@ -41,6 +42,7 @@ const pricingPlans = [
     ],
     buttonText: "Get started",
     isPopular: false,
+    comingSoon: false,
   },
   {
     name: "Business",
@@ -54,8 +56,9 @@ const pricingPlans = [
       "Custom fields",
       "Serverless functions",
     ],
-    buttonText: "Get started",
+    buttonText: "Coming Soon",
     isPopular: false,
+    comingSoon: true,
   },
   {
     name: "Enterprise",
@@ -69,8 +72,9 @@ const pricingPlans = [
       "Priority support",
       "Advanced analytics",
     ],
-    buttonText: "Get started",
+    buttonText: "Coming Soon",
     isPopular: false,
+    comingSoon: true,
   },
 ];
 
@@ -320,6 +324,15 @@ const PricingCard = ({
           className="opacity-70"
         />
         <div className="relative flex flex-col rounded-[1.05rem] p-6 sm:p-8 h-full transition-all duration-300 bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]">
+          {/* Coming Soon Badge */}
+          {plan.comingSoon && (
+            <div className="absolute top-4 right-4">
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                Coming Soon
+              </span>
+            </div>
+          )}
+
           {/* Price */}
           <div className="mb-4">
             <div className="flex items-baseline gap-1">
@@ -345,10 +358,16 @@ const PricingCard = ({
           {/* CTA Button */}
           <div className="pt-4">
             <button
-              onClick={() => onSubscribe(plan.name)}
-              className="w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6 bg-neutral-700 text-white hover:bg-neutral-600"
+              onClick={() => !plan.comingSoon && onSubscribe(plan.name)}
+              disabled={plan.comingSoon}
+              className={cn(
+                "w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-300 mb-6",
+                plan.comingSoon 
+                  ? "bg-neutral-800 text-neutral-500 cursor-not-allowed" 
+                  : "bg-neutral-700 text-white hover:bg-neutral-600"
+              )}
             >
-              Get started
+              {plan.buttonText}
             </button>
           </div>
 
