@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const glassButtonVariants = cva(
-  "relative isolate all-unset cursor-pointer rounded-full transition-all",
+  "relative isolate cursor-pointer rounded-full transition-all duration-200",
   {
     variants: {
       size: {
@@ -20,7 +20,7 @@ const glassButtonVariants = cva(
 );
 
 const glassButtonTextVariants = cva(
-  "glass-button-text relative block select-none tracking-tighter",
+  "relative block select-none",
   {
     variants: {
       size: {
@@ -46,33 +46,29 @@ export interface GlassButtonProps
 const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
   ({ className, children, size, contentClassName, isSelected = false, ...props }, ref) => {
     return (
-      <div
+      <button
         className={cn(
-          "glass-button-wrap cursor-pointer rounded-full relative",
+          "inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/90 backdrop-blur-sm",
+          "hover:bg-white/[0.08] hover:border-white/20 hover:text-white",
+          "active:scale-[0.98] active:bg-white/[0.05]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+          "disabled:pointer-events-none disabled:opacity-50",
+          glassButtonVariants({ size }),
+          isSelected && "bg-white/10 border-white/25",
           className
         )}
+        ref={ref}
+        {...props}
       >
-        <button
+        <span
           className={cn(
-            "glass-button relative z-10 transition-all duration-300",
-            glassButtonVariants({ size }),
-            isSelected && "glass-button-selected",
-            !isSelected && "glass-button-inactive"
+            glassButtonTextVariants({ size }),
+            contentClassName
           )}
-          ref={ref}
-          {...props}
         >
-          <span
-            className={cn(
-              glassButtonTextVariants({ size }),
-              contentClassName
-            )}
-          >
-            {children}
-          </span>
-        </button>
-        <div className="glass-button-shadow rounded-full"></div>
-      </div>
+          {children}
+        </span>
+      </button>
     );
   }
 );
