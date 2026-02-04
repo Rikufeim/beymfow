@@ -19,22 +19,10 @@ const Auth = lazy(() => import("./pages/Auth"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Features = lazy(() => import("./pages/Features"));
 const Premium = lazy(() => import("./pages/Premium"));
-const PromptLabPage = lazy(() => import("./pages/PromptLabPage"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const BusinessPrompts = lazy(() => import("./pages/BusinessPrompts"));
-const PromptLab = lazy(() => import("./pages/PromptLab"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
-const AIGenerator = lazy(() => import("./pages/promptlab/AIGenerator"));
-const PromptChecking = lazy(() => import("./pages/promptlab/PromptChecking"));
-const ImagePrompts = lazy(() => import("./pages/promptlab/ImagePrompts"));
-const VideoPrompts = lazy(() => import("./pages/promptlab/VideoPrompts"));
-const TextDetector = lazy(() => import("./pages/promptlab/TextDetector"));
-const Humanizer = lazy(() => import("./pages/promptlab/Humanizer"));
-const PromptLibraryPage = lazy(() => import("./pages/promptlab/PromptLibraryPage"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
-
-const CategoryViewPage = lazy(() => import("./pages/CategoryViewPage"));
 const Community = lazy(() => import("./pages/Community"));
 
 // Optimized QueryClient with better defaults for performance
@@ -88,9 +76,6 @@ const AnimatedRoutes = () => {
             <Route path="/features" element={<Features />} />
             <Route path="/premium" element={<Premium />} />
             <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
-            <Route path="/prompt-lab-page" element={<ProtectedRoute><PromptLabPage /></ProtectedRoute>} />
-            <Route path="/prompt-lab-page/library" element={<ProtectedRoute><PromptLibraryPage /></ProtectedRoute>} />
-            <Route path="/prompt-lab-page/category/:categoryName" element={<ProtectedRoute><CategoryViewPage /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/about" element={
@@ -103,16 +88,8 @@ const AnimatedRoutes = () => {
                 <Community />
               </Layout>
             } />
-            <Route path="/business-prompts" element={<ProtectedRoute><BusinessPrompts /></ProtectedRoute>} />
-            <Route path="/prompt-lab" element={<ProtectedRoute><PromptLab /></ProtectedRoute>} />
             <Route path="/image-generator" element={<ImageGenerator />} />
             <Route path="/planningsystem" element={<PlanningSystem />} />
-            <Route path="/prompt-lab/ai-generator" element={<AIGenerator />} />
-            <Route path="/prompt-lab/checking" element={<PromptChecking />} />
-            <Route path="/prompt-lab/image-prompts" element={<ImagePrompts />} />
-            <Route path="/prompt-lab/video-prompts" element={<VideoPrompts />} />
-            <Route path="/prompt-lab/text-detector" element={<TextDetector />} />
-            <Route path="/prompt-lab/humanizer" element={<Humanizer />} />
             <Route path="/multiagentpage" element={<Multiagentpage />} />
             
             {/* Custom routes above the catch-all */}

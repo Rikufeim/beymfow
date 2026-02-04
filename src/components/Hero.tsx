@@ -10,11 +10,28 @@ const Hero = memo(function Hero() {
   }, [navigate]);
 
   return (
-    <section className="relative w-full min-h-screen bg-background flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto w-full text-center">
+    <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Background gradient */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: "radial-gradient(ellipse 140% 100% at 50% 50%, #00000035 0%, #00000020 15%, #00000060 40%, #00000030 60%, #4400ff 100%)",
+          filter: "brightness(0.85)",
+        }}
+      />
+      
+      {/* Environment glow */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(68, 0, 255, 0.15) 0%, transparent 60%)",
+        }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto w-full text-center">
         {/* Main Heading */}
         <h1 
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6"
           style={{ fontFamily: "Outfit, sans-serif" }}
         >
           <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent">
@@ -23,13 +40,13 @@ const Hero = memo(function Hero() {
           <span className="text-white">starts here</span>
         </h1>
 
-        {/* CTA Button */}
+        {/* CTA Button - smaller, black */}
         <button
           onClick={handleFlowClick}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black font-semibold text-base sm:text-lg transition-all duration-200 hover:bg-white/90 hover:scale-105 active:scale-100"
+          className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:bg-white/10 hover:border-white/30 active:scale-95"
         >
           Go to Flow Engine
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </section>
