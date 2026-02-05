@@ -5,7 +5,6 @@ import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageTransition } from "./components/PageTransition";
@@ -63,7 +62,7 @@ const AnimatedRoutes = () => {
                 <Index />
               </ErrorBoundary>
             } />
-            <Route path="/flow-engine" element={<ProtectedRoute><FlowEnginePage /></ProtectedRoute>} />
+            <Route path="/flow-engine" element={<FlowEnginePage />} />
             <Route path="/about" element={
               <Layout>
                 <About />
