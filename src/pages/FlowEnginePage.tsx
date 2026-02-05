@@ -1012,7 +1012,7 @@ const FlowEngineContent: React.FC<FlowEngineProps> = ({ onBack }) => {
   // --- Project Type Selector State ---
   const [showProjectTypeSelector, setShowProjectTypeSelector] = useState(false);
   const [searchParams] = useSearchParams();
-  const [activeWorkspace, setActiveWorkspace] = useState<"flow" | "hero-background" | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<"flow" | "hero-background" | null>("hero-background");
   
   // Handle query parameters on mount
   useEffect(() => {

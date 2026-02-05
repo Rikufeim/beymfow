@@ -13,6 +13,7 @@ import {
   type HeroBackgroundProject 
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
+import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
 
 // --- Types ---
 export interface HeroBackgroundSettings {
@@ -126,7 +127,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "components" | "motion" | "view" | "solution" | "export";
+type TabId = "prompt" | "shape" | "colors" | "components" | "motion" | "view" | "solution" | "export";
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -408,7 +409,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   onSave,
 }) => {
   const [settings, setSettings] = useState<HeroBackgroundSettings>(initialSettings || DEFAULT_SETTINGS);
-  const [activeTab, setActiveTab] = useState<TabId>("colors");
+  const [activeTab, setActiveTab] = useState<TabId>("prompt");
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -1377,6 +1378,19 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               >
                 <div className="p-4" style={{ minHeight: '200px', maxHeight: '200px' }}>
                   <AnimatePresence mode="wait">
+                    {activeTab === "prompt" && (
+                      <motion.div
+                        key="prompt"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="h-full overflow-hidden"
+                        style={{ maxHeight: '180px' }}
+                      >
+                        <QuickPromptGenerator />
+                      </motion.div>
+                    )}
+
                     {activeTab === "shape" && (
                       <motion.div
                         key="shape"
