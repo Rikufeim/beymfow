@@ -3,8 +3,6 @@ import { Sparkles, Copy, Check, X } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 interface GeneratedPromptDisplayProps {
   prompt: string;
@@ -21,25 +19,12 @@ export const GeneratedPromptDisplay = ({
   onPromptUpdate,
   onClear,
 }: GeneratedPromptDisplayProps) => {
-  const { user, usageInfo } = useAuth();
-  const navigate = useNavigate();
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleEnhancePrompt = async () => {
     if (!prompt.trim()) {
       toast.error("Please generate a prompt first");
-      return;
-    }
-
-    if ((selectedModel === "advanced" || selectedModel === "premium") && !user) {
-      toast.error("Please sign in to use Advanced or Premium models");
-      navigate("/auth");
-      return;
-    }
-    if (selectedModel === "premium" && usageInfo?.subscriptionTier !== "premium") {
-      toast.error("Premium model requires Beymflow Premium subscription");
-      navigate("/premium");
       return;
     }
 
