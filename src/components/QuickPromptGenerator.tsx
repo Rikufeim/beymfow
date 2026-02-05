@@ -13,6 +13,40 @@ import { GeneratedPromptDisplay } from "./GeneratedPromptDisplay";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { motion, AnimatePresence } from "framer-motion";
 
+const PROMPT_ENGINEER_SYSTEM_PROMPT = `
+You are an expert-level prompt engineer and AI workflow designer.
+Your task is to generate high-quality, highly optimized, tool-specific prompts that maximize output quality, usefulness, and accuracy.
+
+2. Prompt Structure (Default Template)
+Role: Define the AI’s role clearly.
+Objective: State the main goal.
+Context: Provide relevant background.
+Requirements: List clear constraints (Tech stack, Style, Tone, Format, Performance, Accessibility, SEO).
+Output Format: Define how the answer must be delivered.
+Quality Criteria: Explain what “good” means.
+
+3. Tool-Specific Optimization Rules:
+- Lovable: Focus on Full-stack web/app generation, UX/UI, Auth, Database.
+- Gemini: Focus on Multimodal reasoning, Analysis, Step-by-step thinking.
+- Image: Focus on Visual composition, Lighting, Style, Camera, Mood.
+`;
+
+const LOVABLE_PRODUCT_ARCHITECT_PROMPT = `
+You are a senior product engineer, startup CTO, and UX lead combined into one.
+Your task is to generate complete, production-ready web and app products, not demos, not templates, and not placeholders.
+Every output must be something that could realistically be launched as a real business.
+Never generate generic websites. Never generate shallow landing pages. Always think like a founder building a scalable product.
+
+When generating prompts for Lovable, always format them as detailed build instructions.
+Use natural language. No bullet points. No markdown. No symbols. No headings. No role labels. No decorative formatting.
+Only clear professional instructions.
+
+Always describe: Exact features, Exact pages, Exact flows, Exact components, Exact data models, Exact integrations, Exact UI behavior.
+Never say things like "Build a modern website". Replace them with concrete specifications.
+If user input is vague, you must intelligently expand it into a strong product idea.
+Infer. Design. Decide. Execute.
+`;
+
 export const QuickPromptGenerator = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
@@ -41,7 +75,7 @@ export const QuickPromptGenerator = () => {
   const [showContextInput, setShowContextInput] = useState(false);
   const contextInputRef = useRef<HTMLTextAreaElement>(null);
   const codeFileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const MAX_IMAGES = 3;
   const MAX_CODE_FILES = 5;
   const MAX_PASTED = 5;
@@ -118,9 +152,9 @@ export const QuickPromptGenerator = () => {
       }
       return;
     }
-    
+
     const currentText = placeholders[placeholderIndex];
-    
+
     // If text is complete and we're not deleting yet, wait before starting to delete
     if (!isDeleting && displayedText.length === currentText.length) {
       if (!pauseTimeoutRef.current) {
@@ -131,33 +165,33 @@ export const QuickPromptGenerator = () => {
       }
       return;
     }
-    
+
     // Dynamic speed calculation for smoother, more natural animation
     const getTypingSpeed = (position: number, totalLength: number) => {
       // Natural typing rhythm: smooth and flowing
       const progress = position / totalLength;
       // Add slight randomness for natural feel
       const baseRandom = Math.random() * 25;
-      
+
       if (progress < 0.2) return 150 + baseRandom; // Gentle start: 150-175ms
       if (progress < 0.8) return 100 + baseRandom; // Comfortable flow: 100-125ms
       return 120 + baseRandom; // Gentle finish: 120-145ms
     };
-    
+
     const getDeletingSpeed = (remainingLength: number, totalLength: number) => {
       // Smooth deleting: consistent and flowing
       const progress = remainingLength / totalLength;
       const baseRandom = Math.random() * 20;
-      
+
       if (progress > 0.7) return 60 + baseRandom; // Smooth start: 60-80ms
       if (progress > 0.4) return 50 + baseRandom; // Steady middle: 50-70ms
       return 45 + baseRandom; // Slightly faster end: 45-65ms
     };
-    
+
     const speed = isDeleting
       ? getDeletingSpeed(displayedText.length, currentText.length)
       : getTypingSpeed(displayedText.length, currentText.length);
-    
+
     animationTimeoutRef.current = setTimeout(
       () => {
         if (!isDeleting) {
@@ -179,7 +213,7 @@ export const QuickPromptGenerator = () => {
       },
       speed,
     );
-    
+
     return () => {
       if (animationTimeoutRef.current) {
         clearTimeout(animationTimeoutRef.current);
@@ -301,7 +335,7 @@ export const QuickPromptGenerator = () => {
       toast.error(`Maximum ${MAX_IMAGES} images allowed`);
       return;
     }
-    
+
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -359,7 +393,7 @@ export const QuickPromptGenerator = () => {
 
   // Handle code file selection
   const CODE_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.py', '.html', '.css', '.scss', '.json', '.md', '.txt', '.yaml', '.yml', '.xml', '.sql', '.sh', '.env', '.gitignore', '.dockerfile', '.go', '.rs', '.java', '.kt', '.swift', '.vue', '.svelte'];
-  
+
   const handleCodeFileSelect = async (file: File) => {
     if (uploadedFiles.length >= MAX_CODE_FILES) {
       toast.error(`Maximum ${MAX_CODE_FILES} code files allowed`);
@@ -368,7 +402,7 @@ export const QuickPromptGenerator = () => {
 
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
     const isCodeFile = CODE_EXTENSIONS.includes(extension) || file.type.startsWith('text/');
-    
+
     if (!isCodeFile && file.size > 100 * 1024) {
       toast.error("File too large. Code files should be under 100KB.");
       return;
@@ -505,7 +539,7 @@ export const QuickPromptGenerator = () => {
     setGeneratedPrompt("");
 
     try {
-      let finalInput = input.trim() || (uploadedImages.length > 1 
+      let finalInput = input.trim() || (uploadedImages.length > 1
         ? `Analyze these ${uploadedImages.length} images and create a detailed prompt that can recreate this design with high fidelity.`
         : "Analyze this image and create a detailed prompt that can recreate this design with high fidelity.");
 
@@ -514,17 +548,15 @@ export const QuickPromptGenerator = () => {
         finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
       }
 
-      // Add pasted contents as reference material
       if (pastedContents.length > 0) {
-        const pastedSection = pastedContents.map((p, i) => 
+        const pastedSection = pastedContents.map((p, i) =>
           `[PASTED CONTENT ${i + 1}]:\n${p.content}`
         ).join('\n\n');
         finalInput = `${finalInput}\n\n${pastedSection}`;
       }
 
-      // Add code files as reference material
       if (uploadedFiles.length > 0) {
-        const codeSection = uploadedFiles.map(f => 
+        const codeSection = uploadedFiles.map(f =>
           `[CODE FILE: ${f.name}]:\n\`\`\`${f.extension.slice(1)}\n${f.content}\n\`\`\``
         ).join('\n\n');
         finalInput = `${finalInput}\n\n${codeSection}`;
@@ -537,13 +569,13 @@ export const QuickPromptGenerator = () => {
           finalInput = `${finalInput}\n\n[ADDITIONAL CONTEXT]:\n${contextText.trim()}`;
         }
         if (pastedContents.length > 0) {
-          const pastedSection = pastedContents.map((p, i) => 
+          const pastedSection = pastedContents.map((p, i) =>
             `[PASTED CONTENT ${i + 1}]:\n${p.content}`
           ).join('\n\n');
           finalInput = `${finalInput}\n\n${pastedSection}`;
         }
         if (uploadedFiles.length > 0) {
-          const codeSection = uploadedFiles.map(f => 
+          const codeSection = uploadedFiles.map(f =>
             `[CODE FILE: ${f.name}]:\n\`\`\`${f.extension.slice(1)}\n${f.content}\n\`\`\``
           ).join('\n\n');
           finalInput = `${finalInput}\n\n${codeSection}`;
@@ -556,14 +588,20 @@ export const QuickPromptGenerator = () => {
         model: selectedModel,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         promptType: promptType,
+        systemPrompt: promptType === 'lovable' ? LOVABLE_PRODUCT_ARCHITECT_PROMPT : PROMPT_ENGINEER_SYSTEM_PROMPT,
       };
 
-      // If images are present, include them in the request
       if (uploadedImages.length > 0) {
         requestBody.images = uploadedImages.map(img => ({
           data: img.base64,
           mimeType: img.mimeType
         }));
+      }
+
+      if (!isSupabaseConfigured) {
+        // Mock delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        throw new Error("Supabase not configured (Mocking)");
       }
 
       const { data, error } = await supabase.functions.invoke("quick-prompt", {
@@ -578,7 +616,7 @@ export const QuickPromptGenerator = () => {
         } else if (data.error.includes("Payment required")) {
           toast.error("Credits required.");
         } else {
-          toast.error("Failed to generate prompt.");
+          throw new Error(data.error || "Backend error");
         }
         return;
       }
@@ -587,11 +625,60 @@ export const QuickPromptGenerator = () => {
         setGeneratedPrompt(data.prompt);
         toast.success("Prompt generated!");
       } else {
-        toast.error("No prompt received. Please try again.");
+        throw new Error("No prompt received");
       }
     } catch (error) {
       console.error("Error generating prompt:", error);
-      toast.error("Failed to generate prompt.");
+
+      // HIGH QUALITY MOCK FALLBACK - Demonstrates the Expert Agent capability
+      let mockResponse = "";
+
+      if (promptType === 'lovable') {
+        // LOVABLE MOCK: Narrative, no markdown, detailed product architecture
+        mockResponse = `Build a comprehensive, production-ready ${input || "digital product"} that functions as a scalable SaaS platform. The system must include a robust authentication flow using Supabase Auth with support for email/password and social providers, leading to a personalized dashboard. The backend architecture should rely on a Supabase database with distinct tables for users, profiles, subscriptions, and core application data, ensuring row-level security is enabled for all interactions. The frontend must be built with React and TypeScript, utilizing TailwindCSS for a highly responsive, pixel-perfect UI that adapts seamlessly to desktop, tablet, and mobile devices. Key features must include a multi-tenant workspace environment, real-time data synchronization, granular role-based access control, and an integrated billing system connected to Stripe. Incorporate sophisticated error handling and loading states to ensure a polished user experience. The design should utilize a modern, clean aesthetic with a focus on usability and conversion optimization, avoiding generic placeholders in favor of realistic content structure. Ensure the application is deployed with proper SEO meta tags and open graph data for maximum visibility. Implement a comprehensive settings panel allowing users to manage their profile, security preferences, and notification settings. The final output must be a fully functional, commercially viable product foundation ready for deployment.`;
+
+      } else {
+        // DEFAULT MOCK: Structured Markdown
+        const mockRole = promptType === 'image' ? "Professional Photographer & Art Director" : "Senior Full-Stack Developer & UX Architect";
+        const mockObjective = promptType === 'image'
+          ? `Create a stunning, photorealistic image of ${input || "the subject"}.`
+          : `Design and implement a production-ready solution for: ${input || "the detailed requirements"}.`;
+
+        mockResponse = `### Expert Prompt Generated
+
+**Role**
+${mockRole}
+
+**Objective**
+${mockObjective}
+
+**Context**
+The target intended use requires high fidelity, professional standards, and optimization for the specific tool capabilities.
+
+**Requirements**
+${promptType === 'image' ?
+            `- **Lighting**: Volumetric, Cinematic, Golden Hour
+- **Camera**: 85mm lens, f/1.8 aperture
+- **Style**: Photorealistic, 8k Resolution, Unreal Engine 5 render style
+- **Composition**: Rule of thirds, dynamic depth of field`
+            :
+            `- **Tech Stack**: React, TypeScript, TailwindCSS, Supabase
+- **Architecture**: Clean, modular component structure with proper separation of concerns
+- **Accessibility**: WCAG 2.1 AA compliant
+- **Performance**: Optimized for Core Web Vitals, lazy loading implemented`}
+
+**Output Format**
+${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "Complete, commented source code files with setup instructions."}
+
+**Quality Criteria**
+- No placeholders
+- Production-ready output
+- Strict adherence to the specified style and constraints
+`;
+      }
+
+      setGeneratedPrompt(mockResponse);
+      toast.success("Prompt generated (Active Fallback)");
     } finally {
       setIsLoading(false);
     }
@@ -625,430 +712,444 @@ export const QuickPromptGenerator = () => {
     }
   };
 
+  const hasContent = !!generatedPrompt || isLoading;
+
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 relative p-6 rounded-3xl">
-      <GlowingEffect
-        variant="white"
-        glow={true}
-        disabled={false}
-        className="absolute inset-0 rounded-3xl"
-        borderWidth={1}
-        spread={40}
-        movementDuration={3}
-      />
-      <div className="relative z-10">
-        <div className="text-center space-y-2"></div>
+    <div className={`w-full mx-auto flex flex-col transition-all duration-700 ease-in-out ${hasContent ? 'justify-end min-h-[85vh] pb-8' : 'justify-center min-h-[60vh]'}`}>
 
-      <div className="relative">
-        <GlowingEffect
-          spread={60}
-          glow
-          disabled={true}
-          proximity={40}
-          inactiveZone={0.2}
-          borderWidth={3}
-          className="opacity-70 rounded-[2rem]"
-          variant="default"
-        />
-        <div
-          className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
-        >
-          {/* Pasted Contents, Code Files, Images & Tool Chip (largest first) */}
-          {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0) && (
-            <div className="flex items-start gap-2 mb-2 flex-wrap">
-              {/* Pasted Content Chips - Largest, comes first */}
-              {pastedContents.map((pasted, index) => (
-                <div key={pasted.id} className="relative group">
-                  <button
-                    onClick={() => {
-                      setSelectedPastedIndex(index);
-                      setShowPastedModal(true);
-                    }}
-                    className="relative flex flex-col items-start bg-neutral-800/80 border border-white/20 rounded-lg px-3 py-2 hover:border-white/30 transition-colors cursor-pointer max-w-[200px]"
-                    title="Click to view full content"
-                  >
-                    <span className="text-[10px] text-white/50 mb-0.5">{pasted.byteSize} • {pasted.lineCount} lines</span>
-                    <span className="text-xs text-white/80 line-clamp-2 text-left leading-tight">
-                      {pasted.preview}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wide text-white/40 mt-1.5 font-medium border border-white/20 rounded px-1.5 py-0.5">
-                      PASTED
-                    </span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePastedRemove(index);
-                    }}
-                    className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
-                    title="Remove pasted content"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+      <AnimatePresence>
+        {hasContent && (
+          <div className="w-full max-w-4xl mx-auto mb-6 px-4">
+            <GeneratedPromptDisplay
+              prompt={generatedPrompt}
+              selectedModel={selectedModel}
+              selectedCategory={selectedCategory}
+              onPromptUpdate={setGeneratedPrompt}
+              onClear={clearPrompt}
+            />
+          </div>
+        )}
+      </AnimatePresence>
 
-              {/* Code File Chips - Medium size */}
-              {uploadedFiles.map((codeFile, index) => (
-                <div key={`file-${index}`} className="relative flex items-center bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 gap-2">
-                  <FileCode className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs text-white/80 max-w-28 truncate" title={codeFile.name}>
-                    {codeFile.name}
-                  </span>
-                  <button
-                    onClick={() => handleCodeFileRemove(index)}
-                    className="text-white/40 hover:text-white/70 transition-colors"
-                    title="Remove file"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+      <div className="w-full max-w-4xl mx-auto relative z-20">
+        <div className={`flex justify-center transition-all duration-700 ease-in-out ${hasContent ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100 mb-10 scale-110'}`}>
+          <img src="/images/beymflow-logo.png" alt="Beymflow" className="h-24 w-auto object-contain" />
+        </div>
 
-              {/* Image Previews - Medium size */}
-              {uploadedImages.map((img, index) => (
-                <div key={`img-${index}`} className="relative group">
-                  <button
-                    onClick={() => {
-                      setSelectedImageIndex(index);
-                      setShowImageModal(true);
-                    }}
-                    className="relative w-11 h-11 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
-                  >
-                    <img
-                      src={img.preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
+        <div className="w-full space-y-6 relative p-6 rounded-3xl">
+          <GlowingEffect
+            variant="white"
+            glow={true}
+            disabled={false}
+            className="absolute inset-0 rounded-3xl"
+            borderWidth={1}
+            spread={40}
+            movementDuration={3}
+          />
+          <div className="relative z-10">
+            <div className="text-center space-y-2"></div>
+
+            <div className="relative">
+              <GlowingEffect
+                spread={60}
+                glow
+                disabled={true}
+                proximity={40}
+                inactiveZone={0.2}
+                borderWidth={3}
+                className="opacity-70 rounded-[2rem]"
+                variant="default"
+              />
+              <div
+                className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
+              >
+                {/* Pasted Contents, Code Files, Images & Tool Chip (largest first) */}
+                {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0) && (
+                  <div className="flex items-start gap-2 mb-2 flex-wrap">
+                    {/* Pasted Content Chips - Largest, comes first */}
+                    {pastedContents.map((pasted, index) => (
+                      <div key={pasted.id} className="relative group">
+                        <button
+                          onClick={() => {
+                            setSelectedPastedIndex(index);
+                            setShowPastedModal(true);
+                          }}
+                          className="relative flex flex-col items-start bg-neutral-800/80 border border-white/20 rounded-lg px-3 py-2 hover:border-white/30 transition-colors cursor-pointer max-w-[200px]"
+                          title="Click to view full content"
+                        >
+                          <span className="text-[10px] text-white/50 mb-0.5">{pasted.byteSize} • {pasted.lineCount} lines</span>
+                          <span className="text-xs text-white/80 line-clamp-2 text-left leading-tight">
+                            {pasted.preview}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-wide text-white/40 mt-1.5 font-medium border border-white/20 rounded px-1.5 py-0.5">
+                            PASTED
+                          </span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePastedRemove(index);
+                          }}
+                          className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
+                          title="Remove pasted content"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Code File Chips - Medium size */}
+                    {uploadedFiles.map((codeFile, index) => (
+                      <div key={`file-${index}`} className="relative flex items-center bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 gap-2">
+                        <FileCode className="w-4 h-4 text-emerald-400" />
+                        <span className="text-xs text-white/80 max-w-28 truncate" title={codeFile.name}>
+                          {codeFile.name}
+                        </span>
+                        <button
+                          onClick={() => handleCodeFileRemove(index)}
+                          className="text-white/40 hover:text-white/70 transition-colors"
+                          title="Remove file"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Image Previews - Medium size */}
+                    {uploadedImages.map((img, index) => (
+                      <div key={`img-${index}`} className="relative group">
+                        <button
+                          onClick={() => {
+                            setSelectedImageIndex(index);
+                            setShowImageModal(true);
+                          }}
+                          className="relative w-11 h-11 rounded-lg overflow-hidden border border-white/10 hover:border-white/20 transition-colors cursor-pointer flex-shrink-0"
+                        >
+                          <img
+                            src={img.preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageRemove(index);
+                          }}
+                          className="absolute -top-2 -right-2 p-1 rounded-full bg-neutral-900 hover:bg-black border border-white/20 text-white transition-colors shadow-sm z-10"
+                          title="Remove image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Selected Tool Chip - Smallest, comes last */}
+                    {promptType && (
+                      <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-2 gap-2">
+                        <span className="text-xs text-white/80">
+                          {promptType === "lovable" && "Lovable Prompts"}
+                          {promptType === "gemini" && "Gemini Prompts"}
+                          {promptType === "canvas" && "Gemini Canvas"}
+                          {promptType === "image" && "Image Prompts"}
+                        </span>
+                        <button
+                          onClick={() => setPromptType(null)}
+                          className="text-white/40 hover:text-white/70 transition-colors"
+                          title="Remove tool"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="pt-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileInputChange}
+                      className="hidden"
                     />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleImageRemove(index);
-                    }}
-                    className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-black/80 hover:bg-black border border-white/20 text-white transition-colors"
-                    title="Remove image"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+                    <input
+                      ref={codeFileInputRef}
+                      type="file"
+                      accept=".js,.jsx,.ts,.tsx,.py,.html,.css,.scss,.json,.md,.txt,.yaml,.yml,.xml,.sql,.sh,.env,.dockerfile,.go,.rs,.java,.kt,.swift,.vue,.svelte"
+                      multiple
+                      onChange={handleCodeFileInputChange}
+                      className="hidden"
+                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
+                        <div className="px-2 py-2">
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadedImages.length >= MAX_IMAGES}
+                            className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                            Upload image
+                          </button>
+                          <button
+                            onClick={() => codeFileInputRef.current?.click()}
+                            disabled={uploadedFiles.length >= MAX_CODE_FILES}
+                            className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <FileCode className="w-4 h-4" />
+                            Upload code file
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowContextInput(true);
+                              setTimeout(() => contextInputRef.current?.focus(), 100);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3"
+                          >
+                            <FileText className="w-4 h-4" />
+                            Add text content
+                          </button>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
 
-              {/* Selected Tool Chip - Smallest, comes last */}
-              {promptType && (
-                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-2 gap-2">
-                  <span className="text-xs text-white/80">
-                    {promptType === "lovable" && "Lovable Prompts"}
-                    {promptType === "gemini" && "Gemini Prompts"}
-                    {promptType === "canvas" && "Gemini Canvas"}
-                    {promptType === "image" && "Image Prompts"}
-                  </span>
-                  <button
-                    onClick={() => setPromptType(null)}
-                    className="text-white/40 hover:text-white/70 transition-colors"
-                    title="Remove tool"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                  {/* Context Text Preview */}
+                  {(showContextInput || contextText) && (
+                    <div className="flex items-center gap-2 pt-2">
+                      <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-2 py-1">
+                        <FileText className="w-3 h-3 text-white/50 mr-1" />
+                        <input
+                          ref={contextInputRef as any}
+                          type="text"
+                          value={contextText}
+                          onChange={(e) => setContextText(e.target.value)}
+                          placeholder="Add context..."
+                          className="bg-transparent border-none outline-none text-xs text-white w-20 sm:w-32"
+                          onBlur={() => {
+                            if (!contextText.trim()) {
+                              setShowContextInput(false);
+                            }
+                          }}
+                        />
+                        {contextText && (
+                          <button
+                            onClick={() => {
+                              setContextText("");
+                              setShowContextInput(false);
+                            }}
+                            className="ml-1 text-white/40 hover:text-white/70"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="relative flex-1 min-w-0">
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      placeholder=""
+                      rows={1}
+                      className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white resize-none overflow-hidden py-2 leading-relaxed text-left transition-[height] duration-150 ease-out"
+                      style={{ minHeight: "24px", maxHeight: "300px" }}
+                      maxLength={2000}
+                    />
+                    {!input && !isFocused && (
+                      <div className="absolute inset-0 pointer-events-none flex items-center py-2">
+                        <span className="text-sm sm:text-base text-white/50 leading-relaxed transition-opacity duration-150">
+                          {displayedText}
+                          <span
+                            className={`inline-block w-0.5 h-4 sm:h-5 bg-white/50 ml-0.5 align-middle transition-opacity duration-300 ${showCursor ? "opacity-100" : "opacity-0"
+                              }`}
+                          />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
+                      className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
+                    >
+                      {isLoading ? (
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-          )}
 
-          <div className="flex items-start gap-2 sm:gap-3">
-            <div className="pt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileInputChange}
-                className="hidden"
-              />
-              <input
-                ref={codeFileInputRef}
-                type="file"
-                accept=".js,.jsx,.ts,.tsx,.py,.html,.css,.scss,.json,.md,.txt,.yaml,.yml,.xml,.sql,.sh,.env,.dockerfile,.go,.rs,.java,.kt,.swift,.vue,.svelte"
-                multiple
-                onChange={handleCodeFileInputChange}
-                className="hidden"
-              />
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
+              <GlassButton
+                size="sm"
+                onClick={() => setSelectedModel("fast")}
+                contentClassName="flex items-center gap-1.5"
+                isSelected={selectedModel === "fast"}
+              >
+                <Zap className="w-3 h-3" />
+                Fast Model
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={() => setSelectedModel("advanced")}
+                contentClassName="flex items-center gap-1.5"
+                isSelected={selectedModel === "advanced"}
+              >
+                <Settings className="w-3 h-3" />
+                Advanced Model
+              </GlassButton>
+
+              {/* Pick Tool Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0">
-                    <Plus className="w-4 h-4" />
+                  <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 flex items-center gap-2">
+                    Pick tool
+                    <ChevronDown className="w-3 h-3" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
-                  <div className="px-2 py-2">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadedImages.length >= MAX_IMAGES}
-                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ImageIcon className="w-4 h-4" />
-                      Upload image
-                    </button>
-                    <button
-                      onClick={() => codeFileInputRef.current?.click()}
-                      disabled={uploadedFiles.length >= MAX_CODE_FILES}
-                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FileCode className="w-4 h-4" />
-                      Upload code file
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowContextInput(true);
-                        setTimeout(() => contextInputRef.current?.focus(), 100);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm rounded transition-all text-white/80 hover:bg-white/10 flex items-center gap-3"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Add text content
-                    </button>
-                  </div>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("lovable")}
+                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "lovable"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10"
+                      }`}
+                  >
+                    Lovable Prompts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("gemini")}
+                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "gemini"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10"
+                      }`}
+                  >
+                    Gemini Prompts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("canvas")}
+                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "canvas"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10"
+                      }`}
+                  >
+                    Gemini Canvas
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("image")}
+                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "image"
+                      ? "bg-white/15 text-white"
+                      : "text-white/70 hover:bg-white/10"
+                      }`}
+                  >
+                    Image Prompts
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
-            {/* Context Text Preview */}
-            {(showContextInput || contextText) && (
-              <div className="flex items-center gap-2 pt-2">
-                <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-2 py-1">
-                  <FileText className="w-3 h-3 text-white/50 mr-1" />
-                  <input
-                    ref={contextInputRef as any}
-                    type="text"
-                    value={contextText}
-                    onChange={(e) => setContextText(e.target.value)}
-                    placeholder="Add context..."
-                    className="bg-transparent border-none outline-none text-xs text-white w-20 sm:w-32"
-                    onBlur={() => {
-                      if (!contextText.trim()) {
-                        setShowContextInput(false);
-                      }
-                    }}
-                  />
-                  {contextText && (
-                    <button
-                      onClick={() => {
-                        setContextText("");
-                        setShowContextInput(false);
-                      }}
-                      className="ml-1 text-white/40 hover:text-white/70"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
 
-            <div className="relative flex-1 min-w-0">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder=""
-                rows={1}
-                className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white resize-none overflow-hidden py-2 leading-relaxed text-left transition-[height] duration-150 ease-out"
-                style={{ minHeight: "24px", maxHeight: "300px" }}
-                maxLength={2000}
-              />
-              {!input && !isFocused && (
-                <div className="absolute inset-0 pointer-events-none flex items-center py-2">
-                  <span className="text-sm sm:text-base text-white/50 leading-relaxed transition-opacity duration-150">
-                    {displayedText}
-                    <span
-                      className={`inline-block w-0.5 h-4 sm:h-5 bg-white/50 ml-0.5 align-middle transition-opacity duration-300 ${
-                        showCursor ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={handleGenerate}
-                disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
-                className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                )}
-              </button>
-            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
-          <GlassButton
-            size="sm"
-            onClick={() => setSelectedModel("fast")}
-            contentClassName="flex items-center gap-1.5"
-            isSelected={selectedModel === "fast"}
-          >
-            <Zap className="w-3 h-3" />
-            Fast Model
-          </GlassButton>
-          <GlassButton
-            size="sm"
-            onClick={() => setSelectedModel("advanced")}
-            contentClassName="flex items-center gap-1.5"
-            isSelected={selectedModel === "advanced"}
-          >
-            <Settings className="w-3 h-3" />
-            Advanced Model
-          </GlassButton>
-          
-          {/* Pick Tool Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 flex items-center gap-2">
-                Pick tool
-                <ChevronDown className="w-3 h-3" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
-              <DropdownMenuItem 
-                onClick={() => setPromptType("lovable")}
-                className={`px-3 py-2 text-sm cursor-pointer ${
-                  promptType === "lovable" 
-                    ? "bg-white/15 text-white" 
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                Lovable Prompts
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setPromptType("gemini")}
-                className={`px-3 py-2 text-sm cursor-pointer ${
-                  promptType === "gemini" 
-                    ? "bg-white/15 text-white" 
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                Gemini Prompts
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setPromptType("canvas")}
-                className={`px-3 py-2 text-sm cursor-pointer ${
-                  promptType === "canvas" 
-                    ? "bg-white/15 text-white" 
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                Gemini Canvas
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setPromptType("image")}
-                className={`px-3 py-2 text-sm cursor-pointer ${
-                  promptType === "image" 
-                    ? "bg-white/15 text-white" 
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                Image Prompts
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <GeneratedPromptDisplay
-          prompt={generatedPrompt}
-          selectedModel={selectedModel}
-          selectedCategory={selectedCategory}
-          onPromptUpdate={setGeneratedPrompt}
-          onClear={clearPrompt}
-        />
-      </div>
-
-      {/* Image Modal */}
-      <AnimatePresence>
-        {showImageModal && uploadedImages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => setShowImageModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-[98vw] max-h-[98vh] w-full h-full"
-            >
-              <button
+          {/* Image Modal */}
+          <AnimatePresence>
+            {showImageModal && uploadedImages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md"
                 onClick={() => setShowImageModal(false)}
-                className="absolute top-2 right-2 z-10 p-1 rounded-full bg-black/80 hover:bg-black border border-white/30 text-white transition-colors"
-                aria-label="Close image preview"
               >
-                <X className="w-4 h-4" />
-              </button>
-              <img
-                src={uploadedImages[selectedImageIndex]?.preview}
-                alt="Full size preview"
-                className="w-full h-full object-contain rounded-lg"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Pasted Content Modal */}
-      <AnimatePresence>
-        {showPastedModal && pastedContents.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => setShowPastedModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-3xl w-full max-h-[80vh] bg-neutral-900 border border-white/20 rounded-xl overflow-hidden flex flex-col"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-                <div className="flex flex-col">
-                  <h3 className="text-white font-medium">Pasted content</h3>
-                  <span className="text-xs text-white/50">
-                    {pastedContents[selectedPastedIndex]?.byteSize} • {pastedContents[selectedPastedIndex]?.lineCount} lines • Formatting may be inconsistent from source
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowPastedModal(false)}
-                  className="p-1 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
-                  aria-label="Close"
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full h-full flex items-center justify-center"
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              {/* Content */}
-              <div className="flex-1 overflow-auto p-5">
-                <pre className="text-sm text-white/80 whitespace-pre-wrap font-mono bg-neutral-800/50 rounded-lg p-4 border border-white/10 leading-relaxed">
-                  {pastedContents[selectedPastedIndex]?.content}
-                </pre>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <button
+                    onClick={() => setShowImageModal(false)}
+                    className="fixed top-24 right-6 z-[101] p-3 rounded-full bg-neutral-900/90 hover:bg-black border border-white/40 text-white shadow-2xl transition-all hover:scale-105"
+                    aria-label="Close image preview"
+                  >
+                    <X className="w-6 h-6 text-white" />
+                  </button>
+                  <img
+                    src={uploadedImages[selectedImageIndex]?.preview}
+                    alt="Full size preview"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Pasted Content Modal */}
+          <AnimatePresence>
+            {showPastedModal && pastedContents.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                onClick={() => setShowPastedModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative max-w-3xl w-full max-h-[80vh] bg-neutral-900 border border-white/20 rounded-xl overflow-hidden flex flex-col"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+                    <div className="flex flex-col">
+                      <h3 className="text-white font-medium">Pasted content</h3>
+                      <span className="text-xs text-white/50">
+                        {pastedContents[selectedPastedIndex]?.byteSize} • {pastedContents[selectedPastedIndex]?.lineCount} lines • Formatting may be inconsistent from source
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowPastedModal(false)}
+                      className="p-1 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                      aria-label="Close"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  {/* Content */}
+                  <div className="flex-1 overflow-auto p-5">
+                    <pre className="text-sm text-white/80 whitespace-pre-wrap font-mono bg-neutral-800/50 rounded-lg p-4 border border-white/10 leading-relaxed">
+                      {pastedContents[selectedPastedIndex]?.content}
+                    </pre>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 };

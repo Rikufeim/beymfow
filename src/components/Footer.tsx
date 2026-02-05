@@ -14,13 +14,13 @@ const fadeUp = {
 
 const Footer = () => {
   return (
-    <footer className="relative py-16 px-4 overflow-hidden bg-black">
+    <footer className="relative py-16 px-4 overflow-hidden bg-transparent">
       {/* Purple Glow Background */}
       <div className="absolute inset-0 -z-10">
-        {/* Main dark background */}
-        <div className="absolute inset-0 bg-black" />
+        {/* Main dark background - gradient fade from transparent to black at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
         {/* Bottom purple glow */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             background: `

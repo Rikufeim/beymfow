@@ -5,6 +5,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageTransition } from "./components/PageTransition";
@@ -33,13 +34,13 @@ const queryClient = new QueryClient({
 
 const ScrollToTop = () => {
   const location = useLocation();
-  
+
   useEffect(() => {
     requestAnimationFrame(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     });
   }, [location.pathname]);
-  
+
   return null;
 };
 
@@ -51,7 +52,7 @@ const PageLoader = () => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Suspense fallback={<PageLoader />}>
@@ -62,6 +63,11 @@ const AnimatedRoutes = () => {
                 <Index />
               </ErrorBoundary>
             } />
+            {/* Flow routes - path selection with sub-routes */}
+            <Route path="/flow" element={<FlowEnginePage />} />
+            <Route path="/flow/prompt-generator" element={<FlowEnginePage initialWorkspace="prompt-generator" />} />
+            <Route path="/flow/color-codes" element={<FlowEnginePage initialWorkspace="color-codes" />} />
+            {/* Legacy route - redirect to new /flow */}
             <Route path="/flow-engine" element={<FlowEnginePage />} />
             <Route path="/about" element={
               <Layout>
@@ -104,9 +110,11 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <BrowserRouter>
-            <GlobalImagePreloader />
-            <ScrollToTop />
-            <AnimatedRoutes />
+            <AuthProvider>
+              <GlobalImagePreloader />
+              <ScrollToTop />
+              <AnimatedRoutes />
+            </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>
       </TooltipProvider>

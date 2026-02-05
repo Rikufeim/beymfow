@@ -14,7 +14,7 @@ const Header = () => {
   const { prefetchRoute } = usePrefetchRoute();
   const [logoLoaded, setLogoLoaded] = useState(false);
 
-  const isHeroBackgroundMode = location.pathname === "/flow-engine" && searchParams.get("workspace") === "hero-background";
+  const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about";
 
   useEffect(() => {
     const img = new Image();
@@ -24,9 +24,8 @@ const Header = () => {
 
   return (
     <header
-      className={`relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 transition-all duration-500 ${
-        isHeroBackgroundMode ? "bg-transparent" : "bg-black"
-      }`}
+      className={`relative z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 transition-all duration-500 ${isHeroBackgroundMode ? "bg-transparent" : "bg-black"
+        }`}
     >
       {/* Logo */}
       <div className="flex justify-start flex-1">
@@ -45,25 +44,26 @@ const Header = () => {
       </div>
 
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 font-medium">
-        <Link
-          to="/flow-engine"
-          onMouseEnter={() => prefetchRoute("/flow-engine")}
-          className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
-        >
-          Flow
-        </Link>
-        <Link
-          to="/about"
-          onMouseEnter={() => prefetchRoute("/about")}
-          className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
-        >
-          About Us
-        </Link>
-      </nav>
 
-      {/* Mobile Menu */}
-      <div className="flex items-center justify-end flex-1">
+
+      {/* Desktop Navigation & Mobile Menu */}
+      <div className="flex items-center justify-end flex-1 gap-8">
+        <nav className="hidden md:flex items-center gap-8 font-medium">
+          <Link
+            to="/flow"
+            onMouseEnter={() => prefetchRoute("/flow")}
+            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
+          >
+            Flow
+          </Link>
+          <Link
+            to="/about"
+            onMouseEnter={() => prefetchRoute("/about")}
+            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
+          >
+            About Us
+          </Link>
+        </nav>
         <Sheet>
           <SheetTrigger asChild>
             <button className="md:hidden text-white hover:bg-white/10 p-2 rounded-lg">
@@ -73,8 +73,8 @@ const Header = () => {
           <SheetContent side="right" className="bg-black border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
               <Link
-                to="/flow-engine"
-                onMouseEnter={() => prefetchRoute("/flow-engine")}
+                to="/flow"
+                onMouseEnter={() => prefetchRoute("/flow")}
                 className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4"
               >
                 Flow

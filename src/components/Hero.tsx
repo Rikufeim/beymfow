@@ -10,27 +10,12 @@ const Hero = memo(function Hero() {
   }, [navigate]);
 
   return (
-    <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Background gradient */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: "radial-gradient(ellipse 140% 100% at 50% 50%, #00000035 0%, #00000020 15%, #00000060 40%, #00000030 60%, #4400ff 100%)",
-          filter: "brightness(0.85)",
-        }}
-      />
-      
-      {/* Environment glow */}
-      <div
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(68, 0, 255, 0.15) 0%, transparent 60%)",
-        }}
-      />
+    <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
 
-      <div className="relative z-10 max-w-4xl mx-auto w-full text-center">
+
+      <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
         {/* Main Heading */}
-        <h1 
+        <h1
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6"
           style={{ fontFamily: "Outfit, sans-serif" }}
         >
