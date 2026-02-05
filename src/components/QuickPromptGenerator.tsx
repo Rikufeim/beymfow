@@ -3,8 +3,6 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +14,6 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const QuickPromptGenerator = () => {
-  const { user, usageInfo } = useAuth();
-  const navigate = useNavigate();
-
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -503,17 +498,6 @@ export const QuickPromptGenerator = () => {
   const handleGenerate = async () => {
     if (!input.trim() && uploadedImages.length === 0) {
       toast.error("Please enter what you want the AI to do or add an image");
-      return;
-    }
-
-    if ((selectedModel === "advanced" || selectedModel === "premium") && !user) {
-      toast.error("Please sign in to use Advanced or Premium models");
-      navigate("/auth");
-      return;
-    }
-    if (selectedModel === "premium" && usageInfo?.subscriptionTier !== "premium") {
-      toast.error("Premium model requires Beymflow Premium subscription");
-      navigate("/premium");
       return;
     }
 
