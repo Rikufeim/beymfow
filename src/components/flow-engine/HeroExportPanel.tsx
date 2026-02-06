@@ -546,11 +546,21 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
 
               {/* Background Tab */}
               <TabsContent value="background" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                {/* Description */}
+                <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                  <h3 className="text-sm font-semibold text-orange-400 mb-1">🎨 Hero Background Component</h3>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    Full-screen gradient tausta hero-sektioille. Sisältää valitsemasi värit, gradient-tyylin ({settings.gradientStyle}), 
+                    {settings.grainEnabled ? " grain-efektin," : ""} 
+                    {settings.environmentEnabled ? " environment-valon" : ""} ja brightness-säädöt.
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Code size={14} className="text-white/50" />
-                      <span className="text-sm text-white/70">HeroBackground.tsx</span>
+                      <span className="text-sm font-medium text-white">HeroBackground.tsx</span>
                     </div>
                     <button
                       onClick={handleCopyBackground}
@@ -570,16 +580,28 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                       {backgroundCode}
                     </pre>
                   </div>
+                  <p className="text-xs text-white/40">
+                    💡 Käyttö: Wrap hero-sisältösi tällä komponentilla. Esim: &lt;HeroBackground&gt;&lt;YourContent /&gt;&lt;/HeroBackground&gt;
+                  </p>
                 </div>
               </TabsContent>
 
               {/* Components Tab */}
               <TabsContent value="components" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                {/* Description */}
+                <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-1">🧩 UI Component Library</h3>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    Valmiit React-komponentit jotka vastaavat Components-välilehdellä muokkaamiasi tyylejä. 
+                    Sisältää napit, kortit ja input-kentät samoilla väreillä ja gradienteilla.
+                  </p>
+                </div>
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Code size={14} className="text-white/50" />
-                      <span className="text-sm text-white/70">UIComponents.tsx</span>
+                      <span className="text-sm font-medium text-white">UIComponents.tsx</span>
                     </div>
                     <button
                       onClick={handleCopyComponents}
@@ -599,9 +621,26 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                       {componentsCode}
                     </pre>
                   </div>
-                  <p className="text-xs text-white/40">
-                    Includes: PrimaryButton, SecondaryButton, Card, Input
-                  </p>
+                  
+                  {/* Component list */}
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <span className="text-xs font-medium text-white/80">PrimaryButton</span>
+                      <p className="text-[10px] text-white/40 mt-0.5">Pääpainike CTA-toiminnoille</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <span className="text-xs font-medium text-white/80">SecondaryButton</span>
+                      <p className="text-[10px] text-white/40 mt-0.5">Toissijainen toiminto</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <span className="text-xs font-medium text-white/80">Card</span>
+                      <p className="text-[10px] text-white/40 mt-0.5">Sisältökortti-komponentti</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                      <span className="text-xs font-medium text-white/80">Input</span>
+                      <p className="text-[10px] text-white/40 mt-0.5">Tekstikenttä lomakkeisiin</p>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
