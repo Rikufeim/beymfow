@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Copy, Check, Code, FileJson, Download, Upload, ExternalLink } from "lucide-react";
+import { X, Copy, Check, Code, FileJson, Download, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { HeroBackgroundSettings } from "./HeroBackgroundWorkspace";
 
 interface HeroExportPanelProps {
@@ -12,7 +13,7 @@ interface HeroExportPanelProps {
   onImportSettings: (settings: HeroBackgroundSettings) => void;
 }
 
-// Generate CSS gradient based on settings (matches workspace preview exactly) - Improved color blending
+// Generate CSS gradient based on settings
 const generateGradientCSS = (settings: HeroBackgroundSettings): string => {
   const { color1, color2, color3, color4, singleColorMode, gradientStyle, environmentEnabled } = settings;
 
@@ -20,73 +21,61 @@ const generateGradientCSS = (settings: HeroBackgroundSettings): string => {
 
   switch (gradientStyle) {
     case "halo":
-      // Smoother radial with multiple color stops for better blending
       background = singleColorMode
         ? color1
         : `radial-gradient(ellipse 140% 100% at 50% 50%, ${color3}35 0%, ${color3}20 15%, ${color2}60 40%, ${color2}30 60%, ${color1} 100%)`;
       break;
     case "soft-sweep":
-      // Extended gradient with intermediate stops for silky transitions
       background = singleColorMode
         ? color1
         : `linear-gradient(135deg, ${color1} 0%, ${color1}90 10%, ${color2} 25%, ${color2}80 40%, ${color3}45 55%, ${color3}25 70%, ${color4}30 85%, ${color1} 100%)`;
       break;
     case "orb":
-      // Softer orbs with larger fade radius and intermediate blending
       background = singleColorMode
         ? color1
         : `radial-gradient(circle at 25% 75%, ${color3}55 0%, ${color3}25 20%, transparent 55%), radial-gradient(circle at 75% 25%, ${color4}55 0%, ${color4}25 20%, transparent 55%), linear-gradient(180deg, ${color1} 0%, ${color2}80 40%, ${color2} 100%)`;
       break;
     case "diagonal-blend":
-      // Smoother diagonal with better color distribution
       background = singleColorMode
         ? color1
         : `linear-gradient(45deg, ${color1} 0%, ${color1}80 12%, ${color2} 25%, ${color2}70 38%, ${color3}65 50%, ${color3}40 62%, ${color4}50 75%, ${color4}25 88%, ${color1} 100%)`;
       break;
     case "noise-wash":
-      // Gentler vertical wash with extended color zones
       background = singleColorMode
         ? color1
         : `linear-gradient(180deg, ${color1} 0%, ${color1}85 15%, ${color2}90 30%, ${color2}60 45%, ${color3}40 60%, ${color3}20 75%, ${color1}80 90%, ${color1} 100%)`;
       break;
     case "aurora":
-      // More natural aurora borealis effect with layered transparency
       background = singleColorMode
         ? color1
         : `linear-gradient(180deg, ${color1} 0%, ${color2}90 25%, transparent 55%), radial-gradient(ellipse 180% 60% at 50% 0%, ${color3}45 0%, ${color3}20 30%, transparent 65%), radial-gradient(ellipse 120% 50% at 35% 15%, ${color4}40 0%, ${color4}15 25%, transparent 55%), linear-gradient(180deg, ${color1} 0%, ${color2}50 50%, ${color2} 100%)`;
       break;
     case "mesh":
-      // Larger blur radius for smoother mesh blending
       background = singleColorMode
         ? color1
         : `radial-gradient(at 40% 20%, ${color3}60 0px, ${color3}30 15%, transparent 55%), radial-gradient(at 80% 5%, ${color4}55 0px, ${color4}25 15%, transparent 55%), radial-gradient(at 5% 55%, ${color2}70 0px, ${color2}35 15%, transparent 55%), radial-gradient(at 85% 55%, ${color3}45 0px, ${color3}20 15%, transparent 55%), radial-gradient(at 10% 95%, ${color4}60 0px, ${color4}30 15%, transparent 55%), radial-gradient(at 85% 95%, ${color2}50 0px, ${color2}25 15%, transparent 55%), ${color1}`;
       break;
     case "spotlight":
-      // Softer spotlight with feathered edges
       background = singleColorMode
         ? color1
         : `radial-gradient(ellipse 90% 70% at 50% 30%, ${color3}40 0%, ${color3}20 25%, transparent 65%), radial-gradient(ellipse 70% 50% at 50% 35%, ${color4}30 0%, ${color4}15 20%, transparent 55%), linear-gradient(180deg, ${color1} 0%, ${color2}60 50%, ${color2} 100%)`;
       break;
     case "wave":
-      // Smoother wave crests with better color transition
       background = singleColorMode
         ? color1
         : `linear-gradient(180deg, ${color1} 0%, ${color2}70 35%, ${color2} 50%), radial-gradient(ellipse 220% 120% at 50% 100%, ${color3}55 0%, ${color3}25 25%, transparent 55%), radial-gradient(ellipse 180% 100% at 50% 115%, ${color4}50 0%, ${color4}20 20%, transparent 45%)`;
       break;
     case "crystal":
-      // Refined crystalline gradient with subtle layering
       background = singleColorMode
         ? color1
         : `linear-gradient(125deg, ${color1} 0%, ${color1}80 10%, ${color2} 22%, ${color2}70 35%, ${color3}35 48%, ${color3}20 58%, ${color4}25 70%, ${color2}60 82%, ${color1} 100%), linear-gradient(45deg, transparent 25%, ${color3}12 50%, transparent 75%)`;
       break;
     case "sunset":
-      // Natural sunset gradient with atmospheric color stops
       background = singleColorMode
         ? color1
         : `linear-gradient(180deg, ${color3}75 0%, ${color3}50 12%, ${color4}65 25%, ${color4}40 40%, ${color2}70 55%, ${color2}40 70%, ${color1}80 85%, ${color1} 100%)`;
       break;
     case "cosmic":
-      // Deeper space effect with subtle nebula blending
       background = singleColorMode
         ? color1
         : `radial-gradient(ellipse at 20% 80%, ${color3}40 0%, ${color3}18 20%, transparent 50%), radial-gradient(ellipse at 80% 20%, ${color4}40 0%, ${color4}18 20%, transparent 50%), radial-gradient(ellipse at 50% 50%, ${color2}25 0%, ${color2}10 30%, transparent 65%), radial-gradient(circle at 30% 30%, ${color3}25 0%, ${color3}10 15%, transparent 35%), radial-gradient(circle at 70% 70%, ${color4}25 0%, ${color4}10 15%, transparent 35%), ${color1}`;
@@ -102,12 +91,51 @@ const generateGradientCSS = (settings: HeroBackgroundSettings): string => {
   return background;
 };
 
-// Generate React component code - Fixed to produce valid JSX
-const generateReactComponent = (settings: HeroBackgroundSettings): string => {
+// Generate button gradient style
+const generateButtonGradient = (
+  gradientType: "none" | "linear" | "radial" | "glossy" | "glow",
+  baseColor: string,
+  gradientColor: string
+): string => {
+  switch (gradientType) {
+    case "linear":
+      return `linear-gradient(135deg, ${baseColor}, ${gradientColor})`;
+    case "radial":
+      return `radial-gradient(circle at 30% 30%, ${gradientColor}, ${baseColor})`;
+    case "glossy":
+      return `linear-gradient(180deg, ${gradientColor}40 0%, transparent 50%, ${baseColor}20 100%), ${baseColor}`;
+    case "glow":
+      return baseColor;
+    default:
+      return baseColor;
+  }
+};
+
+// Generate card gradient style
+const generateCardGradient = (
+  gradientType: "none" | "linear" | "radial" | "glossy" | "glass",
+  baseColor: string,
+  gradientColor: string
+): string => {
+  switch (gradientType) {
+    case "linear":
+      return `linear-gradient(135deg, ${baseColor}, ${gradientColor}30)`;
+    case "radial":
+      return `radial-gradient(circle at 0% 0%, ${gradientColor}40, ${baseColor})`;
+    case "glossy":
+      return `linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(0,0,0,0.1) 100%), ${baseColor}`;
+    case "glass":
+      return baseColor;
+    default:
+      return baseColor;
+  }
+};
+
+// Generate React component code for Background
+const generateBackgroundComponent = (settings: HeroBackgroundSettings): string => {
   const gradientCSS = generateGradientCSS(settings);
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
-  // Build grain overlay JSX string
   const grainOverlay = settings.grainEnabled 
     ? `
       {/* Grain overlay */}
@@ -121,7 +149,6 @@ const generateReactComponent = (settings: HeroBackgroundSettings): string => {
       />`
     : "";
 
-  // Build environment halo JSX string
   const environmentHalo = settings.environmentEnabled 
     ? `
       {/* Environment light halo */}
@@ -139,7 +166,7 @@ const generateReactComponent = (settings: HeroBackgroundSettings): string => {
  * HeroBackground Component
  * Generated by Beymflow Hero Background Generator
  * 
- * Settings: ${settings.gradientStyle} style
+ * Style: ${settings.gradientStyle}
  * Colors: ${settings.singleColorMode ? settings.color1 : `${settings.color1}, ${settings.color2}, ${settings.color3}, ${settings.color4}`}
  */
 
@@ -177,6 +204,157 @@ export default HeroBackground;
 `;
 };
 
+// Generate React component code for Components
+const generateComponentsCode = (settings: HeroBackgroundSettings): string => {
+  const primaryBtnBg = generateButtonGradient(
+    settings.buttonPrimaryGradient,
+    settings.buttonPrimaryBg,
+    settings.buttonPrimaryGradientColor
+  );
+  
+  const secondaryBtnBg = generateButtonGradient(
+    settings.buttonSecondaryGradient,
+    settings.buttonSecondaryBg,
+    settings.buttonSecondaryGradientColor
+  );
+  
+  const cardBackground = generateCardGradient(
+    settings.cardGradient,
+    settings.cardBg,
+    settings.cardGradientColor
+  );
+
+  const primaryGlowStyle = settings.buttonPrimaryGradient === "glow" 
+    ? `boxShadow: "0 0 20px ${settings.buttonPrimaryGradientColor}60, 0 0 40px ${settings.buttonPrimaryGradientColor}30",`
+    : "";
+  
+  const secondaryGlowStyle = settings.buttonSecondaryGradient === "glow"
+    ? `boxShadow: "0 0 20px ${settings.buttonSecondaryGradientColor}60, 0 0 40px ${settings.buttonSecondaryGradientColor}30",`
+    : "";
+  
+  const cardGlassStyle = settings.cardGradient === "glass"
+    ? `backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",`
+    : "";
+
+  return `import React from "react";
+
+/**
+ * UI Components
+ * Generated by Beymflow Hero Background Generator
+ * 
+ * Includes: PrimaryButton, SecondaryButton, Card, Input
+ */
+
+// ============ Primary Button ============
+interface PrimaryButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+export const PrimaryButton: React.FC<PrimaryButtonProps> = ({ children, onClick, className }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={\`px-6 py-3 rounded-lg font-medium transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] \${className || ""}\`}
+      style={{
+        background: "${primaryBtnBg}",
+        color: "${settings.buttonPrimaryText}",
+        ${primaryGlowStyle}
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ============ Secondary Button ============
+interface SecondaryButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+export const SecondaryButton: React.FC<SecondaryButtonProps> = ({ children, onClick, className }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={\`px-6 py-3 rounded-lg font-medium transition-all hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] \${className || ""}\`}
+      style={{
+        background: "${secondaryBtnBg}",
+        color: "${settings.buttonSecondaryText}",
+        border: "1px solid ${settings.buttonSecondaryBorder}",
+        ${secondaryGlowStyle}
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// ============ Card ============
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Card: React.FC<CardProps> = ({ children, className }) => {
+  return (
+    <div
+      className={\`rounded-xl p-6 \${className || ""}\`}
+      style={{
+        background: "${cardBackground}",
+        border: "1px solid ${settings.cardBorder}",
+        ${cardGlassStyle}
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// ============ Input ============
+interface InputProps {
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+}
+
+export const Input: React.FC<InputProps> = ({ placeholder, value, onChange, className }) => {
+  return (
+    <input
+      type="text"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className={\`w-full px-4 py-3 rounded-lg transition-all outline-none \${className || ""}\`}
+      style={{
+        background: "${settings.inputBg}",
+        border: "1px solid ${settings.inputBorder}",
+        color: "${settings.inputText}",
+      }}
+      onFocus={(e) => {
+        e.target.style.borderColor = "${settings.focusRingColor}";
+        e.target.style.boxShadow = "0 0 0 2px ${settings.focusRingColor}40";
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = "${settings.inputBorder}";
+        e.target.style.boxShadow = "none";
+      }}
+    />
+  );
+};
+
+// Usage:
+// <PrimaryButton onClick={() => console.log("clicked")}>Get Started</PrimaryButton>
+// <SecondaryButton>Learn More</SecondaryButton>
+// <Card><p>Card content here</p></Card>
+// <Input placeholder="Enter your email" />
+`;
+};
+
 // Generate settings JSON
 const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
   return JSON.stringify({
@@ -201,6 +379,25 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
         motionEnabled: settings.motionEnabled,
         motionSpeed: settings.motionSpeed,
       },
+      components: {
+        buttonPrimaryBg: settings.buttonPrimaryBg,
+        buttonPrimaryText: settings.buttonPrimaryText,
+        buttonPrimaryGradient: settings.buttonPrimaryGradient,
+        buttonPrimaryGradientColor: settings.buttonPrimaryGradientColor,
+        buttonSecondaryBg: settings.buttonSecondaryBg,
+        buttonSecondaryText: settings.buttonSecondaryText,
+        buttonSecondaryBorder: settings.buttonSecondaryBorder,
+        buttonSecondaryGradient: settings.buttonSecondaryGradient,
+        buttonSecondaryGradientColor: settings.buttonSecondaryGradientColor,
+        cardBg: settings.cardBg,
+        cardBorder: settings.cardBorder,
+        cardGradient: settings.cardGradient,
+        cardGradientColor: settings.cardGradientColor,
+        inputBg: settings.inputBg,
+        inputBorder: settings.inputBorder,
+        inputText: settings.inputText,
+        focusRingColor: settings.focusRingColor,
+      },
     },
   }, null, 2);
 };
@@ -223,7 +420,6 @@ const parseSettingsJSON = (json: string): HeroBackgroundSettings | null => {
         gradientStyle: parsed.settings.style?.gradientStyle || "halo",
         motionEnabled: parsed.settings.style?.motionEnabled || false,
         motionSpeed: parsed.settings.style?.motionSpeed || 0.5,
-        // Component defaults
         buttonPrimaryBg: parsed.settings.components?.buttonPrimaryBg || "#ffffff",
         buttonPrimaryText: parsed.settings.components?.buttonPrimaryText || "#000000",
         buttonPrimaryGradient: parsed.settings.components?.buttonPrimaryGradient || "none",
@@ -255,24 +451,34 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
   settings,
   onImportSettings,
 }) => {
-  const [copiedCode, setCopiedCode] = useState(false);
+  const [activeTab, setActiveTab] = useState<"background" | "components">("background");
+  const [copiedBg, setCopiedBg] = useState(false);
+  const [copiedComp, setCopiedComp] = useState(false);
   const [copiedJSON, setCopiedJSON] = useState(false);
   const [importJSON, setImportJSON] = useState("");
   const [showImport, setShowImport] = useState(false);
 
-  const handleCopyCode = useCallback(async () => {
-    const code = generateReactComponent(settings);
+  const handleCopyBackground = useCallback(async () => {
+    const code = generateBackgroundComponent(settings);
     await navigator.clipboard.writeText(code);
-    setCopiedCode(true);
-    toast.success("React component copied to clipboard!");
-    setTimeout(() => setCopiedCode(false), 2000);
+    setCopiedBg(true);
+    toast.success("Background component copied!");
+    setTimeout(() => setCopiedBg(false), 2000);
+  }, [settings]);
+
+  const handleCopyComponents = useCallback(async () => {
+    const code = generateComponentsCode(settings);
+    await navigator.clipboard.writeText(code);
+    setCopiedComp(true);
+    toast.success("Components copied!");
+    setTimeout(() => setCopiedComp(false), 2000);
   }, [settings]);
 
   const handleCopyJSON = useCallback(async () => {
     const json = generateSettingsJSON(settings);
     await navigator.clipboard.writeText(json);
     setCopiedJSON(true);
-    toast.success("Settings JSON copied to clipboard!");
+    toast.success("Settings JSON copied!");
     setTimeout(() => setCopiedJSON(false), 2000);
   }, [settings]);
 
@@ -288,7 +494,8 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
     }
   }, [importJSON, onImportSettings]);
 
-  const componentCode = generateReactComponent(settings);
+  const backgroundCode = generateBackgroundComponent(settings);
+  const componentsCode = generateComponentsCode(settings);
 
   return (
     <AnimatePresence>
@@ -314,8 +521,8 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                   <Code size={18} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-white">React Component</h2>
-                  <p className="text-xs text-white/50">Export your hero background as code</p>
+                  <h2 className="text-lg font-semibold text-white">Export Code</h2>
+                  <p className="text-xs text-white/50">Export as React components</p>
                 </div>
               </div>
               <button
@@ -326,117 +533,131 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Setup section */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Code size={14} className="text-white/50" />
-                    <span className="text-sm text-white/70">Install dependencies</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("npm install react");
-                      toast.success("Install command copied!");
-                    }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all"
-                  >
-                    Set up
-                  </button>
-                </div>
-                <div className="bg-black/50 rounded-lg p-3 border border-white/5">
-                  <code className="text-xs text-green-400">npm install react</code>
-                </div>
-              </div>
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "background" | "components")} className="flex-1 flex flex-col overflow-hidden">
+              <TabsList className="mx-6 mt-4 bg-white/5 border border-white/10">
+                <TabsTrigger value="background" className="data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">
+                  Background
+                </TabsTrigger>
+                <TabsTrigger value="components" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                  Components
+                </TabsTrigger>
+              </TabsList>
 
-              {/* Code preview */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileJson size={14} className="text-white/50" />
-                    <span className="text-sm text-white/70">Component code</span>
-                  </div>
-                  <button
-                    onClick={handleCopyCode}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                      copiedCode
-                        ? "bg-green-500/20 border-green-500/30 text-green-400"
-                        : "bg-orange-500/20 border-orange-500/30 text-orange-400 hover:bg-orange-500/30"
-                    )}
-                  >
-                    {copiedCode ? <Check size={14} /> : <Copy size={14} />}
-                    {copiedCode ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-                <div className="bg-black/50 rounded-lg p-4 border border-white/5 max-h-64 overflow-y-auto">
-                  <pre className="text-xs text-white/80 whitespace-pre-wrap font-mono leading-relaxed">
-                    {componentCode}
-                  </pre>
-                </div>
-              </div>
-
-              {/* Settings JSON */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileJson size={14} className="text-white/50" />
-                    <span className="text-sm text-white/70">Settings (JSON)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+              {/* Background Tab */}
+              <TabsContent value="background" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Code size={14} className="text-white/50" />
+                      <span className="text-sm text-white/70">HeroBackground.tsx</span>
+                    </div>
                     <button
-                      onClick={() => setShowImport(!showImport)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all"
-                    >
-                      <Upload size={14} />
-                      Import
-                    </button>
-                    <button
-                      onClick={handleCopyJSON}
+                      onClick={handleCopyBackground}
                       className={cn(
                         "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                        copiedJSON
+                        copiedBg
+                          ? "bg-green-500/20 border-green-500/30 text-green-400"
+                          : "bg-orange-500/20 border-orange-500/30 text-orange-400 hover:bg-orange-500/30"
+                      )}
+                    >
+                      {copiedBg ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedBg ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <div className="bg-black/50 rounded-lg p-4 border border-white/5 max-h-80 overflow-y-auto">
+                    <pre className="text-xs text-white/80 whitespace-pre-wrap font-mono leading-relaxed">
+                      {backgroundCode}
+                    </pre>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Components Tab */}
+              <TabsContent value="components" className="flex-1 overflow-y-auto p-6 space-y-6 mt-0">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Code size={14} className="text-white/50" />
+                      <span className="text-sm text-white/70">UIComponents.tsx</span>
+                    </div>
+                    <button
+                      onClick={handleCopyComponents}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                        copiedComp
                           ? "bg-green-500/20 border-green-500/30 text-green-400"
                           : "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
                       )}
                     >
-                      {copiedJSON ? <Check size={14} /> : <Download size={14} />}
-                      {copiedJSON ? "Copied!" : "Copy JSON"}
+                      {copiedComp ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedComp ? "Copied!" : "Copy"}
                     </button>
                   </div>
+                  <div className="bg-black/50 rounded-lg p-4 border border-white/5 max-h-80 overflow-y-auto">
+                    <pre className="text-xs text-white/80 whitespace-pre-wrap font-mono leading-relaxed">
+                      {componentsCode}
+                    </pre>
+                  </div>
+                  <p className="text-xs text-white/40">
+                    Includes: PrimaryButton, SecondaryButton, Card, Input
+                  </p>
                 </div>
+              </TabsContent>
+            </Tabs>
 
-                {/* Import field */}
-                {showImport && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2"
+            {/* Settings JSON Section */}
+            <div className="px-6 pb-4 space-y-3 border-t border-white/5 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileJson size={14} className="text-white/50" />
+                  <span className="text-sm text-white/70">Settings (JSON)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowImport(!showImport)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all"
                   >
-                    <textarea
-                      value={importJSON}
-                      onChange={(e) => setImportJSON(e.target.value)}
-                      placeholder="Paste settings JSON here..."
-                      className="w-full h-24 bg-black/50 rounded-lg p-3 border border-white/10 text-xs text-white/80 font-mono resize-none focus:outline-none focus-visible:outline-none focus:border-white/20 focus:ring-0 focus-visible:ring-0"
-                    />
-                    <button
-                      onClick={handleImport}
-                      disabled={!importJSON.trim()}
-                      className="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Apply Settings
-                    </button>
-                  </motion.div>
-                )}
-
-                <div className="bg-black/50 rounded-lg p-4 border border-white/5 max-h-32 overflow-y-auto">
-                  <pre className="text-xs text-white/60 whitespace-pre-wrap font-mono">
-                    {generateSettingsJSON(settings)}
-                  </pre>
+                    <Upload size={14} />
+                    Import
+                  </button>
+                  <button
+                    onClick={handleCopyJSON}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                      copiedJSON
+                        ? "bg-green-500/20 border-green-500/30 text-green-400"
+                        : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                    )}
+                  >
+                    {copiedJSON ? <Check size={14} /> : <Download size={14} />}
+                    {copiedJSON ? "Copied!" : "Copy JSON"}
+                  </button>
                 </div>
               </div>
+
+              {showImport && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2"
+                >
+                  <textarea
+                    value={importJSON}
+                    onChange={(e) => setImportJSON(e.target.value)}
+                    placeholder="Paste settings JSON here..."
+                    className="w-full h-24 bg-black/50 rounded-lg p-3 border border-white/10 text-xs text-white/80 font-mono resize-none focus:outline-none focus-visible:outline-none focus:border-white/20 focus:ring-0 focus-visible:ring-0"
+                  />
+                  <button
+                    onClick={handleImport}
+                    disabled={!importJSON.trim()}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Apply Settings
+                  </button>
+                </motion.div>
+              )}
             </div>
 
             {/* Footer */}
