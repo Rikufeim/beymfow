@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sparkles, Sun, Cloudy, Layers, Circle, Triangle, Wind, Save, Check, ChevronUp, ChevronDown, Copy, Code, FileJson, Download, Image, Pencil, PanelRightOpen, PanelRightClose, Palette, GripVertical } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
@@ -15,6 +15,31 @@ import {
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
 import { ColorPromptInput } from "./ColorPromptInput";
+
+type FlowMode = "refine" | "reset";
+
+interface FlowPalette {
+  base: string;
+  surface: string;
+  accent: string;
+  highlight: string;
+  text: string;
+}
+
+interface FlowBackgroundParams {
+  brightness: number;
+  grainEnabled: boolean;
+  grainIntensity: number;
+  environmentEnabled: boolean;
+}
+
+interface FlowState {
+  currentBackgroundStyle: HeroBackgroundSettings["gradientStyle"];
+  backgroundParams: FlowBackgroundParams;
+  palette: FlowPalette;
+  lastUserPrompt: string;
+  flowMode: FlowMode;
+}
 
 // --- Types ---
 export interface HeroBackgroundSettings {
@@ -128,21 +153,15 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "prompt" | "shape" | "colors" | "components" | "motion" | "view" | "export";
+type TabId = "shape" | "colors" | "components" | "motion" | "view" | "export";
 
-const GRADIENT_STYLES = [
-  { id: "halo" as const, label: "Halo", icon: Circle },
-  { id: "soft-sweep" as const, label: "Soft Sweep", icon: Wind },
-  { id: "orb" as const, label: "Orb", icon: Sparkles },
-  { id: "diagonal-blend" as const, label: "Diagonal", icon: Triangle },
-  { id: "noise-wash" as const, label: "Noise Wash", icon: Layers },
-  { id: "aurora" as const, label: "Aurora", icon: Cloudy },
-  { id: "mesh" as const, label: "Mesh", icon: Layers },
-  { id: "spotlight" as const, label: "Spotlight", icon: Sun },
-  { id: "wave" as const, label: "Wave", icon: Wind },
-  { id: "crystal" as const, label: "Crystal", icon: Sparkles },
-  { id: "sunset" as const, label: "Sunset", icon: Sun },
-  { id: "cosmic" as const, label: "Cosmic", icon: Circle },
+const FLOW_TABS: Array<{ id: TabId; label: string }> = [
+  { id: "shape", label: "Backgrounds" },
+  { id: "colors", label: "Colors" },
+  { id: "components", label: "Components" },
+  { id: "motion", label: "Motion" },
+  { id: "view", label: "View" },
+  { id: "export", label: "Export" },
 ];
 
 const COLOR_WORDS: Record<string, string> = {
@@ -160,6 +179,368 @@ const COLOR_WORDS: Record<string, string> = {
   pink: "#ec4899",
 };
 
+const REFINE_WORDS = ["adjust", "refine", "improve", "softer", "deeper", "calmer", "more", "less", "tweak", "enhance"];
+const RESET_WORDS = ["new", "reset", "start over", "completely different", "replace", "redo"];
+
+const CATEGORY_LABELS = ["Soft/Ambient", "Futuristic", "Dark/Editorial", "Expressive"] as const;
+
+type BackgroundCategory = (typeof CATEGORY_LABELS)[number];
+
+interface BackgroundVariant {
+  id: string;
+  label: string;
+  params: FlowBackgroundParams;
+}
+
+interface BackgroundEntry {
+  id: string;
+  name: string;
+  category: BackgroundCategory;
+  gradientStyle: HeroBackgroundSettings["gradientStyle"];
+  tags: string[];
+  palettePreset?: keyof typeof COLOR_PRESETS;
+  variants: BackgroundVariant[];
+}
+
+const BACKGROUND_LIBRARY: BackgroundEntry[] = [
+  {
+    id: "ambient-mist",
+    name: "Ambient Mist",
+    category: "Soft/Ambient",
+    gradientStyle: "soft-sweep",
+    tags: ["calm", "mist", "gentle"],
+    palettePreset: "arctic",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.15, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.95, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.25, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "halo-glow",
+    name: "Halo Glow",
+    category: "Soft/Ambient",
+    gradientStyle: "halo",
+    tags: ["halo", "soft", "glow"],
+    palettePreset: "aurora",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "velvet-tide",
+    name: "Velvet Tide",
+    category: "Soft/Ambient",
+    gradientStyle: "aurora",
+    tags: ["calm", "tide", "ambient"],
+    palettePreset: "amethyst",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.28, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "moonlit-air",
+    name: "Moonlit Air",
+    category: "Soft/Ambient",
+    gradientStyle: "orb",
+    tags: ["ambient", "moonlit", "soft"],
+    palettePreset: "slate",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.1, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.25, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "quiet-orbit",
+    name: "Quiet Orbit",
+    category: "Soft/Ambient",
+    gradientStyle: "spotlight",
+    tags: ["quiet", "soft", "focus"],
+    palettePreset: "sapphire",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.94, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.27, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "fogline",
+    name: "Fogline",
+    category: "Soft/Ambient",
+    gradientStyle: "noise-wash",
+    tags: ["fog", "soft", "diffuse"],
+    palettePreset: "arctic",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.22, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: true, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "neon-grid",
+    name: "Neon Grid",
+    category: "Futuristic",
+    gradientStyle: "mesh",
+    tags: ["neon", "grid", "future"],
+    palettePreset: "sapphire",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "signal-wave",
+    name: "Signal Wave",
+    category: "Futuristic",
+    gradientStyle: "wave",
+    tags: ["signal", "wave", "pulse"],
+    palettePreset: "aurora",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.14, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "crystal-core",
+    name: "Crystal Core",
+    category: "Futuristic",
+    gradientStyle: "crystal",
+    tags: ["crystal", "sharp", "clean"],
+    palettePreset: "arctic",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.06, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.34, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.08, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "orbit-channel",
+    name: "Orbit Channel",
+    category: "Futuristic",
+    gradientStyle: "orb",
+    tags: ["orbit", "channel", "sleek"],
+    palettePreset: "sapphire",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.28, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "horizon-drive",
+    name: "Horizon Drive",
+    category: "Futuristic",
+    gradientStyle: "diagonal-blend",
+    tags: ["horizon", "drive", "sleek"],
+    palettePreset: "midnight",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.03, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "starlight-echo",
+    name: "Starlight Echo",
+    category: "Futuristic",
+    gradientStyle: "cosmic",
+    tags: ["starlight", "cosmic", "depth"],
+    palettePreset: "amethyst",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.88, grainEnabled: true, grainIntensity: 0.24, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "noir-halo",
+    name: "Noir Halo",
+    category: "Dark/Editorial",
+    gradientStyle: "halo",
+    tags: ["noir", "editorial", "dark"],
+    palettePreset: "obsidian",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.95, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.82, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.1, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "editorial-smoke",
+    name: "Editorial Smoke",
+    category: "Dark/Editorial",
+    gradientStyle: "noise-wash",
+    tags: ["smoke", "editorial", "moody"],
+    palettePreset: "charcoal",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.98, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.8, grainEnabled: true, grainIntensity: 0.3, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.14, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "ink-shadow",
+    name: "Ink Shadow",
+    category: "Dark/Editorial",
+    gradientStyle: "soft-sweep",
+    tags: ["ink", "shadow", "deep"],
+    palettePreset: "midnight",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.96, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.78, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.08, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "deep-press",
+    name: "Deep Press",
+    category: "Dark/Editorial",
+    gradientStyle: "diagonal-blend",
+    tags: ["press", "structured", "dark"],
+    palettePreset: "slate",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.94, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.76, grainEnabled: true, grainIntensity: 0.3, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.06, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.88, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "mono-spot",
+    name: "Mono Spot",
+    category: "Dark/Editorial",
+    gradientStyle: "spotlight",
+    tags: ["mono", "spot", "focused"],
+    palettePreset: "charcoal",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.98, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.8, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "coal-wave",
+    name: "Coal Wave",
+    category: "Dark/Editorial",
+    gradientStyle: "wave",
+    tags: ["coal", "wave", "moody"],
+    palettePreset: "obsidian",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 0.96, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.78, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.1, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "ember-flare",
+    name: "Ember Flare",
+    category: "Expressive",
+    gradientStyle: "sunset",
+    tags: ["ember", "warm", "bold"],
+    palettePreset: "sunset",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.34, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "rose-burst",
+    name: "Rose Burst",
+    category: "Expressive",
+    gradientStyle: "aurora",
+    tags: ["rose", "expressive", "lush"],
+    palettePreset: "rose",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.36, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.06, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "electric-surge",
+    name: "Electric Surge",
+    category: "Expressive",
+    gradientStyle: "wave",
+    tags: ["electric", "surge", "energy"],
+    palettePreset: "aurora",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.38, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "prism-flux",
+    name: "Prism Flux",
+    category: "Expressive",
+    gradientStyle: "crystal",
+    tags: ["prism", "flux", "vivid"],
+    palettePreset: "sapphire",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.35, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "lava-noise",
+    name: "Lava Noise",
+    category: "Expressive",
+    gradientStyle: "noise-wash",
+    tags: ["lava", "textured", "bold"],
+    palettePreset: "ember",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.14, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.88, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: true, grainIntensity: 0.12, environmentEnabled: false } },
+    ],
+  },
+  {
+    id: "cosmic-bloom",
+    name: "Cosmic Bloom",
+    category: "Expressive",
+    gradientStyle: "cosmic",
+    tags: ["cosmic", "bloom", "expressive"],
+    palettePreset: "amethyst",
+    variants: [
+      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
+      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
+      { id: "contrast", label: "High Contrast", params: { brightness: 1.36, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
+      { id: "minimal", label: "Minimal", params: { brightness: 1.06, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
+    ],
+  },
+];
+
 const normalizeHex = (value: string) => {
   const cleaned = value.replace("#", "").trim();
   if (cleaned.length === 3) {
@@ -169,6 +550,152 @@ const normalizeHex = (value: string) => {
       .join("")}`.toLowerCase();
   }
   return `#${cleaned.padEnd(6, "0")}`.toLowerCase();
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const hexToRgb = (hex: string) => {
+  const normalized = normalizeHex(hex).replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return { r, g, b };
+};
+
+const rgbToHex = (r: number, g: number, b: number) =>
+  `#${[r, g, b].map((val) => clamp(Math.round(val), 0, 255).toString(16).padStart(2, "0")).join("")}`;
+
+const rgbToHsl = (r: number, g: number, b: number) => {
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+  const max = Math.max(rNorm, gNorm, bNorm);
+  const min = Math.min(rNorm, gNorm, bNorm);
+  const delta = max - min;
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+    switch (max) {
+      case rNorm:
+        h = ((gNorm - bNorm) / delta) % 6;
+        break;
+      case gNorm:
+        h = (bNorm - rNorm) / delta + 2;
+        break;
+      default:
+        h = (rNorm - gNorm) / delta + 4;
+        break;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  return { h, s: s * 100, l: l * 100 };
+};
+
+const hslToRgb = (h: number, s: number, l: number) => {
+  const sNorm = clamp(s, 0, 100) / 100;
+  const lNorm = clamp(l, 0, 100) / 100;
+  const c = (1 - Math.abs(2 * lNorm - 1)) * sNorm;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = lNorm - c / 2;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  if (h >= 0 && h < 60) {
+    r = c;
+    g = x;
+  } else if (h >= 60 && h < 120) {
+    r = x;
+    g = c;
+  } else if (h >= 120 && h < 180) {
+    g = c;
+    b = x;
+  } else if (h >= 180 && h < 240) {
+    g = x;
+    b = c;
+  } else if (h >= 240 && h < 300) {
+    r = x;
+    b = c;
+  } else {
+    r = c;
+    b = x;
+  }
+
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  };
+};
+
+const lerp = (start: number, end: number, t: number) => start + (end - start) * t;
+
+const lerpHex = (from: string, to: string, t: number) => {
+  const fromRgb = hexToRgb(from);
+  const toRgb = hexToRgb(to);
+  return rgbToHex(
+    lerp(fromRgb.r, toRgb.r, t),
+    lerp(fromRgb.g, toRgb.g, t),
+    lerp(fromRgb.b, toRgb.b, t),
+  );
+};
+
+const detectFlowMode = (input: string): FlowMode => {
+  const lowered = input.toLowerCase();
+  if (RESET_WORDS.some((word) => lowered.includes(word))) {
+    return "reset";
+  }
+  if (REFINE_WORDS.some((word) => lowered.includes(word))) {
+    return "refine";
+  }
+  return "refine";
+};
+
+const detectStyleIntent = (input: string): HeroBackgroundSettings["gradientStyle"] | null => {
+  const lowered = input.toLowerCase();
+  const styleMap: Array<[string, HeroBackgroundSettings["gradientStyle"]]> = [
+    ["halo", "halo"],
+    ["soft sweep", "soft-sweep"],
+    ["orb", "orb"],
+    ["diagonal", "diagonal-blend"],
+    ["noise", "noise-wash"],
+    ["aurora", "aurora"],
+    ["mesh", "mesh"],
+    ["spotlight", "spotlight"],
+    ["wave", "wave"],
+    ["crystal", "crystal"],
+    ["sunset", "sunset"],
+    ["cosmic", "cosmic"],
+  ];
+  const match = styleMap.find(([keyword]) => lowered.includes(keyword));
+  return match ? match[1] : null;
+};
+
+const parseColorIntent = (input: string) => {
+  const lowered = input.toLowerCase();
+  let temperature = 0;
+  let saturation = 0;
+  let contrast = 0;
+  let lightness = 0;
+
+  if (/(warm|sunset|amber|gold|ember)/.test(lowered)) temperature += 0.6;
+  if (/(cool|icy|arctic|cyan|teal)/.test(lowered)) temperature -= 0.6;
+
+  if (/(vivid|vibrant|neon|bold|electric)/.test(lowered)) saturation += 0.7;
+  if (/(muted|soft|subtle|calm|fog|mist)/.test(lowered)) saturation -= 0.5;
+
+  if (/(high contrast|dramatic|sharp|deep)/.test(lowered)) contrast += 0.6;
+  if (/(low contrast|gentle|smooth)/.test(lowered)) contrast -= 0.4;
+
+  if (/(dark|night|moody|noir)/.test(lowered)) lightness -= 0.6;
+  if (/(light|bright|airy|glow)/.test(lowered)) lightness += 0.5;
+
+  return { temperature, saturation, contrast, lightness };
 };
 
 const adjustHex = (hex: string, amount: number) => {
@@ -194,6 +721,47 @@ const extractPromptColors = (input: string) => {
     }
   }
   return hits;
+};
+
+const getPaletteFromSettings = (settings: HeroBackgroundSettings): FlowPalette => ({
+  base: settings.color1,
+  surface: settings.color2,
+  accent: settings.color3,
+  highlight: settings.color4,
+  text: "#ffffff",
+});
+
+const getPaletteFromPreset = (presetKey?: keyof typeof COLOR_PRESETS): FlowPalette => {
+  const preset = presetKey ? COLOR_PRESETS[presetKey] : DEFAULT_SETTINGS;
+  return {
+    base: preset.color1,
+    surface: preset.color2,
+    accent: preset.color3,
+    highlight: preset.color4,
+    text: "#ffffff",
+  };
+};
+
+const applyIntentToPalette = (palette: FlowPalette, intent: ReturnType<typeof parseColorIntent>, strength: number) => {
+  const adjustColor = (hex: string) => {
+    const rgb = hexToRgb(hex);
+    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const nextH = (h + intent.temperature * 12 * strength + 360) % 360;
+    const nextS = clamp(s + intent.saturation * 18 * strength, 5, 95);
+    const contrastShift = intent.contrast * 10 * strength;
+    const lightShift = intent.lightness * 12 * strength;
+    const nextL = clamp(l + lightShift + contrastShift, 5, 95);
+    const { r, g, b } = hslToRgb(nextH, nextS, nextL);
+    return rgbToHex(r, g, b);
+  };
+
+  return {
+    ...palette,
+    base: adjustColor(palette.base),
+    surface: adjustColor(palette.surface),
+    accent: adjustColor(palette.accent),
+    highlight: adjustColor(palette.highlight),
+  };
 };
 
 const buildEvolvedPalette = (
@@ -259,7 +827,7 @@ const generateLiveCode = (settings: HeroBackgroundSettings): string => {
 };
 
 // Generate JSON settings for export
-const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
+const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowState): string => {
   return JSON.stringify({
     gradientStyle: settings.gradientStyle,
     colors: {
@@ -268,9 +836,11 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
       color3: settings.color3,
       color4: settings.color4,
     },
+    palette: flowState.palette,
     brightness: settings.brightness,
     grain: settings.grainEnabled ? settings.grainIntensity : 0,
     environment: settings.environmentEnabled,
+    backgroundParams: flowState.backgroundParams,
   }, null, 2);
 };
 
@@ -320,13 +890,26 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   onSave,
 }) => {
   const [settings, setSettings] = useState<HeroBackgroundSettings>(initialSettings || DEFAULT_SETTINGS);
-  const [activeTab, setActiveTab] = useState<TabId>("prompt");
+  const [activeTab, setActiveTab] = useState<TabId>("shape");
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
-  const [colorPrompt, setColorPrompt] = useState("");
+  const [flowState, setFlowState] = useState<FlowState>(() => ({
+    currentBackgroundStyle: (initialSettings || DEFAULT_SETTINGS).gradientStyle,
+    backgroundParams: {
+      brightness: (initialSettings || DEFAULT_SETTINGS).brightness,
+      grainEnabled: (initialSettings || DEFAULT_SETTINGS).grainEnabled,
+      grainIntensity: (initialSettings || DEFAULT_SETTINGS).grainIntensity,
+      environmentEnabled: (initialSettings || DEFAULT_SETTINGS).environmentEnabled,
+    },
+    palette: getPaletteFromSettings(initialSettings || DEFAULT_SETTINGS),
+    lastUserPrompt: "",
+    flowMode: "refine",
+  }));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<BackgroundCategory>("Soft/Ambient");
   // Component editing state
   const [selectedComponent, setSelectedComponent] = useState<"button-primary" | "button-secondary" | "card" | "input" | null>(null);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
@@ -341,6 +924,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedSettingsRef = useRef<string>(JSON.stringify(settings));
+  const flowUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const paletteAnimationRef = useRef<number | null>(null);
 
   // Copy state
   const [copiedCode, setCopiedCode] = useState(false);
@@ -351,11 +936,22 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
   const [downloadScale, setDownloadScale] = useState(1);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const flowStateRef = useRef(flowState);
+  const settingsRef = useRef(settings);
 
   // Live code and JSON
   const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
-  const liveJSON = useMemo(() => generateSettingsJSON(settings), [settings]);
+  const liveJSON = useMemo(() => generateSettingsJSON(settings, flowState), [settings, flowState]);
   const projectCode = useMemo(() => generateProjectCode(settings), [settings]);
+  const filteredBackgrounds = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return BACKGROUND_LIBRARY.filter((entry) => {
+      if (entry.category !== activeCategory) return false;
+      if (!query) return true;
+      const haystack = `${entry.name} ${entry.tags.join(" ")}`.toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [activeCategory, searchQuery]);
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(async () => {
@@ -417,6 +1013,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     };
   }, [settings, triggerAutoSave]);
 
+  useEffect(() => {
+    flowStateRef.current = flowState;
+  }, [flowState]);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
   // Save on tab change / export close
   useEffect(() => {
     triggerAutoSave();
@@ -445,28 +1049,160 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [settings, currentProjectId, currentProjectName, isLoggedIn]);
 
+  useEffect(() => {
+    if (flowUpdateTimeoutRef.current) {
+      clearTimeout(flowUpdateTimeoutRef.current);
+    }
+    flowUpdateTimeoutRef.current = setTimeout(() => {
+      applyFlowInput(flowState.lastUserPrompt, flowState.flowMode);
+    }, 160);
+    return () => {
+      if (flowUpdateTimeoutRef.current) {
+        clearTimeout(flowUpdateTimeoutRef.current);
+      }
+    };
+  }, [flowState.lastUserPrompt, flowState.flowMode, applyFlowInput]);
+
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
     value: HeroBackgroundSettings[K]
   ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
+    setFlowState((prev) => {
+      if (key === "gradientStyle") {
+        return { ...prev, currentBackgroundStyle: value as HeroBackgroundSettings["gradientStyle"] };
+      }
+      if (key === "brightness" || key === "grainEnabled" || key === "grainIntensity" || key === "environmentEnabled") {
+        const paramKey = key as keyof FlowBackgroundParams;
+        return {
+          ...prev,
+          backgroundParams: {
+            ...prev.backgroundParams,
+            [paramKey]: value as FlowBackgroundParams[typeof paramKey],
+          },
+        };
+      }
+      if (key === "color1" || key === "color2" || key === "color3" || key === "color4") {
+        return {
+          ...prev,
+          palette: {
+            ...prev.palette,
+            base: key === "color1" ? (value as string) : prev.palette.base,
+            surface: key === "color2" ? (value as string) : prev.palette.surface,
+            accent: key === "color3" ? (value as string) : prev.palette.accent,
+            highlight: key === "color4" ? (value as string) : prev.palette.highlight,
+          },
+        };
+      }
+      return prev;
+    });
   }, []);
 
-  const handleColorPromptChange = useCallback((value: string) => {
-    setColorPrompt(value);
-    const extracted = extractPromptColors(value);
-    if (extracted.length === 0) {
+  const animatePaletteTransition = useCallback((from: FlowPalette, to: FlowPalette, duration = 420) => {
+    if (paletteAnimationRef.current) {
+      cancelAnimationFrame(paletteAnimationRef.current);
+    }
+    const start = performance.now();
+    const step = (now: number) => {
+      const progress = clamp((now - start) / duration, 0, 1);
+      const eased = progress * (2 - progress);
+      const blended: FlowPalette = {
+        ...to,
+        base: lerpHex(from.base, to.base, eased),
+        surface: lerpHex(from.surface, to.surface, eased),
+        accent: lerpHex(from.accent, to.accent, eased),
+        highlight: lerpHex(from.highlight, to.highlight, eased),
+      };
+      setSettings((prev) => ({
+        ...prev,
+        color1: blended.base,
+        color2: blended.surface,
+        color3: blended.accent,
+        color4: blended.highlight,
+        singleColorMode: false,
+      }));
+      if (progress < 1) {
+        paletteAnimationRef.current = requestAnimationFrame(step);
+      }
+    };
+    paletteAnimationRef.current = requestAnimationFrame(step);
+  }, []);
+
+  const applyFlowInput = useCallback((promptText: string, mode: FlowMode) => {
+    if (!promptText.trim()) {
       return;
     }
+    const currentFlowState = flowStateRef.current;
+    const currentSettings = settingsRef.current;
+    const intent = parseColorIntent(promptText);
+    const styleIntent = detectStyleIntent(promptText);
+    const extracted = extractPromptColors(promptText);
+    const basePalette = mode === "reset" ? getPaletteFromPreset("aurora") : currentFlowState.palette;
+    const evolved = buildEvolvedPalette(extracted, {
+      color1: basePalette.base,
+      color2: basePalette.surface,
+      color3: basePalette.accent,
+      color4: basePalette.highlight,
+    });
+    const nextPalette = applyIntentToPalette(
+      {
+        base: evolved.color1,
+        surface: evolved.color2,
+        accent: evolved.color3,
+        highlight: evolved.color4,
+        text: basePalette.text,
+      },
+      intent,
+      mode === "reset" ? 1 : 0.6,
+    );
+
+    const nextBackgroundParams: FlowBackgroundParams = {
+      ...currentFlowState.backgroundParams,
+      brightness: clamp(
+        currentFlowState.backgroundParams.brightness + intent.lightness * 0.2 + intent.contrast * 0.12,
+        0.7,
+        1.6,
+      ),
+      grainEnabled: /(grain|noisy|texture)/.test(promptText.toLowerCase())
+        ? true
+        : currentFlowState.backgroundParams.grainEnabled,
+      grainIntensity: clamp(
+        currentFlowState.backgroundParams.grainIntensity + intent.contrast * 0.08,
+        0,
+        0.6,
+      ),
+      environmentEnabled: /(glow|ambient|halo|soft)/.test(promptText.toLowerCase())
+        ? true
+        : currentFlowState.backgroundParams.environmentEnabled,
+    };
+
+    const nextStyle = styleIntent ?? currentFlowState.currentBackgroundStyle;
+    const currentPalette = getPaletteFromSettings(currentSettings);
+
+    setFlowState((prev) => ({
+      ...prev,
+      palette: nextPalette,
+      backgroundParams: nextBackgroundParams,
+      currentBackgroundStyle: nextStyle,
+    }));
+
+    animatePaletteTransition(currentPalette, nextPalette);
     setSettings((prev) => ({
       ...prev,
-      ...buildEvolvedPalette(extracted, {
-        color1: prev.color1,
-        color2: prev.color2,
-        color3: prev.color3,
-        color4: prev.color4,
-      }),
-      singleColorMode: false,
+      gradientStyle: nextStyle,
+      brightness: nextBackgroundParams.brightness,
+      grainEnabled: nextBackgroundParams.grainEnabled,
+      grainIntensity: nextBackgroundParams.grainIntensity,
+      environmentEnabled: nextBackgroundParams.environmentEnabled,
+    }));
+  }, [animatePaletteTransition]);
+
+  const handleFlowInputChange = useCallback((value: string) => {
+    const mode = detectFlowMode(value);
+    setFlowState((prev) => ({
+      ...prev,
+      lastUserPrompt: value,
+      flowMode: mode,
     }));
   }, []);
 
@@ -480,10 +1216,53 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       color4: preset.color4,
       singleColorMode: false,
     }));
+    setFlowState((prev) => ({
+      ...prev,
+      palette: {
+        ...prev.palette,
+        base: preset.color1,
+        surface: preset.color2,
+        accent: preset.color3,
+        highlight: preset.color4,
+      },
+    }));
   }, []);
+
+  const applyBackgroundEntry = useCallback((entry: BackgroundEntry, variant: BackgroundVariant) => {
+    const currentPalette = getPaletteFromSettings(settings);
+    const nextPalette = flowState.flowMode === "reset" ? getPaletteFromPreset(entry.palettePreset) : flowState.palette;
+
+    setFlowState((prev) => ({
+      ...prev,
+      currentBackgroundStyle: entry.gradientStyle,
+      backgroundParams: variant.params,
+      palette: nextPalette,
+    }));
+
+    animatePaletteTransition(currentPalette, nextPalette);
+    setSettings((prev) => ({
+      ...prev,
+      gradientStyle: entry.gradientStyle,
+      brightness: variant.params.brightness,
+      grainEnabled: variant.params.grainEnabled,
+      grainIntensity: variant.params.grainIntensity,
+      environmentEnabled: variant.params.environmentEnabled,
+    }));
+  }, [animatePaletteTransition, flowState.flowMode, flowState.palette, settings]);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
     setSettings(importedSettings);
+    setFlowState((prev) => ({
+      ...prev,
+      currentBackgroundStyle: importedSettings.gradientStyle,
+      backgroundParams: {
+        brightness: importedSettings.brightness,
+        grainEnabled: importedSettings.grainEnabled,
+        grainIntensity: importedSettings.grainIntensity,
+        environmentEnabled: importedSettings.environmentEnabled,
+      },
+      palette: getPaletteFromSettings(importedSettings),
+    }));
     toast.success("Settings imported!");
   }, []);
 
@@ -673,6 +1452,26 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     };
   }, [settings]);
 
+  const buildPreviewStyle = useCallback((entry: BackgroundEntry, variant: BackgroundVariant): React.CSSProperties => {
+    const palette = getPaletteFromPreset(entry.palettePreset);
+    const previewSettings: HeroBackgroundSettings = {
+      ...DEFAULT_SETTINGS,
+      gradientStyle: entry.gradientStyle,
+      color1: palette.base,
+      color2: palette.surface,
+      color3: palette.accent,
+      color4: palette.highlight,
+      brightness: variant.params.brightness,
+      grainEnabled: variant.params.grainEnabled,
+      grainIntensity: variant.params.grainIntensity,
+      environmentEnabled: variant.params.environmentEnabled,
+    };
+    return {
+      background: buildHeroGradient(previewSettings),
+      filter: `brightness(${variant.params.brightness})`,
+    };
+  }, []);
+
   return (
     <>
       {/* Fixed Header Bar - MUST be outside main container to be truly fixed to viewport */}
@@ -798,24 +1597,40 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           className="absolute bottom-0 left-0 right-0 z-50"
         >
           <div className="bg-black backdrop-blur-xl border-t border-white/10">
+            {/* Persistent Flow Input */}
+            <div className="px-4 py-3 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-wider text-white/40 whitespace-nowrap">Flow Input</span>
+                <div className="flex-1">
+                  <ColorPromptInput
+                    value={flowState.lastUserPrompt}
+                    onChange={handleFlowInputChange}
+                  />
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-white/40 whitespace-nowrap">
+                  {flowState.flowMode === "reset" ? "Reset" : "Refine"}
+                </span>
+              </div>
+            </div>
+
             {/* Tabs + Minimize button */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
               <div className="flex items-center gap-4">
-                {(["shape", "colors", "components", "motion", "view", "export"] as TabId[]).map((tab) => (
+                {FLOW_TABS.map((tab) => (
                   <button
-                    key={tab}
+                    key={tab.id}
                     onClick={() => {
-                      setActiveTab(tab);
+                      setActiveTab(tab.id);
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
                       "text-xs font-medium transition-all capitalize cursor-pointer",
-                      activeTab === tab
+                      activeTab === tab.id
                         ? "text-white"
                         : "text-white/50 hover:text-white/80"
                     )}
                   >
-                    {tab}
+                    {tab.label}
                   </button>
                 ))}
               </div>
@@ -835,57 +1650,109 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               {!minimizedBar && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 200, opacity: 1 }}
+                  animate={{ height: 320, opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="p-4" style={{ minHeight: '200px', maxHeight: '200px' }}>
+                  <div className="p-4" style={{ minHeight: '320px', maxHeight: '320px' }}>
                     <AnimatePresence mode="wait">
-                      {activeTab === "prompt" && (
-                        <motion.div
-                          key="prompt"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full overflow-hidden"
-                          style={{ maxHeight: '180px' }}
-                        >
-                          <div className="h-full flex items-center justify-center px-2">
-                            <ColorPromptInput
-                              value={colorPrompt}
-                              onChange={handleColorPromptChange}
-                            />
-                          </div>
-                        </motion.div>
-                      )}
-
                       {activeTab === "shape" && (
                         <motion.div
                           key="shape"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="flex flex-wrap items-center justify-center gap-3"
+                          className="h-full flex gap-4"
                         >
-                          {GRADIENT_STYLES.map((style) => {
-                            const Icon = style.icon;
-                            return (
-                              <button
-                                key={style.id}
-                                onClick={() => updateSetting("gradientStyle", style.id)}
-                                className={cn(
-                                  "flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-xs",
-                                  settings.gradientStyle === style.id
-                                    ? "bg-neutral-900 border-white/20 text-white"
-                                    : "bg-neutral-900 border-white/10 text-white/70 hover:text-white hover:bg-neutral-800"
-                                )}
-                              >
-                                <Icon size={14} />
-                                <span className="text-xs font-medium">{style.label}</span>
-                              </button>
-                            );
-                          })}
+                          <div className="w-40 flex-shrink-0 border-r border-white/10 pr-3">
+                            <label className="text-[10px] text-white/40 uppercase tracking-wider block mb-2">Categories</label>
+                            <div className="space-y-2">
+                              {CATEGORY_LABELS.map((category) => (
+                                <button
+                                  key={category}
+                                  onClick={() => setActiveCategory(category)}
+                                  className={cn(
+                                    "w-full text-left px-2.5 py-2 rounded-lg text-[11px] font-medium transition-all border",
+                                    activeCategory === category
+                                      ? "bg-neutral-900 border-white/20 text-white"
+                                      : "bg-neutral-900/50 border-white/10 text-white/60 hover:text-white hover:bg-neutral-800"
+                                  )}
+                                >
+                                  {category}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex-1 flex flex-col gap-3 overflow-hidden">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <h3 className="text-sm font-semibold text-white">Background Library</h3>
+                                <p className="text-xs text-white/40">Search and apply background styles with variants.</p>
+                              </div>
+                              <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                                placeholder="Search backgrounds…"
+                                className="w-48 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                              />
+                            </div>
+                            <div className="flex-1 overflow-y-auto pr-2">
+                              <div className="grid grid-cols-3 gap-3">
+                                {filteredBackgrounds.map((entry) => {
+                                  const isActive = flowState.currentBackgroundStyle === entry.gradientStyle;
+                                  return (
+                                    <div
+                                      key={entry.id}
+                                      className={cn(
+                                        "rounded-xl border p-2 bg-neutral-900/60 transition-all",
+                                        isActive ? "border-white/30" : "border-white/10 hover:border-white/20"
+                                      )}
+                                    >
+                                      <button
+                                        onClick={() => applyBackgroundEntry(entry, entry.variants[0])}
+                                        className="w-full text-left"
+                                      >
+                                        <div
+                                          className="h-20 rounded-lg border border-white/10 mb-2"
+                                          style={buildPreviewStyle(entry, entry.variants[0])}
+                                        />
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs font-semibold text-white">{entry.name}</span>
+                                          <span className="text-[10px] text-white/40">{entry.gradientStyle}</span>
+                                        </div>
+                                        <div className="mt-1 flex flex-wrap gap-1">
+                                          {entry.tags.map((tag) => (
+                                            <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/50">
+                                              {tag}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </button>
+                                      <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {entry.variants.map((variant) => (
+                                          <button
+                                            key={variant.id}
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              applyBackgroundEntry(entry, variant);
+                                            }}
+                                            className="px-2 py-1 rounded-full text-[9px] border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-all"
+                                          >
+                                            {variant.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {filteredBackgrounds.length === 0 && (
+                                <div className="text-xs text-white/40 mt-6">No backgrounds match your search.</div>
+                              )}
+                            </div>
+                          </div>
                         </motion.div>
                       )}
 
