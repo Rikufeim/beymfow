@@ -6,6 +6,7 @@ import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { HeroExportPanel } from "./HeroExportPanel";
 import { buildHeroGradient } from "./heroGradient";
+import { classifyPaletteIntent } from "./intentClassifier";
 import {
   saveProject,
   saveDraft,
@@ -129,6 +130,7 @@ interface HeroBackgroundWorkspaceProps {
 }
 
 type TabId = "prompt" | "shape" | "colors" | "components" | "motion" | "view" | "export";
+type Palette = Pick<HeroBackgroundSettings, "color1" | "color2" | "color3" | "color4">;
 
 const GRADIENT_STYLES = [
   { id: "halo" as const, label: "Halo", icon: Circle },
@@ -144,6 +146,118 @@ const GRADIENT_STYLES = [
   { id: "sunset" as const, label: "Sunset", icon: Sun },
   { id: "cosmic" as const, label: "Cosmic", icon: Circle },
 ];
+
+const hexToRgb = (value: string) => {
+  const cleaned = value.replace("#", "");
+  const normalized = cleaned.length === 3
+    ? cleaned.split("").map((char) => `${char}${char}`).join("")
+    : cleaned;
+  const intValue = Number.parseInt(normalized, 16);
+  return {
+    r: (intValue >> 16) & 255,
+    g: (intValue >> 8) & 255,
+    b: intValue & 255,
+  };
+};
+
+const rgbToHex = ({ r, g, b }: { r: number; g: number; b: number }) => {
+  const toHex = (channel: number) => channel.toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const hslToHex = (hue: number, saturation: number, lightness: number) => {
+  const s = saturation / 100;
+  const l = lightness / 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  if (hue >= 0 && hue < 60) {
+    r = c;
+    g = x;
+  } else if (hue >= 60 && hue < 120) {
+    r = x;
+    g = c;
+  } else if (hue >= 120 && hue < 180) {
+    g = c;
+    b = x;
+  } else if (hue >= 180 && hue < 240) {
+    g = x;
+    b = c;
+  } else if (hue >= 240 && hue < 300) {
+    r = x;
+    b = c;
+  } else {
+    r = c;
+    b = x;
+  }
+
+  return rgbToHex({
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  });
+};
+
+const blendHex = (start: string, end: string, amount: number) => {
+  const startRgb = hexToRgb(start);
+  const endRgb = hexToRgb(end);
+  return rgbToHex({
+    r: Math.round(startRgb.r + (endRgb.r - startRgb.r) * amount),
+    g: Math.round(startRgb.g + (endRgb.g - startRgb.g) * amount),
+    b: Math.round(startRgb.b + (endRgb.b - startRgb.b) * amount),
+  });
+};
+
+const blendPalette = (base: Palette, next: Palette, amount: number): Palette => ({
+  color1: blendHex(base.color1, next.color1, amount),
+  color2: blendHex(base.color2, next.color2, amount),
+  color3: blendHex(base.color3, next.color3, amount),
+  color4: blendHex(base.color4, next.color4, amount),
+});
+
+const hashString = (value: string) => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash >>> 0;
+};
+
+const mulberry32 = (seed: number) => {
+  let state = seed;
+  return () => {
+    state += 0x6d2b79f5;
+    let result = Math.imul(state ^ (state >>> 15), 1 | state);
+    result ^= result + Math.imul(result ^ (result >>> 7), 61 | result);
+    return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const generateSeededPalette = (seed: string): Palette => {
+  const rand = mulberry32(hashString(seed));
+  const baseHue = Math.floor(rand() * 360);
+  const accentHue = (baseHue + 30 + rand() * 50) % 360;
+  const secondaryHue = (baseHue + 300 + rand() * 40) % 360;
+
+  return {
+    color1: hslToHex(baseHue, 18, 10),
+    color2: hslToHex(baseHue, 22, 16),
+    color3: hslToHex(accentHue, 72, 55),
+    color4: hslToHex(secondaryHue, 68, 60),
+  };
+};
+
+const extractPalette = (settings: HeroBackgroundSettings): Palette => ({
+  color1: settings.color1,
+  color2: settings.color2,
+  color3: settings.color3,
+  color4: settings.color4,
+});
 
 // Generate React component code for live preview - Improved color blending with smoother transitions
 const generateLiveCode = (settings: HeroBackgroundSettings): string => {
@@ -231,6 +345,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
+  const [palettePrompt, setPalettePrompt] = useState("");
   // Component editing state
   const [selectedComponent, setSelectedComponent] = useState<"button-primary" | "button-secondary" | "card" | "input" | null>(null);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
@@ -255,6 +370,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
   const [downloadScale, setDownloadScale] = useState(1);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const previousPaletteRef = useRef<Palette | null>(null);
+  const paletteSeedRef = useRef<string | null>(null);
 
   // Live code and JSON
   const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
@@ -367,6 +484,46 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       singleColorMode: false,
     }));
   }, []);
+
+  const applyPalette = useCallback((palette: Palette) => {
+    setSettings((prev) => ({
+      ...prev,
+      ...palette,
+      singleColorMode: false,
+    }));
+  }, []);
+
+  const handlePalettePromptSubmit = useCallback(() => {
+    const trimmedPrompt = palettePrompt.trim();
+    if (!trimmedPrompt) {
+      toast.error("Add a palette prompt to continue.");
+      return;
+    }
+
+    const intent = classifyPaletteIntent(trimmedPrompt);
+    const currentPalette = extractPalette(settings);
+    const seed = trimmedPrompt || paletteSeedRef.current || `${Date.now()}`;
+    const targetPalette = generateSeededPalette(seed);
+
+    if (intent === "reset") {
+      previousPaletteRef.current = currentPalette;
+      paletteSeedRef.current = seed;
+      const basePalette = previousPaletteRef.current ?? currentPalette;
+      applyPalette(blendPalette(basePalette, targetPalette, 0.72));
+    } else {
+      paletteSeedRef.current = seed;
+      applyPalette(blendPalette(currentPalette, targetPalette, 0.18));
+    }
+
+    setPalettePrompt("");
+  }, [palettePrompt, settings, applyPalette]);
+
+  const handlePalettePromptKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handlePalettePromptSubmit();
+    }
+  }, [handlePalettePromptSubmit]);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
     setSettings(importedSettings);
@@ -737,7 +894,32 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           className="h-full overflow-hidden"
                           style={{ maxHeight: '180px' }}
                         >
-                          <QuickPromptGenerator />
+                          <div className="flex h-full flex-col gap-3">
+                            <div className="rounded-lg border border-white/10 bg-neutral-900/60 p-3">
+                              <label className="text-[10px] uppercase tracking-[0.2em] text-white/50">Palette prompt</label>
+                              <div className="mt-2 flex items-center gap-2">
+                                <input
+                                  value={palettePrompt}
+                                  onChange={(event) => setPalettePrompt(event.target.value)}
+                                  onKeyDown={handlePalettePromptKeyDown}
+                                  placeholder="Refine with calmer tones, or reset with something new"
+                                  className="flex-1 rounded-md border border-white/10 bg-black/40 px-3 py-2 text-xs text-white/80 placeholder:text-white/40 focus:outline-none focus:border-white/30"
+                                />
+                                <button
+                                  onClick={handlePalettePromptSubmit}
+                                  className="rounded-md border border-white/10 bg-white/10 px-3 py-2 text-[11px] font-semibold text-white/80 transition hover:bg-white/20"
+                                >
+                                  Apply
+                                </button>
+                              </div>
+                              <p className="mt-2 text-[10px] text-white/40">
+                                Refinement is the default. Reset prompts keep the last palette available for smooth interpolation.
+                              </p>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                              <QuickPromptGenerator />
+                            </div>
+                          </div>
                         </motion.div>
                       )}
 
