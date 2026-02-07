@@ -14,7 +14,7 @@ import {
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
-import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
+import { buildPaletteFromIntent, type PaletteTarget } from "@/components/flow-engine/colorIntent";
 
 // --- Types ---
 export interface HeroBackgroundSettings {
@@ -226,6 +226,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 }) => {
   const [settings, setSettings] = useState<HeroBackgroundSettings>(initialSettings || DEFAULT_SETTINGS);
   const [activeTab, setActiveTab] = useState<TabId>("prompt");
+  const [promptInput, setPromptInput] = useState("");
+  const [targetPalette, setTargetPalette] = useState<PaletteTarget | null>(null);
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -255,6 +257,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
   const [downloadScale, setDownloadScale] = useState(1);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const paletteStartRef = useRef<PaletteTarget | null>(null);
 
   // Live code and JSON
   const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
@@ -349,12 +353,101 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [settings, currentProjectId, currentProjectName, isLoggedIn]);
 
+  useEffect(() => () => stopPaletteAnimation(), [stopPaletteAnimation]);
+
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
     value: HeroBackgroundSettings[K]
   ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
+
+  const stopPaletteAnimation = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    paletteStartRef.current = null;
+  }, []);
+
+  const applyPalette = useCallback((palette: PaletteTarget) => {
+    setSettings((prev) => ({
+      ...prev,
+      color1: palette.color1,
+      color2: palette.color2,
+      color3: palette.color3,
+      color4: palette.color4,
+      gradientStyle: palette.gradientStyle,
+      brightness: palette.brightness,
+    }));
+  }, []);
+
+  const interpolateHex = useCallback((from: string, to: string, progress: number) => {
+    const fromHex = from.replace("#", "");
+    const toHex = to.replace("#", "");
+    const fromRgb = {
+      r: parseInt(fromHex.slice(0, 2), 16),
+      g: parseInt(fromHex.slice(2, 4), 16),
+      b: parseInt(fromHex.slice(4, 6), 16),
+    };
+    const toRgb = {
+      r: parseInt(toHex.slice(0, 2), 16),
+      g: parseInt(toHex.slice(2, 4), 16),
+      b: parseInt(toHex.slice(4, 6), 16),
+    };
+    const lerp = (start: number, end: number) => Math.round(start + (end - start) * progress);
+    const toHexString = (value: number) => value.toString(16).padStart(2, "0");
+    return `#${toHexString(lerp(fromRgb.r, toRgb.r))}${toHexString(lerp(fromRgb.g, toRgb.g))}${toHexString(lerp(fromRgb.b, toRgb.b))}`;
+  }, []);
+
+  const startPaletteAnimation = useCallback((nextPalette: PaletteTarget) => {
+    stopPaletteAnimation();
+    paletteStartRef.current = {
+      color1: settings.color1,
+      color2: settings.color2,
+      color3: settings.color3,
+      color4: settings.color4,
+      gradientStyle: settings.gradientStyle,
+      brightness: settings.brightness,
+    };
+
+    const durationMs = 420;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - startTime) / durationMs, 1);
+      const start = paletteStartRef.current;
+      if (!start) {
+        animationFrameRef.current = null;
+        return;
+      }
+
+      applyPalette({
+        color1: interpolateHex(start.color1, nextPalette.color1, progress),
+        color2: interpolateHex(start.color2, nextPalette.color2, progress),
+        color3: interpolateHex(start.color3, nextPalette.color3, progress),
+        color4: interpolateHex(start.color4, nextPalette.color4, progress),
+        gradientStyle: progress < 1 ? start.gradientStyle : nextPalette.gradientStyle,
+        brightness: start.brightness + (nextPalette.brightness - start.brightness) * progress,
+      });
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        animationFrameRef.current = null;
+        paletteStartRef.current = null;
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(tick);
+  }, [applyPalette, interpolateHex, settings, stopPaletteAnimation]);
+
+  const handlePromptChange = useCallback((value: string) => {
+    setPromptInput(value);
+    const palette = buildPaletteFromIntent(settings, value);
+    setTargetPalette(palette);
+    startPaletteAnimation(palette);
+  }, [settings, startPaletteAnimation]);
 
   const applyPreset = useCallback((presetKey: keyof typeof COLOR_PRESETS) => {
     const preset = COLOR_PRESETS[presetKey];
@@ -737,7 +830,34 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           className="h-full overflow-hidden"
                           style={{ maxHeight: '180px' }}
                         >
-                          <QuickPromptGenerator />
+                          <div className="flex h-full flex-col justify-between gap-3">
+                            <div className="space-y-2">
+                              <label className="text-xs font-medium uppercase tracking-wide text-white/60">
+                                Color intent
+                              </label>
+                              <input
+                                type="text"
+                                value={promptInput}
+                                onChange={(event) => handlePromptChange(event.target.value)}
+                                placeholder="Try: calm, deep, warm, futuristic, neon..."
+                                className="w-full rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              />
+                              <p className="text-[11px] text-white/50">
+                                Type mood words to gently steer saturation, temperature, contrast, and gradient style.
+                              </p>
+                            </div>
+                            <div className="rounded-lg border border-white/10 bg-neutral-900/70 px-3 py-2 text-xs text-white/60">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="uppercase tracking-wide text-white/40">Target</span>
+                                <span className="rounded-full bg-white/10 px-2 py-0.5">
+                                  {targetPalette?.gradientStyle ?? settings.gradientStyle}
+                                </span>
+                                <span className="rounded-full bg-white/10 px-2 py-0.5">
+                                  Brightness {targetPalette?.brightness.toFixed(2) ?? settings.brightness.toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </motion.div>
                       )}
 
