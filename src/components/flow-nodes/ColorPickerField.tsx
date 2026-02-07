@@ -28,6 +28,10 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
     }
   }, [forceClose, open]);
 
+  const isValidHexColor = useCallback((input: string) => {
+    return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(input);
+  }, []);
+
   // Close picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,7 +54,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
     }
   }, [open, onOpenChange]);
 
-  const displayColor = value || "#ffffff";
+  const displayColor = isValidHexColor(value) ? value : "#ffffff";
 
   const handleToggle = () => {
     const newOpen = !open;
