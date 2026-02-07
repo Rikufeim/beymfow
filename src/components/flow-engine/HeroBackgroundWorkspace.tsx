@@ -14,7 +14,7 @@ import {
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
-import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
+import { ColorPromptInput } from "./ColorPromptInput";
 
 // --- Types ---
 export interface HeroBackgroundSettings {
@@ -145,6 +145,101 @@ const GRADIENT_STYLES = [
   { id: "cosmic" as const, label: "Cosmic", icon: Circle },
 ];
 
+const COLOR_WORDS: Record<string, string> = {
+  black: "#000000",
+  white: "#ffffff",
+  gray: "#808080",
+  grey: "#808080",
+  red: "#ef4444",
+  orange: "#f97316",
+  yellow: "#eab308",
+  green: "#22c55e",
+  teal: "#14b8a6",
+  blue: "#3b82f6",
+  purple: "#8b5cf6",
+  pink: "#ec4899",
+};
+
+const normalizeHex = (value: string) => {
+  const cleaned = value.replace("#", "").trim();
+  if (cleaned.length === 3) {
+    return `#${cleaned
+      .split("")
+      .map((char) => char + char)
+      .join("")}`.toLowerCase();
+  }
+  return `#${cleaned.padEnd(6, "0")}`.toLowerCase();
+};
+
+const adjustHex = (hex: string, amount: number) => {
+  const normalized = normalizeHex(hex).replace("#", "");
+  const r = Math.min(255, Math.max(0, parseInt(normalized.slice(0, 2), 16) + amount));
+  const g = Math.min(255, Math.max(0, parseInt(normalized.slice(2, 4), 16) + amount));
+  const b = Math.min(255, Math.max(0, parseInt(normalized.slice(4, 6), 16) + amount));
+  return `#${[r, g, b].map((val) => val.toString(16).padStart(2, "0")).join("")}`;
+};
+
+const extractPromptColors = (input: string) => {
+  const hexMatches = input.match(/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})/g) ?? [];
+  if (hexMatches.length > 0) {
+    return hexMatches.map((hex) => normalizeHex(hex));
+  }
+
+  const words = input.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+  const hits: string[] = [];
+  for (const word of words) {
+    const match = COLOR_WORDS[word];
+    if (match) {
+      hits.push(match);
+    }
+  }
+  return hits;
+};
+
+const buildEvolvedPalette = (
+  colors: string[],
+  fallback: Pick<HeroBackgroundSettings, "color1" | "color2" | "color3" | "color4">,
+) => {
+  if (colors.length === 0) {
+    return fallback;
+  }
+
+  if (colors.length >= 4) {
+    return {
+      color1: colors[0],
+      color2: colors[1],
+      color3: colors[2],
+      color4: colors[3],
+    };
+  }
+
+  if (colors.length === 3) {
+    return {
+      color1: colors[0],
+      color2: colors[1],
+      color3: colors[2],
+      color4: adjustHex(colors[2], 28),
+    };
+  }
+
+  if (colors.length === 2) {
+    return {
+      color1: colors[0],
+      color2: colors[1],
+      color3: adjustHex(colors[1], 24),
+      color4: adjustHex(colors[1], 48),
+    };
+  }
+
+  const base = colors[0];
+  return {
+    color1: base,
+    color2: adjustHex(base, 20),
+    color3: adjustHex(base, 40),
+    color4: adjustHex(base, 60),
+  };
+};
+
 // Generate React component code for live preview - Improved color blending with smoother transitions
 const generateLiveCode = (settings: HeroBackgroundSettings): string => {
   const { brightness, grainEnabled, grainIntensity } = settings;
@@ -231,6 +326,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
+  const [colorPrompt, setColorPrompt] = useState("");
   // Component editing state
   const [selectedComponent, setSelectedComponent] = useState<"button-primary" | "button-secondary" | "card" | "input" | null>(null);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
@@ -354,6 +450,24 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     value: HeroBackgroundSettings[K]
   ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleColorPromptChange = useCallback((value: string) => {
+    setColorPrompt(value);
+    const extracted = extractPromptColors(value);
+    if (extracted.length === 0) {
+      return;
+    }
+    setSettings((prev) => ({
+      ...prev,
+      ...buildEvolvedPalette(extracted, {
+        color1: prev.color1,
+        color2: prev.color2,
+        color3: prev.color3,
+        color4: prev.color4,
+      }),
+      singleColorMode: false,
+    }));
   }, []);
 
   const applyPreset = useCallback((presetKey: keyof typeof COLOR_PRESETS) => {
@@ -737,7 +851,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           className="h-full overflow-hidden"
                           style={{ maxHeight: '180px' }}
                         >
-                          <QuickPromptGenerator />
+                          <div className="h-full flex items-center justify-center px-2">
+                            <ColorPromptInput
+                              value={colorPrompt}
+                              onChange={handleColorPromptChange}
+                            />
+                          </div>
                         </motion.div>
                       )}
 
