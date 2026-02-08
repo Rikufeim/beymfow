@@ -1221,7 +1221,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   const applyBackgroundEntry = useCallback((entry: BackgroundEntry, variant: BackgroundVariant) => {
     const currentPalette = getPaletteFromSettings(settings);
-    const nextPalette = flowState.flowMode === "reset" ? getPaletteFromPreset(entry.palettePreset) : flowState.palette;
+    // Always apply the palette from the preset - this is what the thumbnail shows
+    const nextPalette = getPaletteFromPreset(entry.palettePreset);
 
     setFlowState((prev) => ({
       ...prev,
@@ -1231,15 +1232,22 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }));
 
     animatePaletteTransition(currentPalette, nextPalette);
+    
+    // Apply all settings including colors from the palette
     setSettings((prev) => ({
       ...prev,
       gradientStyle: entry.gradientStyle,
+      color1: nextPalette.base,
+      color2: nextPalette.surface,
+      color3: nextPalette.accent,
+      color4: nextPalette.highlight,
+      singleColorMode: false,
       brightness: variant.params.brightness,
       grainEnabled: variant.params.grainEnabled,
       grainIntensity: variant.params.grainIntensity,
       environmentEnabled: variant.params.environmentEnabled,
     }));
-  }, [animatePaletteTransition, flowState.flowMode, flowState.palette, settings]);
+  }, [animatePaletteTransition, settings]);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
     setSettings(importedSettings);
