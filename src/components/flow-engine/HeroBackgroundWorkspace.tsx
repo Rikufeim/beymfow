@@ -1629,9 +1629,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                   animate={{ height: 320, opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
+                  className="overflow-visible"
                 >
-                  <div className="p-4" style={{ minHeight: '320px', maxHeight: '320px' }}>
+                  <div className="p-4 h-[320px] flex flex-col">
                     <AnimatePresence mode="wait">
                       {activeTab === "shape" && (
                         <motion.div
@@ -1639,7 +1639,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="h-full flex gap-4"
+                          className="h-full flex gap-4 min-h-0"
                         >
                           <div className="w-40 flex-shrink-0 border-r border-white/10 pr-3">
                             <label className="text-[10px] text-white/40 uppercase tracking-wider block mb-2">Categories</label>
@@ -1660,8 +1660,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               ))}
                             </div>
                           </div>
-                          <div className="flex-1 flex flex-col gap-3 overflow-hidden">
-                            <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1 flex flex-col gap-3 min-h-0 overflow-hidden">
+                            <div className="flex items-center justify-between gap-3 flex-shrink-0">
                               <div>
                                 <h3 className="text-sm font-semibold text-white">Background Library</h3>
                                 <p className="text-xs text-white/40">Search and apply background styles with variants.</p>
@@ -1674,7 +1674,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 className="w-48 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20"
                               />
                             </div>
-                            <div className="flex-1 overflow-y-auto pr-2">
+                            <div className="flex-1 overflow-y-auto min-h-0 pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent' }}>
                               <div className="grid grid-cols-3 gap-3">
                                 {filteredBackgrounds.map((entry) => {
                                   const isActive = flowState.currentBackgroundStyle === entry.gradientStyle;
