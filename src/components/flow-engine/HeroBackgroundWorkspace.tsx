@@ -1868,71 +1868,234 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="space-y-4"
+                          className="h-full flex gap-6"
                         >
-                          {/* Brightness */}
-                          <div className="flex items-center justify-center gap-6">
-                            <div className="flex items-center gap-3">
-                              <Sun size={16} className="text-white/50" />
-                              <span className="text-xs text-white/50 uppercase tracking-wider w-20">Brightness</span>
-                              <input
-                                type="range"
-                                min="0.6"
-                                max="1.6"
-                                step="0.05"
-                                value={settings.brightness}
-                                onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))}
-                                className="w-32 accent-white/50"
-                              />
-                              <span className="text-sm text-white/70 w-10">{settings.brightness.toFixed(2)}</span>
+                          {/* Left Column - Main Controls */}
+                          <div className="flex-1 space-y-5">
+                            {/* Section: Lighting */}
+                            <div className="space-y-3">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Lighting</h4>
+                              
+                              {/* Brightness */}
+                              <div className="flex items-center gap-3">
+                                <Sun size={14} className="text-white/50 flex-shrink-0" />
+                                <span className="text-xs text-white/60 w-20">Brightness</span>
+                                <input
+                                  type="range"
+                                  min="0.4"
+                                  max="2.0"
+                                  step="0.02"
+                                  value={settings.brightness}
+                                  onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))}
+                                  className="flex-1 max-w-40 accent-white/50"
+                                />
+                                <span className="text-xs text-white/70 w-10 text-right">{settings.brightness.toFixed(2)}</span>
+                              </div>
+
+                              {/* Contrast */}
+                              <div className="flex items-center gap-3">
+                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <path d="M12 2v20M12 2a10 10 0 0 1 0 20" fill="currentColor" />
+                                </svg>
+                                <span className="text-xs text-white/60 w-20">Contrast</span>
+                                <input
+                                  type="range"
+                                  min="0.5"
+                                  max="2.0"
+                                  step="0.05"
+                                  value={1.0}
+                                  onChange={() => {}}
+                                  className="flex-1 max-w-40 accent-white/50"
+                                />
+                                <span className="text-xs text-white/70 w-10 text-right">1.00</span>
+                              </div>
+
+                              {/* Saturation */}
+                              <div className="flex items-center gap-3">
+                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="4" />
+                                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                                </svg>
+                                <span className="text-xs text-white/60 w-20">Saturation</span>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="2.0"
+                                  step="0.05"
+                                  value={1.0}
+                                  onChange={() => {}}
+                                  className="flex-1 max-w-40 accent-white/50"
+                                />
+                                <span className="text-xs text-white/70 w-10 text-right">1.00</span>
+                              </div>
+
+                              {/* Environment Light Toggle */}
+                              <div className="flex items-center gap-3 pt-1">
+                                <button
+                                  onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
+                                    settings.environmentEnabled
+                                      ? "bg-white/10 border-white/20 text-white"
+                                      : "bg-neutral-900 border-white/10 text-white/50 hover:text-white/70"
+                                  )}
+                                >
+                                  <Cloudy size={12} />
+                                  <span className="text-[11px] font-medium">Ambient Glow</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
 
-                          {/* Grain */}
-                          <div className="flex items-center justify-center gap-6">
-                            <button
-                              onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                settings.grainEnabled
-                                  ? "bg-neutral-900 border-white/20 text-white"
-                                  : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
-                              )}
-                            >
-                              <Layers size={14} />
-                              <span className="text-xs font-medium">Grain</span>
-                            </button>
-                            {settings.grainEnabled && (
+                          {/* Middle Column - Texture & Effects */}
+                          <div className="flex-1 space-y-5">
+                            <div className="space-y-3">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Texture & Effects</h4>
+                              
+                              {/* Grain */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
+                                    className={cn(
+                                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
+                                      settings.grainEnabled
+                                        ? "bg-white/10 border-white/20 text-white"
+                                        : "bg-neutral-900 border-white/10 text-white/50 hover:text-white/70"
+                                    )}
+                                  >
+                                    <Layers size={12} />
+                                    <span className="text-[11px] font-medium">Film Grain</span>
+                                  </button>
+                                </div>
+                                {settings.grainEnabled && (
+                                  <div className="flex items-center gap-3 pl-1">
+                                    <span className="text-xs text-white/50 w-16">Intensity</span>
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="0.8"
+                                      step="0.02"
+                                      value={settings.grainIntensity}
+                                      onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))}
+                                      className="flex-1 max-w-32 accent-white/50"
+                                    />
+                                    <span className="text-xs text-white/70 w-10 text-right">{settings.grainIntensity.toFixed(2)}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Blur (visual only) */}
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-white/50">Intensity</span>
+                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="3" opacity="0.3" />
+                                  <circle cx="12" cy="12" r="6" opacity="0.5" />
+                                  <circle cx="12" cy="12" r="9" opacity="0.7" />
+                                </svg>
+                                <span className="text-xs text-white/60 w-16">Blur</span>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  step="1"
+                                  value={0}
+                                  onChange={() => {}}
+                                  className="flex-1 max-w-32 accent-white/50"
+                                />
+                                <span className="text-xs text-white/70 w-10 text-right">0px</span>
+                              </div>
+
+                              {/* Vignette */}
+                              <div className="flex items-center gap-3">
+                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                                  <circle cx="12" cy="12" r="5" />
+                                </svg>
+                                <span className="text-xs text-white/60 w-16">Vignette</span>
                                 <input
                                   type="range"
                                   min="0"
                                   max="1"
                                   step="0.05"
-                                  value={settings.grainIntensity}
-                                  onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))}
-                                  className="w-24 accent-white/50"
+                                  value={0}
+                                  onChange={() => {}}
+                                  className="flex-1 max-w-32 accent-white/50"
                                 />
-                                <span className="text-sm text-white/70 w-8">{settings.grainIntensity.toFixed(2)}</span>
+                                <span className="text-xs text-white/70 w-10 text-right">0.00</span>
                               </div>
-                            )}
+                            </div>
                           </div>
 
-                          {/* Environment */}
-                          <div className="flex items-center justify-center gap-6">
-                            <button
-                              onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                settings.environmentEnabled
-                                  ? "bg-neutral-900 border-white/20 text-white"
-                                  : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
-                              )}
-                            >
-                              <Cloudy size={14} />
-                              <span className="text-xs font-medium">Environment Light</span>
-                            </button>
+                          {/* Right Column - Quick Actions */}
+                          <div className="w-44 space-y-5">
+                            <div className="space-y-3">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Quick Presets</h4>
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 1.0);
+                                    updateSetting("grainEnabled", false);
+                                    updateSetting("environmentEnabled", false);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Reset All
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 0.85);
+                                    updateSetting("grainEnabled", true);
+                                    updateSetting("grainIntensity", 0.25);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Cinematic
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 1.4);
+                                    updateSetting("grainEnabled", false);
+                                    updateSetting("environmentEnabled", true);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Bright
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 0.7);
+                                    updateSetting("grainEnabled", true);
+                                    updateSetting("grainIntensity", 0.4);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Moody
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 1.1);
+                                    updateSetting("grainEnabled", true);
+                                    updateSetting("grainIntensity", 0.15);
+                                    updateSetting("environmentEnabled", true);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Dreamy
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    updateSetting("brightness", 1.3);
+                                    updateSetting("grainEnabled", false);
+                                    updateSetting("environmentEnabled", false);
+                                  }}
+                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                >
+                                  Clean
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </motion.div>
                       )}
