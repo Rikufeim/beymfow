@@ -14,7 +14,7 @@ import {
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
-import { ColorPromptInput } from "./ColorPromptInput";
+// ColorPromptInput removed - flow input feature disabled
 
 type FlowMode = "refine" | "reset";
 
@@ -1588,21 +1588,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           className="absolute bottom-0 left-0 right-0 z-50"
         >
           <div className="bg-black backdrop-blur-xl border-t border-white/10">
-            {/* Persistent Flow Input */}
-            <div className="px-4 py-3 border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] uppercase tracking-wider text-white/40 whitespace-nowrap">Flow Input</span>
-                <div className="flex-1">
-                  <ColorPromptInput
-                    value={flowState.lastUserPrompt}
-                    onChange={handleFlowInputChange}
-                  />
-                </div>
-                <span className="text-[10px] uppercase tracking-wider text-white/40 whitespace-nowrap">
-                  {flowState.flowMode === "reset" ? "Reset" : "Refine"}
-                </span>
-              </div>
-            </div>
 
             {/* Tabs + Minimize button */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
