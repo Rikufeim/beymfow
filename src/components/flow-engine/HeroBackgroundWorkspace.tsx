@@ -1039,19 +1039,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [settings, currentProjectId, currentProjectName, isLoggedIn]);
 
-  useEffect(() => {
-    if (flowUpdateTimeoutRef.current) {
-      clearTimeout(flowUpdateTimeoutRef.current);
-    }
-    flowUpdateTimeoutRef.current = setTimeout(() => {
-      applyFlowInput(flowState.lastUserPrompt, flowState.flowMode);
-    }, 160);
-    return () => {
-      if (flowUpdateTimeoutRef.current) {
-        clearTimeout(flowUpdateTimeoutRef.current);
-      }
-    };
-  }, [flowState.lastUserPrompt, flowState.flowMode, applyFlowInput]);
+  // Flow input effect moved below applyFlowInput declaration
 
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
@@ -1184,6 +1172,21 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       environmentEnabled: nextBackgroundParams.environmentEnabled,
     }));
   }, [animatePaletteTransition, flowState.backgroundParams, flowState.currentBackgroundStyle, flowState.palette, settings]);
+
+  // Flow input effect - apply prompt changes with debounce
+  useEffect(() => {
+    if (flowUpdateTimeoutRef.current) {
+      clearTimeout(flowUpdateTimeoutRef.current);
+    }
+    flowUpdateTimeoutRef.current = setTimeout(() => {
+      applyFlowInput(flowState.lastUserPrompt, flowState.flowMode);
+    }, 160);
+    return () => {
+      if (flowUpdateTimeoutRef.current) {
+        clearTimeout(flowUpdateTimeoutRef.current);
+      }
+    };
+  }, [flowState.lastUserPrompt, flowState.flowMode, applyFlowInput]);
 
   const handleFlowInputChange = useCallback((value: string) => {
     const mode = detectFlowMode(value);
