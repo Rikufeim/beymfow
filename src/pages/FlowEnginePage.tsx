@@ -95,9 +95,16 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   // Render Prompt Generator Workspace
   if (activeWorkspace === "prompt-generator") {
     return (
-      <div className="min-h-screen bg-black text-white">
+      <div className="relative min-h-screen bg-transparent text-white">
+        <div
+          className="fixed inset-0 z-[-1]"
+          style={{
+            background: "radial-gradient(at 40% 20%, #3e18fb60 0px, #3e18fb30 15%, transparent 55%), radial-gradient(at 80% 5%, #00000055 0px, #00000025 15%, transparent 55%), radial-gradient(at 5% 55%, #00605570 0px, #00605535 15%, transparent 55%), radial-gradient(at 85% 55%, #3e18fb45 0px, #3e18fb20 15%, transparent 55%), radial-gradient(at 10% 95%, #00000060 0px, #00000030 15%, transparent 55%), radial-gradient(at 85% 95%, #00605550 0px, #00605525 15%, transparent 55%), #000000",
+            filter: "brightness(1.05)",
+          }}
+        />
         {/* Header */}
-        <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
             <button
               onClick={handleBack}

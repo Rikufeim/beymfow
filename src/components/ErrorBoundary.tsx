@@ -1,7 +1,23 @@
 import React from "react";
 
+const defaultErrorUI = (error: any) => (
+  <div style={{
+    padding: 16,
+    whiteSpace: "pre-wrap",
+    backgroundColor: "#000",
+    color: "#fff",
+    minHeight: "100vh",
+    fontFamily: "monospace",
+  }}>
+    <h1 style={{ color: "#ff0000", marginBottom: 16 }}>RUNTIME ERROR:</h1>
+    <pre style={{ color: "#fff", fontSize: "14px" }}>
+      {String(error?.stack || error)}
+    </pre>
+  </div>
+);
+
 export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
+  { children: React.ReactNode; fallback?: React.ReactNode },
   { error: any }
 > {
   state = { error: null as any };
@@ -16,21 +32,8 @@ export class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.error) {
-      return (
-        <div style={{ 
-          padding: 16, 
-          whiteSpace: "pre-wrap",
-          backgroundColor: "#000",
-          color: "#fff",
-          minHeight: "100vh",
-          fontFamily: "monospace"
-        }}>
-          <h1 style={{ color: "#ff0000", marginBottom: 16 }}>RUNTIME ERROR:</h1>
-          <pre style={{ color: "#fff", fontSize: "14px" }}>
-            {String(this.state.error?.stack || this.state.error)}
-          </pre>
-        </div>
-      );
+      if (this.props.fallback !== undefined) return this.props.fallback;
+      return defaultErrorUI(this.state.error);
     }
     return this.props.children;
   }

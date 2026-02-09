@@ -14,7 +14,15 @@ import {
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
 import { toast } from "sonner";
-// ColorPromptInput removed - flow input feature disabled
+import {
+  BACKGROUND_LIBRARY,
+  COLOR_PRESETS,
+  CATEGORY_LABELS,
+  type BackgroundEntry,
+  type BackgroundVariant,
+  type BackgroundCategory,
+} from "@/data/heroBackgroundLibrary";
+// BG Library (overlay) removed - Color Codes uses gradient + grain only
 
 type FlowMode = "refine" | "reset";
 
@@ -31,6 +39,10 @@ interface FlowBackgroundParams {
   grainEnabled: boolean;
   grainIntensity: number;
   environmentEnabled: boolean;
+  blurPx?: number;
+  vignette?: number;
+  contrast?: number;
+  saturation?: number;
 }
 
 interface FlowState {
@@ -39,6 +51,8 @@ interface FlowState {
   palette: FlowPalette;
   lastUserPrompt: string;
   flowMode: FlowMode;
+  selectedCategory?: BackgroundCategory;
+  selectedBackgroundId?: string;
 }
 
 // --- Types ---
@@ -49,8 +63,12 @@ export interface HeroBackgroundSettings {
   color3: string;
   color4: string;
   singleColorMode: boolean;
-  // Brightness
+  // Brightness & filters (Motion tab)
   brightness: number;
+  contrast: number;
+  saturation: number;
+  blurPx: number;
+  vignette: number;
   // Grain
   grainEnabled: boolean;
   grainIntensity: number;
@@ -88,6 +106,10 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   color4: "#8b5cf6",
   singleColorMode: false,
   brightness: 1.2,
+  contrast: 1,
+  saturation: 1,
+  blurPx: 0,
+  vignette: 0,
   grainEnabled: false,
   grainIntensity: 0.18,
   environmentEnabled: true,
@@ -114,36 +136,6 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   focusRingColor: "#389cff",
 };
 
-// Color presets - Premium, balanced palettes
-const COLOR_PRESETS = {
-  // Dark & Sophisticated
-  obsidian: { color1: "#0c0c0e", color2: "#18181c", color3: "#3b82f6", color4: "#6366f1" },
-  midnight: { color1: "#0f0f1a", color2: "#1a1a2e", color3: "#4f46e5", color4: "#7c3aed" },
-  charcoal: { color1: "#121214", color2: "#1c1c20", color3: "#64748b", color4: "#94a3b8" },
-
-  // Vibrant & Modern
-  aurora: { color1: "#0a0a12", color2: "#0f172a", color3: "#06b6d4", color4: "#8b5cf6" },
-  ember: { color1: "#0c0a09", color2: "#1c1917", color3: "#f97316", color4: "#ef4444" },
-  forest: { color1: "#0a0f0a", color2: "#14241a", color3: "#22c55e", color4: "#10b981" },
-
-  // Premium Accents
-  sapphire: { color1: "#0a0a14", color2: "#101828", color3: "#2563eb", color4: "#3b82f6" },
-  amethyst: { color1: "#0f0a14", color2: "#1a1028", color3: "#a855f7", color4: "#c084fc" },
-  rose: { color1: "#0f0a0c", color2: "#1c1418", color3: "#ec4899", color4: "#f472b6" },
-
-  // Warm Tones
-  sunset: { color1: "#0c0908", color2: "#1a1410", color3: "#f59e0b", color4: "#fb923c" },
-  copper: { color1: "#0c0a08", color2: "#1c1610", color3: "#d97706", color4: "#ea580c" },
-
-  // Cool Tones
-  arctic: { color1: "#0a0e12", color2: "#0f1720", color3: "#38bdf8", color4: "#22d3ee" },
-  slate: { color1: "#0f1115", color2: "#1e2128", color3: "#475569", color4: "#64748b" },
-
-  // Light Themes
-  pearl: { color1: "#f8fafc", color2: "#f1f5f9", color3: "#e2e8f0", color4: "#cbd5e1" },
-  cream: { color1: "#fefdfb", color2: "#faf8f5", color3: "#f5d0c5", color4: "#dcd0ff" },
-};
-
 interface HeroBackgroundWorkspaceProps {
   projectId?: string;
   projectName?: string;
@@ -153,15 +145,33 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "colors" | "components" | "motion" | "view" | "export";
+type TabId = "shape" | "style" | "colors" | "components" | "motion" | "view" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
+  { id: "style", label: "Style" },
   { id: "colors", label: "Colors" },
   { id: "components", label: "Components" },
   { id: "motion", label: "Motion" },
   { id: "view", label: "View" },
   { id: "export", label: "Export" },
+];
+
+// 10 background shapes – gradient style only (colors stay the same)
+type GradientStyleId = HeroBackgroundSettings["gradientStyle"];
+const SHAPE_STYLES: Array<{ id: GradientStyleId; label: string }> = [
+  { id: "halo", label: "Halo" },
+  { id: "soft-sweep", label: "Soft Sweep" },
+  { id: "orb", label: "Orb" },
+  { id: "diagonal-blend", label: "Diagonal Blend" },
+  { id: "noise-wash", label: "Noise Wash" },
+  { id: "aurora", label: "Aurora" },
+  { id: "mesh", label: "Mesh" },
+  { id: "spotlight", label: "Spotlight" },
+  { id: "wave", label: "Wave" },
+  { id: "crystal", label: "Crystal" },
+  { id: "sunset", label: "Sunset" },
+  { id: "cosmic", label: "Cosmic" },
 ];
 
 const COLOR_WORDS: Record<string, string> = {
@@ -182,364 +192,6 @@ const COLOR_WORDS: Record<string, string> = {
 const REFINE_WORDS = ["adjust", "refine", "improve", "softer", "deeper", "calmer", "more", "less", "tweak", "enhance"];
 const RESET_WORDS = ["new", "reset", "start over", "completely different", "replace", "redo"];
 
-const CATEGORY_LABELS = ["Soft/Ambient", "Futuristic", "Dark/Editorial", "Expressive"] as const;
-
-type BackgroundCategory = (typeof CATEGORY_LABELS)[number];
-
-interface BackgroundVariant {
-  id: string;
-  label: string;
-  params: FlowBackgroundParams;
-}
-
-interface BackgroundEntry {
-  id: string;
-  name: string;
-  category: BackgroundCategory;
-  gradientStyle: HeroBackgroundSettings["gradientStyle"];
-  tags: string[];
-  palettePreset?: keyof typeof COLOR_PRESETS;
-  variants: BackgroundVariant[];
-}
-
-const BACKGROUND_LIBRARY: BackgroundEntry[] = [
-  {
-    id: "ambient-mist",
-    name: "Ambient Mist",
-    category: "Soft/Ambient",
-    gradientStyle: "soft-sweep",
-    tags: ["calm", "mist", "gentle"],
-    palettePreset: "arctic",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.15, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.95, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.25, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "halo-glow",
-    name: "Halo Glow",
-    category: "Soft/Ambient",
-    gradientStyle: "halo",
-    tags: ["halo", "soft", "glow"],
-    palettePreset: "aurora",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "velvet-tide",
-    name: "Velvet Tide",
-    category: "Soft/Ambient",
-    gradientStyle: "aurora",
-    tags: ["calm", "tide", "ambient"],
-    palettePreset: "amethyst",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.28, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "moonlit-air",
-    name: "Moonlit Air",
-    category: "Soft/Ambient",
-    gradientStyle: "orb",
-    tags: ["ambient", "moonlit", "soft"],
-    palettePreset: "slate",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.1, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.25, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "quiet-orbit",
-    name: "Quiet Orbit",
-    category: "Soft/Ambient",
-    gradientStyle: "spotlight",
-    tags: ["quiet", "soft", "focus"],
-    palettePreset: "sapphire",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.94, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.27, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "fogline",
-    name: "Fogline",
-    category: "Soft/Ambient",
-    gradientStyle: "noise-wash",
-    tags: ["fog", "soft", "diffuse"],
-    palettePreset: "arctic",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.22, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: true, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "neon-grid",
-    name: "Neon Grid",
-    category: "Futuristic",
-    gradientStyle: "mesh",
-    tags: ["neon", "grid", "future"],
-    palettePreset: "sapphire",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: false, grainIntensity: 0.05, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "signal-wave",
-    name: "Signal Wave",
-    category: "Futuristic",
-    gradientStyle: "wave",
-    tags: ["signal", "wave", "pulse"],
-    palettePreset: "aurora",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.14, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "crystal-core",
-    name: "Crystal Core",
-    category: "Futuristic",
-    gradientStyle: "crystal",
-    tags: ["crystal", "sharp", "clean"],
-    palettePreset: "arctic",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.06, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.34, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.08, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "orbit-channel",
-    name: "Orbit Channel",
-    category: "Futuristic",
-    gradientStyle: "orb",
-    tags: ["orbit", "channel", "sleek"],
-    palettePreset: "sapphire",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.28, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "horizon-drive",
-    name: "Horizon Drive",
-    category: "Futuristic",
-    gradientStyle: "diagonal-blend",
-    tags: ["horizon", "drive", "sleek"],
-    palettePreset: "midnight",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.12, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.3, grainEnabled: false, grainIntensity: 0.12, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.03, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "starlight-echo",
-    name: "Starlight Echo",
-    category: "Futuristic",
-    gradientStyle: "cosmic",
-    tags: ["starlight", "cosmic", "depth"],
-    palettePreset: "amethyst",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.88, grainEnabled: true, grainIntensity: 0.24, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "noir-halo",
-    name: "Noir Halo",
-    category: "Dark/Editorial",
-    gradientStyle: "halo",
-    tags: ["noir", "editorial", "dark"],
-    palettePreset: "obsidian",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.95, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.82, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.1, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "editorial-smoke",
-    name: "Editorial Smoke",
-    category: "Dark/Editorial",
-    gradientStyle: "noise-wash",
-    tags: ["smoke", "editorial", "moody"],
-    palettePreset: "charcoal",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.98, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.8, grainEnabled: true, grainIntensity: 0.3, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.14, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "ink-shadow",
-    name: "Ink Shadow",
-    category: "Dark/Editorial",
-    gradientStyle: "soft-sweep",
-    tags: ["ink", "shadow", "deep"],
-    palettePreset: "midnight",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.96, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.78, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.08, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "deep-press",
-    name: "Deep Press",
-    category: "Dark/Editorial",
-    gradientStyle: "diagonal-blend",
-    tags: ["press", "structured", "dark"],
-    palettePreset: "slate",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.94, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.76, grainEnabled: true, grainIntensity: 0.3, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.06, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.88, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "mono-spot",
-    name: "Mono Spot",
-    category: "Dark/Editorial",
-    gradientStyle: "spotlight",
-    tags: ["mono", "spot", "focused"],
-    palettePreset: "charcoal",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.98, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.8, grainEnabled: true, grainIntensity: 0.26, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.12, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "coal-wave",
-    name: "Coal Wave",
-    category: "Dark/Editorial",
-    gradientStyle: "wave",
-    tags: ["coal", "wave", "moody"],
-    palettePreset: "obsidian",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 0.96, grainEnabled: true, grainIntensity: 0.18, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.78, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.1, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 0.9, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "ember-flare",
-    name: "Ember Flare",
-    category: "Expressive",
-    gradientStyle: "sunset",
-    tags: ["ember", "warm", "bold"],
-    palettePreset: "sunset",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.34, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "rose-burst",
-    name: "Rose Burst",
-    category: "Expressive",
-    gradientStyle: "aurora",
-    tags: ["rose", "expressive", "lush"],
-    palettePreset: "rose",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.92, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.36, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.06, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "electric-surge",
-    name: "Electric Surge",
-    category: "Expressive",
-    gradientStyle: "wave",
-    tags: ["electric", "surge", "energy"],
-    palettePreset: "aurora",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.16, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.38, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.04, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "prism-flux",
-    name: "Prism Flux",
-    category: "Expressive",
-    gradientStyle: "crystal",
-    tags: ["prism", "flux", "vivid"],
-    palettePreset: "sapphire",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.18, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.35, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.05, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "lava-noise",
-    name: "Lava Noise",
-    category: "Expressive",
-    gradientStyle: "noise-wash",
-    tags: ["lava", "textured", "bold"],
-    palettePreset: "ember",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.14, grainEnabled: true, grainIntensity: 0.2, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.88, grainEnabled: true, grainIntensity: 0.28, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.32, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.02, grainEnabled: true, grainIntensity: 0.12, environmentEnabled: false } },
-    ],
-  },
-  {
-    id: "cosmic-bloom",
-    name: "Cosmic Bloom",
-    category: "Expressive",
-    gradientStyle: "cosmic",
-    tags: ["cosmic", "bloom", "expressive"],
-    palettePreset: "amethyst",
-    variants: [
-      { id: "soft", label: "Soft", params: { brightness: 1.2, grainEnabled: false, grainIntensity: 0.08, environmentEnabled: true } },
-      { id: "deep", label: "Deep", params: { brightness: 0.9, grainEnabled: true, grainIntensity: 0.22, environmentEnabled: true } },
-      { id: "contrast", label: "High Contrast", params: { brightness: 1.36, grainEnabled: false, grainIntensity: 0.1, environmentEnabled: true } },
-      { id: "minimal", label: "Minimal", params: { brightness: 1.06, grainEnabled: false, grainIntensity: 0.04, environmentEnabled: false } },
-    ],
-  },
-];
 
 const normalizeHex = (value: string) => {
   const cleaned = value.replace("#", "").trim();
@@ -731,8 +383,8 @@ const getPaletteFromSettings = (settings: HeroBackgroundSettings): FlowPalette =
   text: "#ffffff",
 });
 
-const getPaletteFromPreset = (presetKey?: keyof typeof COLOR_PRESETS): FlowPalette => {
-  const preset = presetKey ? COLOR_PRESETS[presetKey] : DEFAULT_SETTINGS;
+const getPaletteFromPreset = (presetKey?: string): FlowPalette => {
+  const preset = presetKey && COLOR_PRESETS[presetKey] ? COLOR_PRESETS[presetKey] : DEFAULT_SETTINGS;
   return {
     base: preset.color1,
     surface: preset.color2,
@@ -830,6 +482,8 @@ const generateLiveCode = (settings: HeroBackgroundSettings): string => {
 const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowState): string => {
   return JSON.stringify({
     gradientStyle: settings.gradientStyle,
+    category: flowState.selectedCategory,
+    backgroundId: flowState.selectedBackgroundId,
     colors: {
       color1: settings.color1,
       color2: settings.color2,
@@ -837,10 +491,17 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
       color4: settings.color4,
     },
     palette: flowState.palette,
+    paletteRoles: { base: "color1", mid: "color2", accent: "color3", highlight: "color4" },
     brightness: settings.brightness,
     grain: settings.grainEnabled ? settings.grainIntensity : 0,
     environment: settings.environmentEnabled,
     backgroundParams: flowState.backgroundParams,
+    effects: {
+      blurPx: settings.blurPx ?? 0,
+      vignette: settings.vignette ?? 0,
+      contrast: settings.contrast ?? 1,
+      saturation: settings.saturation ?? 1,
+    },
   }, null, 2);
 };
 
@@ -910,6 +571,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }));
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<BackgroundCategory>("Soft/Ambient");
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
   // Component editing state
   const [selectedComponent, setSelectedComponent] = useState<"button-primary" | "button-secondary" | "card" | "input" | null>(null);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
@@ -1197,8 +860,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }));
   }, []);
 
-  const applyPreset = useCallback((presetKey: keyof typeof COLOR_PRESETS) => {
+  const applyPreset = useCallback((presetKey: string) => {
     const preset = COLOR_PRESETS[presetKey];
+    if (!preset) return;
     setSettings((prev) => ({
       ...prev,
       color1: preset.color1,
@@ -1221,19 +885,20 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   const applyBackgroundEntry = useCallback((entry: BackgroundEntry, variant: BackgroundVariant) => {
     const currentPalette = getPaletteFromSettings(settings);
-    // Always apply the palette from the preset - this is what the thumbnail shows
     const nextPalette = getPaletteFromPreset(entry.palettePreset);
+    const p = variant.params;
 
     setFlowState((prev) => ({
       ...prev,
       currentBackgroundStyle: entry.gradientStyle,
-      backgroundParams: variant.params,
+      backgroundParams: p,
       palette: nextPalette,
+      selectedCategory: entry.category,
+      selectedBackgroundId: entry.id,
     }));
 
     animatePaletteTransition(currentPalette, nextPalette);
-    
-    // Apply all settings including colors from the palette
+
     setSettings((prev) => ({
       ...prev,
       gradientStyle: entry.gradientStyle,
@@ -1242,15 +907,19 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       color3: nextPalette.accent,
       color4: nextPalette.highlight,
       singleColorMode: false,
-      brightness: variant.params.brightness,
-      grainEnabled: variant.params.grainEnabled,
-      grainIntensity: variant.params.grainIntensity,
-      environmentEnabled: variant.params.environmentEnabled,
+      brightness: p.brightness,
+      grainEnabled: p.grainEnabled,
+      grainIntensity: p.grainIntensity,
+      environmentEnabled: p.environmentEnabled,
+      blurPx: p.blurPx ?? prev.blurPx,
+      vignette: p.vignette ?? prev.vignette,
+      contrast: p.contrast ?? prev.contrast,
+      saturation: p.saturation ?? prev.saturation,
     }));
   }, [animatePaletteTransition, settings]);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
-    setSettings(importedSettings);
+    setSettings({ ...DEFAULT_SETTINGS, ...importedSettings });
     setFlowState((prev) => ({
       ...prev,
       currentBackgroundStyle: importedSettings.gradientStyle,
@@ -1259,6 +928,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         grainEnabled: importedSettings.grainEnabled,
         grainIntensity: importedSettings.grainIntensity,
         environmentEnabled: importedSettings.environmentEnabled,
+        blurPx: importedSettings.blurPx,
+        vignette: importedSettings.vignette,
+        contrast: importedSettings.contrast,
+        saturation: importedSettings.saturation,
       },
       palette: getPaletteFromSettings(importedSettings),
     }));
@@ -1439,20 +1112,24 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     setActiveColorPicker((prev) => prev === colorKey ? null : colorKey);
   }, []);
 
-  // Generate gradient CSS based on settings (improved quality)
+  // Generate gradient CSS based on settings (Motion tab: brightness, contrast, saturation, blur)
   const generateGradientStyle = useCallback((): React.CSSProperties => {
-    const { brightness } = settings;
-    const brightnessFilter = `brightness(${brightness})`;
+    const b = settings.brightness;
+    const c = settings.contrast ?? 1;
+    const s = settings.saturation ?? 1;
+    const blurPx = settings.blurPx ?? 0;
+    const parts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
+    if (blurPx > 0) parts.push(`blur(${blurPx}px)`);
     const background = buildHeroGradient(settings);
-
     return {
       background,
-      filter: brightnessFilter,
+      filter: parts.join(" "),
     };
   }, [settings]);
 
   const buildPreviewStyle = useCallback((entry: BackgroundEntry, variant: BackgroundVariant): React.CSSProperties => {
     const palette = getPaletteFromPreset(entry.palettePreset);
+    const p = variant.params;
     const previewSettings: HeroBackgroundSettings = {
       ...DEFAULT_SETTINGS,
       gradientStyle: entry.gradientStyle,
@@ -1460,14 +1137,19 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       color2: palette.surface,
       color3: palette.accent,
       color4: palette.highlight,
-      brightness: variant.params.brightness,
-      grainEnabled: variant.params.grainEnabled,
-      grainIntensity: variant.params.grainIntensity,
-      environmentEnabled: variant.params.environmentEnabled,
+      brightness: p.brightness,
+      grainEnabled: p.grainEnabled,
+      grainIntensity: p.grainIntensity,
+      environmentEnabled: p.environmentEnabled,
+      contrast: p.contrast ?? 1,
+      saturation: p.saturation ?? 1,
     };
+    const filterParts = [`brightness(${p.brightness})`];
+    if (p.contrast != null && p.contrast !== 1) filterParts.push(`contrast(${p.contrast})`);
+    if (p.saturation != null && p.saturation !== 1) filterParts.push(`saturate(${p.saturation})`);
     return {
       background: buildHeroGradient(previewSettings),
-      filter: `brightness(${variant.params.brightness})`,
+      filter: filterParts.join(" "),
     };
   }, []);
 
@@ -1549,7 +1231,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       </div>
 
       <div
-        className="fixed bg-black overflow-hidden"
+        className="fixed overflow-hidden"
         style={{
           top: '0',
           left: 0,
@@ -1557,12 +1239,19 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           bottom: 0,
           zIndex: 50,
           transform: 'none',
-          willChange: 'auto'
+          willChange: 'auto',
+          background: [
+            'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(60,40,90,0.25) 0%, transparent 50%)',
+            'radial-gradient(ellipse 100% 60% at 50% 10%, rgba(30,30,60,0.2) 0%, transparent 45%)',
+            'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 25%)',
+            'linear-gradient(to top, #030308 0%, #060612 18%, #0a0a1a 38%, #0d0d22 55%, #10102a 72%, #141438 88%, #18183f 100%)',
+          ].join(', '),
         }}
       >
         {/* Fullscreen Preview */}
         <div
-          className="absolute inset-0 transition-all duration-500"
+          ref={previewContainerRef}
+          className="absolute inset-0 transition-all duration-500 z-[1]"
           style={generateGradientStyle()}
         >
           {/* Grain overlay - improved quality */}
@@ -1576,6 +1265,30 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               }}
             />
           )}
+
+          {/* Vignette overlay (Motion tab) */}
+          {(settings.vignette ?? 0) > 0 && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: "radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 65%, rgba(0,0,0,0.5) 100%)",
+                opacity: settings.vignette,
+                mixBlendMode: "multiply",
+              }}
+            />
+          )}
+
+          {/* Workspace cosmic fade: alhaalta ylös, saumaton */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              background: [
+                'linear-gradient(to top, rgba(3,3,8,0.92) 0%, rgba(6,6,18,0.75) 22%, rgba(10,10,28,0.5) 45%, rgba(14,14,40,0.25) 68%, transparent 100%)',
+                'radial-gradient(ellipse 100% 70% at 50% 0%, rgba(50,35,80,0.15) 0%, transparent 50%)',
+                'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 20%)',
+              ].join(', '),
+            }}
+          />
 
         </div>
 
@@ -1595,11 +1308,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           animate={{ y: 0, opacity: 1 }}
           className="absolute bottom-0 left-0 right-0 z-50"
         >
-          <div className="bg-black backdrop-blur-xl border-t border-white/10">
+          <div className="bg-black/60 backdrop-blur-xl border-t border-white/10">
 
             {/* Tabs + Minimize button */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-6">
                 {FLOW_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -1608,10 +1321,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
-                      "text-xs font-medium transition-all capitalize cursor-pointer",
+                      "text-xs font-medium transition-all capitalize cursor-pointer pb-2 border-b-2 -mb-0.5",
                       activeTab === tab.id
-                        ? "text-white"
-                        : "text-white/50 hover:text-white/80"
+                        ? "text-cyan-400 border-cyan-400"
+                        : "text-white/50 hover:text-white/80 border-transparent"
                     )}
                   >
                     {tab.label}
@@ -1629,17 +1342,17 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               </button>
             </div>
 
-            {/* Tab Content - collapsible */}
+            {/* Tab Content - collapsible, compact single-row layout so background shows more */}
             <AnimatePresence>
               {!minimizedBar && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 320, opacity: 1 }}
+                  animate={{ height: 260, opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className="overflow-visible"
                 >
-                  <div className="p-4 h-[320px] flex flex-col">
+                  <div className="px-4 py-3 flex flex-col h-[260px]">
                     <AnimatePresence mode="wait">
                       {activeTab === "shape" && (
                         <motion.div
@@ -1647,95 +1360,102 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="h-full flex gap-4 min-h-0"
+                          className="h-full min-h-0 flex flex-col"
                         >
-                          <div className="w-40 flex-shrink-0 border-r border-white/10 pr-3">
-                            <label className="text-[10px] text-white/40 uppercase tracking-wider block mb-2">Categories</label>
-                            <div className="space-y-2">
-                              {CATEGORY_LABELS.map((category) => (
+                          <div className="flex items-center gap-4 flex-shrink-0 mb-3">
+                            <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">BACKGROUNDS</span>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {CATEGORY_LABELS.map((cat) => (
                                 <button
-                                  key={category}
-                                  onClick={() => setActiveCategory(category)}
+                                  key={cat}
+                                  onClick={() => setActiveCategory(cat)}
                                   className={cn(
-                                    "w-full text-left px-2.5 py-2 rounded-lg text-[11px] font-medium transition-all border",
-                                    activeCategory === category
-                                      ? "bg-neutral-900 border-white/20 text-white"
-                                      : "bg-neutral-900/50 border-white/10 text-white/60 hover:text-white hover:bg-neutral-800"
+                                    "px-2.5 py-1.5 rounded text-[11px] font-medium transition-all border-b-2 border-transparent",
+                                    activeCategory === cat
+                                      ? "text-cyan-400 border-cyan-400/80 bg-cyan-500/10"
+                                      : "text-white/50 border-transparent hover:text-white/70 bg-transparent"
                                   )}
                                 >
-                                  {category}
+                                  {cat}
                                 </button>
                               ))}
                             </div>
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="ml-auto w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
                           </div>
-                          <div className="flex-1 flex flex-col gap-3 min-h-0 overflow-hidden">
-                            <div className="flex items-center justify-between gap-3 flex-shrink-0">
-                              <div>
-                                <h3 className="text-sm font-semibold text-white">Background Library</h3>
-                                <p className="text-xs text-white/40">Search and apply background styles with variants.</p>
-                              </div>
-                              <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(event) => setSearchQuery(event.target.value)}
-                                placeholder="Search backgrounds…"
-                                className="w-48 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20"
-                              />
-                            </div>
-                            <div className="flex-1 overflow-y-auto min-h-0 pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent' }}>
-                              <div className="grid grid-cols-3 gap-3">
-                                {filteredBackgrounds.map((entry) => {
-                                  const isActive = flowState.currentBackgroundStyle === entry.gradientStyle;
-                                  return (
-                                    <div
-                                      key={entry.id}
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.2) transparent" }}>
+                            <div className="grid grid-cols-2 gap-4">
+                              {filteredBackgrounds.map((entry) => {
+                                const isActive = flowState.currentBackgroundStyle === entry.gradientStyle;
+                                return (
+                                  <div key={entry.id} className="flex flex-col gap-1.5">
+                                    <button
+                                      onClick={() => applyBackgroundEntry(entry, entry.variants[0])}
                                       className={cn(
-                                        "rounded-xl border p-2 bg-neutral-900/60 transition-all",
-                                        isActive ? "border-white/30" : "border-white/10 hover:border-white/20"
+                                        "w-full rounded-lg overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400/50",
+                                        isActive ? "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black/80" : "hover:ring-1 hover:ring-white/30"
                                       )}
                                     >
-                                      <button
-                                        onClick={() => applyBackgroundEntry(entry, entry.variants[0])}
-                                        className="w-full text-left"
-                                      >
-                                        <div
-                                          className="h-20 rounded-lg border border-white/10 mb-2"
-                                          style={buildPreviewStyle(entry, entry.variants[0])}
-                                        />
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-xs font-semibold text-white">{entry.name}</span>
-                                          <span className="text-[10px] text-white/40">{entry.gradientStyle}</span>
-                                        </div>
-                                        <div className="mt-1 flex flex-wrap gap-1">
-                                          {entry.tags.map((tag) => (
-                                            <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/50">
-                                              {tag}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </button>
-                                      <div className="mt-2 flex flex-wrap gap-1.5">
-                                        {entry.variants.map((variant) => (
-                                          <button
-                                            key={variant.id}
-                                            onClick={(event) => {
-                                              event.stopPropagation();
-                                              applyBackgroundEntry(entry, variant);
-                                            }}
-                                            className="px-2 py-1 rounded-full text-[9px] border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-all"
-                                          >
-                                            {variant.label}
-                                          </button>
-                                        ))}
-                                      </div>
+                                      <div
+                                        className="h-28 w-full shrink-0"
+                                        style={buildPreviewStyle(entry, entry.variants[0])}
+                                      />
+                                    </button>
+                                    <span className="text-xs font-semibold text-white block truncate">{entry.name}</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {entry.variants.map((v) => (
+                                        <button
+                                          key={v.id}
+                                          onClick={(ev) => { ev.stopPropagation(); applyBackgroundEntry(entry, v); }}
+                                          className="px-2 py-0.5 rounded text-[10px] font-medium bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/10 transition-colors"
+                                        >
+                                          {v.label}
+                                        </button>
+                                      ))}
                                     </div>
-                                  );
-                                })}
-                              </div>
-                              {filteredBackgrounds.length === 0 && (
-                                <div className="text-xs text-white/40 mt-6">No backgrounds match your search.</div>
-                              )}
+                                  </div>
+                                );
+                              })}
                             </div>
+                            {filteredBackgrounds.length === 0 && (
+                              <div className="flex items-center justify-center py-8 text-white/40 text-sm">No backgrounds match your search.</div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {activeTab === "style" && (
+                        <motion.div
+                          key="style"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="h-full min-h-0 flex flex-col"
+                        >
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Background shape</h4>
+                          <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-h-0" style={{ scrollbarWidth: "thin" }}>
+                            {SHAPE_STYLES.map(({ id, label }) => {
+                              const isActive = settings.gradientStyle === id;
+                              const previewSettings: HeroBackgroundSettings = { ...settings, gradientStyle: id };
+                              const previewBg = buildHeroGradient(previewSettings);
+                              return (
+                                <button
+                                  key={id}
+                                  onClick={() => updateSetting("gradientStyle", id)}
+                                  className={cn(
+                                    "flex-shrink-0 rounded-lg border p-2 text-left transition-all w-24",
+                                    isActive
+                                      ? "border-white/40 bg-white/10 ring-1 ring-white/20"
+                                      : "border-white/10 bg-neutral-900/60 hover:border-white/20 hover:bg-neutral-800/80"
+                                  )}
+                                >
+                                  <div
+                                    className="h-10 rounded-md mb-1.5 w-full border border-white/10"
+                                    style={{ background: previewBg }}
+                                  />
+                                  <span className="text-[10px] font-medium text-white block truncate">{label}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </motion.div>
                       )}
@@ -1746,19 +1466,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="flex flex-col items-start gap-6 w-full"
+                          className="h-full min-h-0 flex flex-col w-full"
                         >
-                          {/* Top row: Color swatches and presets */}
-                          <div className="flex items-center gap-4 w-full">
-                            {/* Color swatches */}
-                            <div className="flex items-center gap-2">
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Colors</h4>
+                          <div className="flex items-center gap-3 w-full flex-wrap flex-1 min-h-0 content-start">
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
                               <button
                                 onClick={() => handleColorPickerOpen("color1")}
                                 className={cn(
-                                  "w-8 h-8 rounded-full border-2 transition-all",
-                                  activeColorPicker === "color1"
-                                    ? "border-white"
-                                    : "border-white/40"
+                                  "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
+                                  activeColorPicker === "color1" ? "border-white" : "border-white/40"
                                 )}
                                 style={{ backgroundColor: settings.color1 }}
                               />
@@ -1767,80 +1484,54 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   <button
                                     onClick={() => handleColorPickerOpen("color2")}
                                     className={cn(
-                                      "w-8 h-8 rounded-full border-2 transition-all",
-                                      activeColorPicker === "color2"
-                                        ? "border-white"
-                                        : "border-white/40"
+                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
+                                      activeColorPicker === "color2" ? "border-white" : "border-white/40"
                                     )}
                                     style={{ backgroundColor: settings.color2 }}
                                   />
                                   <button
                                     onClick={() => handleColorPickerOpen("color3")}
                                     className={cn(
-                                      "w-8 h-8 rounded-full border-2 transition-all",
-                                      activeColorPicker === "color3"
-                                        ? "border-white"
-                                        : "border-white/40"
+                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
+                                      activeColorPicker === "color3" ? "border-white" : "border-white/40"
                                     )}
                                     style={{ backgroundColor: settings.color3 }}
                                   />
                                   <button
                                     onClick={() => handleColorPickerOpen("color4")}
                                     className={cn(
-                                      "w-8 h-8 rounded-full border-2 transition-all",
-                                      activeColorPicker === "color4"
-                                        ? "border-white"
-                                        : "border-white/40"
+                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
+                                      activeColorPicker === "color4" ? "border-white" : "border-white/40"
                                     )}
                                     style={{ backgroundColor: settings.color4 }}
                                   />
                                 </>
                               )}
                             </div>
-
-                            {/* Separator */}
-                            <div className="w-px h-8 bg-white/10" />
-
-                            {/* Presets - Two rows */}
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center gap-2">
-                                {Object.keys(COLOR_PRESETS).slice(0, 3).map((key) => (
-                                  <button
-                                    key={key}
-                                    onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
-                                    className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all uppercase"
-                                  >
-                                    {key.replace(/([A-Z])/g, " $1").trim()}
-                                  </button>
-                                ))}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {Object.keys(COLOR_PRESETS).slice(3).map((key) => (
-                                  <button
-                                    key={key}
-                                    onClick={() => applyPreset(key as keyof typeof COLOR_PRESETS)}
-                                    className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all uppercase"
-                                  >
-                                    {key.replace(/([A-Z])/g, " $1").trim()}
-                                  </button>
-                                ))}
-                              </div>
+                            <div className="w-px h-6 bg-white/10 flex-shrink-0" />
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {Object.keys(COLOR_PRESETS).map((key) => (
+                                <button
+                                  key={key}
+                                  onClick={() => applyPreset(key)}
+                                  className="px-2 py-1 rounded-md text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all uppercase"
+                                >
+                                  {key.replace(/([A-Z])/g, " $1").trim()}
+                                </button>
+                              ))}
                             </div>
                           </div>
-
-                          {/* Bottom section: COLOR 1 label + large color picker */}
                           {activeColorPicker && (
                             <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.2, ease: "easeOut" }}
-                              className="flex items-center gap-3 pt-2 border-t border-white/10 overflow-hidden w-full"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="flex items-center gap-2 flex-shrink-0"
                             >
                               <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
-                                {activeColorPicker.toUpperCase().replace("color", "COLOR ")}
+                                {activeColorPicker.replace("color", "Color ")}
                               </span>
-                              <div className="flex-1">
+                              <div className="flex-1 min-w-0">
                                 <HexColorPicker
                                   color={
                                     activeColorPicker === "color1" ? settings.color1 :
@@ -1854,7 +1545,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                     else if (activeColorPicker === "color3") updateSetting("color3", color);
                                     else updateSetting("color4", color);
                                   }}
-                                  style={{ width: "100%", height: 80 }}
+                                  style={{ width: "100%", height: 48 }}
                                 />
                               </div>
                             </motion.div>
@@ -1868,234 +1559,101 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="h-full flex gap-6"
+                          className="h-full min-h-0 flex flex-col"
                         >
-                          {/* Left Column - Main Controls */}
-                          <div className="flex-1 space-y-5">
-                            {/* Section: Lighting */}
-                            <div className="space-y-3">
-                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Lighting</h4>
-                              
-                              {/* Brightness */}
-                              <div className="flex items-center gap-3">
-                                <Sun size={14} className="text-white/50 flex-shrink-0" />
-                                <span className="text-xs text-white/60 w-20">Brightness</span>
-                                <input
-                                  type="range"
-                                  min="0.4"
-                                  max="2.0"
-                                  step="0.02"
-                                  value={settings.brightness}
-                                  onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))}
-                                  className="flex-1 max-w-40 accent-white/50"
-                                />
-                                <span className="text-xs text-white/70 w-10 text-right">{settings.brightness.toFixed(2)}</span>
-                              </div>
-
-                              {/* Contrast */}
-                              <div className="flex items-center gap-3">
-                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <circle cx="12" cy="12" r="10" />
-                                  <path d="M12 2v20M12 2a10 10 0 0 1 0 20" fill="currentColor" />
-                                </svg>
-                                <span className="text-xs text-white/60 w-20">Contrast</span>
-                                <input
-                                  type="range"
-                                  min="0.5"
-                                  max="2.0"
-                                  step="0.05"
-                                  value={1.0}
-                                  onChange={() => {}}
-                                  className="flex-1 max-w-40 accent-white/50"
-                                />
-                                <span className="text-xs text-white/70 w-10 text-right">1.00</span>
-                              </div>
-
-                              {/* Saturation */}
-                              <div className="flex items-center gap-3">
-                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <circle cx="12" cy="12" r="4" />
-                                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                                </svg>
-                                <span className="text-xs text-white/60 w-20">Saturation</span>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="2.0"
-                                  step="0.05"
-                                  value={1.0}
-                                  onChange={() => {}}
-                                  className="flex-1 max-w-40 accent-white/50"
-                                />
-                                <span className="text-xs text-white/70 w-10 text-right">1.00</span>
-                              </div>
-
-                              {/* Environment Light Toggle */}
-                              <div className="flex items-center gap-3 pt-1">
-                                <button
-                                  onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)}
-                                  className={cn(
-                                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                    settings.environmentEnabled
-                                      ? "bg-white/10 border-white/20 text-white"
-                                      : "bg-neutral-900 border-white/10 text-white/50 hover:text-white/70"
-                                  )}
-                                >
-                                  <Cloudy size={12} />
-                                  <span className="text-[11px] font-medium">Ambient Glow</span>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Middle Column - Texture & Effects */}
-                          <div className="flex-1 space-y-5">
-                            <div className="space-y-3">
-                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Texture & Effects</h4>
-                              
-                              {/* Grain */}
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)}
-                                    className={cn(
-                                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                      settings.grainEnabled
-                                        ? "bg-white/10 border-white/20 text-white"
-                                        : "bg-neutral-900 border-white/10 text-white/50 hover:text-white/70"
-                                    )}
-                                  >
-                                    <Layers size={12} />
-                                    <span className="text-[11px] font-medium">Film Grain</span>
-                                  </button>
-                                </div>
-                                {settings.grainEnabled && (
-                                  <div className="flex items-center gap-3 pl-1">
-                                    <span className="text-xs text-white/50 w-16">Intensity</span>
-                                    <input
-                                      type="range"
-                                      min="0"
-                                      max="0.8"
-                                      step="0.02"
-                                      value={settings.grainIntensity}
-                                      onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))}
-                                      className="flex-1 max-w-32 accent-white/50"
-                                    />
-                                    <span className="text-xs text-white/70 w-10 text-right">{settings.grainIntensity.toFixed(2)}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Blur (visual only) */}
-                              <div className="flex items-center gap-3">
-                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <circle cx="12" cy="12" r="3" opacity="0.3" />
-                                  <circle cx="12" cy="12" r="6" opacity="0.5" />
-                                  <circle cx="12" cy="12" r="9" opacity="0.7" />
-                                </svg>
-                                <span className="text-xs text-white/60 w-16">Blur</span>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="20"
-                                  step="1"
-                                  value={0}
-                                  onChange={() => {}}
-                                  className="flex-1 max-w-32 accent-white/50"
-                                />
-                                <span className="text-xs text-white/70 w-10 text-right">0px</span>
-                              </div>
-
-                              {/* Vignette */}
-                              <div className="flex items-center gap-3">
-                                <svg className="w-3.5 h-3.5 text-white/50 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                                  <circle cx="12" cy="12" r="5" />
-                                </svg>
-                                <span className="text-xs text-white/60 w-16">Vignette</span>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="1"
-                                  step="0.05"
-                                  value={0}
-                                  onChange={() => {}}
-                                  className="flex-1 max-w-32 accent-white/50"
-                                />
-                                <span className="text-xs text-white/70 w-10 text-right">0.00</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Right Column - Quick Actions */}
-                          <div className="w-44 space-y-5">
-                            <div className="space-y-3">
-                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Quick Presets</h4>
-                              
-                              <div className="grid grid-cols-2 gap-2">
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Motion & effects</h4>
+                          <div className="flex items-center gap-3 flex-wrap flex-1 min-h-0 content-start">
+                            <div className="flex items-center gap-1.5"><Sun size={11} className="text-white/50" /><span className="text-[10px] text-white/50">Bright</span><input type="range" min="0.4" max="2" step="0.02" value={settings.brightness} onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))} className="w-16 accent-white/50" /><span className="text-[10px] text-white/60 w-6">{settings.brightness.toFixed(2)}</span></div>
+                            <div className="flex items-center gap-1.5"><span className="text-[10px] text-white/50 w-12">Contrast</span><input type="range" min="0.5" max="2" step="0.05" value={settings.contrast ?? 1} onChange={(e) => updateSetting("contrast", parseFloat(e.target.value))} className="w-16 accent-white/50" /></div>
+                            <div className="flex items-center gap-1.5"><span className="text-[10px] text-white/50 w-10">Sat</span><input type="range" min="0" max="2" step="0.05" value={settings.saturation ?? 1} onChange={(e) => updateSetting("saturation", parseFloat(e.target.value))} className="w-16 accent-white/50" /></div>
+                            <button onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", settings.environmentEnabled ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50")}><Cloudy size={10} /> Ambient</button>
+                            <button onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", settings.grainEnabled ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50")}><Layers size={10} /> Grain</button>
+                            {settings.grainEnabled && <input type="range" min="0" max="0.8" step="0.02" value={settings.grainIntensity} onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))} className="w-14 accent-white/50" />}
+                            <div className="flex items-center gap-1"><span className="text-[10px] text-white/50">Blur</span><input type="range" min="0" max="20" step="1" value={settings.blurPx ?? 0} onChange={(e) => updateSetting("blurPx", parseInt(e.target.value, 10))} className="w-12 accent-white/50" /></div>
+                            <div className="flex items-center gap-1"><span className="text-[10px] text-white/50">Vign</span><input type="range" min="0" max="1" step="0.05" value={settings.vignette ?? 0} onChange={(e) => updateSetting("vignette", parseFloat(e.target.value))} className="w-12 accent-white/50" /></div>
+                            <div className="w-px h-5 bg-white/10" />
+                            <div className="flex items-center gap-1 flex-wrap">
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 1.0);
+                                    updateSetting("contrast", 1);
+                                    updateSetting("saturation", 1);
+                                    updateSetting("blurPx", 0);
+                                    updateSetting("vignette", 0);
                                     updateSetting("grainEnabled", false);
                                     updateSetting("environmentEnabled", false);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Reset All
                                 </button>
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 0.85);
+                                    updateSetting("contrast", 1.1);
+                                    updateSetting("vignette", 0.35);
                                     updateSetting("grainEnabled", true);
                                     updateSetting("grainIntensity", 0.25);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Cinematic
                                 </button>
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 1.4);
+                                    updateSetting("contrast", 1.05);
+                                    updateSetting("saturation", 1.1);
+                                    updateSetting("vignette", 0);
                                     updateSetting("grainEnabled", false);
                                     updateSetting("environmentEnabled", true);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Bright
                                 </button>
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 0.7);
+                                    updateSetting("contrast", 1.15);
+                                    updateSetting("saturation", 0.9);
+                                    updateSetting("vignette", 0.5);
                                     updateSetting("grainEnabled", true);
                                     updateSetting("grainIntensity", 0.4);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Moody
                                 </button>
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 1.1);
+                                    updateSetting("contrast", 0.95);
+                                    updateSetting("saturation", 1.05);
+                                    updateSetting("vignette", 0.15);
                                     updateSetting("grainEnabled", true);
                                     updateSetting("grainIntensity", 0.15);
                                     updateSetting("environmentEnabled", true);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Dreamy
                                 </button>
                                 <button
                                   onClick={() => {
                                     updateSetting("brightness", 1.3);
+                                    updateSetting("contrast", 1);
+                                    updateSetting("saturation", 1);
+                                    updateSetting("blurPx", 0);
+                                    updateSetting("vignette", 0);
                                     updateSetting("grainEnabled", false);
                                     updateSetting("environmentEnabled", false);
                                   }}
-                                  className="px-2 py-1.5 rounded-lg text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
+                                  className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
                                 >
                                   Clean
                                 </button>
                               </div>
-                            </div>
                           </div>
                         </motion.div>
                       )}
@@ -2106,14 +1664,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="overflow-y-auto"
-                          style={{ maxHeight: '180px' }}
+                          className="h-full min-h-0 flex flex-col overflow-y-auto"
                         >
-                          <div className="flex gap-6">
-                            {/* Component Selector (Left) */}
-                            <div className="w-48 flex-shrink-0 space-y-3">
-                              <label className="text-[10px] text-white/40 uppercase tracking-wider block">Select Component</label>
-                              <div className="grid grid-cols-2 gap-2">
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Components</h4>
+                          <div className="flex items-center gap-2 flex-shrink-0 mb-2">
+                            <span className="text-[10px] text-white/50">Select:</span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
                                 {[
                                   {
                                     id: "button-primary", label: "Primary", preview: (
@@ -2196,24 +1752,19 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                       (e as unknown as React.DragEvent).dataTransfer?.setData("componentType", comp.id);
                                     }}
                                     className={cn(
-                                      "p-2 rounded-lg border cursor-pointer transition-all group",
+                                      "p-1.5 rounded border cursor-pointer transition-all group flex-shrink-0 w-20",
                                       selectedComponent === comp.id
                                         ? "bg-white/10 border-white/30 ring-1 ring-blue-500/50"
                                         : "bg-neutral-900/50 border-white/10 hover:bg-neutral-800/50 hover:border-white/20"
                                     )}
                                   >
-                                    <div className="flex items-center justify-between mb-1.5">
-                                      <span className="text-[9px] text-white/60 font-medium">{comp.label}</span>
-                                      <GripVertical size={10} className="text-white/30 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
+                                    <span className="text-[9px] text-white/60 font-medium block mb-1">{comp.label}</span>
                                     {comp.preview}
                                   </motion.div>
                                 ))}
-                              </div>
                             </div>
-
-                            {/* Component Editor (Right) */}
-                            <div className="flex-1 space-y-4">
+                          </div>
+                          <div className="flex-1 min-h-0 overflow-y-auto border-t border-white/5 pt-2 mt-1 space-y-2">
                               {selectedComponent === "button-primary" && (
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
@@ -2511,7 +2062,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 </button>
                               </div>
                             </div>
-                          </div>
                         </motion.div>
                       )}
 
@@ -2521,35 +2071,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="flex items-center justify-center gap-6"
+                          className="h-full min-h-0 flex flex-col"
                         >
-                          {/* View toggles */}
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => setFullscreen(!fullscreen)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                fullscreen
-                                  ? "bg-neutral-900 border-white/20 text-white"
-                                  : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
-                              )}
-                            >
-                              {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                              <span className="text-xs font-medium">Fullscreen</span>
-                            </button>
-
-                            <button
-                              onClick={() => setShowHints(!showHints)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs",
-                                showHints
-                                  ? "bg-neutral-900 border-white/20 text-white"
-                                  : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"
-                              )}
-                            >
-                              {showHints ? <Eye size={14} /> : <EyeOff size={14} />}
-                              <span className="text-xs font-medium">UI Hints</span>
-                            </button>
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">View</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button onClick={() => setFullscreen(!fullscreen)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", fullscreen ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />} Fullscreen</button>
+                            <button onClick={() => setShowHints(!showHints)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHints ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{showHints ? <Eye size={12} /> : <EyeOff size={12} />} UI Hints</button>
                           </div>
                         </motion.div>
                       )}
@@ -2560,64 +2087,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="space-y-6"
+                          className="h-full min-h-0 flex flex-col"
                         >
-                          <div>
-                            <h3 className="text-lg font-semibold text-white mb-1">Copy Code</h3>
-                            <p className="text-sm text-white/60 mb-6">Copy the project code to clipboard</p>
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Export</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                              <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedProjectCode ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={12} /> : <Code size={12} />}{copiedProjectCode ? "Copied!" : "Project Code"}</button>
+                              <button onClick={handleCopyCode} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedCode ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedCode ? <Check size={12} /> : <Code size={12} />}{copiedCode ? "Copied!" : "React Code"}</button>
+                              <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedJSON ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedJSON ? <Check size={12} /> : <FileJson size={12} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                              <button onClick={() => setShowExport(true)} className="flex items-center gap-1 px-2 py-1 rounded border border-white/10 bg-neutral-900 text-white/70 hover:bg-neutral-800 text-[10px] font-medium">Export panel</button>
                           </div>
-
-                          {/* Copy Code */}
-                          <div className="space-y-3">
-                            <div className="flex flex-col gap-3">
-                              <button
-                                onClick={handleCopyProjectCode}
-                                className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${copiedProjectCode
-                                    ? "bg-neutral-800 hover:bg-neutral-700"
-                                    : "bg-neutral-900 hover:bg-neutral-800"
-                                  }`}
-                              >
-                                {copiedProjectCode ? <Check size={14} /> : <Code size={14} />}
-                                {copiedProjectCode ? "Project Code Copied!" : "Copy Project Code"}
-                              </button>
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={handleCopyCode}
-                                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${copiedCode
-                                      ? "bg-neutral-800 hover:bg-neutral-700"
-                                      : "bg-neutral-900 hover:bg-neutral-800"
-                                    }`}
-                                >
-                                  {copiedCode ? <Check size={14} /> : <Code size={14} />}
-                                  {copiedCode ? "Copied!" : "Copy React Code"}
-                                </button>
-                                <button
-                                  onClick={handleCopyJSON}
-                                  className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white text-xs font-medium transition-colors ${copiedJSON
-                                      ? "bg-neutral-800 hover:bg-neutral-700"
-                                      : "bg-neutral-900 hover:bg-neutral-800"
-                                    }`}
-                                >
-                                  {copiedJSON ? <Check size={14} /> : <FileJson size={14} />}
-                                  {copiedJSON ? "Copied!" : "Copy JSON Settings"}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Settings Summary */}
-                          <div className="pt-4 border-t border-white/10 space-y-2">
-                            <h4 className="text-sm font-medium text-white/80">Current Settings</h4>
-                            <div className="space-y-1 text-xs text-white/60">
-                              <div>Style: <span className="text-white/80">{settings.gradientStyle}</span></div>
-                              <div>Brightness: <span className="text-white/80">{settings.brightness.toFixed(2)}</span></div>
-                              <div>Grain: <span className="text-white/80">{settings.grainEnabled ? 'On' : 'Off'}</span></div>
-                              {settings.grainEnabled && (
-                                <div>Intensity: <span className="text-white/80">{settings.grainIntensity.toFixed(2)}</span></div>
-                              )}
-                              <div>Environment: <span className="text-white/80">{settings.environmentEnabled ? 'On' : 'Off'}</span></div>
-                            </div>
-                          </div>
+                          <p className="text-[9px] text-white/40 mt-1.5">Style: {settings.gradientStyle} · Brightness: {settings.brightness.toFixed(2)} · Grain: {settings.grainEnabled ? "On" : "Off"}</p>
                         </motion.div>
                       )}
 

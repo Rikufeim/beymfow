@@ -64,11 +64,11 @@ const AnimatedRoutes = () => {
               </ErrorBoundary>
             } />
             {/* Flow routes - path selection with sub-routes */}
-            <Route path="/flow" element={<FlowEnginePage />} />
-            <Route path="/flow/prompt-generator" element={<FlowEnginePage initialWorkspace="prompt-generator" />} />
-            <Route path="/flow/color-codes" element={<FlowEnginePage initialWorkspace="color-codes" />} />
+            <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
+            <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
+            <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
             {/* Legacy route - redirect to new /flow */}
-            <Route path="/flow-engine" element={<FlowEnginePage />} />
+            <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
             <Route path="/about" element={
               <Layout>
                 <About />
