@@ -27,10 +27,10 @@ const Button = ({
 };
 export const FlowFeaturesSection = memo(function FlowFeaturesSection({
   className = ""
-}: { className?: string }) {
+}: {className?: string;}) {
   const navigate = useNavigate();
   const { prefetchRoute } = usePrefetchRoute();
-  
+
   const handleNavigate = useCallback((path: string) => {
     navigate(path);
   }, [navigate]);
@@ -147,12 +147,12 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
                 background: 'radial-gradient(circle, rgba(212,212,212,0.12) 0%, rgba(163,163,163,0.08) 40%, rgba(115,115,115,0.04) 70%, transparent 100%)'
               }} aria-hidden="true" />
 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-                  Prompt Lab
-                </h2>
-                <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">
-                  Test ideas, refine prompts, and build full workflows that plug into your favorite AI tools.
-                </p>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">Landing page library
+
+              </h2>
+                <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">Growing landing page library for every need
+
+              </p>
                 <div className="text-sm font-semibold relative z-10 cursor-pointer inline-flex items-center gap-2 transition-all duration-200 group" style={{
                 color: '#ffffff',
                 letterSpacing: '0.01em',

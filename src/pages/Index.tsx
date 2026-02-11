@@ -24,10 +24,10 @@ const Index = () => {
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
   const homepageImages = useMemo(() => [
-    // Products section card backgrounds
-    "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
-    // CRYPTO GUIDES
-    "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
+  // Products section card backgrounds
+  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+  // CRYPTO GUIDES
+  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
   ], []);
   useImagePreloader({
     images: homepageImages
@@ -41,9 +41,9 @@ const Index = () => {
           className="fixed inset-0 z-[-1]"
           style={{
             background: "radial-gradient(ellipse at 20% 80%, #4f46e540 0%, #4f46e518 20%, transparent 50%), radial-gradient(ellipse at 80% 20%, #6106ff40 0%, #6106ff18 20%, transparent 50%), radial-gradient(ellipse at 50% 50%, #00000025 0%, #00000010 30%, transparent 65%), radial-gradient(circle at 30% 30%, #4f46e525 0%, #4f46e510 15%, transparent 35%), radial-gradient(circle at 70% 70%, #6106ff25 0%, #6106ff10 15%, transparent 35%), #000000",
-            filter: "brightness(0.75)",
-          }}
-        />
+            filter: "brightness(0.75)"
+          }} />
+
         {/* Hero Section */}
         <div className="relative">
           <Hero />
@@ -65,8 +65,8 @@ const Index = () => {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => navigate("/flow")}
-                    className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
-                  >
+                    className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40">
+
                     Flow Engine
                   </button>
                 </div>
@@ -77,12 +77,12 @@ const Index = () => {
                   className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
                   style={{
                     backgroundImage:
-                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                    "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
                     backgroundSize: "80px 80px, 80px 80px",
                     backgroundRepeat: "repeat, repeat",
-                    backgroundPosition: "0 0, 0 0",
-                  }}
-                />
+                    backgroundPosition: "0 0, 0 0"
+                  }} />
+
                 <div className="relative z-10">
                   <ColorWorkspaceDemo className="min-h-[280px]" />
                 </div>
@@ -287,56 +287,56 @@ const Index = () => {
 
           {/* CTA Section Before Footer */}
           <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
-            <div className="max-w-4xl mx-auto text-center">
-              <style>{`
-                  @keyframes gradient-shift {
-                    0% {
-                      background-position: 0% 50%;
-                    }
-                    50% {
-                      background-position: 100% 50%;
-                    }
-                    100% {
-                      background-position: 0% 50%;
-                    }
-                  }
-                  .animated-gradient-text {
-                    background-image: linear-gradient(to right, #a855f7 0%, #06b6d4 25%, #a855f7 50%, #06b6d4 75%, #a855f7 100%);
-                    background-size: 200% auto;
-                    background-clip: text;
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    animation: gradient-shift 3s ease infinite;
-                    padding-bottom: 0.2em;
-                    line-height: 1.2;
-                  }
-                `}</style>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-12 tracking-tight">
-                <span className="animated-gradient-text inline-block leading-tight">
-                  This website is made by<br />
-                  100% prompting
-                </span>
-              </h2>
-              <p className="text-white/70 text-lg mb-10">
-                IT'S ALL ABOUT THE PROMPT
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <div className="relative w-full sm:w-auto">
-                  <GlassButton
-                    size="default"
-                    onClick={() => navigate("/auth")}
-                    contentClassName="flex items-center gap-1.5"
-                    isSelected={false}
-                  >
-                    Start for free
-                  </GlassButton>
-                </div>
-              </div>
-            </div>
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           </section>
         </div>
       </main>
-    </Layout>
-  );
+    </Layout>);
+
 };
 export default Index;
