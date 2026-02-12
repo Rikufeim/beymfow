@@ -64,7 +64,27 @@ const generateBackgroundComponent = (settings: HeroBackgroundSettings): string =
   const gradientCSS = generateGradientCSS(settings);
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
-  const grainOverlay = settings.grainEnabled 
+  // Start logic for filter
+  const filterParts = [`brightness(${settings.brightness})`];
+  if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
+  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+  const filterString = filterParts.join(" ");
+
+  const vignetteOverlay = (settings.vignette && settings.vignette > 0)
+    ? `
+      {/* Vignette overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 65%, rgba(0,0,0,0.5) 100%)",
+          opacity: ${settings.vignette},
+          mixBlendMode: "multiply",
+        }}
+      />`
+    : "";
+
+  const grainOverlay = settings.grainEnabled
     ? `
       {/* Grain overlay */}
       <div 
@@ -98,9 +118,9 @@ export const HeroBackground: React.FC<HeroBackgroundProps> = ({ children, classN
       className={\`relative w-full h-screen overflow-hidden \${className || ""}\`}
       style={{
         background: "${gradientCSS}",
-        filter: "brightness(${settings.brightness})",
+        filter: "${filterString}",
       }}
-    >${grainOverlay}
+    >${grainOverlay}${vignetteOverlay}
       
       {/* Content */}
       {children && (
@@ -128,27 +148,27 @@ const generateComponentsCode = (settings: HeroBackgroundSettings): string => {
     settings.buttonPrimaryBg,
     settings.buttonPrimaryGradientColor
   );
-  
+
   const secondaryBtnBg = generateButtonGradient(
     settings.buttonSecondaryGradient,
     settings.buttonSecondaryBg,
     settings.buttonSecondaryGradientColor
   );
-  
+
   const cardBackground = generateCardGradient(
     settings.cardGradient,
     settings.cardBg,
     settings.cardGradientColor
   );
 
-  const primaryGlowStyle = settings.buttonPrimaryGradient === "glow" 
+  const primaryGlowStyle = settings.buttonPrimaryGradient === "glow"
     ? `boxShadow: "0 0 20px ${settings.buttonPrimaryGradientColor}60, 0 0 40px ${settings.buttonPrimaryGradientColor}30",`
     : "";
-  
+
   const secondaryGlowStyle = settings.buttonSecondaryGradient === "glow"
     ? `boxShadow: "0 0 20px ${settings.buttonSecondaryGradientColor}60, 0 0 40px ${settings.buttonSecondaryGradientColor}30",`
     : "";
-  
+
   const cardGlassStyle = settings.cardGradient === "glass"
     ? `backdropFilter: "blur(12px)",
       WebkitBackdropFilter: "blur(12px)",`
@@ -287,6 +307,10 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings): string => {
       },
       effects: {
         brightness: settings.brightness,
+        contrast: settings.contrast,
+        saturation: settings.saturation,
+        blurPx: settings.blurPx,
+        vignette: settings.vignette,
         grainEnabled: settings.grainEnabled,
         grainIntensity: settings.grainIntensity,
         environmentEnabled: settings.environmentEnabled,
@@ -331,6 +355,10 @@ const parseSettingsJSON = (json: string): HeroBackgroundSettings | null => {
         color4: parsed.settings.colors?.color4 || "#8b5cf6",
         singleColorMode: parsed.settings.colors?.singleColorMode || false,
         brightness: parsed.settings.effects?.brightness || 1.2,
+        contrast: parsed.settings.effects?.contrast ?? 1,
+        saturation: parsed.settings.effects?.saturation ?? 1,
+        blurPx: parsed.settings.effects?.blurPx ?? 0,
+        vignette: parsed.settings.effects?.vignette ?? 0,
         grainEnabled: parsed.settings.effects?.grainEnabled ?? true,
         grainIntensity: parsed.settings.effects?.grainIntensity || 0.35,
         environmentEnabled: parsed.settings.effects?.environmentEnabled ?? true,
@@ -467,8 +495,8 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                 <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
                   <h3 className="text-sm font-semibold text-orange-400 mb-1">🎨 Hero Background Component</h3>
                   <p className="text-xs text-white/60 leading-relaxed">
-                    Full-screen gradient tausta hero-sektioille. Sisältää valitsemasi värit, gradient-tyylin ({settings.gradientStyle}), 
-                    {settings.grainEnabled ? " grain-efektin," : ""} 
+                    Full-screen gradient tausta hero-sektioille. Sisältää valitsemasi värit, gradient-tyylin ({settings.gradientStyle}),
+                    {settings.grainEnabled ? " grain-efektin," : ""}
                     {settings.environmentEnabled ? " environment-valon" : ""} ja brightness-säädöt.
                   </p>
                 </div>
@@ -509,7 +537,7 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                 <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
                   <h3 className="text-sm font-semibold text-cyan-400 mb-1">🧩 UI Component Library</h3>
                   <p className="text-xs text-white/60 leading-relaxed">
-                    Valmiit React-komponentit jotka vastaavat Components-välilehdellä muokkaamiasi tyylejä. 
+                    Valmiit React-komponentit jotka vastaavat Components-välilehdellä muokkaamiasi tyylejä.
                     Sisältää napit, kortit ja input-kentät samoilla väreillä ja gradienteilla.
                   </p>
                 </div>
@@ -538,7 +566,7 @@ export const HeroExportPanel: React.FC<HeroExportPanelProps> = ({
                       {componentsCode}
                     </pre>
                   </div>
-                  
+
                   {/* Component list */}
                   <div className="grid grid-cols-2 gap-2 mt-3">
                     <div className="p-2 rounded-lg bg-white/5 border border-white/10">

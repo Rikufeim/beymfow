@@ -98,7 +98,7 @@ const Auth = () => {
         }
       }
 
-      const { error } = isLogin 
+      const { error } = isLogin
         ? await signIn(email, password)
         : await signUp(email, password);
 
@@ -130,20 +130,20 @@ const Auth = () => {
     <StarsBackground>
       <div className="min-h-screen text-white flex">
         {/* Left Side - Login Form */}
-        <div className="w-full lg:w-1/2 flex flex-col min-h-screen">
+        <div className="w-full lg:w-1/2 flex flex-col min-h-screen bg-black relative z-10">
           {/* Logo */}
           <div className="p-6 sm:p-8">
             <Link to="/" className="flex items-center gap-2">
-              <img 
-                src="/images/beymflow-logo.png" 
-                alt="Beymflow" 
+              <img
+                src="/images/beymflow-logo.png"
+                alt="Beymflow"
                 className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
               />
             </Link>
           </div>
 
           {/* Form Content */}
-          <div className="flex-1 flex items-center justify-center px-6 sm:px-12 lg:px-16">
+          <div className="flex-1 flex items-center px-6 sm:px-12 lg:px-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 rounded-lg"
+                    className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 rounded-lg transition-all"
                   />
                   {validationErrors.email && (
                     <p className="text-xs text-red-400">{validationErrors.email}</p>
@@ -189,7 +189,7 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={isLogin ? 6 : 8}
-                      className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10 rounded-lg"
+                      className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 pr-10 rounded-lg transition-all"
                     />
                     <button
                       type="button"
@@ -203,8 +203,8 @@ const Auth = () => {
                   {!isLogin && password && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                          <div 
+                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div
                             className={`h-full transition-all duration-300 ${getStrengthColor(passwordStrength(password))}`}
                             style={{ width: `${(passwordStrength(password) / 5) * 100}%` }}
                           />
@@ -249,7 +249,7 @@ const Auth = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         minLength={8}
-                        className="w-full bg-black/40 border-white/20 text-white placeholder:text-gray-500 focus:border-white/50 focus:bg-black/40 h-12 pr-10 rounded-lg"
+                        className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 pr-10 rounded-lg transition-all"
                       />
                       <button
                         type="button"
@@ -281,7 +281,7 @@ const Auth = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-neutral-700 text-white hover:bg-neutral-600 transition-all duration-300 h-12 text-base font-semibold rounded-lg"
+                  className="w-full bg-white text-black hover:bg-gray-200 transition-all duration-300 h-12 text-base font-semibold rounded-lg"
                 >
                   {loading ? 'Loading...' : 'Continue'}
                 </Button>
@@ -311,24 +311,9 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Right Side - Image with Overlay */}
-        <div className="hidden lg:flex lg:w-1/2 relative p-12 items-center">
-          <div className="relative w-full h-[70%] rounded-3xl overflow-hidden">
-            <img 
-              src={authRightBg}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            
-            {/* Centered Text Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-8">
-                <p className="text-2xl md:text-3xl font-light text-white text-center">
-                  Turn your ideas into<br />prompts
-                </p>
-              </div>
-            </div>
-          </div>
+        {/* Right Side - Empty for Stars Background */}
+        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center">
+          {/* Content removed to show stars background */}
         </div>
       </div>
     </StarsBackground>

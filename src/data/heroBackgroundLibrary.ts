@@ -11,7 +11,8 @@ export type BackgroundCategory =
   | "Expressive"
   | "Space"
   | "Vivid/Alive"
-  | "Luxury";
+  | "Luxury"
+  | "Colors";
 
 export type GradientStyleId =
   | "halo"
@@ -202,7 +203,7 @@ const luxuryMinimal = (): BackgroundVariant => ({
 // ─── BACKGROUND LIBRARY ─────────────────────────────────────────────────────
 
 export const BACKGROUND_LIBRARY: BackgroundEntry[] = [
-  // ═══ Soft/Ambient (10+) ═══
+  // ═══ Soft/Ambient (20+) ═══
   { id: "ambient-mist", name: "Ambient Mist", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["Soft", "calm", "mist", "gentle"], palettePreset: "mist", variants: [softVariant(), deepVariant(), contrastVariant(), minimalVariant()] },
   { id: "halo-glow", name: "Halo Glow", category: "Soft/Ambient", gradientStyle: "halo", tags: ["halo", "soft", "glow"], palettePreset: "aurora", variants: [softVariant(1.18), deepVariant(0.92), contrastVariant(1.28), minimalVariant()] },
   { id: "velvet-tide", name: "Velvet Tide", category: "Soft/Ambient", gradientStyle: "aurora", tags: ["calm", "tide", "ambient"], palettePreset: "amethyst", variants: [softVariant(1.16), deepVariant(0.94), contrastVariant(1.26), minimalVariant()] },
@@ -214,6 +215,16 @@ export const BACKGROUND_LIBRARY: BackgroundEntry[] = [
   { id: "dawn-whisper", name: "Dawn Whisper", category: "Soft/Ambient", gradientStyle: "aurora", tags: ["dawn", "warm", "golden"], palettePreset: "dawn", variants: [softVariant(1.16), deepVariant(0.9), contrastVariant(1.26), minimalVariant()] },
   { id: "haze-soft", name: "Haze Soft", category: "Soft/Ambient", gradientStyle: "noise-wash", tags: ["haze", "minimal", "soft"], palettePreset: "haze", variants: [softVariant(1.1), deepVariant(0.92), contrastVariant(1.2), minimalVariant()] },
   { id: "whisper-mist", name: "Whisper Mist", category: "Soft/Ambient", gradientStyle: "orb", tags: ["whisper", "neutral", "gentle"], palettePreset: "whisper", variants: [softVariant(1.08), deepVariant(0.94), contrastVariant(1.18), minimalVariant()] },
+  // Additional Soft/Ambient palette presets
+  { id: "fog-ambient", name: "Fog", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["fog", "neutral", "calm"], palettePreset: "fog", variants: [softVariant(1.12), deepVariant(), minimalVariant()] },
+  { id: "linen-texture", name: "Linen", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: [" linen", "warm", "neutral"], palettePreset: "linen", variants: [softVariant(1.1), deepVariant(), minimalVariant()] },
+  { id: "sage-minimal", name: "Sage", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["sage", "green", "minimal"], palettePreset: "sage", variants: [softVariant(1.12), deepVariant(), minimalVariant()] },
+  { id: "dawn-golden", name: "Dawn", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["dawn", "golden", "warm"], palettePreset: "dawn", variants: [softVariant(1.14), deepVariant(), minimalVariant()] },
+  { id: "arctic-cool", name: "Arctic", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["arctic", "cool", "teal"], palettePreset: "arctic", variants: [softVariant(1.12), deepVariant(), minimalVariant()] },
+  { id: "slate-neutral", name: "Slate", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["slate", "neutral", "minimal"], palettePreset: "slate", variants: [softVariant(1.08), deepVariant(), minimalVariant()] },
+  { id: "cream-warm", name: "Cream", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["cream", "warm", "light"], palettePreset: "cream", variants: [softVariant(1.15), deepVariant(), minimalVariant()] },
+  { id: "haze-ambient", name: "Haze", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["haze", "minimal", "subtle"], palettePreset: "haze", variants: [softVariant(1.1), deepVariant(), minimalVariant()] },
+  { id: "whisper-gentle", name: "Whisper", category: "Soft/Ambient", gradientStyle: "soft-sweep", tags: ["whisper", "gentle", "minimal"], palettePreset: "whisper", variants: [softVariant(1.08), deepVariant(), minimalVariant()] },
 
   // ═══ Futuristic (10+) ═══
   { id: "neon-grid", name: "Neon Grid", category: "Futuristic", gradientStyle: "mesh", tags: ["Neon", "grid", "future"], palettePreset: "neon", variants: [softVariant(1.12), deepVariant(0.9), contrastVariant(1.3), minimalVariant()] },
@@ -298,6 +309,60 @@ export const BACKGROUND_LIBRARY: BackgroundEntry[] = [
   { id: "luxury-sapphire", name: "Sapphire Accent", category: "Luxury", gradientStyle: "aurora", tags: ["Luxury", "sapphire", "accent", "dark"], palettePreset: "luxurySapphire", variants: [luxurySoft(), luxuryDeep(), luxuryEditorial(), luxuryMinimal()] },
   { id: "luxury-espresso", name: "Espresso", category: "Luxury", gradientStyle: "noise-wash", tags: ["Luxury", "espresso", "brown", "premium"], palettePreset: "espresso", variants: [luxurySoft(), luxuryDeep(), luxuryEditorial(), luxuryMinimal()] },
   { id: "luxury-navy", name: "Deep Navy", category: "Luxury", gradientStyle: "diagonal-blend", tags: ["Luxury", "navy", "deep", "sophisticated"], palettePreset: "deepNavy", variants: [luxurySoft(), luxuryDeep(), luxuryEditorial(), luxuryMinimal()] },
+
+  // ═══ Colors (Simple Palettes - All Remaining from COLOR_PRESETS) ═══
+  // Futuristic colors
+  { id: "color-neon", name: "Neon", category: "Colors", gradientStyle: "soft-sweep", tags: ["neon", "cyan", "purple"], palettePreset: "neon", variants: [minimalVariant()] },
+  { id: "color-ion", name: "Ion", category: "Colors", gradientStyle: "soft-sweep", tags: ["ion", "teal", "cyan"], palettePreset: "ion", variants: [minimalVariant()] },
+  { id: "color-matrix", name: "Matrix", category: "Colors", gradientStyle: "soft-sweep", tags: ["matrix", "green", "tech"], palettePreset: "matrix", variants: [minimalVariant()] },
+  { id: "color-hologram", name: "Hologram", category: "Colors", gradientStyle: "soft-sweep", tags: ["hologram", "indigo", "neon"], palettePreset: "hologram", variants: [minimalVariant()] },
+  { id: "color-laser", name: "Laser", category: "Colors", gradientStyle: "soft-sweep", tags: ["laser", "violet", "purple"], palettePreset: "laser", variants: [minimalVariant()] },
+  { id: "color-quantum", name: "Quantum", category: "Colors", gradientStyle: "soft-sweep", tags: ["quantum", "blue", "tech"], palettePreset: "quantum", variants: [minimalVariant()] },
+  { id: "color-prism", name: "Prism", category: "Colors", gradientStyle: "soft-sweep", tags: ["prism", "cyan", "violet"], palettePreset: "prism", variants: [minimalVariant()] },
+  // Dark/Editorial colors
+  { id: "color-noir", name: "Noir", category: "Colors", gradientStyle: "soft-sweep", tags: ["noir", "black", "dark"], palettePreset: "noir", variants: [minimalVariant(0.9)] },
+  { id: "color-ink", name: "Ink", category: "Colors", gradientStyle: "soft-sweep", tags: ["ink", "black", "deep"], palettePreset: "ink", variants: [minimalVariant(0.9)] },
+  { id: "color-charcoal", name: "Charcoal", category: "Colors", gradientStyle: "soft-sweep", tags: ["charcoal", "gray", "neutral"], palettePreset: "charcoal", variants: [minimalVariant(0.9)] },
+  { id: "color-obsidian", name: "Obsidian", category: "Colors", gradientStyle: "soft-sweep", tags: ["obsidian", "dark", "blue"], palettePreset: "obsidian", variants: [minimalVariant(0.9)] },
+  { id: "color-midnight", name: "Midnight", category: "Colors", gradientStyle: "soft-sweep", tags: ["midnight", "navy", "dark"], palettePreset: "midnight", variants: [minimalVariant(0.9)] },
+  { id: "color-editorial", name: "Editorial", category: "Colors", gradientStyle: "soft-sweep", tags: ["editorial", "gray", "neutral"], palettePreset: "editorial", variants: [minimalVariant(0.9)] },
+  { id: "color-press", name: "Press", category: "Colors", gradientStyle: "soft-sweep", tags: ["press", "dark", "neutral"], palettePreset: "press", variants: [minimalVariant(0.9)] },
+  { id: "color-velvet", name: "Velvet", category: "Colors", gradientStyle: "soft-sweep", tags: ["velvet", "purple", "dark"], palettePreset: "velvet", variants: [minimalVariant(0.9)] },
+  { id: "color-burgundy", name: "Burgundy", category: "Colors", gradientStyle: "soft-sweep", tags: ["burgundy", "red", "dark"], palettePreset: "burgundy", variants: [minimalVariant(0.9)] },
+  { id: "color-olive", name: "Olive", category: "Colors", gradientStyle: "soft-sweep", tags: ["olive", "green", "muted"], palettePreset: "olive", variants: [minimalVariant(0.9)] },
+  // Expressive colors
+  { id: "color-rose", name: "Rose", category: "Colors", gradientStyle: "soft-sweep", tags: ["rose", "pink", "bold"], palettePreset: "rose", variants: [minimalVariant()] },
+  { id: "color-ember", name: "Ember", category: "Colors", gradientStyle: "soft-sweep", tags: ["ember", "orange", "warm"], palettePreset: "ember", variants: [minimalVariant()] },
+  { id: "color-magma", name: "Magma", category: "Colors", gradientStyle: "soft-sweep", tags: ["magma", "red", "hot"], palettePreset: "magma", variants: [minimalVariant()] },
+  { id: "color-amethyst", name: "Amethyst", category: "Colors", gradientStyle: "soft-sweep", tags: ["amethyst", "purple", "rich"], palettePreset: "amethyst", variants: [minimalVariant()] },
+  { id: "color-coral", name: "Coral", category: "Colors", gradientStyle: "soft-sweep", tags: ["coral", "pink", "warm"], palettePreset: "coral", variants: [minimalVariant()] },
+  { id: "color-sunset", name: "Sunset", category: "Colors", gradientStyle: "soft-sweep", tags: ["sunset", "golden", "warm"], palettePreset: "sunset", variants: [minimalVariant()] },
+  { id: "color-forest", name: "Forest", category: "Colors", gradientStyle: "soft-sweep", tags: ["forest", "green", "natural"], palettePreset: "forest", variants: [minimalVariant()] },
+  { id: "color-nebula", name: "Nebula", category: "Colors", gradientStyle: "soft-sweep", tags: ["nebula", "purple", "cosmic"], palettePreset: "nebula", variants: [minimalVariant()] },
+  { id: "color-gold", name: "Gold", category: "Colors", gradientStyle: "soft-sweep", tags: ["gold", "yellow", "premium"], palettePreset: "gold", variants: [minimalVariant()] },
+  { id: "color-cosmic", name: "Cosmic", category: "Colors", gradientStyle: "soft-sweep", tags: ["cosmic", "indigo", "space"], palettePreset: "cosmic", variants: [minimalVariant()] },
+  // Space colors  
+  { id: "color-void", name: "Void", category: "Colors", gradientStyle: "soft-sweep", tags: ["void", "navy", "deep"], palettePreset: "void", variants: [minimalVariant(0.95)] },
+  { id: "color-stellar", name: "Stellar", category: "Colors", gradientStyle: "soft-sweep", tags: ["stellar", "indigo", "space"], palettePreset: "stellar", variants: [minimalVariant(0.95)] },
+  { id: "color-eclipse", name: "Eclipse", category: "Colors", gradientStyle: "soft-sweep", tags: ["eclipse", "indigo", "dark"], palettePreset: "eclipse", variants: [minimalVariant(0.95)] },
+  { id: "color-orbit", name: "Orbit", category: "Colors", gradientStyle: "soft-sweep", tags: ["orbit", "violet", "space"], palettePreset: "orbit", variants: [minimalVariant(0.95)] },
+  { id: "color-comet", name: "Comet", category: "Colors", gradientStyle: "soft-sweep", tags: ["comet", "cyan", "space"], palettePreset: "comet", variants: [minimalVariant()] },
+  { id: "color-lunar", name: "Lunar", category: "Colors", gradientStyle: "soft-sweep", tags: ["lunar", "gray", "minimal"], palettePreset: "lunar", variants: [minimalVariant(0.92)] },
+  { id: "color-deepSpace", name: "Deep Space", category: "Colors", gradientStyle: "soft-sweep", tags: ["deep", "navy", "space"], palettePreset: "deepSpace", variants: [minimalVariant(0.9)] },
+  { id: "color-pulsar", name: "Pulsar", category: "Colors", gradientStyle: "soft-sweep", tags: ["pulsar", "violet", "glow"], palettePreset: "pulsar", variants: [minimalVariant()] },
+  { id: "color-horizon", name: "Horizon", category: "Colors", gradientStyle: "soft-sweep", tags: ["horizon", "blue", "space"], palettePreset: "horizon", variants: [minimalVariant()] },
+  { id: "color-nebulaSpace", name: "Nebula Space", category: "Colors", gradientStyle: "soft-sweep", tags: ["nebula", "purple", "space"], palettePreset: "nebulaSpace", variants: [minimalVariant()] },
+  // Vivid/Alive colors
+  { id: "color-candy", name: "Candy", category: "Colors", gradientStyle: "soft-sweep", tags: ["candy", "magenta", "vivid"], palettePreset: "candy", variants: [minimalVariant()] },
+  { id: "color-tropical", name: "Tropical", category: "Colors", gradientStyle: "soft-sweep", tags: ["tropical", "green", "vibrant"], palettePreset: "tropical", variants: [minimalVariant()] },
+  { id: "color-mint", name: "Mint", category: "Colors", gradientStyle: "soft-sweep", tags: ["mint", "teal", "fresh"], palettePreset: "mint", variants: [minimalVariant()] },
+  { id: "color-ocean", name: "Ocean", category: "Colors", gradientStyle: "soft-sweep", tags: ["ocean", "cyan", "blue"], palettePreset: "ocean", variants: [minimalVariant()] },
+  { id: "color-lime", name: "Lime", category: "Colors", gradientStyle: "soft-sweep", tags: ["lime", "green", "bright"], palettePreset: "lime", variants: [minimalVariant()] },
+  { id: "color-fuchsia", name: "Fuchsia", category: "Colors", gradientStyle: "soft-sweep", tags: ["fuchsia", "magenta", "vivid"], palettePreset: "fuchsia", variants: [minimalVariant()] },
+  { id: "color-peach", name: "Peach", category: "Colors", gradientStyle: "soft-sweep", tags: ["peach", "orange", "warm"], palettePreset: "peach", variants: [minimalVariant()] },
+  { id: "color-aqua", name: "Aqua", category: "Colors", gradientStyle: "soft-sweep", tags: ["aqua", "cyan", "bright"], palettePreset: "aqua", variants: [minimalVariant()] },
+  { id: "color-berry", name: "Berry", category: "Colors", gradientStyle: "soft-sweep", tags: ["berry", "pink", "vivid"], palettePreset: "berry", variants: [minimalVariant()] },
+  { id: "color-zest", name: "Zest", category: "Colors", gradientStyle: "soft-sweep", tags: ["zest", "lime", "energetic"], palettePreset: "zest", variants: [minimalVariant()] },
 ];
 
 export const CATEGORY_LABELS: BackgroundCategory[] = [
@@ -308,4 +373,5 @@ export const CATEGORY_LABELS: BackgroundCategory[] = [
   "Space",
   "Vivid/Alive",
   "Luxury",
+  "Colors",
 ];

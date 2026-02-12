@@ -2,12 +2,13 @@
 // Simple page with 2 cards: Prompt Generator and Color Codes
 // Each card opens its own workspace
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Palette, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Import workspace components
 import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-engine/HeroBackgroundWorkspace";
@@ -28,8 +29,16 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [selectedHeroProject, setSelectedHeroProject] = useState<HeroBackgroundProject | null>(null);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth?redirect=/flow');
+    }
+  }, [user, navigate]);
 
   // Card data
   const cards = [
@@ -105,7 +114,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         />
         {/* Header */}
         <div className="sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
+          <div className="w-full px-6 py-4 flex items-center gap-4">
             <button
               onClick={handleBack}
               className="p-2 rounded-lg hover:bg-white/5 transition-colors"
@@ -136,7 +145,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
       {/* Header */}
       <div className="sticky top-0 z-50 bg-transparent">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="w-full px-6 py-4 flex items-center gap-4">
           <button
             onClick={handleBack}
             className="p-2 rounded-lg hover:bg-white/5 transition-colors"

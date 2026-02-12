@@ -103,7 +103,6 @@ const SpotlightText = () => {
   </span>;
 };
 
-// 1. FlowCard Component
 const FlowCard = ({
   card,
   index,
@@ -127,26 +126,21 @@ const FlowCard = ({
       </div>
     </div>
 
-    {/* Content Card Wrapper */}
+    {/* Content without Card */}
     <div className="group relative w-full md:w-5/12">
-      <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
-        <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-        <div className="relative flex h-full flex-col gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-8">
-          <div className="relative z-10 flex flex-col gap-4">
-            <div className="flex items-center gap-4 border-b border-white/10 pb-4">
-              {/* Mobile Index Indicator */}
-              <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white ring-1 ring-white/10">
-                0{index + 1}
-              </span>
+      <div className="relative flex flex-col gap-4 p-8">
+        <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+          {/* Mobile Index Indicator */}
+          <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white ring-1 ring-white/10">
+            0{index + 1}
+          </span>
 
-              <h3 className="text-lg font-semibold uppercase tracking-widest text-white">
-                {card.question}
-              </h3>
-            </div>
-
-            <p className="text-base leading-relaxed text-white/70">{card.answer}</p>
-          </div>
+          <h3 className="text-lg font-semibold uppercase tracking-widest text-white">
+            {card.question}
+          </h3>
         </div>
+
+        <p className="text-base leading-relaxed text-white/70">{card.answer}</p>
       </div>
     </div>
   </div>;

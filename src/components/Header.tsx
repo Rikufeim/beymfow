@@ -1,10 +1,17 @@
 "use client";
 
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const LOGO_URL = "/images/beymflow-logo.png";
 
@@ -12,6 +19,7 @@ const Header = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { prefetchRoute } = usePrefetchRoute();
+  const { user, signOut } = useAuth();
   const [logoLoaded, setLogoLoaded] = useState(false);
 
   const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about";
@@ -21,6 +29,10 @@ const Header = () => {
     img.src = LOGO_URL;
     img.onload = () => setLogoLoaded(true);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header
@@ -63,6 +75,28 @@ const Header = () => {
           >
             About Us
           </Link>
+
+          {/* Auth Button/User Menu */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                <User size={20} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-black border-white/10">
+                <DropdownMenuItem onClick={handleSignOut} className="text-white hover:bg-white/10 cursor-pointer">
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              to="/auth"
+              className="text-sm font-medium px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Sign In
+            </Link>
+          )}
         </nav>
         <Sheet>
           <SheetTrigger asChild>
@@ -86,6 +120,27 @@ const Header = () => {
               >
                 About Us
               </Link>
+
+              {/* Mobile Auth */}
+              {user ? (
+                <div className="border-t border-white/10 pt-6 px-4 space-y-2">
+                  <div className="text-sm text-gray-400 mb-2">Account</div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="mx-4 text-center px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </SheetContent>
         </Sheet>

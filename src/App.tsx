@@ -14,11 +14,14 @@ import { PageTransition } from "./components/PageTransition";
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const About = lazy(() => import("./pages/About"));
+const Auth = lazy(() => import("./pages/Auth"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 const Community = lazy(() => import("./pages/Community"));
+const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +66,8 @@ const AnimatedRoutes = () => {
                 <Index />
               </ErrorBoundary>
             } />
+            {/* Auth route */}
+            <Route path="/auth" element={<Auth />} />
             {/* Flow routes - path selection with sub-routes */}
             <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
             <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
@@ -82,6 +87,7 @@ const AnimatedRoutes = () => {
             <Route path="/image-generator" element={<ImageGenerator />} />
             <Route path="/planningsystem" element={<PlanningSystem />} />
             <Route path="/multiagentpage" element={<Multiagentpage />} />
+            <Route path="/landing-pages" element={<LandingPageLibrary />} />
             <Route path="*" element={
               <Layout>
                 <NotFound />
