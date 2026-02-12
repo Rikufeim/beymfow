@@ -244,7 +244,91 @@ const Index = () => {
             </div>
           </section>
 
+          {/* Pricing Section */}
+          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid lg:grid-cols-5 gap-10 lg:gap-12 items-center">
+                {/* Left: Headline & Subheadline */}
+                <div className="lg:col-span-2 space-y-4">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+                    Pricing
+                  </h2>
+                  <p className="text-sm sm:text-base md:text-lg text-white/70">
+                    Upgrade when you need full creative flow
+                  </p>
+                </div>
 
+                {/* Right: Two black pricing cards */}
+                <div className="lg:col-span-3 grid sm:grid-cols-2 gap-6">
+                  {/* Free Plan Card */}
+                  <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
+                    <h3 className="text-xl font-semibold text-white mb-1">Free Plan</h3>
+                    <div className="mb-6">
+                      <span className="text-3xl font-bold text-white">€0</span>
+                      <span className="text-white/60"> / month</span>
+                    </div>
+                    <ul className="space-y-3 flex-1 mb-6">
+                      {[
+                        "Basic prompt generation",
+                        "Limited daily prompts",
+                        "Access to selected templates",
+                        "Standard background styles",
+                        "Community support"
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                          <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => navigate("/flow")}
+                      className="w-full rounded-lg px-4 py-3 border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30"
+                    >
+                      Start Free
+                    </button>
+                  </div>
+
+                  {/* Pro Plan Card (Most Popular) */}
+                  <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold border border-cyan-400/30">
+                        Most Popular
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-1">Pro Plan</h3>
+                    <div className="mb-6">
+                      <span className="text-3xl font-bold text-white">€9.99</span>
+                      <span className="text-white/60"> / month</span>
+                    </div>
+                    <ul className="space-y-3 flex-1 mb-6">
+                      {[
+                        "Unlimited prompt generation",
+                        "Full access to all Prompt Generator tools",
+                        "Complete access to Color Codes section",
+                        "Advanced model options",
+                        "All background styles",
+                        "Premium templates",
+                        "Faster processing",
+                        "Priority support"
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                          <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => navigate("/flow")}
+                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90"
+                    >
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <div className="py-16 sm:py-20 md:py-24 lg:py-32">
             <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>}>

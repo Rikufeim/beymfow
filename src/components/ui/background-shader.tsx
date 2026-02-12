@@ -16,13 +16,29 @@ const COLORS_BOTTOM_DATA = [
     [0, 0, 0]      // hsl(0, 0%, 0%)
 ];
 
+// Black variant - same structure as default but dark tones (black as main color)
+const COLORS_BLACK_TOP = [
+    [0, 0, 0],       // black
+    [270, 80, 10],   // dark purple (same hue/sat as default, low lightness)
+    [250, 70, 12],   // dark blue-purple
+    [0, 0, 0]        // black
+];
+const COLORS_BLACK_BOTTOM = [
+    [0, 0, 0],       // black
+    [180, 90, 14],   // dark cyan
+    [270, 80, 14],   // dark purple
+    [0, 0, 0]        // black
+];
+
 function lerp(start: number, end: number, t: number) {
     return start * (1 - t) + end * t;
 }
 
-function getInterpolatedColors(t: number) {
-    return COLORS_TOP_DATA.map((c1, i) => {
-        const c2 = COLORS_BOTTOM_DATA[i];
+function getInterpolatedColors(t: number, variant: "default" | "black" = "default") {
+    const top = variant === "black" ? COLORS_BLACK_TOP : COLORS_TOP_DATA;
+    const bottom = variant === "black" ? COLORS_BLACK_BOTTOM : COLORS_BOTTOM_DATA;
+    return top.map((c1, i) => {
+        const c2 = bottom[i];
         const h = lerp(c1[0], c2[0], t);
         const s = lerp(c1[1], c2[1], t);
         const l = lerp(c1[2], c2[2], t);
@@ -30,9 +46,9 @@ function getInterpolatedColors(t: number) {
     });
 }
 
-export default function BackgroundShader({ children }: { children?: ReactNode }) {
+export default function BackgroundShader({ children, variant = "default" }: { children?: ReactNode; variant?: "default" | "black" }) {
     // Initial colors
-    const [colors, setColors] = useState<string[]>(getInterpolatedColors(0));
+    const [colors, setColors] = useState<string[]>(getInterpolatedColors(0, variant));
     const requestRef = useRef<number>();
 
     useEffect(() => {
@@ -45,7 +61,6 @@ export default function BackgroundShader({ children }: { children?: ReactNode })
             const p1End = vh * 1.0;
 
             // Phase 2: Turquoise -> Engineered (Black)
-            // Extended the duration of the turquoise phase
             const p2Start = vh * 2.5;
             const p2End = vh * 3.5;
 
@@ -63,11 +78,10 @@ export default function BackgroundShader({ children }: { children?: ReactNode })
                 t = 0;
             }
 
-            // Clamp t between 0 and 1
             if (t < 0) t = 0;
             if (t > 1) t = 1;
 
-            setColors(getInterpolatedColors(t));
+            setColors(getInterpolatedColors(t, variant));
         };
 
         const onScroll = () => {
@@ -85,7 +99,7 @@ export default function BackgroundShader({ children }: { children?: ReactNode })
             window.removeEventListener("scroll", onScroll);
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
-    }, []);
+    }, [variant]);
 
     return (
         <div className="relative min-h-screen overflow-hidden">

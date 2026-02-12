@@ -4,8 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GlassButton } from "@/components/ui/glass-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { ChevronUp } from "lucide-react";
 import BackgroundShader from "@/components/ui/background-shader";
 
 // --- TYPES ---
@@ -14,18 +12,13 @@ type InfoCard = {
   answer: string;
 };
 
-type FAQItem = {
-  question: string;
-  answer: string;
-};
-
 // --- DATA ---
 const infoCards: InfoCard[] = [{
   question: "WHAT IS BEYMFLOW?",
-  answer: "Beymflow is a creative AI platform designed to help you craft perfect prompts in seconds. Simply share your idea, whether it's a task, goal, or rough prompt, and our advanced prompt generators transform it into tailored AI instructions."
+  answer: "Beymflow is a modern creative platform built for developers, vibe coders, and digital creators. It combines a powerful AI prompt generator, advanced color code generation (HEX, RGB, gradients), and tools for creating visually striking backgrounds and UI elements — all in one place.\n\nWhether you're building a landing page, SaaS product, portfolio, or full web application, Beymflow helps you generate production-ready creative assets in seconds."
 }, {
   question: "WHY BEYMFLOW?",
-  answer: "AI + Web3 Synergy combines artificial intelligence with the next era of digital innovation. Smart analysis suggests the optimal structure and wording so your prompts return accurate, relevant answers every time."
+  answer: "Beymflow helps you move faster without sacrificing creativity.\n\nDevelopers use it to speed up workflows, improve visual quality, and generate structured, high-performing AI prompts effortlessly.\n\nBy combining intelligent prompt engineering with modern design tools, Beymflow turns ideas into ready-to-use outputs — instantly and efficiently."
 }, {
   question: "HOW IT WORKS",
   answer: "Enter your idea, let our AI enhance and structure the prompt for clarity, then copy it directly into your favourite AI model for immediate results."
@@ -36,30 +29,6 @@ const infoCards: InfoCard[] = [{
   question: "ALWAYS EVOLVING",
   answer: "We continuously add new generators and tools to support your creativity. Join us on the frontier of AI creation and see how easy it is to Beymflow your potential."
 }];
-
-// --- FAQ DATA ---
-const faqItems: FAQItem[] = [
-  {
-    question: "What is lifetime access?",
-    answer: "Lifetime access means you get unlimited access to all features and updates of Beymflow forever, with no recurring fees or subscriptions."
-  },
-  {
-    question: "What happens when I buy lifetime access?",
-    answer: "After purchasing lifetime access, you'll immediately gain access to all premium features, including all prompt generators, AI tools, and future updates. Your account will be upgraded automatically."
-  },
-  {
-    question: "How to access code for templates and Component Blocks?",
-    answer: "Once you have lifetime access, you can access all templates and component blocks through your dashboard. Simply navigate to the Templates section and download or copy the code for any template you need."
-  },
-  {
-    question: "Do you offer refunds?",
-    answer: "We offer a 30-day money-back guarantee. If you're not satisfied with your purchase, contact us within 30 days for a full refund."
-  },
-  {
-    question: "I'm stuck, how do I get help?",
-    answer: "We're here to help! You can reach out to us at contact@beymflow.com or use the support chat in your dashboard. Our team typically responds within 24 hours."
-  }
-];
 
 // --- COMPONENTS ---
 
@@ -86,8 +55,8 @@ const SpotlightText = () => {
   return <span ref={containerRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
     // Lisätään whitespace-nowrap estämään rivitys
     className="relative inline-block cursor-default select-none whitespace-nowrap pr-8 pb-2">
-    {/* 1. Base Layer: Dark Gray Text */}
-    <span className="text-gray-800 transition-colors duration-300">in Flow</span>
+    {/* 1. Base Layer: Transparent Text */}
+    <span className="text-white/40 transition-colors duration-300">in Flow</span>
 
     {/* 2. Overlay Layer: Gradient Text with Dynamic Mask */}
     <span className="pointer-events-none absolute left-0 top-0 bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500 bg-clip-text text-transparent pr-4" // Lisätty pr-4 suoraan tähän
@@ -141,7 +110,7 @@ const FlowCard = ({
           </h3>
         </div>
 
-        <p className="text-base leading-relaxed text-white/70">{card.answer}</p>
+        <p className="text-base leading-relaxed text-white/70 whitespace-pre-line">{card.answer}</p>
       </div>
     </div>
   </div>;
@@ -208,8 +177,6 @@ const About = () => {
               <SpotlightText />
             </h1>
           </div>
-
-          <p className="max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed z-10">Where ideas evolve.</p>
         </section>
 
         {/* Timeline Section */}
@@ -243,45 +210,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="pt-16 pb-32 px-4 sm:px-6 lg:px-8 relative">
-          <div className="mx-auto max-w-4xl">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                Frequently asked questions
-              </h2>
-              <p className="text-lg text-white/70 max-w-2xl mx-auto">
-                We are here to help you with any questions you may have. If you don't find what you need, please contact us at{" "}
-                <a
-                  href="mailto:contact@beymflow.com"
-                  className="text-blue-400 hover:text-blue-300 transition-colors underline"
-                >
-                  contact@beymflow.com
-                </a>
-              </p>
-            </div>
-
-            <Accordion type="single" collapsible className="w-full space-y-4">
-              {faqItems.map((item, index) => (
-                <AccordionItem
-                  key={index}
-                  value={`item-${index}`}
-                  className="border border-white/10 rounded-lg bg-white/5 px-6 data-[state=open]:bg-white/10 transition-colors"
-                >
-                  <AccordionTrigger className="text-white hover:no-underline py-6 [&>svg]:hidden [&[data-state=open]_svg]:rotate-180">
-                    <div className="flex items-center gap-4 w-full">
-                      <ChevronUp className="h-5 w-5 shrink-0 text-white/70 transition-transform duration-200" />
-                      <span className="text-left font-medium text-lg">{item.question}</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="text-white/70 pb-6 pl-9 leading-relaxed">
-                    {item.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </section>
       </div>
     </div>
   </BackgroundShader>;

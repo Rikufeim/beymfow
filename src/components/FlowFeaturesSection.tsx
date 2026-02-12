@@ -56,7 +56,7 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
               <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent font-medium" style={{ fontFamily: "Outfit, sans-serif" }}>vibe coding tools</span>
             </h2>
             <p className="mx-auto max-w-3xl text-lg md:text-xl text-gray-400 tracking-tight leading-relaxed">
-              Build and control your whole creative workflow — no clutter, no complexity, just clean, intuitive tools that build prompts as fast as you think.
+              We're constantly building new tools to help you create faster, design smarter, and ship with confidence.
             </p>
           </div>
         </div>

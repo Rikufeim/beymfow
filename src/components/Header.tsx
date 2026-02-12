@@ -15,19 +15,28 @@ import {
 
 const LOGO_URL = "/images/beymflow-logo.png";
 
+let logoCacheLoaded = false;
+
 const Header = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { prefetchRoute } = usePrefetchRoute();
   const { user, signOut } = useAuth();
-  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(logoCacheLoaded);
 
-  const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about";
+  const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about" || location.pathname === "/premium";
 
   useEffect(() => {
+    if (logoCacheLoaded) {
+      setLogoLoaded(true);
+      return;
+    }
     const img = new Image();
     img.src = LOGO_URL;
-    img.onload = () => setLogoLoaded(true);
+    img.onload = () => {
+      logoCacheLoaded = true;
+      setLogoLoaded(true);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -45,11 +54,11 @@ const Header = () => {
           <img
             src={LOGO_URL}
             alt="Beymflow Logo"
-            className={`h-10 sm:h-11 md:h-12 w-auto object-contain flex-shrink-0 transition-opacity duration-200 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`h-12 sm:h-14 md:h-16 w-auto object-contain flex-shrink-0 transition-opacity duration-200 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="eager"
             decoding="async"
           />
-          <span className="relative text-base font-semibold tracking-[0.28em] text-white uppercase hidden sm:block -ml-1">
+          <span className="relative text-base font-semibold tracking-[0.28em] text-white hidden sm:block -ml-1">
             Beymflow
           </span>
         </Link>

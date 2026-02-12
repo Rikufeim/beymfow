@@ -21,6 +21,7 @@ const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 const Community = lazy(() => import("./pages/Community"));
 const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
+const Premium = lazy(() => import("./pages/Premium"));
 
 
 const queryClient = new QueryClient({
@@ -77,6 +78,11 @@ const AnimatedRoutes = () => {
             <Route path="/about" element={
               <Layout>
                 <About />
+              </Layout>
+            } />
+            <Route path="/premium" element={
+              <Layout>
+                <Premium />
               </Layout>
             } />
             <Route path="/community" element={
