@@ -6,6 +6,7 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { ChevronUp } from "lucide-react";
+import BackgroundShader from "@/components/ui/background-shader";
 
 // --- TYPES ---
 type InfoCard = {
@@ -183,17 +184,10 @@ const About = () => {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  return <div className="relative min-h-screen bg-transparent text-white selection:bg-cyan-500/30 selection:text-cyan-100">
-    {/* Custom Background */}
-    <div
-      className="fixed inset-0 z-[-1]"
-      style={{
-        background: "radial-gradient(ellipse at 20% 80%, #00000040 0%, #00000018 20%, transparent 50%), radial-gradient(ellipse at 80% 20%, #000a9940 0%, #000a9918 20%, transparent 50%), radial-gradient(ellipse at 50% 50%, #00000025 0%, #00000010 30%, transparent 65%), radial-gradient(circle at 30% 30%, #00000025 0%, #00000010 15%, transparent 35%), radial-gradient(circle at 70% 70%, #000a9925 0%, #000a9910 15%, transparent 35%), #000000",
-        filter: "brightness(0.75)",
-      }}
-    />
-    {/* Custom Styles for Animations */}
-    <style>{`
+  return <BackgroundShader>
+    <div className="relative min-h-screen bg-transparent text-white selection:bg-cyan-500/30 selection:text-cyan-100">
+      {/* Custom Styles for Animations */}
+      <style>{`
         @keyframes border-shine {
           0% { background-position: 100% 0; }
           100% { background-position: -100% 0; }
@@ -203,92 +197,93 @@ const About = () => {
         }
       `}</style>
 
-    <div className="relative z-10">
-      {/* Hero Section */}
-      <section className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center pt-20 pb-10">
-        <div className="relative mb-8 z-10">
-          <h1 className="relative text-6xl font-extrabold tracking-tighter sm:text-7xl text-white drop-shadow-2xl md:text-7xl">
-            The Future
-            <br />
-            {/* KÄYTETÄÄN PÄIVITETTYÄ SPOTLIGHT-KOMPONENTTIA */}
-            <SpotlightText />
-          </h1>
-        </div>
-
-        <p className="max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed z-10">Where ideas evolve.</p>
-      </section>
-
-      {/* Timeline Section */}
-      <section className="relative px-4 py-12 sm:px-6 lg:px-8" ref={containerRef}>
-        <div className="mx-auto max-w-6xl relative">
-          {/* --- LINE CONTAINER --- */}
-          <div className="absolute left-1/2 top-0 bottom-64 hidden w-px -translate-x-1/2 md:block">
-            <div className="h-full w-full bg-white/10" />
-            <div className="absolute top-0 w-full bg-gradient-to-b from-purple-500 via-cyan-400 to-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-[height] duration-75 ease-linear" style={{
-              height: `${scrollProgress}%`
-            }} />
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center pt-20 pb-10">
+          <div className="relative mb-8 z-10">
+            <h1 className="relative text-6xl font-extrabold tracking-tighter sm:text-7xl text-white drop-shadow-2xl md:text-7xl">
+              The Future
+              <br />
+              {/* KÄYTETÄÄN PÄIVITETTYÄ SPOTLIGHT-KOMPONENTTIA */}
+              <SpotlightText />
+            </h1>
           </div>
 
-          <div className="flex flex-col gap-24 md:gap-32 pb-32 pt-10">
-            {infoCards.map((card, index) => {
-              const cardThreshold = index / (infoCards.length - 0.5) * 100;
-              const isCardActive = scrollProgress > cardThreshold;
-              return <FlowCard key={card.question} card={card} index={index} isActive={isCardActive} />;
-            })}
+          <p className="max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed z-10">Where ideas evolve.</p>
+        </section>
+
+        {/* Timeline Section */}
+        <section className="relative px-4 py-12 sm:px-6 lg:px-8" ref={containerRef}>
+          <div className="mx-auto max-w-6xl relative">
+            {/* --- LINE CONTAINER --- */}
+            <div className="absolute left-1/2 top-0 bottom-64 hidden w-1 -translate-x-1/2 md:block">
+              <div className="h-full w-full bg-white/10" />
+              <div className="absolute top-0 w-full bg-gradient-to-b from-purple-500 via-cyan-400 to-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-[height] duration-75 ease-linear" style={{
+                height: `${scrollProgress}%`
+              }} />
+            </div>
+
+            <div className="flex flex-col gap-24 md:gap-32 pb-32 pt-10">
+              {infoCards.map((card, index) => {
+                const cardThreshold = index / (infoCards.length - 0.5) * 100;
+                const isCardActive = scrollProgress > cardThreshold;
+                return <FlowCard key={card.question} card={card} index={index} isActive={isCardActive} />;
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer CTA Area */}
-      <section className="pt-0 pb-32 text-center relative overflow-hidden">
-        <div className="relative z-10">
-          <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
-          <GlassButton onClick={handleStartCreating} size="lg">
-            Start creating
-          </GlassButton>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="pt-16 pb-32 px-4 sm:px-6 lg:px-8 relative">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Frequently asked questions
-            </h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              We are here to help you with any questions you may have. If you don't find what you need, please contact us at{" "}
-              <a
-                href="mailto:contact@beymflow.com"
-                className="text-blue-400 hover:text-blue-300 transition-colors underline"
-              >
-                contact@beymflow.com
-              </a>
-            </p>
+        {/* Footer CTA Area */}
+        <section className="pt-0 pb-32 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
+            <GlassButton onClick={handleStartCreating} size="lg">
+              Start creating
+            </GlassButton>
           </div>
+        </section>
 
-          <Accordion type="single" collapsible className="w-full space-y-4">
-            {faqItems.map((item, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="border border-white/10 rounded-lg bg-white/5 px-6 data-[state=open]:bg-white/10 transition-colors"
-              >
-                <AccordionTrigger className="text-white hover:no-underline py-6 [&>svg]:hidden [&[data-state=open]_svg]:rotate-180">
-                  <div className="flex items-center gap-4 w-full">
-                    <ChevronUp className="h-5 w-5 shrink-0 text-white/70 transition-transform duration-200" />
-                    <span className="text-left font-medium text-lg">{item.question}</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="text-white/70 pb-6 pl-9 leading-relaxed">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
+        {/* FAQ Section */}
+        <section className="pt-16 pb-32 px-4 sm:px-6 lg:px-8 relative">
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                Frequently asked questions
+              </h2>
+              <p className="text-lg text-white/70 max-w-2xl mx-auto">
+                We are here to help you with any questions you may have. If you don't find what you need, please contact us at{" "}
+                <a
+                  href="mailto:contact@beymflow.com"
+                  className="text-blue-400 hover:text-blue-300 transition-colors underline"
+                >
+                  contact@beymflow.com
+                </a>
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              {faqItems.map((item, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`item-${index}`}
+                  className="border border-white/10 rounded-lg bg-white/5 px-6 data-[state=open]:bg-white/10 transition-colors"
+                >
+                  <AccordionTrigger className="text-white hover:no-underline py-6 [&>svg]:hidden [&[data-state=open]_svg]:rotate-180">
+                    <div className="flex items-center gap-4 w-full">
+                      <ChevronUp className="h-5 w-5 shrink-0 text-white/70 transition-transform duration-200" />
+                      <span className="text-left font-medium text-lg">{item.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-white/70 pb-6 pl-9 leading-relaxed">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      </div>
     </div>
-  </div>;
+  </BackgroundShader>;
 };
 export default About;

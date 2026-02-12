@@ -6,7 +6,7 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 export function GlowingEffectDemo() {
   return <section className="grid gap-8 md:grid-cols-12 md:items-stretch">
-    <div className="md:col-span-5 flex flex-col justify-center space-y-4">
+    <div className="md:col-span-5 flex flex-col justify-center space-y-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
       <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">
         Beymflow Lab
       </span>

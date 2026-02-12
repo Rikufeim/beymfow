@@ -1,6 +1,6 @@
 import { GlassButton } from "@/components/ui/glass-button";
 import { Sparkles, Copy, Check, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
 
@@ -21,6 +21,28 @@ export const GeneratedPromptDisplay = ({
 }: GeneratedPromptDisplayProps) => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [displayedPrompt, setDisplayedPrompt] = useState("");
+
+  useEffect(() => {
+    if (!prompt) {
+      setDisplayedPrompt("");
+      return;
+    }
+    setDisplayedPrompt("");
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex >= prompt.length) {
+        clearInterval(interval);
+        setDisplayedPrompt(prompt);
+        return;
+      }
+      // Faster typing: 5 chars per 10ms
+      const chunk = 5;
+      setDisplayedPrompt(prompt.substring(0, currentIndex + chunk));
+      currentIndex += chunk;
+    }, 10);
+    return () => clearInterval(interval);
+  }, [prompt]);
 
   const handleEnhancePrompt = async () => {
     if (!prompt.trim()) {
@@ -107,9 +129,9 @@ export const GeneratedPromptDisplay = ({
               </GlassButton>
             </div>
           </div>
-          <div className="p-4 rounded-xl bg-black border border-white/10">
+          <div className="p-4 rounded-xl bg-black/30 backdrop-blur-md border border-white/10">
             <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/90 text-left">
-              {prompt}
+              {displayedPrompt}
             </p>
           </div>
         </div>

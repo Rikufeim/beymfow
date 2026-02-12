@@ -26,7 +26,27 @@ export type GradientStyleId =
   | "wave"
   | "crystal"
   | "sunset"
-  | "cosmic";
+  | "cosmic"
+  | "nebula-cloud"
+  | "radial-pulse"
+  | "glass-shards"
+  | "grid-perspective"
+  | "fluid-flow"
+  | "cyber-grid"
+  | "bokeh-lights"
+  | "velvet-wrap"
+  | "prism-refraction"
+  | "midnight-mist"
+  | "solar-wind"
+  | "digital-rain"
+  | "abstract-curves"
+  | "neon-smoke"
+  | "geometric-shapes"
+  | "silk-drape"
+  | "vortex-spin"
+  | "glitch-noise"
+  | "star-cluster"
+  | "liquid-metal";
 
 export interface ColorPreset {
   color1: string;

@@ -12,7 +12,9 @@ import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle
 import { useMemo, lazy, Suspense } from "react";
 // HorizontalPlaceholderCarousel moved to Hero component
 import ColorWorkspaceDemo from "@/components/demo/ColorWorkspaceDemo";
+import BackgroundShader from "@/components/ui/background-shader";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { HeroBackground } from "@/components/ui/hero-background";
 
 // Lazy load heavy components
 const Products = lazy(() => import("@/components/Products"));
@@ -24,10 +26,10 @@ const Index = () => {
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
   const homepageImages = useMemo(() => [
-  // Products section card backgrounds
-  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
-  // CRYPTO GUIDES
-  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
+    // Products section card backgrounds
+    "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+    // CRYPTO GUIDES
+    "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
   ], []);
   useImagePreloader({
     images: homepageImages
@@ -35,27 +37,36 @@ const Index = () => {
 
   return (
     <Layout>
-      <main className="relative min-h-screen">
-        {/* Global Background */}
-        <div
-          className="fixed inset-0 z-[-1]"
-          style={{
-            background: "radial-gradient(ellipse at 20% 80%, #4f46e540 0%, #4f46e518 20%, transparent 50%), radial-gradient(ellipse at 80% 20%, #6106ff40 0%, #6106ff18 20%, transparent 50%), radial-gradient(ellipse at 50% 50%, #00000025 0%, #00000010 30%, transparent 65%), radial-gradient(circle at 30% 30%, #4f46e525 0%, #4f46e510 15%, transparent 35%), radial-gradient(circle at 70% 70%, #6106ff25 0%, #6106ff10 15%, transparent 35%), #000000",
-            filter: "brightness(0.75)"
-          }} />
-
+      <BackgroundShader>
         {/* Hero Section */}
         <div className="relative">
           <Hero />
         </div>
 
-        {/* Content after Hero - bg-transparent to show fixed background */}
-        <div className="relative bg-transparent">
+        {/* Content after Hero */}
+        <div className="relative">
+
+          {/* Creative Tools Section */}
+          <section className="py-24 sm:py-32 px-6 md:px-10 lg:px-16 w-full">
+            <div className="w-full">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-12 tracking-tight max-w-[90vw]">
+                Creative tools for <span className="text-white/60">modern developers</span>
+              </h2>
+              <div className="grid md:grid-cols-2 gap-10 lg:gap-20 text-lg sm:text-xl text-white/70 leading-relaxed">
+                <p>
+                  Beymflow is a modern creative platform built for developers, vibe coders, and digital creators who design websites, apps, and interactive experiences. The platform combines a powerful prompt generator for AI tools, advanced color code generation (HEX, RGB, gradients), and tools for creating visually striking website backgrounds and UI elements.
+                </p>
+                <p>
+                  Developers use Beymflow to speed up their workflow, improve visual quality, and generate production-ready design assets in seconds. Whether you're building a landing page, SaaS product, portfolio, or full-scale web application, Beymflow helps you move faster — without sacrificing creativity.
+                </p>
+              </div>
+            </div>
+          </section>
 
           {/* Start Building showcase */}
-          <section className="relative w-full px-6 md:px-8 lg:px-12 py-16 sm:py-20 md:py-24 lg:py-32">
-            <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-2 items-center">
-              <div className="space-y-6">
+          <section className="">
+            <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12 py-16 sm:py-20 md:py-24 lg:py-32 grid gap-10 md:grid-cols-2 items-center">
+              <div className="space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
                   Start Building
                 </h2>
@@ -77,7 +88,7 @@ const Index = () => {
                   className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
                   style={{
                     backgroundImage:
-                    "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
                     backgroundSize: "80px 80px, 80px 80px",
                     backgroundRepeat: "repeat, repeat",
                     backgroundPosition: "0 0, 0 0"
@@ -93,7 +104,9 @@ const Index = () => {
           {/* Video carousels moved to Hero component */}
 
           {/* Flow Features Section */}
-          <FlowFeaturesSection className="py-16 sm:py-20 md:py-24 lg:py-32" />
+          <div className="">
+            <FlowFeaturesSection className="py-16 sm:py-20 md:py-24 lg:py-32" />
+          </div>
 
           {/* Beymflow Premium highlight */}
 
@@ -115,15 +128,17 @@ const Index = () => {
 
 
           {/* How It Works Section */}
-          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
+          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
-                  Create Perfect AI Prompts in Seconds
-                </h2>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 max-w-3xl mx-auto">
-                  Follow these simple steps to create optimized prompts for AI models in seconds
-                </p>
+                <div className="inline-block relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
+                    Create Perfect AI Prompts in Seconds
+                  </h2>
+                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 max-w-3xl mx-auto">
+                    Follow these simple steps to create optimized prompts for AI models in seconds
+                  </p>
+                </div>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -169,12 +184,14 @@ const Index = () => {
           <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
-                  Essential Steps for Writing AI Prompts
-                </h2>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
-                  Follow these proven steps to create effective AI prompts
-                </p>
+                <div className="inline-block relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
+                    Essential Steps for Writing AI Prompts
+                  </h2>
+                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
+                    Follow these proven steps to create effective AI prompts
+                  </p>
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -227,57 +244,7 @@ const Index = () => {
             </div>
           </section>
 
-          {/* Why Choose Section */}
-          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12 bg-transparent">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                  {["Why", "Choose", "BEYMFLOW", "Prompt", "Generators?"].map((word, index) => <span key={index} className="inline-block transition-all duration-200 ease-out hover:translate-y-2 hover:scale-105 cursor-pointer mr-2 last:mr-0" style={{
-                    willChange: "transform"
-                  }}>
-                    {word}
-                  </span>)}
-                </h2>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-                {[{
-                  icon: <Zap className="h-4 w-4 text-blue-400" />,
-                  title: "Instant Enhancement",
-                  description: "Get immediate improvements to your prompts using advanced AI techniques."
-                }, {
-                  icon: <Lightbulb className="h-4 w-4 text-purple-400" />,
-                  title: "Smart Analysis",
-                  description: "Our system uses sophisticated analysis techniques to understand your prompt context and provide optimal suggestions."
-                }, {
-                  icon: <CheckCircle className="h-4 w-4 text-pink-400" />,
-                  title: "Precision Results",
-                  description: "Get accurate and relevant responses from AI with our enhanced prompts."
-                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
-                    <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
-                      <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                        <div className="flex flex-col gap-3">
-                          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                            {item.icon}
-                          </div>
-                          <div className="space-y-2">
-                            <h3 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-white/85">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs leading-relaxed text-white/70 sm:text-lg">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>)}
-              </div>
-            </div>
-          </section>
 
           <div className="py-16 sm:py-20 md:py-24 lg:py-32">
             <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>}>
@@ -287,7 +254,7 @@ const Index = () => {
 
           {/* CTA Section Before Footer */}
           <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12 bg-transparent">
-            
+
 
 
 
@@ -335,8 +302,8 @@ const Index = () => {
 
           </section>
         </div>
-      </main>
-    </Layout>);
+      </BackgroundShader>
+    </Layout >);
 
 };
 export default Index;

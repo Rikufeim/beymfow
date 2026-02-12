@@ -17,14 +17,32 @@ export const TextPromptGenerator = ({
 }: TextPromptGeneratorProps) => {
   const [input, setInput] = useState("");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [displayedPrompt, setDisplayedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Streaming effect for the prompt
   useEffect(() => {
-    if (!input.trim()) {
-      setGeneratedPrompt("");
+    if (!generatedPrompt) {
+      setDisplayedPrompt("");
+      return;
     }
-  }, [input]);
+
+    setDisplayedPrompt("");
+    let i = 0;
+    const interval = setInterval(() => {
+      setDisplayedPrompt((prev) => {
+        if (i >= generatedPrompt.length) {
+          clearInterval(interval);
+          return generatedPrompt;
+        }
+        i++;
+        return generatedPrompt.slice(0, i);
+      });
+    }, 15); // Speed of typing
+
+    return () => clearInterval(interval);
+  }, [generatedPrompt]);
 
   const handleGenerate = async () => {
     if (!input.trim()) {
@@ -34,6 +52,7 @@ export const TextPromptGenerator = ({
 
     setIsLoading(true);
     setGeneratedPrompt("");
+    setDisplayedPrompt("");
 
     try {
       const { data, error } = await supabase.functions.invoke("quick-prompt", {
@@ -85,13 +104,14 @@ export const TextPromptGenerator = ({
 
   const clearPrompt = () => {
     setGeneratedPrompt("");
+    setDisplayedPrompt("");
     setInput("");
     toast.success("Cleared!");
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded-2xl bg-black border border-white/10 shadow-[0_0_45px_rgba(148,163,184,0.22)] transition-all duration-500 space-y-6">
-      <div className="flex items-center gap-2 sm:gap-3 bg-black/60 rounded-full px-3 sm:px-4 py-3 sm:py-4 border border-white/15 transition-all duration-300 focus-within:border-white/30">
+    <div className="p-6 sm:p-8 rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 shadow-[0_0_45px_rgba(148,163,184,0.1)] transition-all duration-500 space-y-6">
+      <div className="flex items-center gap-2 sm:gap-3 bg-black/40 rounded-full px-3 sm:px-4 py-3 sm:py-4 border border-white/10 transition-all duration-300 focus-within:border-white/20 focus-within:bg-black/60 shadow-inner">
         <div className="relative flex-1">
           <input
             type="text"
@@ -99,7 +119,7 @@ export const TextPromptGenerator = ({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !isLoading && input.trim() && handleGenerate()}
             placeholder={placeholder}
-            className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white placeholder:text-white/50"
+            className="w-full bg-transparent border-none outline-none text-sm sm:text-base text-white placeholder:text-white/40 font-light tracking-wide"
             maxLength={1000}
           />
         </div>
@@ -107,7 +127,7 @@ export const TextPromptGenerator = ({
         <button
           onClick={handleGenerate}
           disabled={isLoading || !input.trim()}
-          className="flex-shrink-0 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -120,17 +140,17 @@ export const TextPromptGenerator = ({
       {generatedPrompt && (
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-base sm:text-lg font-bold text-white">Enhanced Prompt:</h4>
+            <h4 className="text-base sm:text-lg font-bold text-white/90">Enhanced Prompt:</h4>
             <div className="flex items-center gap-2">
               <GlassButton
                 size="sm"
                 onClick={copyToClipboard}
-                contentClassName="flex items-center gap-2"
+                contentClassName="flex items-center gap-2 bg-white/5 hover:bg-white/10"
               >
                 {copied ? (
                   <>
-                    <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-                    Copied
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+                    <span className="text-green-400">Copied</span>
                   </>
                 ) : (
                   <>
@@ -142,16 +162,22 @@ export const TextPromptGenerator = ({
               <GlassButton
                 size="sm"
                 onClick={clearPrompt}
-                contentClassName="flex items-center gap-2"
+                contentClassName="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-red-400/80 hover:text-red-400"
               >
                 <X className="w-3 h-3 sm:w-4 sm:h-4" />
                 Delete
               </GlassButton>
             </div>
           </div>
-          <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/80">
-            {generatedPrompt}
-          </p>
+          <div className="relative p-6 rounded-xl bg-white/5 border border-white/10 shadow-inner">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-xl pointer-events-none" />
+            <p className="relative text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-white/90 font-light">
+              {displayedPrompt}
+              {displayedPrompt.length < generatedPrompt.length && (
+                <span className="inline-block w-1.5 h-4 ml-1 bg-cyan-400 animate-pulse align-middle" />
+              )}
+            </p>
+          </div>
         </div>
       )}
     </div>

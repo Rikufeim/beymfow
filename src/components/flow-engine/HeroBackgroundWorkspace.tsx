@@ -74,7 +74,7 @@ export interface HeroBackgroundSettings {
   // Environment / Light
   environmentEnabled: boolean;
   // Gradient style
-  gradientStyle: "halo" | "soft-sweep" | "orb" | "diagonal-blend" | "noise-wash" | "aurora" | "mesh" | "spotlight" | "wave" | "crystal" | "sunset" | "cosmic";
+  gradientStyle: "halo" | "soft-sweep" | "orb" | "diagonal-blend" | "noise-wash" | "aurora" | "mesh" | "spotlight" | "wave" | "crystal" | "sunset" | "cosmic" | "nebula-cloud" | "radial-pulse" | "glass-shards" | "grid-perspective" | "fluid-flow" | "cyber-grid" | "bokeh-lights" | "velvet-wrap" | "prism-refraction" | "midnight-mist" | "solar-wind" | "digital-rain" | "abstract-curves" | "neon-smoke" | "geometric-shapes" | "silk-drape" | "vortex-spin" | "glitch-noise" | "star-cluster" | "liquid-metal";
   // Motion (future)
   motionEnabled: boolean;
   motionSpeed: number;
@@ -144,13 +144,14 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "style" | "colors" | "motion" | "view" | "export";
+type TabId = "shape" | "style" | "colors" | "motion" | "components" | "view" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
   { id: "style", label: "Style" },
   { id: "colors", label: "Colors" },
   { id: "motion", label: "Motion" },
+  { id: "components", label: "Components" },
   { id: "view", label: "View" },
   { id: "export", label: "Export" },
 ];
@@ -170,6 +171,26 @@ const SHAPE_STYLES: Array<{ id: GradientStyleId; label: string }> = [
   { id: "crystal", label: "Crystal" },
   { id: "sunset", label: "Sunset" },
   { id: "cosmic", label: "Cosmic" },
+  { id: "nebula-cloud", label: "Nebula Cloud" },
+  { id: "radial-pulse", label: "Radial Pulse" },
+  { id: "glass-shards", label: "Glass Shards" },
+  { id: "grid-perspective", label: "Grid Perspective" },
+  { id: "fluid-flow", label: "Fluid Flow" },
+  { id: "cyber-grid", label: "Cyber Grid" },
+  { id: "bokeh-lights", label: "Bokeh Lights" },
+  { id: "velvet-wrap", label: "Velvet Wrap" },
+  { id: "prism-refraction", label: "Prism Refraction" },
+  { id: "midnight-mist", label: "Midnight Mist" },
+  { id: "solar-wind", label: "Solar Wind" },
+  { id: "digital-rain", label: "Digital Rain" },
+  { id: "abstract-curves", label: "Abstract Curves" },
+  { id: "neon-smoke", label: "Neon Smoke" },
+  { id: "geometric-shapes", label: "Geometric Shapes" },
+  { id: "silk-drape", label: "Silk Drape" },
+  { id: "vortex-spin", label: "Vortex Spin" },
+  { id: "glitch-noise", label: "Glitch Noise" },
+  { id: "star-cluster", label: "Star Cluster" },
+  { id: "liquid-metal", label: "Liquid Metal" },
 ];
 
 const COLOR_WORDS: Record<string, string> = {
@@ -570,7 +591,7 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
 // Generate full project code as a React component
 const generateProjectCode = (settings: HeroBackgroundSettings): string => {
   const { brightness, grainEnabled, grainIntensity } = settings;
-  const background = buildHeroGradient(settings);
+  const background = buildHeroGradient({ ...settings, singleColorMode: false });
 
   const grainOverlay = grainEnabled
     ? `\n      {/* Grain overlay */}
@@ -1618,31 +1639,63 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col"
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Background shape</h4>
-                          <div className="flex items-center gap-2 overflow-x-auto pb-1 flex-1 min-h-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            {SHAPE_STYLES.map(({ id, label }) => {
-                              const isActive = settings.gradientStyle === id;
-                              const previewSettings: HeroBackgroundSettings = { ...settings, gradientStyle: id };
-                              const previewBg = buildHeroGradient(previewSettings);
-                              return (
-                                <button
-                                  key={id}
-                                  onClick={() => updateSetting("gradientStyle", id)}
-                                  className={cn(
-                                    "flex-shrink-0 rounded-lg border p-2 text-left transition-all w-24",
-                                    isActive
-                                      ? "border-white/40 bg-white/10 ring-1 ring-white/20"
-                                      : "border-white/10 bg-neutral-900/60 hover:border-white/20 hover:bg-neutral-800/80"
-                                  )}
-                                >
-                                  <div
-                                    className="h-10 rounded-md mb-1.5 w-full border border-white/10"
-                                    style={{ background: previewBg }}
-                                  />
-                                  <span className="text-[10px] font-medium text-white block truncate">{label}</span>
-                                </button>
-                              );
-                            })}
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Background & Pattern Style</h4>
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            <div className="grid grid-cols-3 gap-3">
+                              {SHAPE_STYLES.map(({ id, label }) => {
+                                const isActive = settings.gradientStyle === id;
+                                const previewSettings: HeroBackgroundSettings = {
+                                  ...settings,
+                                  gradientStyle: id,
+                                  // Use high-contrast showcase colors for the preview icons to ensure visibility
+                                  color1: "#020617",
+                                  color2: "#1e293b",
+                                  color3: "#38bdf8",
+                                  color4: "#c084fc",
+                                  singleColorMode: false,
+                                  environmentEnabled: true,
+                                  brightness: 1.2,
+                                  grainEnabled: false
+                                };
+                                const previewBg = buildHeroGradient(previewSettings);
+                                return (
+                                  <button
+                                    key={id}
+                                    onClick={() => {
+                                      if (settings.singleColorMode) {
+                                        setSettings(prev => ({ ...prev, gradientStyle: id, singleColorMode: false }));
+                                      } else {
+                                        updateSetting("gradientStyle", id);
+                                      }
+                                    }}
+                                    className={cn(
+                                      "flex flex-col gap-1.5 p-0 rounded-lg transition-all group",
+                                      isActive ? "opacity-100" : "opacity-70 hover:opacity-100"
+                                    )}
+                                  >
+                                    <div
+                                      className={cn(
+                                        "h-20 w-full rounded-lg border transition-all overflow-hidden relative shadow-sm",
+                                        isActive
+                                          ? "border-white/60 ring-2 ring-white/10"
+                                          : "border-white/20 group-hover:border-white/30"
+                                      )}
+                                      style={{ background: previewBg }}
+                                    >
+                                      {/* Subtle grain overlay for preview authenticity */}
+                                      <div
+                                        className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay"
+                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                      />
+                                    </div>
+                                    <span className={cn(
+                                      "text-[10px] font-medium block truncate text-center w-full",
+                                      isActive ? "text-white" : "text-white/60 group-hover:text-white/80"
+                                    )}>{label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
                         </motion.div>
                       )}

@@ -27,7 +27,7 @@ const PromptGeneratorPage = () => {
   const [input, setInput] = useState("");
   const [selectedModel, setSelectedModel] = useState<"fast" | "advanced" | "premium">("fast");
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">("all");
-  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image">("lovable");
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "image">("gemini");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -128,13 +128,13 @@ const PromptGeneratorPage = () => {
     }
 
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
-    
+
     for (const file of filesToProcess) {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} is not an image`);
         continue;
       }
-      
+
       if (file.size > 10 * 1024 * 1024) {
         toast.error(`${file.name} is too large (max 10MB)`);
         continue;
@@ -144,7 +144,7 @@ const PromptGeneratorPage = () => {
       reader.onload = (event) => {
         const result = event.target?.result as string;
         const base64Data = result.split(',')[1];
-        
+
         setUploadedImages(prev => [...prev, {
           data: base64Data,
           mimeType: file.type,
@@ -153,7 +153,7 @@ const PromptGeneratorPage = () => {
       };
       reader.readAsDataURL(file);
     }
-    
+
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -284,31 +284,28 @@ const PromptGeneratorPage = () => {
         <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
           <button
             onClick={() => setPromptType("lovable")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "lovable"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${promptType === "lovable"
                 ? "bg-pink-500/20 border-pink-500/60 text-pink-300"
                 : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
-            }`}
+              }`}
           >
             🌐 Lovable Prompts
           </button>
           <button
             onClick={() => setPromptType("gemini")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "gemini"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${promptType === "gemini"
                 ? "bg-blue-500/20 border-blue-500/60 text-blue-300"
                 : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
-            }`}
+              }`}
           >
             ✨ Gemini Prompts
           </button>
           <button
             onClick={() => setPromptType("image")}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
-              promptType === "image"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${promptType === "image"
                 ? "bg-purple-500/20 border-purple-500/60 text-purple-300"
                 : "bg-white/5 border-white/20 text-white/60 hover:border-white/40 hover:text-white"
-            }`}
+              }`}
           >
             🖼️ Image Prompts
           </button>
@@ -355,7 +352,7 @@ const PromptGeneratorPage = () => {
                   )}
                 </div>
               )}
-              
+
               <div className="flex items-center gap-2 sm:gap-3">
                 <div>
                   <DropdownMenu>
@@ -417,19 +414,19 @@ const PromptGeneratorPage = () => {
                   />
                 </div>
 
-              <div>
-                <button
-                  onClick={handleGenerate}
-                  disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
-                  className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
-                >
-                  {isLoading ? (
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
-                </button>
-              </div>
+                <div>
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
+                    className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
+                  >
+                    {isLoading ? (
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
