@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Check, X, Loader2, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
 import StarsBackground from '@/components/StarsBackground';
-import authRightBg from '@/assets/auth-right-bg.png';
 
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Must contain at least one number'),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+// Rate limiting
+const RATE_LIMIT_MS = 2000;
+let lastSubmitTime = 0;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -32,20 +39,19 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState('');
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Get redirect parameter from URL
   const redirectPath = new URLSearchParams(window.location.search).get('redirect') || '/';
 
-  // Redirect if already logged in
   React.useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(redirectPath);
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const passwordStrength = (pwd: string) => {
     let strength = 0;
@@ -71,59 +77,83 @@ const Auth = () => {
     return 'Strong';
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationErrors({});
+    setFormError('');
+
+    // Rate limit
+    const now = Date.now();
+    if (now - lastSubmitTime < RATE_LIMIT_MS) {
+      setFormError('Please wait a moment before trying again.');
+      return;
+    }
+    lastSubmitTime = now;
+
+    // Validate
+    if (isLogin) {
+      const result = loginSchema.safeParse({ email, password });
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.issues.forEach((err) => {
+          if (err.path[0]) errors[err.path[0].toString()] = err.message;
+        });
+        setValidationErrors(errors);
+        return;
+      }
+    } else {
+      const result = signUpSchema.safeParse({ email, password, confirmPassword });
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.issues.forEach((err) => {
+          if (err.path[0]) errors[err.path[0].toString()] = err.message;
+        });
+        setValidationErrors(errors);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
-      // Validate sign up form
-      if (!isLogin) {
-        const result = signUpSchema.safeParse({
-          email,
-          password,
-          confirmPassword
-        });
-
-        if (!result.success) {
-          const errors: { [key: string]: string } = {};
-          result.error.issues.forEach((err) => {
-            if (err.path[0]) {
-              errors[err.path[0].toString()] = err.message;
-            }
-          });
-          setValidationErrors(errors);
-          setLoading(false);
-          return;
-        }
-      }
-
       const { error } = isLogin
         ? await signIn(email, password)
         : await signUp(email, password);
 
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
+        // Map generic errors to user-friendly messages
+        let message = error.message;
+        if (message.includes('Invalid login credentials')) {
+          message = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (message.includes('User already registered')) {
+          message = 'An account with this email already exists. Try signing in instead.';
+        } else if (message.includes('Email not confirmed')) {
+          message = 'Please verify your email before signing in. Check your inbox for the confirmation link.';
+        }
+        setFormError(message);
       } else {
-        toast({
-          title: "Success",
-          description: isLogin ? "Signed in successfully" : "Account created successfully"
-        });
-        navigate(redirectPath);
+        if (!isLogin) {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link. Please verify your email to continue.",
+          });
+        } else {
+          navigate(redirectPath);
+        }
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      setFormError(error.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
+  }, [email, password, confirmPassword, isLogin, signIn, signUp, navigate, redirectPath, toast]);
+
+  const switchMode = () => {
+    setIsLogin(!isLogin);
+    setValidationErrors({});
+    setFormError('');
+    setPassword('');
+    setConfirmPassword('');
   };
 
   return (
@@ -159,7 +189,15 @@ const Auth = () => {
                 </h2>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Form error */}
+              {formError && (
+                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-400">{formError}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300">
                     Email
@@ -168,8 +206,9 @@ const Auth = () => {
                     type="email"
                     placeholder="Enter your email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.trim())}
                     required
+                    autoComplete="email"
                     className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 rounded-lg transition-all"
                   />
                   {validationErrors.email && (
@@ -188,14 +227,15 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={isLogin ? 6 : 8}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
                       className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 pr-10 rounded-lg transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors touch-none"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                       tabIndex={-1}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -248,14 +288,15 @@ const Auth = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
-                        minLength={8}
+                        autoComplete="new-password"
                         className="w-full bg-neutral-900/50 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-neutral-900 h-12 pr-10 rounded-lg transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors touch-none"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                         tabIndex={-1}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -283,7 +324,14 @@ const Auth = () => {
                   disabled={loading}
                   className="w-full bg-white text-black hover:bg-gray-200 transition-all duration-300 h-12 text-base font-semibold rounded-lg"
                 >
-                  {loading ? 'Loading...' : 'Continue'}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {isLogin ? 'Signing in...' : 'Creating account...'}
+                    </span>
+                  ) : (
+                    'Continue'
+                  )}
                 </Button>
               </form>
 
@@ -292,7 +340,7 @@ const Auth = () => {
                   {isLogin ? "Don't have an account? " : 'Already have an account? '}
                 </span>
                 <button
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={switchMode}
                   type="button"
                   className="text-sm text-white hover:text-gray-300 font-medium transition-colors underline"
                 >
@@ -311,10 +359,8 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Right Side - Empty for Stars Background */}
-        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center">
-          {/* Content removed to show stars background */}
-        </div>
+        {/* Right Side - Stars Background */}
+        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center" />
       </div>
     </StarsBackground>
   );
