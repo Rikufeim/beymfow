@@ -54,8 +54,7 @@ const WebGLOverlay: React.FC<OverlayRenderProps> = ({
             gl={{
               alpha: true,
               antialias: true,
-              powerPreference: "high",
-              pixelRatio: DPR,
+              powerPreference: "high-performance",
               preserveDrawingBuffer: false,
             }}
             onCreated={({ gl }) => {
