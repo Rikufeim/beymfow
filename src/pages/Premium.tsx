@@ -1,7 +1,10 @@
-import { CheckCircle, Check, Plus, Minus, ArrowRight } from "lucide-react";
+import { CheckCircle, Check, Plus, Minus, ArrowRight, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import BackgroundShader from "@/components/ui/background-shader";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const everyPlanFeatures = [
   "Secure user authentication",
@@ -28,7 +31,65 @@ const faqItems = [
 
 const Premium = () => {
   const navigate = useNavigate();
+  const { user, session, usageInfo } = useAuth();
+  const { toast } = useToast();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const isPro = usageInfo?.subscriptionTier === "premium";
+
+  const handleUpgrade = async () => {
+    if (!user || !session) {
+      navigate("/auth?redirect=/premium");
+      return;
+    }
+
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier: "pro" },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to start checkout",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (!session) return;
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to open subscription portal",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   return (
     <BackgroundShader variant="black">
@@ -51,6 +112,13 @@ const Premium = () => {
                 <div className="lg:col-span-3 grid sm:grid-cols-2 gap-6 sm:gap-8">
                   {/* Free Plan Card */}
                   <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-5 sm:p-6">
+                    {usageInfo?.subscriptionTier === "free" && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold border border-white/20">
+                          Your Plan
+                        </span>
+                      </div>
+                    )}
                     <h3 className="text-lg font-semibold text-white mb-1">Free Plan</h3>
                     <div className="mb-4">
                       <span className="text-3xl font-bold text-white">€0</span>
@@ -79,10 +147,10 @@ const Premium = () => {
                   </div>
 
                   {/* Pro Plan Card (Most Popular) */}
-                  <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-5 sm:p-6">
+                  <div className={`relative flex flex-col rounded-2xl border ${isPro ? 'border-cyan-400/40' : 'border-white/10'} bg-black/90 backdrop-blur-sm p-5 sm:p-6`}>
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold border border-cyan-400/30">
-                        Most Popular
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${isPro ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30' : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30'}`}>
+                        {isPro ? "✓ Your Plan" : "Most Popular"}
                       </span>
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-1">Pro Plan</h3>
@@ -107,12 +175,25 @@ const Premium = () => {
                         </li>
                       ))}
                     </ul>
-                    <button
-                      onClick={() => navigate("/flow")}
-                      className="w-full rounded-lg px-4 py-3 text-sm bg-white text-black font-medium border border-white transition-all hover:bg-white/90"
-                    >
-                      Upgrade to Pro
-                    </button>
+                    {isPro ? (
+                      <button
+                        onClick={handleManageSubscription}
+                        disabled={portalLoading}
+                        className="w-full rounded-lg px-4 py-3 text-sm border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 font-medium transition-all hover:bg-cyan-500/20 flex items-center justify-center gap-2"
+                      >
+                        {portalLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Manage Subscription
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleUpgrade}
+                        disabled={checkoutLoading}
+                        className="w-full rounded-lg px-4 py-3 text-sm bg-white text-black font-medium border border-white transition-all hover:bg-white/90 flex items-center justify-center gap-2"
+                      >
+                        {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Upgrade to Pro
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -176,7 +257,7 @@ const Premium = () => {
                 So, what are we building?
               </h2>
               <Link
-                to="/auth"
+                to={user ? "/flow" : "/auth"}
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
               >
                 Start Building
