@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
+import { toPng, toJpeg } from "html-to-image";
 import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -1192,15 +1193,20 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   const generateCssExport = useCallback((): string => {
     const bg = buildHeroGradient(settings);
-    const filterParts = [`brightness(${settings.brightness})`];
-    if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
-    if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+    const b = settings.brightness * (settings.exposure ?? 1);
+    const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+    const s = settings.saturation ?? 1;
+    const filterParts = [`brightness(${b})`];
+    if (c !== 1) filterParts.push(`contrast(${c})`);
+    if (s !== 1) filterParts.push(`saturate(${s})`);
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
-    return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
+    const blendLine = settings.blendMode !== "normal" ? `\n  mix-blend-mode: ${settings.blendMode};` : "";
+    return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};${blendLine}\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
   }, [settings]);
 
   const generateTailwindExport = useCallback((): string => {
-    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "brightness(${settings.brightness})"\n  }}\n/>`;
+    const b = settings.brightness * (settings.exposure ?? 1);
+    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "brightness(${b})"\n  }}\n/>`;
   }, [settings]);
 
   const handleCopyCss = useCallback(async () => {
@@ -1249,82 +1255,49 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }
   }, [currentProjectName, isEditingName]);
 
-  // Generate live thumbnail for share preview
+  // Generate live thumbnail by capturing the actual preview element
   const generateLiveThumbnail = useCallback(async (): Promise<string> => {
-    const canvas = document.createElement("canvas");
-    const width = 1920 * downloadScale;
-    const height = 1080 * downloadScale;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return "";
+    const el = previewContainerRef.current;
+    if (!el) return "";
 
-    const { color1, color2, color3, color4, singleColorMode, gradientStyle, brightness, environmentEnabled } = settings;
+    try {
+      const scale = downloadScale;
+      const options = {
+        width: el.offsetWidth * scale,
+        height: el.offsetHeight * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: `${el.offsetWidth}px`,
+          height: `${el.offsetHeight}px`,
+        },
+        quality: 0.95,
+        pixelRatio: 1,
+        // Filter out UI overlays (hints, drop zone, hero preview text, bottom fade)
+        filter: (node: HTMLElement) => {
+          if (!node.classList) return true;
+          if (node.classList.contains('pointer-events-none') && node.style?.height === '30%') return false;
+          return true;
+        },
+      };
 
-    // Draw gradient background
-    let gradient: CanvasGradient;
-    switch (gradientStyle) {
-      case "halo":
-        gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.6);
-        if (singleColorMode) {
-          gradient.addColorStop(0, color1);
-          gradient.addColorStop(1, color1);
-        } else {
-          gradient.addColorStop(0, color3 + "80");
-          gradient.addColorStop(0.35, color2 + "CC");
-          gradient.addColorStop(1, color1);
-        }
-        break;
-      case "soft-sweep":
-        gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(0.3, color2);
-        gradient.addColorStop(0.6, color3 + "99");
-        gradient.addColorStop(1, singleColorMode ? color1 : color4 + "66");
-        break;
-      case "diagonal-blend":
-        gradient = ctx.createLinearGradient(0, height, width, 0);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(0.25, color2);
-        gradient.addColorStop(0.5, color3 + "E6");
-        gradient.addColorStop(0.75, singleColorMode ? color2 : color4 + "B3");
-        gradient.addColorStop(1, color1);
-        break;
-      default:
-        gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(0.5, color2);
-        gradient.addColorStop(1, color1);
+      if (downloadFormat === "jpg") {
+        return await toJpeg(el, { ...options, backgroundColor: '#000000' });
+      }
+      return await toPng(el, options);
+    } catch (err) {
+      console.error("Screenshot failed:", err);
+      return "";
     }
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-
-    // Environment glow
-    if (environmentEnabled && !singleColorMode) {
-      const glowGrad = ctx.createRadialGradient(width / 2, height * 0.25, 0, width / 2, height * 0.25, height * 0.5);
-      glowGrad.addColorStop(0, color3 + "40");
-      glowGrad.addColorStop(1, "transparent");
-      ctx.fillStyle = glowGrad;
-      ctx.fillRect(0, 0, width, height);
-    }
-
-    // Apply brightness via compositing
-    if (brightness !== 1) {
-      ctx.globalCompositeOperation = brightness > 1 ? "lighter" : "multiply";
-      ctx.globalAlpha = Math.abs(brightness - 1) * 0.3;
-      ctx.fillStyle = brightness > 1 ? "#ffffff" : "#000000";
-      ctx.fillRect(0, 0, width, height);
-      ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = 1;
-    }
-
-    return canvas.toDataURL(downloadFormat === "png" ? "image/png" : "image/jpeg", 0.95);
-  }, [settings, downloadScale, downloadFormat]);
+  }, [downloadScale, downloadFormat]);
 
   const handleDownloadImage = useCallback(async () => {
+    toast.info("Capturing preview...");
     const dataUrl = await generateLiveThumbnail();
-    if (!dataUrl) return;
+    if (!dataUrl) {
+      toast.error("Failed to capture image");
+      return;
+    }
 
     const link = document.createElement("a");
     link.download = `${currentProjectName.replace(/\s+/g, "-").toLowerCase()}.${downloadFormat}`;
@@ -2102,21 +2075,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 <div className="w-px h-5 bg-white/[0.06]" />
                               </div>
 
-                              {/* Presets */}
+                              {/* Quick Actions */}
                               <div className="flex items-center gap-1.5 pt-1">
-                                <span className="text-[10px] text-white/30 mr-1">Presets</span>
-                                {[
-                                  { label: "Reset All", fn: () => { updateSetting("brightness", 1.0); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }},
-                                  { label: "Cinematic", fn: () => { updateSetting("brightness", 0.85); updateSetting("contrast", 1.1); updateSetting("vignette", 0.35); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.25); }},
-                                  { label: "Bright", fn: () => { updateSetting("brightness", 1.4); updateSetting("contrast", 1.05); updateSetting("saturation", 1.1); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", true); }},
-                                  { label: "Moody", fn: () => { updateSetting("brightness", 0.7); updateSetting("contrast", 1.15); updateSetting("saturation", 0.9); updateSetting("vignette", 0.5); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.4); }},
-                                  { label: "Dreamy", fn: () => { updateSetting("brightness", 1.1); updateSetting("contrast", 0.95); updateSetting("saturation", 1.05); updateSetting("vignette", 0.15); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.15); updateSetting("environmentEnabled", true); }},
-                                  { label: "Clean", fn: () => { updateSetting("brightness", 1.3); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }},
-                                ].map((preset) => (
-                                  <button key={preset.label} onClick={preset.fn} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
-                                    {preset.label}
-                                  </button>
-                                ))}
+                                <button onClick={() => { updateSetting("brightness", 1.0); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
+                                  Reset All
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -2471,98 +2434,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 </div>
                               </div>
                             )}
-                          </div>
-
-                          {/* Quick Presets */}
-                          <div className="w-24 flex-shrink-0 space-y-2">
-                            <label className="text-[10px] text-white/40 uppercase tracking-wider block">Presets</label>
-                            <div className="space-y-1.5">
-                              <button
-                                onClick={() => {
-                                  updateSetting("buttonPrimaryBg", "#ffffff");
-                                  updateSetting("buttonPrimaryText", "#000000");
-                                  updateSetting("buttonPrimaryGradient", "none");
-                                  updateSetting("buttonSecondaryBg", "transparent");
-                                  updateSetting("buttonSecondaryText", "#ffffff");
-                                  updateSetting("buttonSecondaryBorder", "rgba(255,255,255,0.3)");
-                                }}
-                                className="w-full px-2 py-1.5 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
-                              >
-                                Light
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("buttonPrimaryBg", "#000000");
-                                  updateSetting("buttonPrimaryText", "#ffffff");
-                                  updateSetting("buttonPrimaryGradient", "none");
-                                  updateSetting("buttonSecondaryBg", "transparent");
-                                  updateSetting("buttonSecondaryText", "#000000");
-                                  updateSetting("buttonSecondaryBorder", "rgba(0,0,0,0.3)");
-                                }}
-                                className="w-full px-2 py-1.5 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
-                              >
-                                Dark
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("buttonPrimaryBg", settings.color3);
-                                  updateSetting("buttonPrimaryText", "#ffffff");
-                                  updateSetting("buttonPrimaryGradient", "linear");
-                                  updateSetting("buttonPrimaryGradientColor", settings.color4);
-                                  updateSetting("focusRingColor", settings.color3);
-                                }}
-                                className="w-full px-2 py-1.5 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
-                              >
-                                Gradient
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("buttonPrimaryBg", settings.color3);
-                                  updateSetting("buttonPrimaryGradient", "glow");
-                                  updateSetting("buttonPrimaryGradientColor", settings.color3);
-                                  updateSetting("cardGradient", "glass");
-                                }}
-                                className="w-full px-2 py-1.5 rounded text-[10px] bg-neutral-800 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-700 transition-all"
-                              >
-                                Glow
-                              </button>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {activeTab === "view" && (
-                        <motion.div
-                          key="view"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col"
-                        >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">View</h4>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <button onClick={() => setFullscreen(!fullscreen)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", fullscreen ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />} Fullscreen</button>
-                            <button onClick={() => setShowHints(!showHints)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHints ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{showHints ? <Eye size={12} /> : <EyeOff size={12} />} UI Hints</button>
-                            <button onClick={() => setShowHeroPreview(!showHeroPreview)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHeroPreview ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}><Eye size={12} /> Hero Preview</button>
-                            <div className="w-px h-5 bg-white/10" />
-                            <span className="text-[10px] text-white/40 uppercase tracking-wider">Image</span>
-                            {droppedImage && (
-                              <>
-                                {(["hero", "card", "fullscreen"] as ImageSimulateMode[]).map((mode) => (
-                                  <button key={mode} onClick={() => setImageSimulateMode(mode)} className={cn("px-2 py-1 rounded border text-[10px] capitalize transition-all", imageSimulateMode === mode ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{mode}</button>
-                                ))}
-                                <button onClick={() => setImageBlurMask(!imageBlurMask)} className={cn("px-2 py-1 rounded border text-[10px]", imageBlurMask ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>Blur Mask</button>
-                                <button onClick={() => setDroppedImage(null)} className="px-2 py-1 rounded border text-[10px] bg-neutral-900 border-white/10 text-red-400/70 hover:text-red-400"><X size={10} /> Remove</button>
-                              </>
-                            )}
-                            {!droppedImage && (
-                              <span className="text-[10px] text-white/30">Drag & drop an image onto the preview</span>
-                            )}
-                            <div className="w-px h-5 bg-white/10" />
-                            <label className="flex items-center gap-1.5 text-[10px] text-white/50">
-                              <Switch checked={autoAdjustBg} onCheckedChange={setAutoAdjustBg} />
-                              Auto-adjust BG
-                            </label>
                           </div>
                         </motion.div>
                       )}
