@@ -60,9 +60,17 @@ export default function BackgroundShader({ children, variant = "default" }: { ch
             const p1Start = vh * 0.1;
             const p1End = vh * 1.0;
 
-            // Phase 2: Turquoise -> Engineered (Black)
+            // Phase 2: Turquoise -> Black
             const p2Start = vh * 2.5;
             const p2End = vh * 3.5;
+
+            // Phase 3: Black -> Colorful (Create Perfect AI Prompts section)
+            const p3Start = vh * 5.0;
+            const p3End = vh * 6.0;
+
+            // Phase 4: Colorful -> Black
+            const p4Start = vh * 7.0;
+            const p4End = vh * 8.0;
 
             let t = 0;
 
@@ -74,6 +82,14 @@ export default function BackgroundShader({ children, variant = "default" }: { ch
                 t = 1;
             } else if (scrollY < p2End) {
                 t = 1 - ((scrollY - p2Start) / (p2End - p2Start));
+            } else if (scrollY < p3Start) {
+                t = 0;
+            } else if (scrollY < p3End) {
+                t = (scrollY - p3Start) / (p3End - p3Start);
+            } else if (scrollY < p4Start) {
+                t = 1;
+            } else if (scrollY < p4End) {
+                t = 1 - ((scrollY - p4Start) / (p4End - p4Start));
             } else {
                 t = 0;
             }
