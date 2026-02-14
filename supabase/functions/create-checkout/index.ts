@@ -12,11 +12,6 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Product IDs mapped to tiers
-const PRODUCTS = {
-  pro: "prod_TJQgOZ9ghkOhCA",
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -50,51 +45,9 @@ serve(async (req) => {
 
     logStep("User authenticated", { email: user.email });
 
-    const body = await req.json();
-    const { tier, priceId } = body;
-
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
-
-    // Resolve priceId: use provided priceId, or look up from product
-    let resolvedPriceId = priceId;
-
-    if (!resolvedPriceId && tier) {
-      const productId = PRODUCTS[tier as keyof typeof PRODUCTS];
-      if (!productId) {
-        return new Response(JSON.stringify({ error: "Invalid tier" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // Find active price for product
-      const prices = await stripe.prices.list({
-        product: productId,
-        active: true,
-        type: "recurring",
-        limit: 1,
-      });
-
-      if (prices.data.length === 0) {
-        logStep("No active price found for product", { productId });
-        return new Response(JSON.stringify({ error: "No active pricing found for this plan" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      resolvedPriceId = prices.data[0].id;
-      logStep("Resolved price from product", { productId, priceId: resolvedPriceId });
-    }
-
-    if (!resolvedPriceId) {
-      return new Response(JSON.stringify({ error: "Price ID or tier required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     // Check if customer exists
     const customers = await stripe.customers.list({
@@ -124,16 +77,28 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://testerbeym.lovable.app";
 
+    // Use price_data to create the price inline — avoids needing price list permissions
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: resolvedPriceId, quantity: 1 }],
+      line_items: [{
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: "Pro Plan",
+            description: "Unlimited prompts, full access to all tools, Color Codes & premium features",
+          },
+          unit_amount: 999,
+          recurring: { interval: "month" },
+        },
+        quantity: 1,
+      }],
       mode: "subscription",
       success_url: `${origin}/payment-success`,
       cancel_url: `${origin}/premium`,
       metadata: {
         user_id: user.id,
-        tier: tier || "pro",
+        tier: "pro",
       },
     });
 
