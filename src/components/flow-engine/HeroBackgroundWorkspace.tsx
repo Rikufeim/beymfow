@@ -1645,40 +1645,40 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               {SHAPE_STYLES.map(({ id, label }, idx) => {
                                 const isActive = settings.gradientStyle === id;
                                 // Rotate through distinct color palettes so every style gets a unique, visible preview
-                                const PREVIEW_PALETTES = [
-                                  { c1: "#020617", c2: "#1e293b", c3: "#60a5fa", c4: "#a78bfa" }, // Halo
-                                  { c1: "#0a0f0d", c2: "#1a2e28", c3: "#2dd4bf", c4: "#fbbf24" }, // Soft Sweep
-                                  { c1: "#0c0a09", c2: "#1c1917", c3: "#f97316", c4: "#fbbf24" }, // Orb
-                                  { c1: "#0f0a14", c2: "#1a1028", c3: "#a855f7", c4: "#e879f9" }, // Diagonal Blend
-                                  { c1: "#0a0a12", c2: "#0f172a", c3: "#06b6d4", c4: "#8b5cf6" }, // Noise Wash
-                                  { c1: "#0a0f0a", c2: "#14241a", c3: "#34d399", c4: "#22d3ee" }, // Aurora
-                                  { c1: "#0f0a0c", c2: "#1c1418", c3: "#ec4899", c4: "#f472b6" }, // Mesh
-                                  { c1: "#0c0908", c2: "#1a1410", c3: "#f59e0b", c4: "#ef4444" }, // Spotlight
-                                  { c1: "#020617", c2: "#1e3a5f", c3: "#38bdf8", c4: "#67e8f9" }, // Wave
-                                  { c1: "#0f0a14", c2: "#2d1b4e", c3: "#c084fc", c4: "#38bdf8" }, // Crystal
-                                  { c1: "#120808", c2: "#2d1a0a", c3: "#fb923c", c4: "#fde047" }, // Sunset
-                                  { c1: "#050510", c2: "#0f0f2e", c3: "#818cf8", c4: "#c084fc" }, // Cosmic
-                                  { c1: "#0a0512", c2: "#1a0f28", c3: "#d946ef", c4: "#8b5cf6" }, // Nebula Cloud
-                                  { c1: "#0a0c0f", c2: "#141e2a", c3: "#22d3ee", c4: "#14b8a6" }, // Radial Pulse
-                                  { c1: "#08080c", c2: "#141426", c3: "#a78bfa", c4: "#38bdf8" }, // Glass Shards
-                                  { c1: "#060a0c", c2: "#0c1a24", c3: "#06b6d4", c4: "#10b981" }, // Grid Perspective
-                                  { c1: "#0c0a0f", c2: "#1e1828", c3: "#e879f9", c4: "#fb7185" }, // Fluid Flow
-                                  { c1: "#050a0a", c2: "#0a1a1e", c3: "#2dd4bf", c4: "#60a5fa" }, // Cyber Grid
-                                  { c1: "#0f080a", c2: "#261418", c3: "#f472b6", c4: "#fb923c" }, // Bokeh Lights
-                                  { c1: "#0a0508", c2: "#1e0a14", c3: "#f43f5e", c4: "#e879f9" }, // Velvet Wrap
-                                  { c1: "#05080f", c2: "#0a142a", c3: "#6366f1", c4: "#22d3ee" }, // Prism Refraction
-                                  { c1: "#080a0f", c2: "#10182a", c3: "#64748b", c4: "#38bdf8" }, // Midnight Mist
-                                  { c1: "#0c0a05", c2: "#1e1a0a", c3: "#eab308", c4: "#f97316" }, // Solar Wind
-                                  { c1: "#050a08", c2: "#0a1e14", c3: "#10b981", c4: "#34d399" }, // Digital Rain
-                                  { c1: "#0c0510", c2: "#1e0a24", c3: "#d946ef", c4: "#f472b6" }, // Abstract Curves
-                                  { c1: "#080a05", c2: "#141e0a", c3: "#84cc16", c4: "#22d3ee" }, // Neon Smoke
-                                  { c1: "#0a0508", c2: "#1e0a14", c3: "#f43f5e", c4: "#fbbf24" }, // Geometric Shapes
-                                  { c1: "#08050c", c2: "#140a1e", c3: "#c084fc", c4: "#f9a8d4" }, // Silk Drape
-                                  { c1: "#050808", c2: "#0a1818", c3: "#14b8a6", c4: "#818cf8" }, // Vortex Spin
-                                  { c1: "#0a0a0a", c2: "#1a1a1a", c3: "#ef4444", c4: "#22d3ee" }, // Glitch Noise
-                                  { c1: "#05050f", c2: "#0a0a24", c3: "#a5b4fc", c4: "#fde047" }, // Star Cluster
-                                  { c1: "#0a0a0c", c2: "#18181e", c3: "#94a3b8", c4: "#60a5fa" }, // Liquid Metal
-                                  { c1: "#0c080a", c2: "#1e1418", c3: "#fb7185", c4: "#c084fc" }, // Extra
+                                // Each style gets a unique, high-contrast palette with lighter bases for thumbnail visibility
+                                const PREVIEW_PALETTES: Array<{ c1: string; c2: string; c3: string; c4: string }> = [
+                                  { c1: "#0a1020", c2: "#1e2d4a", c3: "#60a5fa", c4: "#a78bfa" }, // Halo
+                                  { c1: "#0a1510", c2: "#1a3530", c3: "#2dd4bf", c4: "#fbbf24" }, // Soft Sweep
+                                  { c1: "#141008", c2: "#2c2010", c3: "#f97316", c4: "#fbbf24" }, // Orb
+                                  { c1: "#140e20", c2: "#2a1840", c3: "#a855f7", c4: "#e879f9" }, // Diagonal Blend
+                                  { c1: "#0a0e1e", c2: "#142040", c3: "#06b6d4", c4: "#8b5cf6" }, // Noise Wash
+                                  { c1: "#0a1510", c2: "#183828", c3: "#34d399", c4: "#22d3ee" }, // Aurora
+                                  { c1: "#180e14", c2: "#301828", c3: "#ec4899", c4: "#f472b6" }, // Mesh
+                                  { c1: "#141008", c2: "#2a2010", c3: "#f59e0b", c4: "#ef4444" }, // Spotlight
+                                  { c1: "#081020", c2: "#1a3050", c3: "#38bdf8", c4: "#67e8f9" }, // Wave
+                                  { c1: "#140e20", c2: "#2e1850", c3: "#c084fc", c4: "#38bdf8" }, // Crystal
+                                  { c1: "#1a0c08", c2: "#3a1e0a", c3: "#fb923c", c4: "#fde047" }, // Sunset
+                                  { c1: "#08081a", c2: "#141438", c3: "#818cf8", c4: "#c084fc" }, // Cosmic
+                                  { c1: "#120a1e", c2: "#241440", c3: "#d946ef", c4: "#8b5cf6" }, // Nebula Cloud
+                                  { c1: "#0a1018", c2: "#142838", c3: "#22d3ee", c4: "#14b8a6" }, // Radial Pulse
+                                  { c1: "#0a0a18", c2: "#181838", c3: "#a78bfa", c4: "#38bdf8" }, // Glass Shards
+                                  { c1: "#081018", c2: "#102838", c3: "#06b6d4", c4: "#10b981" }, // Grid Perspective
+                                  { c1: "#140e18", c2: "#2a1c38", c3: "#e879f9", c4: "#fb7185" }, // Fluid Flow
+                                  { c1: "#081214", c2: "#102830", c3: "#2dd4bf", c4: "#60a5fa" }, // Cyber Grid
+                                  { c1: "#180c10", c2: "#301820", c3: "#f472b6", c4: "#fb923c" }, // Bokeh Lights
+                                  { c1: "#140810", c2: "#2a1020", c3: "#f43f5e", c4: "#e879f9" }, // Velvet Wrap
+                                  { c1: "#080e1a", c2: "#101e3a", c3: "#6366f1", c4: "#22d3ee" }, // Prism Refraction
+                                  { c1: "#0c1018", c2: "#182038", c3: "#94a3b8", c4: "#38bdf8" }, // Midnight Mist
+                                  { c1: "#141008", c2: "#2a2410", c3: "#eab308", c4: "#f97316" }, // Solar Wind
+                                  { c1: "#081410", c2: "#103020", c3: "#10b981", c4: "#34d399" }, // Digital Rain
+                                  { c1: "#140a1c", c2: "#2a1438", c3: "#d946ef", c4: "#f472b6" }, // Abstract Curves
+                                  { c1: "#0c1008", c2: "#1e2a10", c3: "#84cc16", c4: "#22d3ee" }, // Neon Smoke
+                                  { c1: "#140a10", c2: "#2a1420", c3: "#f43f5e", c4: "#fbbf24" }, // Geometric Shapes
+                                  { c1: "#100a18", c2: "#201430", c3: "#c084fc", c4: "#f9a8d4" }, // Silk Drape
+                                  { c1: "#081010", c2: "#102424", c3: "#14b8a6", c4: "#818cf8" }, // Vortex Spin
+                                  { c1: "#101010", c2: "#222222", c3: "#ef4444", c4: "#22d3ee" }, // Glitch Noise
+                                  { c1: "#08081a", c2: "#101038", c3: "#a5b4fc", c4: "#fde047" }, // Star Cluster
+                                  { c1: "#0e0e14", c2: "#1e1e2a", c3: "#94a3b8", c4: "#60a5fa" }, // Liquid Metal
                                 ];
                                 const pal = PREVIEW_PALETTES[idx % PREVIEW_PALETTES.length];
                                 const previewSettings: HeroBackgroundSettings = {
@@ -1690,7 +1690,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   color4: pal.c4,
                                   singleColorMode: false,
                                   environmentEnabled: true,
-                                  brightness: 1.6,
+                                  brightness: 2.0,
                                   grainEnabled: false,
                                 };
                                 const previewBg = buildHeroGradient(previewSettings);
@@ -1716,7 +1716,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                           ? "border-white/60 ring-2 ring-white/10"
                                           : "border-white/20 group-hover:border-white/30"
                                       )}
-                                      style={{ background: previewBg, filter: "brightness(1.5) saturate(1.3)" }}
+                                      style={{ background: previewBg, filter: "brightness(2.2) saturate(1.8)" }}
                                     >
                                       {/* Subtle grain overlay for preview authenticity */}
                                       <div
