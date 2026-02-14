@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode, Crown } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/notifications";
@@ -1033,7 +1033,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 isSelected={selectedModel === "premium"}
                 className={selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}
               >
-                <Crown className="w-3 h-3" />
                 Premium Model
               </GlassButton>
 
