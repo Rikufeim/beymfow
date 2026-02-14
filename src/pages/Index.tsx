@@ -9,15 +9,12 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
 import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
-import { useMemo, lazy, Suspense } from "react";
-// HorizontalPlaceholderCarousel moved to Hero component
+import { useMemo } from "react";
 import ColorWorkspaceDemo from "@/components/demo/ColorWorkspaceDemo";
 import BackgroundShader from "@/components/ui/background-shader";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { HeroBackground } from "@/components/ui/hero-background";
-
-// Lazy load heavy components
-const Products = lazy(() => import("@/components/Products"));
+import Products from "@/components/Products";
 
 
 const Index = () => {
@@ -331,9 +328,7 @@ const Index = () => {
           </section>
 
           <div className="py-16 sm:py-20 md:py-24 lg:py-32">
-            <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>}>
               <Products />
-            </Suspense>
           </div>
 
           {/* CTA Section Before Footer */}
