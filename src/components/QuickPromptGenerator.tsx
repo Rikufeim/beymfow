@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
-import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/notifications";
 import {
   DropdownMenu,
@@ -48,6 +49,8 @@ Infer. Design. Decide. Execute.
 `;
 
 export const QuickPromptGenerator = () => {
+  const { user, usageInfo } = useAuth();
+  const isPro = usageInfo?.subscriptionTier === "premium";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
@@ -535,6 +538,11 @@ export const QuickPromptGenerator = () => {
       return;
     }
 
+    if (selectedModel === "premium" && !isPro) {
+      toast.error("Premium Model requires Pro subscription");
+      return;
+    }
+
     setIsLoading(true);
     setGeneratedPrompt("");
 
@@ -1017,6 +1025,16 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               >
                 <Settings className="w-3 h-3" />
                 Advanced Model
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={() => setSelectedModel("premium")}
+                contentClassName="flex items-center gap-1.5"
+                isSelected={selectedModel === "premium"}
+                className={selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}
+              >
+                <Crown className="w-3 h-3" />
+                Premium Model
               </GlassButton>
 
               {/* Pick Tool Dropdown */}
