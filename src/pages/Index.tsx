@@ -113,42 +113,37 @@ const Index = () => {
                   Developers use Beymflow to speed up their workflow, improve visual quality, and generate production-ready design assets in seconds. Whether you're building a landing page, SaaS product, portfolio, or full-scale web application, Beymflow helps you move faster — without sacrificing creativity.
                 </p>
               </div>
-            </div>
-          </section>
-
-          {/* Start Building showcase */}
-          <section className="">
-            <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12 py-16 sm:py-20 md:py-24 lg:py-32 grid gap-10 md:grid-cols-2 items-center">
-              <div className="space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
-                  Start Building
-                </h2>
-                <p className="text-white/65 max-w-xl">
-                  Jump into Flow Engine or Prompt Lab with premium, interactive previews inspired by Aceternity UI.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => navigate("/flow")}
-                    className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40">
-
-                    Flow Engine
-                  </button>
+              {/* Start Building showcase */}
+              <div className="mt-16 sm:mt-20 md:mt-24 grid gap-10 md:grid-cols-2 items-center max-w-6xl">
+                <div className="space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
+                    Start Building
+                  </h2>
+                  <p className="text-white/65 max-w-xl">
+                    Jump into Flow Engine or Prompt Lab with premium, interactive previews inspired by Aceternity UI.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => navigate("/flow")}
+                      className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40">
+                      Flow Engine
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="relative">
-                <div
-                  className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
-                    backgroundSize: "80px 80px, 80px 80px",
-                    backgroundRepeat: "repeat, repeat",
-                    backgroundPosition: "0 0, 0 0"
-                  }} />
-
-                <div className="relative z-10">
-                  <ColorWorkspaceDemo className="min-h-[280px]" />
+                <div className="relative">
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                      backgroundSize: "80px 80px, 80px 80px",
+                      backgroundRepeat: "repeat, repeat",
+                      backgroundPosition: "0 0, 0 0"
+                    }} />
+                  <div className="relative z-10">
+                    <ColorWorkspaceDemo className="min-h-[280px]" />
+                  </div>
                 </div>
               </div>
             </div>
