@@ -37,6 +37,10 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [selectedHeroProject, setSelectedHeroProject] = useState<HeroBackgroundProject | null>(null);
 
+  useEffect(() => {
+    setActiveWorkspace(initialWorkspace);
+  }, [initialWorkspace]);
+
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!user) {
