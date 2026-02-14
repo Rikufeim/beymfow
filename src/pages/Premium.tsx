@@ -59,7 +59,7 @@ const Premium = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) {
-        window.location.href = data.url;
+        window.open(data.url, "_blank");
       }
     } catch (err: any) {
       toast({
