@@ -2,17 +2,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
-import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { PageTransition } from "./components/PageTransition";
+import Index from "./pages/Index";
 
-// Lazy load pages
-const Index = lazy(() => import("./pages/Index"));
+// Lazy load non-critical pages
 const NotFound = lazy(() => import("./pages/NotFound"));
 const About = lazy(() => import("./pages/About"));
 
@@ -56,52 +54,46 @@ const PageLoader = () => (
 );
 
 const AnimatedRoutes = () => {
-  const location = useLocation();
-
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <Suspense fallback={<PageLoader />}>
-        <PageTransition key={location.pathname}>
-          <Routes location={location}>
-            <Route path="/" element={
-              <ErrorBoundary>
-                <Index />
-              </ErrorBoundary>
-            } />
-            {/* Flow routes - path selection with sub-routes */}
-            <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
-            <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
-            <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
-            {/* Legacy route - redirect to new /flow */}
-            <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
-            <Route path="/about" element={
-              <Layout>
-                <About />
-              </Layout>
-            } />
-            <Route path="/premium" element={
-              <Layout>
-                <Premium />
-              </Layout>
-            } />
-            <Route path="/community" element={
-              <Layout>
-                <Community />
-              </Layout>
-            } />
-            <Route path="/image-generator" element={<ImageGenerator />} />
-            <Route path="/planningsystem" element={<PlanningSystem />} />
-            <Route path="/multiagentpage" element={<Multiagentpage />} />
-            <Route path="/landing-pages" element={<LandingPageLibrary />} />
-            <Route path="*" element={
-              <Layout>
-                <NotFound />
-              </Layout>
-            } />
-          </Routes>
-        </PageTransition>
-      </Suspense>
-    </AnimatePresence>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={
+          <ErrorBoundary>
+            <Index />
+          </ErrorBoundary>
+        } />
+        {/* Flow routes - path selection with sub-routes */}
+        <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
+        <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
+        <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
+        {/* Legacy route - redirect to new /flow */}
+        <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
+        <Route path="/about" element={
+          <Layout>
+            <About />
+          </Layout>
+        } />
+        <Route path="/premium" element={
+          <Layout>
+            <Premium />
+          </Layout>
+        } />
+        <Route path="/community" element={
+          <Layout>
+            <Community />
+          </Layout>
+        } />
+        <Route path="/image-generator" element={<ImageGenerator />} />
+        <Route path="/planningsystem" element={<PlanningSystem />} />
+        <Route path="/multiagentpage" element={<Multiagentpage />} />
+        <Route path="/landing-pages" element={<LandingPageLibrary />} />
+        <Route path="*" element={
+          <Layout>
+            <NotFound />
+          </Layout>
+        } />
+      </Routes>
+    </Suspense>
   );
 };
 
