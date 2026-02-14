@@ -1,7 +1,7 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect } from "react";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -9,19 +9,15 @@ import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Index from "./pages/Index";
-
-// Lazy load non-critical pages
-const NotFound = lazy(() => import("./pages/NotFound"));
-const About = lazy(() => import("./pages/About"));
-
-const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
-const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
-const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
-const Community = lazy(() => import("./pages/Community"));
-const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
-const Premium = lazy(() => import("./pages/Premium"));
-
+import NotFound from "./pages/NotFound";
+import About from "./pages/About";
+import FlowEnginePage from "./pages/FlowEnginePage";
+import ImageGenerator from "./pages/ImageGenerator";
+import PlanningSystem from "./pages/PlanningSystem";
+import Multiagentpage from "./pages/Multiagentpage";
+import Community from "./pages/Community";
+import LandingPageLibrary from "./pages/LandingPageLibrary";
+import Premium from "./pages/Premium";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,53 +43,45 @@ const ScrollToTop = () => {
   return null;
 };
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-black">
-    <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-  </div>
-);
-
-const AnimatedRoutes = () => {
+const AppRoutes = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={
-          <ErrorBoundary>
-            <Index />
-          </ErrorBoundary>
-        } />
-        {/* Flow routes - path selection with sub-routes */}
-        <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
-        <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
-        <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
-        {/* Legacy route - redirect to new /flow */}
-        <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
-        <Route path="/about" element={
-          <Layout>
-            <About />
-          </Layout>
-        } />
-        <Route path="/premium" element={
-          <Layout>
-            <Premium />
-          </Layout>
-        } />
-        <Route path="/community" element={
-          <Layout>
-            <Community />
-          </Layout>
-        } />
-        <Route path="/image-generator" element={<ImageGenerator />} />
-        <Route path="/planningsystem" element={<PlanningSystem />} />
-        <Route path="/multiagentpage" element={<Multiagentpage />} />
-        <Route path="/landing-pages" element={<LandingPageLibrary />} />
-        <Route path="*" element={
-          <Layout>
-            <NotFound />
-          </Layout>
-        } />
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path="/" element={
+        <ErrorBoundary>
+          <Index />
+        </ErrorBoundary>
+      } />
+      {/* Flow routes - path selection with sub-routes */}
+      <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
+      <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
+      <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
+      {/* Legacy route - redirect to new /flow */}
+      <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
+      <Route path="/about" element={
+        <Layout>
+          <About />
+        </Layout>
+      } />
+      <Route path="/premium" element={
+        <Layout>
+          <Premium />
+        </Layout>
+      } />
+      <Route path="/community" element={
+        <Layout>
+          <Community />
+        </Layout>
+      } />
+      <Route path="/image-generator" element={<ImageGenerator />} />
+      <Route path="/planningsystem" element={<PlanningSystem />} />
+      <Route path="/multiagentpage" element={<Multiagentpage />} />
+      <Route path="/landing-pages" element={<LandingPageLibrary />} />
+      <Route path="*" element={
+        <Layout>
+          <NotFound />
+        </Layout>
+      } />
+    </Routes>
   );
 };
 
@@ -117,7 +105,7 @@ function App() {
               <AuthDialogProvider>
                 <GlobalImagePreloader />
                 <ScrollToTop />
-                <AnimatedRoutes />
+                <AppRoutes />
               </AuthDialogProvider>
             </AuthProvider>
           </BrowserRouter>
