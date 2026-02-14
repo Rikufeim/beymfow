@@ -30,6 +30,20 @@ const COLORS_BLACK_BOTTOM = [
     [0, 0, 0]        // black
 ];
 
+// White variant for Essential Steps section
+const COLORS_WHITE_TOP = [
+    [0, 0, 100],     // white
+    [0, 0, 96],      // near white
+    [0, 0, 94],      // light gray
+    [0, 0, 100]      // white
+];
+const COLORS_WHITE_BOTTOM = [
+    [0, 0, 100],     // white
+    [0, 0, 98],      // near white
+    [0, 0, 96],      // light gray
+    [0, 0, 100]      // white
+];
+
 function lerp(start: number, end: number, t: number) {
     return start * (1 - t) + end * t;
 }
@@ -42,6 +56,25 @@ function getInterpolatedColors(t: number, variant: "default" | "black" = "defaul
         const h = lerp(c1[0], c2[0], t);
         const s = lerp(c1[1], c2[1], t);
         const l = lerp(c1[2], c2[2], t);
+        return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+    });
+}
+
+function getWhiteBlendedColors(baseColors: string[], whiteT: number) {
+    // Blend base colors toward white
+    return baseColors.map((_, i) => {
+        const wTop = COLORS_WHITE_TOP[i];
+        const wBot = COLORS_WHITE_BOTTOM[i];
+        // Parse base color
+        const baseMatch = baseColors[i].match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+        if (!baseMatch) return baseColors[i];
+        const bh = Number(baseMatch[1]), bs = Number(baseMatch[2]), bl = Number(baseMatch[3]);
+        const wh = lerp(wTop[0], wBot[0], 0.5);
+        const ws = lerp(wTop[1], wBot[1], 0.5);
+        const wl = lerp(wTop[2], wBot[2], 0.5);
+        const h = lerp(bh, wh, whiteT);
+        const s = lerp(bs, ws, whiteT);
+        const l = lerp(bl, wl, whiteT);
         return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
     });
 }
@@ -64,6 +97,14 @@ export default function BackgroundShader({ children, variant = "default" }: { ch
             const p2Start = vh * 2.5;
             const p2End = vh * 3.5;
 
+            // Phase 3: Black -> White (Essential Steps section)
+            const p3Start = vh * 5.0;
+            const p3End = vh * 6.0;
+
+            // Phase 4: White -> Black (after Essential Steps)
+            const p4Start = vh * 7.5;
+            const p4End = vh * 8.5;
+
             let t = 0;
 
             if (scrollY <= p1Start) {
@@ -81,7 +122,25 @@ export default function BackgroundShader({ children, variant = "default" }: { ch
             if (t < 0) t = 0;
             if (t > 1) t = 1;
 
-            setColors(getInterpolatedColors(t, variant));
+            // Calculate white blend factor
+            let whiteT = 0;
+            if (scrollY >= p3Start && scrollY < p3End) {
+                whiteT = (scrollY - p3Start) / (p3End - p3Start);
+            } else if (scrollY >= p3End && scrollY < p4Start) {
+                whiteT = 1;
+            } else if (scrollY >= p4Start && scrollY < p4End) {
+                whiteT = 1 - ((scrollY - p4Start) / (p4End - p4Start));
+            }
+
+            if (whiteT < 0) whiteT = 0;
+            if (whiteT > 1) whiteT = 1;
+
+            let finalColors = getInterpolatedColors(t, variant);
+            if (whiteT > 0) {
+                finalColors = getWhiteBlendedColors(finalColors, whiteT);
+            }
+
+            setColors(finalColors);
         };
 
         const onScroll = () => {
