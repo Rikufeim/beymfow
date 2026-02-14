@@ -9,6 +9,8 @@ import { Sparkles, Palette, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
+import { Lock } from "lucide-react";
 
 // Import workspace components
 import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-engine/HeroBackgroundWorkspace";
@@ -29,16 +31,20 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
+  const isPro = usageInfo?.subscriptionTier === 'premium';
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [selectedHeroProject, setSelectedHeroProject] = useState<HeroBackgroundProject | null>(null);
 
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!user) {
-      navigate('/auth?redirect=/flow');
+      openAuthDialog(() => {
+        // After successful login, stay on current page
+      });
     }
-  }, [user, navigate]);
+  }, [user, openAuthDialog]);
 
   // Card data
   const cards = [
@@ -66,6 +72,10 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     if (cardId === "prompt-generator") {
       navigate("/flow/prompt-generator");
     } else if (cardId === "color-codes") {
+      if (!isPro) {
+        navigate("/premium");
+        return;
+      }
       navigate("/flow/color-codes");
     }
   };
@@ -173,6 +183,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           <div className="grid md:grid-cols-2 gap-6">
             {cards.map((card, index) => {
               const Icon = card.icon;
+              const isLocked = card.id === "color-codes" && !isPro;
               return (
                 <motion.button
                   key={card.id}
@@ -182,12 +193,11 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   onClick={() => handleCardClick(card.id)}
                   className={cn(
                     "relative group text-left p-8 rounded-2xl border transition-all duration-300",
-                    "bg-transparent", // Poistettu hover:bg-white/5
+                    "bg-transparent",
                     "border-white/5 hover:border-white/10",
                     "focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black"
                   )}
                 >
-                  {/* Glowing effect restored */}
                   <GlowingEffect
                     spread={60}
                     glow
@@ -198,36 +208,31 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                     className="opacity-0 group-hover:opacity-60 transition-opacity duration-300"
                   />
 
-                  {/* Gradient overlay */}
-                  {/* Gradient overlay removed */}
-
-                  {/* Content */}
                   <div className="relative z-10">
-                    {/* Icon removed */}
-
-                    {/* Text */}
-                    <h3 className="text-2xl font-semibold text-white mb-3 group-hover:text-white transition-colors">
-                      {card.title}
-                    </h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-2xl font-semibold text-white group-hover:text-white transition-colors">
+                        {card.title}
+                      </h3>
+                      {isLocked && (
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-medium">
+                          <Lock size={12} />
+                          Pro
+                        </span>
+                      )}
+                    </div>
                     <p className="text-neutral-400 text-base leading-relaxed group-hover:text-neutral-300 transition-colors">
                       {card.description}
                     </p>
 
-                    {/* Arrow indicator */}
                     <div className="mt-6 flex items-center gap-2 text-neutral-500 group-hover:text-white transition-colors">
-                      <span className="text-sm font-medium">Get started</span>
+                      <span className="text-sm font-medium">{isLocked ? 'Upgrade to Pro' : 'Get started'}</span>
                       <svg
                         className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
                   </div>

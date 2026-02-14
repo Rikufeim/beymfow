@@ -5,6 +5,7 @@ import { Menu, User, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -22,6 +23,7 @@ const Header = () => {
   const [searchParams] = useSearchParams();
   const { prefetchRoute } = usePrefetchRoute();
   const { user, signOut } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const [logoLoaded, setLogoLoaded] = useState(logoCacheLoaded);
 
   const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about" || location.pathname === "/premium";
@@ -106,12 +108,12 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link
-              to="/auth"
+            <button
+              onClick={() => openAuthDialog()}
               className="text-sm font-medium px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors"
             >
               Sign In
-            </Link>
+            </button>
           )}
         </nav>
         <Sheet>
@@ -157,12 +159,12 @@ const Header = () => {
                   </button>
                 </div>
               ) : (
-                <Link
-                  to="/auth"
-                  className="mx-4 text-center px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                <button
+                  onClick={() => openAuthDialog()}
+                  className="mx-4 text-center px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium w-[calc(100%-2rem)]"
                 >
                   Sign In
-                </Link>
+                </button>
               )}
             </div>
           </SheetContent>
