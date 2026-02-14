@@ -1642,20 +1642,30 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Background & Pattern Style</h4>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
                             <div className="grid grid-cols-3 gap-3">
-                              {SHAPE_STYLES.map(({ id, label }) => {
+                              {SHAPE_STYLES.map(({ id, label }, idx) => {
                                 const isActive = settings.gradientStyle === id;
+                                // Rotate through distinct color palettes so every style gets a unique, visible preview
+                                const PREVIEW_PALETTES = [
+                                  { c1: "#020617", c2: "#1e293b", c3: "#38bdf8", c4: "#c084fc" },
+                                  { c1: "#0c0a09", c2: "#1c1917", c3: "#f97316", c4: "#ef4444" },
+                                  { c1: "#0a0f0a", c2: "#14241a", c3: "#22c55e", c4: "#10b981" },
+                                  { c1: "#0f0a14", c2: "#1a1028", c3: "#a855f7", c4: "#e879f9" },
+                                  { c1: "#0f0a0c", c2: "#1c1418", c3: "#ec4899", c4: "#f472b6" },
+                                  { c1: "#0a0a12", c2: "#0f172a", c3: "#06b6d4", c4: "#8b5cf6" },
+                                  { c1: "#0c0908", c2: "#1a1410", c3: "#f59e0b", c4: "#fb923c" },
+                                ];
+                                const pal = PREVIEW_PALETTES[idx % PREVIEW_PALETTES.length];
                                 const previewSettings: HeroBackgroundSettings = {
                                   ...settings,
                                   gradientStyle: id,
-                                  // Use high-contrast showcase colors for the preview icons to ensure visibility
-                                  color1: "#020617",
-                                  color2: "#1e293b",
-                                  color3: "#38bdf8",
-                                  color4: "#c084fc",
+                                  color1: pal.c1,
+                                  color2: pal.c2,
+                                  color3: pal.c3,
+                                  color4: pal.c4,
                                   singleColorMode: false,
                                   environmentEnabled: true,
-                                  brightness: 1.2,
-                                  grainEnabled: false
+                                  brightness: 1.3,
+                                  grainEnabled: false,
                                 };
                                 const previewBg = buildHeroGradient(previewSettings);
                                 return (
@@ -1675,7 +1685,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   >
                                     <div
                                       className={cn(
-                                        "h-20 w-full rounded-lg border transition-all overflow-hidden relative shadow-sm",
+                                        "h-24 w-full rounded-lg border transition-all overflow-hidden relative shadow-sm",
                                         isActive
                                           ? "border-white/60 ring-2 ring-white/10"
                                           : "border-white/20 group-hover:border-white/30"
@@ -1684,7 +1694,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                     >
                                       {/* Subtle grain overlay for preview authenticity */}
                                       <div
-                                        className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay"
+                                        className="absolute inset-0 opacity-15 pointer-events-none mix-blend-overlay"
                                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
                                       />
                                     </div>
