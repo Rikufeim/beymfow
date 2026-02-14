@@ -231,39 +231,35 @@ const Premium = () => {
 
           {/* FAQ Section */}
           <section>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20">
-                <div>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white">
-                    Frequently asked questions
-                  </h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-white mb-10">
+              Frequently asked questions
+            </h2>
+            <div className="space-y-0">
+              {faqItems.map((item, index) => (
+                <div key={index} className="border-t border-white/10">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full flex items-center justify-between py-6 text-left"
+                  >
+                    <span className="text-lg font-medium text-white pr-4">{item.question}</span>
+                    {openFaqIndex === index ? (
+                      <Minus className="w-5 h-5 text-white/40 flex-shrink-0" />
+                    ) : (
+                      <Plus className="w-5 h-5 text-white/40 flex-shrink-0" />
+                    )}
+                  </button>
+                  {openFaqIndex === index && (
+                    <p className="pb-6 text-white/70 leading-relaxed whitespace-pre-line">{item.answer}</p>
+                  )}
                 </div>
-                <div className="space-y-0">
-                  {faqItems.map((item, index) => (
-                    <div key={index} className="border-t border-white/10">
-                      <button
-                        onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                        className="w-full flex items-center justify-between py-6 text-left"
-                      >
-                        <span className="text-lg font-medium text-white pr-4">{item.question}</span>
-                        {openFaqIndex === index ? (
-                          <Minus className="w-5 h-5 text-white/40 flex-shrink-0" />
-                        ) : (
-                          <Plus className="w-5 h-5 text-white/40 flex-shrink-0" />
-                        )}
-                      </button>
-                      {openFaqIndex === index && (
-                        <p className="pb-6 text-white/70 leading-relaxed whitespace-pre-line">{item.answer}</p>
-                      )}
-                    </div>
-                  ))}
-                  <div className="border-t border-white/10" />
-                </div>
-              </div>
+              ))}
+              <div className="border-t border-white/10" />
+            </div>
           </section>
 
           {/* CTA Section */}
-          <section className="flex items-center justify-end">
-            <div className="flex flex-col items-end">
+          <section className="flex items-center justify-start">
+            <div className="flex flex-col items-start">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
                 So, what are we building?
               </h2>
