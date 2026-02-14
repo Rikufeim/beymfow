@@ -60,6 +60,7 @@ export const QuickPromptGenerator = () => {
   const analyzeEndpoint = supabaseUrl ? `${supabaseUrl}/functions/v1/analyze-image-for-prompt` : null;
 
   const [input, setInput] = useState("");
+  const [colorPaletteAttachment, setColorPaletteAttachment] = useState<{ colors: { color1: string; color2: string; color3: string; color4: string }; gradientStyle: string; summary: string } | null>(null);
   const [selectedModel, setSelectedModel] = useState<"fast" | "advanced" | "premium">("fast");
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
@@ -102,10 +103,19 @@ export const QuickPromptGenerator = () => {
   useEffect(() => {
     const payload = getColorPromptPayload();
     if (payload && Date.now() - payload.timestamp < 60_000) {
-      setInput(payload.summary);
+      if (!isPro) {
+        toast.error("Color Prompt is a Pro feature");
+        clearColorPromptPayload();
+        return;
+      }
+      setColorPaletteAttachment({
+        colors: payload.colors,
+        gradientStyle: payload.gradientStyle,
+        summary: payload.summary,
+      });
       setPromptType("lovable");
       clearColorPromptPayload();
-      toast.success("Color palette loaded — hit Generate!");
+      toast.success("Color palette attached — describe your project and hit Generate!");
     }
   }, []);
 
@@ -582,6 +592,12 @@ export const QuickPromptGenerator = () => {
         finalInput = `${finalInput}\n\n${codeSection}`;
       }
 
+      // Inject color palette context if attached
+      if (colorPaletteAttachment) {
+        const { colors, gradientStyle } = colorPaletteAttachment;
+        finalInput = `${finalInput}\n\n[COLOR PALETTE ATTACHMENT - USE THESE COLORS IN THE DESIGN]:\nPrimary/Base: ${colors.color1}\nSurface: ${colors.color2}\nAccent: ${colors.color3}\nHighlight: ${colors.color4}\nGradient Style: ${gradientStyle}\n\nIMPORTANT: The generated prompt MUST incorporate these exact colors as the website/app color scheme. Map them to backgrounds, text, accents, borders, buttons, and interactive elements. Create CSS custom properties and Tailwind config using these colors.`;
+      }
+
       // Add instruction for fast model
       if (selectedModel === "fast" && uploadedImages.length === 0) {
         finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
@@ -599,6 +615,11 @@ export const QuickPromptGenerator = () => {
             `[CODE FILE: ${f.name}]:\n\`\`\`${f.extension.slice(1)}\n${f.content}\n\`\`\``
           ).join('\n\n');
           finalInput = `${finalInput}\n\n${codeSection}`;
+        }
+        // Color palette for fast model too
+        if (colorPaletteAttachment) {
+          const { colors, gradientStyle } = colorPaletteAttachment;
+          finalInput = `${finalInput}\n\n[COLOR PALETTE ATTACHMENT - USE THESE COLORS IN THE DESIGN]:\nPrimary/Base: ${colors.color1}\nSurface: ${colors.color2}\nAccent: ${colors.color3}\nHighlight: ${colors.color4}\nGradient Style: ${gradientStyle}\n\nIMPORTANT: The generated prompt MUST incorporate these exact colors as the website/app color scheme.`;
         }
       }
 
@@ -784,7 +805,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
               >
                 {/* Pasted Contents, Code Files, Images & Tool Chip (largest first) */}
-                {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0) && (
+                {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0 || colorPaletteAttachment) && (
                   <div className="flex items-start gap-2 mb-2 flex-wrap">
                     {/* Pasted Content Chips - Largest, comes first */}
                     {pastedContents.map((pasted, index) => (
@@ -834,6 +855,26 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                         </button>
                       </div>
                     ))}
+
+                    {/* Color Palette Chip */}
+                    {colorPaletteAttachment && (
+                      <div className="relative flex items-center bg-purple-500/10 border border-purple-500/30 rounded-lg px-3 py-2 gap-2">
+                        <div className="flex gap-0.5">
+                          {Object.values(colorPaletteAttachment.colors).map((c, i) => (
+                            <div key={i} className="w-3.5 h-3.5 rounded-sm border border-white/20" style={{ backgroundColor: c }} />
+                          ))}
+                        </div>
+                        <span className="text-xs text-purple-300 font-medium">Color Palette</span>
+                        <span className="text-[9px] text-white/40 uppercase tracking-wide border border-white/15 rounded px-1 py-0.5">PRO</span>
+                        <button
+                          onClick={() => setColorPaletteAttachment(null)}
+                          className="text-white/40 hover:text-white/70 transition-colors"
+                          title="Remove color palette"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
 
                     {/* Image Previews - Medium size */}
                     {uploadedImages.map((img, index) => (
