@@ -52,9 +52,9 @@ const AppRoutes = () => {
         </ErrorBoundary>
       } />
       {/* Flow routes - path selection with sub-routes */}
-      <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
-      <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
-      <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage initialWorkspace="color-codes" /></ErrorBoundary>} />
+      <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
+      <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
+      <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
       {/* Legacy route - redirect to new /flow */}
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={
