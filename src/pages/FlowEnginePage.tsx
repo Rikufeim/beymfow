@@ -72,10 +72,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     if (cardId === "prompt-generator") {
       navigate("/flow/prompt-generator");
     } else if (cardId === "color-codes") {
-      if (!isPro) {
-        navigate("/premium");
-        return;
-      }
       navigate("/flow/color-codes");
     }
   };
@@ -183,7 +179,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           <div className="grid md:grid-cols-2 gap-6">
             {cards.map((card, index) => {
               const Icon = card.icon;
-              const isLocked = card.id === "color-codes" && !isPro;
+              const isLocked = false;
               return (
                 <motion.button
                   key={card.id}
