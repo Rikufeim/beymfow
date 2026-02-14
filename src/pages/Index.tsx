@@ -8,8 +8,13 @@ import { FlowFeaturesSection } from "@/components/FlowFeaturesSection";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
-import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
-import { useMemo } from "react";
+import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState, useMemo, useCallback } from "react";
+
 import ColorWorkspaceDemo from "@/components/demo/ColorWorkspaceDemo";
 import BackgroundShader from "@/components/ui/background-shader";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -19,6 +24,57 @@ import Products from "@/components/Products";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, session, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
+  const { toast } = useToast();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const isPro = usageInfo?.subscriptionTier === "premium";
+
+  const handleStartFree = useCallback(() => {
+    if (user) {
+      navigate("/flow");
+    } else {
+      // Store redirect so OAuth flow also lands here
+      sessionStorage.setItem('auth_redirect_after', '/flow');
+      openAuthDialog(() => navigate("/flow"));
+    }
+  }, [user, navigate, openAuthDialog]);
+
+  const handleUpgradeToPro = useCallback(async () => {
+    if (!user || !session) {
+      sessionStorage.setItem('auth_redirect_after', '/premium');
+      openAuthDialog(async () => {
+        // After login, navigate to premium page where they can upgrade
+        navigate("/premium");
+      });
+      return;
+    }
+    if (isPro) {
+      navigate("/flow");
+      return;
+    }
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier: "pro" },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Failed to start checkout",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }, [user, session, isPro, navigate, openAuthDialog, toast]);
 
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
@@ -279,7 +335,7 @@ const Index = () => {
                       ))}
                     </ul>
                     <button
-                      onClick={() => navigate("/flow")}
+                      onClick={handleStartFree}
                       className="w-full rounded-lg px-4 py-3 border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30"
                     >
                       Start Free
@@ -316,10 +372,12 @@ const Index = () => {
                       ))}
                     </ul>
                     <button
-                      onClick={() => navigate("/flow")}
-                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90"
+                      onClick={handleUpgradeToPro}
+                      disabled={checkoutLoading}
+                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90 flex items-center justify-center gap-2"
                     >
-                      Upgrade to Pro
+                      {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {isPro ? "Go to Flow" : "Upgrade to Pro"}
                     </button>
                   </div>
                 </div>

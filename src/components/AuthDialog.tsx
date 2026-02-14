@@ -157,6 +157,8 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ open, onOpenChange, onSu
           variant="outline"
           onClick={async () => {
             try {
+              // Store the onSuccess redirect intent for post-OAuth
+              // (OAuth does a full page redirect, so dialog state is lost)
               const { error } = await lovable.auth.signInWithOAuth("google", {
                 redirect_uri: window.location.origin,
               });
