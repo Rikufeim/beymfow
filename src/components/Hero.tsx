@@ -2,12 +2,22 @@ import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Cover } from "./ui/cover";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 
 const Hero = memo(function Hero() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
+
   const handleFlowClick = useCallback(() => {
-    navigate("/flow-engine");
-  }, [navigate]);
+    if (user) {
+      navigate("/flow");
+    } else {
+      sessionStorage.setItem('auth_redirect_after', '/flow');
+      openAuthDialog(() => navigate("/flow"));
+    }
+  }, [user, navigate, openAuthDialog]);
 
   const handleAccessClick = useCallback(() => {
     navigate("/premium");

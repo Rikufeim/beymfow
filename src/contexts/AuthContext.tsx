@@ -61,6 +61,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setTimeout(() => {
             refreshUsage();
           }, 0);
+          
+          // Handle post-OAuth redirect: check if there's a pending navigation
+          if (event === 'SIGNED_IN') {
+            const pendingRedirect = sessionStorage.getItem('auth_redirect_after');
+            if (pendingRedirect) {
+              sessionStorage.removeItem('auth_redirect_after');
+              // Small delay to let state settle
+              setTimeout(() => {
+                navigate(pendingRedirect);
+              }, 100);
+            }
+          }
         } else {
           setUsageInfo(null);
         }
