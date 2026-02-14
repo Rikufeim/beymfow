@@ -382,6 +382,17 @@ const parseSettingsJSON = (json: string): HeroBackgroundSettings | null => {
         inputBorder: parsed.settings.components?.inputBorder || "rgba(255,255,255,0.1)",
         inputText: parsed.settings.components?.inputText || "#ffffff",
         focusRingColor: parsed.settings.components?.focusRingColor || "#389cff",
+        // Advanced gradient controls
+        gradientType: parsed.settings.style?.gradientType || "linear",
+        gradientAngle: parsed.settings.style?.gradientAngle ?? 135,
+        blendMode: parsed.settings.style?.blendMode || "normal",
+        noiseAmount: parsed.settings.style?.noiseAmount ?? 0,
+        grainSize: parsed.settings.style?.grainSize || "medium",
+        textureOpacity: parsed.settings.style?.textureOpacity ?? 0.5,
+        radialFocusX: parsed.settings.style?.radialFocusX ?? 50,
+        radialFocusY: parsed.settings.style?.radialFocusY ?? 50,
+        exposure: parsed.settings.style?.exposure ?? 1,
+        gamma: parsed.settings.style?.gamma ?? 1,
       };
     }
     return null;
