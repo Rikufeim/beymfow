@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
+import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromptBridge";
 import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -96,6 +97,17 @@ export const QuickPromptGenerator = () => {
   const switchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const placeholders = ["your idea......", "Start your business now......", "Enter your first thought......"];
+
+  // Check for incoming color prompt from Color Codes workspace
+  useEffect(() => {
+    const payload = getColorPromptPayload();
+    if (payload && Date.now() - payload.timestamp < 60_000) {
+      setInput(payload.summary);
+      setPromptType("lovable");
+      clearColorPromptPayload();
+      toast.success("Color palette loaded — hit Generate!");
+    }
+  }, []);
 
   // Cursor blink animation
   useEffect(() => {

@@ -2,7 +2,9 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
 import { toPng, toJpeg } from "html-to-image";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { setColorPromptPayload, buildColorSummary } from "@/lib/colorPromptBridge";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
@@ -702,6 +704,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   onBack,
   onSave,
 }) => {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<HeroBackgroundSettings>(initialSettings || DEFAULT_SETTINGS);
   const [activeTab, setActiveTab] = useState<TabId>("shape");
   const [fullscreen, setFullscreen] = useState(true);
@@ -2460,6 +2463,26 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               <option value={2}>2x (4K)</option>
                               <option value={3}>3x</option>
                             </select>
+                            <div className="w-px h-5 bg-white/10" />
+                            <button
+                              onClick={() => {
+                                const colors = { color1: settings.color1, color2: settings.color2, color3: settings.color3, color4: settings.color4 };
+                                setColorPromptPayload({
+                                  colors,
+                                  gradientStyle: settings.gradientStyle,
+                                  brightness: settings.brightness,
+                                  grainEnabled: settings.grainEnabled,
+                                  summary: buildColorSummary(colors, settings.gradientStyle),
+                                  timestamp: Date.now(),
+                                });
+                                toast.success("Colors sent to Prompt Generator");
+                                navigate("/flow/prompt-generator");
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-medium bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:border-purple-500/40 transition-all"
+                            >
+                              <Sparkles size={12} />
+                              Generate Color Prompt
+                            </button>
                           </div>
                           <p className="text-[9px] text-white/40 mt-1.5">Style: {settings.gradientStyle} · Brightness: {settings.brightness.toFixed(2)} · Grain: {settings.grainEnabled ? "On" : "Off"}</p>
                         </motion.div>
