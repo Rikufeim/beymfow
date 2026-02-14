@@ -1501,7 +1501,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           left: 0,
           right: 0,
           zIndex: 9999,
-          width: '100%'
+          width: '100%',
+          background: 'linear-gradient(to bottom, rgba(12,12,20,0.8) 0%, transparent 100%)',
         }}
       >
         {/* Back button (left) */}
@@ -1704,15 +1705,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             </div>
           )}
 
-          {/* Workspace cosmic fade: alhaalta ylös, saumaton */}
+          {/* Subtle bottom fade for control panel blend */}
           <div
-            className="absolute inset-0 pointer-events-none z-10"
+            className="absolute bottom-0 left-0 right-0 pointer-events-none z-10"
             style={{
-              background: [
-                'linear-gradient(to top, rgba(3,3,8,0.92) 0%, rgba(6,6,18,0.75) 22%, rgba(10,10,28,0.5) 45%, rgba(14,14,40,0.25) 68%, transparent 100%)',
-                'radial-gradient(ellipse 100% 70% at 50% 0%, rgba(50,35,80,0.15) 0%, transparent 50%)',
-                'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 20%)',
-              ].join(', '),
+              height: '30%',
+              background: 'linear-gradient(to top, rgba(12,12,20,0.6) 0%, transparent 100%)',
             }}
           />
 
@@ -1734,7 +1732,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           animate={{ y: 0, opacity: 1 }}
           className="absolute bottom-0 left-0 right-0 z-50"
         >
-          <div className="bg-black/60 backdrop-blur-xl border-t border-white/10 relative">
+          <div className="bg-[#0c0c14]/80 backdrop-blur-2xl border-t border-white/[0.06] relative">
             {/* Drag Handle */}
             <div
               className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 cursor-row-resize flex items-center justify-center z-50 group hover:bg-white/5 rounded-full transition-colors"
@@ -1748,8 +1746,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             </div>
 
             {/* Tabs + Minimize button */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
-              <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.04]">
+          <div className="flex items-center gap-1">
                 {FLOW_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -1758,10 +1756,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
-                      "text-xs font-medium transition-all capitalize cursor-pointer pb-2 border-b-2 -mb-0.5",
+                      "px-3 py-1.5 text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md",
                       activeTab === tab.id
-                        ? "text-white border-white"
-                        : "text-white/50 hover:text-white/80 border-transparent"
+                        ? "text-white bg-white/10"
+                        : "text-white/40 hover:text-white/70 hover:bg-white/5"
                     )}
                   >
                     {tab.label}
@@ -1772,10 +1770,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               {/* Minimize button */}
               <button
                 onClick={() => setMinimizedBar(!minimizedBar)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:bg-neutral-800 hover:text-white transition-all text-xs"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs"
               >
                 {minimizedBar ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                <span className="text-xs font-medium">{minimizedBar ? "Expand" : "Minimize"}</span>
+                <span className="text-[10px] font-medium">{minimizedBar ? "Expand" : "Minimize"}</span>
               </button>
             </div>
 
@@ -2057,98 +2055,69 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col"
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Motion & effects</h4>
-                          <div className="flex items-center gap-3 flex-wrap flex-1 min-h-0 content-start">
-                            <div className="flex items-center gap-1.5"><Sun size={11} className="text-white/50" /><span className="text-[10px] text-white/50">Bright</span><input type="range" min="0.4" max="2" step="0.02" value={settings.brightness} onChange={(e) => updateSetting("brightness", parseFloat(e.target.value))} className="w-16 accent-white/50" /><span className="text-[10px] text-white/60 w-6">{settings.brightness.toFixed(2)}</span></div>
-                            <div className="flex items-center gap-1.5"><span className="text-[10px] text-white/50 w-12">Contrast</span><input type="range" min="0.5" max="2" step="0.05" value={settings.contrast ?? 1} onChange={(e) => updateSetting("contrast", parseFloat(e.target.value))} className="w-16 accent-white/50" /></div>
-                            <div className="flex items-center gap-1.5"><span className="text-[10px] text-white/50 w-10">Sat</span><input type="range" min="0" max="2" step="0.05" value={settings.saturation ?? 1} onChange={(e) => updateSetting("saturation", parseFloat(e.target.value))} className="w-16 accent-white/50" /></div>
-                            <button onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", settings.environmentEnabled ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50")}><Cloudy size={10} /> Ambient</button>
-                            <button onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", settings.grainEnabled ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50")}><Layers size={10} /> Grain</button>
-                            {settings.grainEnabled && <input type="range" min="0" max="0.8" step="0.02" value={settings.grainIntensity} onChange={(e) => updateSetting("grainIntensity", parseFloat(e.target.value))} className="w-14 accent-white/50" />}
-                            <div className="flex items-center gap-1"><span className="text-[10px] text-white/50">Blur</span><input type="range" min="0" max="20" step="1" value={settings.blurPx ?? 0} onChange={(e) => updateSetting("blurPx", parseInt(e.target.value, 10))} className="w-12 accent-white/50" /></div>
-                            <div className="flex items-center gap-1"><span className="text-[10px] text-white/50">Vign</span><input type="range" min="0" max="1" step="0.05" value={settings.vignette ?? 0} onChange={(e) => updateSetting("vignette", parseFloat(e.target.value))} className="w-12 accent-white/50" /></div>
-                            <div className="w-px h-5 bg-white/10" />
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 1.0);
-                                  updateSetting("contrast", 1);
-                                  updateSetting("saturation", 1);
-                                  updateSetting("blurPx", 0);
-                                  updateSetting("vignette", 0);
-                                  updateSetting("grainEnabled", false);
-                                  updateSetting("environmentEnabled", false);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Reset All
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 0.85);
-                                  updateSetting("contrast", 1.1);
-                                  updateSetting("vignette", 0.35);
-                                  updateSetting("grainEnabled", true);
-                                  updateSetting("grainIntensity", 0.25);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Cinematic
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 1.4);
-                                  updateSetting("contrast", 1.05);
-                                  updateSetting("saturation", 1.1);
-                                  updateSetting("vignette", 0);
-                                  updateSetting("grainEnabled", false);
-                                  updateSetting("environmentEnabled", true);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Bright
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 0.7);
-                                  updateSetting("contrast", 1.15);
-                                  updateSetting("saturation", 0.9);
-                                  updateSetting("vignette", 0.5);
-                                  updateSetting("grainEnabled", true);
-                                  updateSetting("grainIntensity", 0.4);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Moody
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 1.1);
-                                  updateSetting("contrast", 0.95);
-                                  updateSetting("saturation", 1.05);
-                                  updateSetting("vignette", 0.15);
-                                  updateSetting("grainEnabled", true);
-                                  updateSetting("grainIntensity", 0.15);
-                                  updateSetting("environmentEnabled", true);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Dreamy
-                              </button>
-                              <button
-                                onClick={() => {
-                                  updateSetting("brightness", 1.3);
-                                  updateSetting("contrast", 1);
-                                  updateSetting("saturation", 1);
-                                  updateSetting("blurPx", 0);
-                                  updateSetting("vignette", 0);
-                                  updateSetting("grainEnabled", false);
-                                  updateSetting("environmentEnabled", false);
-                                }}
-                                className="px-2 py-1 rounded text-[10px] font-medium bg-neutral-900 border border-white/10 text-white/60 hover:text-white hover:bg-neutral-800 transition-all"
-                              >
-                                Clean
-                              </button>
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Motion & Effects</h4>
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            <div className="space-y-3">
+                              {/* Sliders Grid */}
+                              <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+                                <div className="flex items-center gap-2">
+                                  <Sun size={11} className="text-white/40 flex-shrink-0" />
+                                  <span className="text-[10px] text-white/50 w-12">Bright</span>
+                                  <Slider value={[settings.brightness]} onValueChange={([v]) => updateSetting("brightness", v)} min={0.4} max={2} step={0.02} className="flex-1" />
+                                  <span className="text-[10px] text-white/50 w-8 text-right">{settings.brightness.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-12 ml-4">Contrast</span>
+                                  <Slider value={[settings.contrast ?? 1]} onValueChange={([v]) => updateSetting("contrast", v)} min={0.5} max={2} step={0.05} className="flex-1" />
+                                  <span className="text-[10px] text-white/50 w-8 text-right">{(settings.contrast ?? 1).toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-12 ml-4">Saturate</span>
+                                  <Slider value={[settings.saturation ?? 1]} onValueChange={([v]) => updateSetting("saturation", v)} min={0} max={2} step={0.05} className="flex-1" />
+                                  <span className="text-[10px] text-white/50 w-8 text-right">{(settings.saturation ?? 1).toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-12 ml-4">Blur</span>
+                                  <Slider value={[settings.blurPx ?? 0]} onValueChange={([v]) => updateSetting("blurPx", v)} min={0} max={20} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/50 w-8 text-right">{settings.blurPx ?? 0}px</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-12 ml-4">Vignette</span>
+                                  <Slider value={[settings.vignette ?? 0]} onValueChange={([v]) => updateSetting("vignette", v)} min={0} max={1} step={0.05} className="flex-1" />
+                                  <span className="text-[10px] text-white/50 w-8 text-right">{((settings.vignette ?? 0) * 100).toFixed(0)}%</span>
+                                </div>
+                                {settings.grainEnabled && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-white/50 w-12 ml-4">Grain</span>
+                                    <Slider value={[settings.grainIntensity]} onValueChange={([v]) => updateSetting("grainIntensity", v)} min={0} max={0.8} step={0.02} className="flex-1" />
+                                    <span className="text-[10px] text-white/50 w-8 text-right">{(settings.grainIntensity * 100).toFixed(0)}%</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Toggles */}
+                              <div className="flex items-center gap-2 pt-1">
+                                <button onClick={() => updateSetting("environmentEnabled", !settings.environmentEnabled)} className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[10px] font-medium transition-all", settings.environmentEnabled ? "bg-white/10 border-white/15 text-white" : "bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white/60")}><Cloudy size={11} /> Ambient</button>
+                                <button onClick={() => updateSetting("grainEnabled", !settings.grainEnabled)} className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[10px] font-medium transition-all", settings.grainEnabled ? "bg-white/10 border-white/15 text-white" : "bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white/60")}><Layers size={11} /> Grain</button>
+                                <div className="w-px h-5 bg-white/[0.06]" />
+                              </div>
+
+                              {/* Presets */}
+                              <div className="flex items-center gap-1.5 pt-1">
+                                <span className="text-[10px] text-white/30 mr-1">Presets</span>
+                                {[
+                                  { label: "Reset All", fn: () => { updateSetting("brightness", 1.0); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }},
+                                  { label: "Cinematic", fn: () => { updateSetting("brightness", 0.85); updateSetting("contrast", 1.1); updateSetting("vignette", 0.35); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.25); }},
+                                  { label: "Bright", fn: () => { updateSetting("brightness", 1.4); updateSetting("contrast", 1.05); updateSetting("saturation", 1.1); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", true); }},
+                                  { label: "Moody", fn: () => { updateSetting("brightness", 0.7); updateSetting("contrast", 1.15); updateSetting("saturation", 0.9); updateSetting("vignette", 0.5); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.4); }},
+                                  { label: "Dreamy", fn: () => { updateSetting("brightness", 1.1); updateSetting("contrast", 0.95); updateSetting("saturation", 1.05); updateSetting("vignette", 0.15); updateSetting("grainEnabled", true); updateSetting("grainIntensity", 0.15); updateSetting("environmentEnabled", true); }},
+                                  { label: "Clean", fn: () => { updateSetting("brightness", 1.3); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }},
+                                ].map((preset) => (
+                                  <button key={preset.label} onClick={preset.fn} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
+                                    {preset.label}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </motion.div>

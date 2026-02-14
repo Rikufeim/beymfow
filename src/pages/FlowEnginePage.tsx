@@ -41,14 +41,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     setActiveWorkspace(initialWorkspace);
   }, [initialWorkspace]);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!user) {
-      openAuthDialog(() => {
-        // After successful login, stay on current page
-      });
-    }
-  }, [user, openAuthDialog]);
+  // Auth is optional - workspace is usable without login
 
   // Card data
   const cards = [
