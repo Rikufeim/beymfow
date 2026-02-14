@@ -185,13 +185,8 @@ const PromptGeneratorPage = () => {
     setGeneratedPrompt("");
 
     try {
-      let finalInput = input;
-      if (selectedModel === "fast" && !uploadedImages.length) {
-        finalInput = `${input} (Create a comprehensive and detailed prompt based on this idea, aiming for maximum clarity and actionable steps)`;
-      }
-
       const requestBody: any = {
-        userInput: finalInput || "Analyze these images and create a detailed prompt for generating a similar design.",
+        userInput: input || "Analyze these images and create a detailed prompt for generating a similar design.",
         model: selectedModel,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         promptType: promptType,

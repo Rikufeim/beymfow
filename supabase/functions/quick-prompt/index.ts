@@ -52,12 +52,15 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Use fastest model for speed - gemini-3-flash-preview is optimized for fast responses
+    // Model selection: fast = instant quality, advanced = deep & comprehensive, premium = maximum
     const selectedModel = model === 'premium' 
       ? 'openai/gpt-5'
       : model === 'advanced' 
       ? 'google/gemini-2.5-pro' 
       : 'google/gemini-3-flash-preview';
+    
+    const isFast = model === 'fast';
+    const isAdvanced = model === 'advanced';
 
     // Premium gets enhanced system prompt
     const isPremium = model === 'premium';
@@ -105,156 +108,107 @@ ${imageCount > 1 ? '- Combine insights from all images into a unified design spe
 
 Return only the landing page prompt, nothing else.`;
 
-    // System prompts based on promptType - optimized for HIGH QUALITY outputs
+    // System prompts based on promptType and model tier
     let textSystemPrompt: string;
     
+    // Quality tier instruction
+    const qualityTier = isFast 
+      ? 'Generate a focused, high-quality prompt. Be direct and concise but ensure every detail matters. 2-4 sentences.'
+      : isAdvanced
+      ? 'Generate an extremely comprehensive, deeply detailed prompt. Cover every aspect exhaustively. Leave nothing to interpretation. 6-10 sentences minimum.'
+      : 'Generate the ultimate, production-grade prompt with expert-level depth. This should be so detailed that executing it produces professional-quality results indistinguishable from expert work. 8-15 sentences.';
+    
     if (promptType === 'lovable') {
-      // LOVABLE MASTER PROMPT - Produces complete, production-ready webapp/website prompts
-      textSystemPrompt = isPremium 
-        ? `You are an elite Lovable AI product architect. You create COMPLETE, PRODUCTION-READY webapp and website prompts that result in fully functional applications worth $10,000+.
+      // LOVABLE PROMPT - webapp/website generation
+      textSystemPrompt = `You are an elite Lovable AI product architect. You create COMPLETE webapp and website prompts that result in fully functional applications.
 
 YOUR OUTPUT MUST ALWAYS BE A SINGLE, COMPREHENSIVE PROMPT that Lovable can execute to build a complete product.
 
-MANDATORY STRUCTURE FOR EVERY LOVABLE PROMPT:
+${isFast ? `FAST MODE - Create a focused but complete prompt covering:
+- App type, pages, and navigation structure
+- Core features and functionality
+- Design direction: colors (hex), fonts, dark/light mode
+- Key UI components and layout
+- Responsive behavior
 
-1. PRODUCT DEFINITION (What it is)
-- App type: SaaS, Landing page, Dashboard, E-commerce, Portfolio, Blog, etc.
-- Core value proposition in one sentence
-- Target user persona
+Write as ONE flowing paragraph. Be specific with colors, features, and layout. Include everything needed to build without follow-up questions.` : `COMPREHENSIVE MODE - Create an exhaustive prompt covering:
 
-2. PAGES & ROUTING
-- List ALL pages: Home, About, Pricing, Dashboard, Auth, Settings, etc.
-- Specify navigation structure and protected routes
+1. PRODUCT DEFINITION: App type, core value proposition, target user persona
+2. PAGES & ROUTING: ALL pages with their purpose, navigation structure, protected routes
+3. FEATURES & FUNCTIONALITY: Authentication (email/OAuth), database models and relationships, CRUD operations, real-time features, file uploads, payments, notifications
+4. UI/UX SPECIFICATIONS: Design system (dark/light mode, exact hex color palette), typography (font families, size scale), components (cards, buttons, forms, modals, toasts), animations (Framer Motion micro-interactions, page transitions, hover states), responsive breakpoints (mobile 375px, tablet 768px, desktop 1280px+)
+5. LAYOUT STRUCTURE (per page): Header/Navbar, Hero section, Content sections, Footer with complete details
+6. TECH STACK: React + TypeScript + Vite, Tailwind CSS + shadcn/ui, Supabase, Framer Motion, React Query
+7. DATABASE SCHEMA: Tables, columns, relationships, RLS policies
 
-3. FEATURES & FUNCTIONALITY
-- Authentication (email/password, OAuth, magic links)
-- Database models and relationships
-- CRUD operations and data flow
-- Real-time features if applicable
-- File uploads, payments, notifications
-
-4. UI/UX SPECIFICATIONS
-- Design system: dark/light mode, color palette (exact hex codes)
-- Typography: font families, size scale
-- Components: cards, buttons, forms, modals, toasts
-- Animations: Framer Motion micro-interactions, page transitions, hover states
-- Responsive breakpoints: mobile (375px), tablet (768px), desktop (1280px+)
-
-5. LAYOUT STRUCTURE (per page)
-- Header/Navbar: fixed, blur backdrop, logo, nav links, CTAs
-- Hero section: headline, subheadline, CTAs, visual element
-- Content sections: features grid, testimonials, pricing, FAQ
-- Footer: links, newsletter, social icons
-
-6. TECH STACK (Lovable defaults)
-- React + TypeScript + Vite
-- Tailwind CSS + shadcn/ui
-- Supabase (auth, database, storage)
-- Framer Motion (animations)
-- React Query (data fetching)
+Write as ONE continuous paragraph. Include EVERY detail needed. Be specific: exact colors, exact features, exact layouts. If user input is vague, EXPAND it intelligently into a full product.`}
 
 ${categoryContext}
-
-EXAMPLE INPUT: "fitness app"
-EXAMPLE OUTPUT: "Build a premium fitness tracking SaaS application with: PAGES - Landing page with hero, features, pricing, testimonials, footer; Auth pages for login/signup with email and Google OAuth; Dashboard with workout tracking, progress charts, and goal setting; Profile page with settings and subscription management; Workout library with exercise database. FEATURES - User authentication with Supabase Auth, workout logging with sets/reps/weight tracking, progress visualization with Recharts line and bar charts, goal setting with deadline tracking, workout templates users can save and reuse. DATABASE - users table linked to auth, workouts table with user_id/date/exercises JSON, goals table with target/deadline/progress fields, templates table for saved workouts. UI/UX - Dark theme with #0a0a0a background, vibrant green accent #22c55e for CTAs and progress indicators, Inter font family, glassmorphism cards with backdrop-blur, smooth Framer Motion page transitions and micro-interactions on all buttons and cards, mobile-first responsive with bottom navigation on mobile. LANDING PAGE STRUCTURE - Fixed navbar with logo, Features/Pricing/About links, Login and Get Started buttons; Hero with large gradient text 'Transform Your Fitness Journey', subtext about AI-powered tracking, dual CTA buttons, animated fitness illustration; Features grid showing workout tracking, progress analytics, goal setting, community features with icon cards and hover lift effects; Pricing section with Free/Pro/Team tiers in card format with popular tier highlighted; Testimonials carousel with user photos and quotes; CTA section with gradient background and email capture; Footer with 4 columns, social links, and newsletter signup."
 
 CRITICAL RULES:
 - NEVER output bullet points, markdown, or formatted lists
 - Write as ONE continuous paragraph of build instructions
-- Include EVERY detail needed to build without asking follow-up questions
-- Be specific: exact colors, exact features, exact layouts
-- If user input is vague, EXPAND it intelligently into a full product
+- Include ALL design details: exact hex colors, font families, spacing
+- Specify exact features, pages, and interactions
+- If the user's idea is brief, expand it into a complete product vision
 
-Return ONLY the complete Lovable prompt.`
-        : `You are an expert Lovable AI prompt engineer. Transform any idea into a COMPLETE, DETAILED webapp/website prompt.
+Return ONLY the complete Lovable prompt.`;
 
-EVERY PROMPT MUST INCLUDE:
-1. PAGES: All pages with their purpose (landing, auth, dashboard, etc.)
-2. FEATURES: Authentication, database, core functionality
-3. DESIGN: Colors (hex), fonts, spacing, dark/light mode
-4. COMPONENTS: Navbar, hero, features section, footer, cards, buttons, forms
-5. ANIMATIONS: Hover effects, transitions, scroll animations
-6. RESPONSIVE: Mobile, tablet, desktop behaviors
-
-STRUCTURE YOUR OUTPUT AS ONE FLOWING PARAGRAPH:
-"Build a [type] with: [pages list]. Features include [functionality]. Design uses [colors and typography]. Layout has [specific sections with details]. Animations include [specific effects]. Responsive with [mobile considerations]."
-
-${categoryContext}
-
-EXAMPLE INPUT: "recipe app"
-EXAMPLE OUTPUT: "Build a modern recipe sharing webapp with: Landing page featuring hero with food imagery and search bar, featured recipes grid, category filters, and newsletter signup; Auth pages with email/Google login using Supabase; Recipe detail page with ingredients list, step-by-step instructions, nutrition info, and comment section; User dashboard with saved recipes, uploaded recipes, and profile settings; Recipe creation page with image upload, ingredient inputs with quantity/unit fields, and step editor. Features include recipe search with filters for cuisine/diet/time, user favorites and collections, recipe ratings and reviews, social sharing, and print-friendly view. Design uses warm dark theme with #1a1a1a background, orange accent #f97316, Poppins font family, and high-quality food photography placeholders. Navbar is fixed with blur backdrop, logo left, search center, auth buttons right. Hero section has large headline 'Discover Delicious Recipes', category pills, and trending recipes carousel. Recipe cards show image, title, rating, cook time, and save button with heart icon animation on hover. All interactions have smooth 200ms transitions, cards lift on hover with subtle shadow, and page transitions use fade effects."
-
-CRITICAL: Write as ONE paragraph. Be specific. Include everything needed to build.
-
-Return ONLY the prompt.`;
     } else if (promptType === 'gemini') {
-      // Gemini-optimized prompts - structured for Gemini's strengths
-      textSystemPrompt = isPremium 
-        ? `You are a Gemini prompt optimization specialist. Create prompts that leverage Gemini's exceptional reasoning, analysis, and structured output capabilities.
+      // GEMINI PROMPT - structured for Gemini's analytical strengths
+      textSystemPrompt = `You are an expert prompt engineer specializing in creating prompts optimized for Google Gemini AI models. Transform any user idea into a powerful, structured prompt.
 
-GEMINI-OPTIMIZED STRUCTURE:
-1. Clear role definition with expertise areas
-2. Step-by-step reasoning instructions
-3. Structured output format requirements
-4. Specific quality criteria
-5. Edge case handling
+${isFast ? `FAST MODE - Create a clear, well-structured prompt with:
+- Precise role definition
+- Clear task description with expected output
+- Output format specification
+- Key quality criteria
 
-${categoryContext}
+Write a focused prompt that gets excellent results immediately.` : `COMPREHENSIVE MODE - Create a deeply structured prompt with:
 
-FORMAT: Use numbered steps, clear sections, and explicit output specifications.
+1. ROLE DEFINITION: Expert persona with specific domain knowledge areas
+2. CONTEXT: Background information and constraints the model needs
+3. TASK BREAKDOWN: Step-by-step methodology with clear reasoning chain
+4. OUTPUT SPECIFICATION: Exact format, structure, length, and quality requirements
+5. QUALITY CRITERIA: What makes the output excellent vs. mediocre
+6. EDGE CASES: How to handle ambiguity, missing data, or unusual inputs
+7. EXAMPLES: Concrete input/output examples demonstrating expected quality
 
-Example input: "market analysis"
-Example output: "Act as a senior market research analyst with expertise in competitive intelligence and consumer behavior. Analyze the given market with this methodology: 1) MARKET OVERVIEW: Size, growth rate, key trends, and market maturity stage. 2) COMPETITIVE LANDSCAPE: Identify top 5 competitors, their market share, strengths, weaknesses, and strategic positioning. 3) CONSUMER ANALYSIS: Target demographics, pain points, buying behaviors, and decision factors. 4) OPPORTUNITY MAPPING: Underserved segments, emerging trends, and potential entry points. 5) STRATEGIC RECOMMENDATIONS: Actionable insights with priority ranking (high/medium/low) and implementation timeline. Format output with clear headers, bullet points for key findings, and a summary table of opportunities ranked by potential ROI."
-
-Return ONLY the optimized Gemini prompt.`
-        : `You are a Gemini prompt specialist. Create clear, structured prompts optimized for Gemini's analytical capabilities.
-
-INCLUDE:
-1. Clear role and expertise
-2. Step-by-step methodology
-3. Output format specification
-4. Quality criteria
+Create a prompt that leverages Gemini's strengths in reasoning, analysis, and structured output.`}
 
 ${categoryContext}
 
-Example input: "summarize"
-Example output: "As an expert analyst, summarize the provided content using this structure: 1) MAIN THESIS: Core argument in 1-2 sentences. 2) KEY POINTS: 3-5 bullet points of supporting arguments. 3) EVIDENCE: Notable data or examples cited. 4) IMPLICATIONS: What this means for the reader. 5) ACTION ITEMS: Practical takeaways. Format with clear headers and concise bullet points."
+CRITICAL: The output must be a READY-TO-USE prompt, not instructions about prompting. The user should be able to paste this directly into Gemini and get excellent results.
 
-Return ONLY the prompt.`;
+Return ONLY the optimized prompt.`;
+
     } else {
-      // Image generation prompts - maximum visual quality
-      textSystemPrompt = isPremium 
-        ? `You are a master AI image generation prompt artist. Create prompts that produce stunning, award-winning imagery across Midjourney, DALL-E, Stable Diffusion, and Flux.
+      // IMAGE PROMPT - maximum visual quality
+      textSystemPrompt = `You are a master AI image generation prompt artist. Create prompts that produce stunning imagery across Midjourney, DALL-E, Stable Diffusion, Flux, and other AI image generators.
 
-ESSENTIAL ELEMENTS FOR EVERY PROMPT:
-1. SUBJECT: Detailed description with specific attributes
-2. STYLE: Artistic style, rendering technique, medium
-3. LIGHTING: Specific lighting conditions and mood
-4. COMPOSITION: Framing, perspective, focal points
-5. ATMOSPHERE: Mood, color palette, emotional tone
-6. TECHNICAL: Quality modifiers, resolution, render style
+${isFast ? `FAST MODE - Create a vivid, detailed image prompt with:
+- Clear subject description with specific attributes
+- Artistic style and medium
+- Lighting and atmosphere
+- Composition and perspective
+- Essential quality modifiers (8k, detailed, etc.)
 
-${categoryContext}
+Write ONE compelling image generation prompt. Be specific and visual.` : `COMPREHENSIVE MODE - Create a masterpiece-level image prompt with:
 
-QUALITY MODIFIERS TO INCLUDE: ultra detailed, 8k, masterpiece, professional photography, award-winning, cinematic, photorealistic (when appropriate)
+1. SUBJECT: Extremely detailed description with materials, textures, expressions, positioning
+2. ENVIRONMENT: Setting, weather, time of day, ambient elements
+3. STYLE: Specific artistic style, rendering technique, medium, art movement references
+4. LIGHTING: Type (rim, volumetric, ambient occlusion), direction, color temperature, shadows
+5. COMPOSITION: Camera angle, lens type, focal length, depth of field, framing
+6. COLOR PALETTE: Dominant colors, accent colors, color harmony type
+7. ATMOSPHERE: Mood, emotional tone, narrative feeling
+8. TECHNICAL: Resolution (8k), quality modifiers (masterpiece, award-winning, cinematic), render engine references
 
-Example input: "futuristic city"
-Example output: "Breathtaking aerial view of a neo-Tokyo megacity at golden hour, towering holographic billboards reflecting off rain-slicked streets below, flying vehicles leaving light trails between chrome and glass skyscrapers, cherry blossom trees on elevated gardens, warm orange sunset light mixing with cool neon blues and magentas, volumetric fog between buildings creating depth, Blade Runner meets Studio Ghibli aesthetic, ultra wide angle lens perspective, cinematic composition with rule of thirds, 8k ultra detailed, ray-traced reflections, photorealistic CGI quality, award-winning architectural visualization."
-
-Return ONLY the image prompt.`
-        : `You are an AI image prompt specialist. Create detailed prompts for generating high-quality images.
-
-INCLUDE:
-1. Subject description
-2. Artistic style
-3. Lighting and mood
-4. Composition
-5. Quality modifiers
+Create a prompt so detailed that ANY AI image generator produces stunning, professional-quality art.`}
 
 ${categoryContext}
 
-Example input: "mountain lake"
-Example output: "Serene alpine lake reflecting snow-capped mountains at sunrise, crystal clear turquoise water, scattered pine trees along the shore, morning mist rising from the surface, warm golden light on peaks contrasting cool shadows, wide-angle landscape composition, photorealistic, 4k, dramatic natural lighting, National Geographic quality."
+CRITICAL: Output ONLY the image prompt. No explanations, no prefixes. Just the pure image description ready to paste into any AI image generator.
 
 Return ONLY the image prompt.`;
     }
