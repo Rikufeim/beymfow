@@ -185,10 +185,10 @@ const Index = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-10 sm:mb-12 lg:mb-16">
                 <div className="inline-block relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
-                    Create Perfect AI Prompts in Seconds
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4 text-white">
+                    Create Perfect AI Prompts <span className="text-white/60">in Seconds</span>
                   </h2>
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4 max-w-3xl mx-auto">
+                  <p className="text-sm sm:text-base md:text-lg text-white/60 px-4 max-w-3xl mx-auto">
                     Follow these simple steps to create optimized prompts for AI models in seconds
                   </p>
                 </div>
