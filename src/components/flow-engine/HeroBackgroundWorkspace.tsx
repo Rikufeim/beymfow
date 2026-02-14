@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { buildHeroGradient } from "./heroGradient";
@@ -55,6 +57,11 @@ interface FlowState {
 }
 
 // --- Types ---
+export type GradientType = "linear" | "radial" | "conic";
+export type BlendModeOption = "normal" | "overlay" | "soft-light" | "multiply" | "screen";
+export type GrainSize = "fine" | "medium" | "coarse";
+export type ImageSimulateMode = "hero" | "card" | "fullscreen";
+
 export interface HeroBackgroundSettings {
   // Colors
   color1: string;
@@ -75,6 +82,19 @@ export interface HeroBackgroundSettings {
   environmentEnabled: boolean;
   // Gradient style
   gradientStyle: "halo" | "soft-sweep" | "orb" | "diagonal-blend" | "noise-wash" | "aurora" | "mesh" | "spotlight" | "wave" | "crystal" | "sunset" | "cosmic" | "nebula-cloud" | "radial-pulse" | "glass-shards" | "grid-perspective" | "fluid-flow" | "cyber-grid" | "bokeh-lights" | "velvet-wrap" | "prism-refraction" | "midnight-mist" | "solar-wind" | "digital-rain" | "abstract-curves" | "neon-smoke" | "geometric-shapes" | "silk-drape" | "vortex-spin" | "glitch-noise" | "star-cluster" | "liquid-metal";
+  // Advanced gradient controls
+  gradientType: GradientType;
+  gradientAngle: number;
+  blendMode: BlendModeOption;
+  // Pattern controls
+  noiseAmount: number;
+  grainSize: GrainSize;
+  textureOpacity: number;
+  // Advanced controls
+  radialFocusX: number;
+  radialFocusY: number;
+  exposure: number;
+  gamma: number;
   // Motion (future)
   motionEnabled: boolean;
   motionSpeed: number;
@@ -113,6 +133,19 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   grainIntensity: 0.18,
   environmentEnabled: true,
   gradientStyle: "halo",
+  // Advanced gradient controls
+  gradientType: "linear",
+  gradientAngle: 135,
+  blendMode: "normal",
+  // Pattern controls
+  noiseAmount: 0,
+  grainSize: "medium",
+  textureOpacity: 0.5,
+  // Advanced controls
+  radialFocusX: 50,
+  radialFocusY: 50,
+  exposure: 1,
+  gamma: 1,
   motionEnabled: false,
   motionSpeed: 0.5,
   // Component defaults
@@ -672,7 +705,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [activeTab, setActiveTab] = useState<TabId>("shape");
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
+  // Drop Zone state
+  const [droppedImage, setDroppedImage] = useState<string | null>(null);
+  const [imageSimulateMode, setImageSimulateMode] = useState<ImageSimulateMode>("hero");
+  const [imageBlurMask, setImageBlurMask] = useState(false);
+  const [autoAdjustBg, setAutoAdjustBg] = useState(true);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [showHeroPreview, setShowHeroPreview] = useState(false);
+
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
@@ -1350,18 +1390,77 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     });
   }, []);
 
+  // Extract dominant color from an image using canvas
+  const extractDominantColor = useCallback((dataUrl: string): Promise<{ r: number; g: number; b: number }> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { resolve({ r: 0, g: 0, b: 0 }); return; }
+        ctx.drawImage(img, 0, 0, 16, 16);
+        const data = ctx.getImageData(0, 0, 16, 16).data;
+        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          rSum += data[i]; gSum += data[i + 1]; bSum += data[i + 2]; count++;
+        }
+        resolve({ r: Math.round(rSum / count), g: Math.round(gSum / count), b: Math.round(bSum / count) });
+      };
+      img.src = dataUrl;
+    });
+  }, []);
+
+  // Handle image drop
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.match(/image\/(png|jpe?g|webp)/)) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setDroppedImage(dataUrl);
+      if (autoAdjustBg) {
+        const dominant = await extractDominantColor(dataUrl);
+        const hex = rgbToHex(dominant.r, dominant.g, dominant.b);
+        const { h, s, l } = rgbToHsl(dominant.r, dominant.g, dominant.b);
+        const darkBase = hslToRgb(h, Math.min(s * 0.6, 30), Math.min(l * 0.15, 8));
+        const midSurface = hslToRgb(h, Math.min(s * 0.5, 25), Math.min(l * 0.25, 15));
+        updateSetting("color1", rgbToHex(darkBase.r, darkBase.g, darkBase.b));
+        updateSetting("color2", rgbToHex(midSurface.r, midSurface.g, midSurface.b));
+        updateSetting("color3", hex);
+        updateSetting("color4", adjustHex(hex, 30));
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [autoAdjustBg, extractDominantColor, updateSetting]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, []);
+
   // Generate gradient CSS based on settings (Motion tab: brightness, contrast, saturation, blur)
   const generateGradientStyle = useCallback((): React.CSSProperties => {
-    const b = settings.brightness;
+    const b = settings.brightness * (settings.exposure ?? 1);
     const c = settings.contrast ?? 1;
     const s = settings.saturation ?? 1;
+    const g = settings.gamma ?? 1;
     const blurPx = settings.blurPx ?? 0;
-    const parts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
+    const parts = [`brightness(${b})`, `contrast(${c * g})`, `saturate(${s})`];
     if (blurPx > 0) parts.push(`blur(${blurPx}px)`);
     const background = buildHeroGradient(settings);
     return {
       background,
       filter: parts.join(" "),
+      mixBlendMode: settings.blendMode !== "normal" ? settings.blendMode as React.CSSProperties["mixBlendMode"] : undefined,
     };
   }, [settings]);
 
@@ -1491,7 +1590,54 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           ref={previewContainerRef}
           className="absolute inset-0 transition-all duration-500 z-[1]"
           style={generateGradientStyle()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
+          {/* Drag overlay */}
+          {isDragOver && (
+            <div className="absolute inset-0 z-[50] flex items-center justify-center bg-black/50 backdrop-blur-sm border-2 border-dashed border-white/40 rounded-xl">
+              <div className="text-center">
+                <Upload size={48} className="mx-auto mb-3 text-white/60" />
+                <p className="text-white/80 text-lg font-medium">Drop your hero image here</p>
+                <p className="text-white/40 text-sm mt-1">PNG, JPG, WebP supported</p>
+              </div>
+            </div>
+          )}
+
+          {/* Dropped image overlay */}
+          {droppedImage && (
+            <div className={cn(
+              "absolute z-[4] pointer-events-none",
+              imageSimulateMode === "fullscreen" && "inset-0",
+              imageSimulateMode === "hero" && "inset-0 flex items-center justify-center",
+              imageSimulateMode === "card" && "inset-0 flex items-center justify-center",
+            )}>
+              {imageBlurMask && (
+                <div className="absolute inset-0 backdrop-blur-md bg-black/20" />
+              )}
+              <img
+                src={droppedImage}
+                alt="Hero preview"
+                className={cn(
+                  "relative",
+                  imageSimulateMode === "fullscreen" && "w-full h-full object-cover",
+                  imageSimulateMode === "hero" && "max-w-md max-h-64 rounded-2xl",
+                  imageSimulateMode === "card" && "max-w-xs max-h-48 rounded-xl",
+                )}
+                style={{
+                  filter: `drop-shadow(0 20px 40px rgba(0,0,0,0.5))`,
+                  boxShadow: imageSimulateMode !== "fullscreen" ? `0 0 60px ${settings.color3}30, 0 20px 40px rgba(0,0,0,0.4)` : undefined,
+                }}
+              />
+              <button
+                onClick={() => setDroppedImage(null)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto z-10"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           {/* Grain overlay - improved quality */}
           {settings.grainEnabled && (
             <div
@@ -1728,98 +1874,95 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col"
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Background & Pattern Style</h4>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            <div className="grid grid-cols-3 gap-3">
-                              {SHAPE_STYLES.map(({ id, label }, idx) => {
-                                const isActive = settings.gradientStyle === id;
-                                // Rotate through distinct color palettes so every style gets a unique, visible preview
-                                // Each style gets a unique, high-contrast palette with lighter bases for thumbnail visibility
-                                const PREVIEW_PALETTES: Array<{ c1: string; c2: string; c3: string; c4: string }> = [
-                                  { c1: "#0a1020", c2: "#1e2d4a", c3: "#60a5fa", c4: "#a78bfa" }, // Halo
-                                  { c1: "#0a1510", c2: "#1a3530", c3: "#2dd4bf", c4: "#fbbf24" }, // Soft Sweep
-                                  { c1: "#141008", c2: "#2c2010", c3: "#f97316", c4: "#fbbf24" }, // Orb
-                                  { c1: "#140e20", c2: "#2a1840", c3: "#a855f7", c4: "#e879f9" }, // Diagonal Blend
-                                  { c1: "#0a0e1e", c2: "#142040", c3: "#06b6d4", c4: "#8b5cf6" }, // Noise Wash
-                                  { c1: "#0a1510", c2: "#183828", c3: "#34d399", c4: "#22d3ee" }, // Aurora
-                                  { c1: "#180e14", c2: "#301828", c3: "#ec4899", c4: "#f472b6" }, // Mesh
-                                  { c1: "#141008", c2: "#2a2010", c3: "#f59e0b", c4: "#ef4444" }, // Spotlight
-                                  { c1: "#081020", c2: "#1a3050", c3: "#38bdf8", c4: "#67e8f9" }, // Wave
-                                  { c1: "#140e20", c2: "#2e1850", c3: "#c084fc", c4: "#38bdf8" }, // Crystal
-                                  { c1: "#1a0c08", c2: "#3a1e0a", c3: "#fb923c", c4: "#fde047" }, // Sunset
-                                  { c1: "#08081a", c2: "#141438", c3: "#818cf8", c4: "#c084fc" }, // Cosmic
-                                  { c1: "#120a1e", c2: "#241440", c3: "#d946ef", c4: "#8b5cf6" }, // Nebula Cloud
-                                  { c1: "#0a1018", c2: "#142838", c3: "#22d3ee", c4: "#14b8a6" }, // Radial Pulse
-                                  { c1: "#0a0a18", c2: "#181838", c3: "#a78bfa", c4: "#38bdf8" }, // Glass Shards
-                                  { c1: "#081018", c2: "#102838", c3: "#06b6d4", c4: "#10b981" }, // Grid Perspective
-                                  { c1: "#140e18", c2: "#2a1c38", c3: "#e879f9", c4: "#fb7185" }, // Fluid Flow
-                                  { c1: "#081214", c2: "#102830", c3: "#2dd4bf", c4: "#60a5fa" }, // Cyber Grid
-                                  { c1: "#180c10", c2: "#301820", c3: "#f472b6", c4: "#fb923c" }, // Bokeh Lights
-                                  { c1: "#140810", c2: "#2a1020", c3: "#f43f5e", c4: "#e879f9" }, // Velvet Wrap
-                                  { c1: "#080e1a", c2: "#101e3a", c3: "#6366f1", c4: "#22d3ee" }, // Prism Refraction
-                                  { c1: "#0c1018", c2: "#182038", c3: "#94a3b8", c4: "#38bdf8" }, // Midnight Mist
-                                  { c1: "#141008", c2: "#2a2410", c3: "#eab308", c4: "#f97316" }, // Solar Wind
-                                  { c1: "#081410", c2: "#103020", c3: "#10b981", c4: "#34d399" }, // Digital Rain
-                                  { c1: "#140a1c", c2: "#2a1438", c3: "#d946ef", c4: "#f472b6" }, // Abstract Curves
-                                  { c1: "#0c1008", c2: "#1e2a10", c3: "#84cc16", c4: "#22d3ee" }, // Neon Smoke
-                                  { c1: "#140a10", c2: "#2a1420", c3: "#f43f5e", c4: "#fbbf24" }, // Geometric Shapes
-                                  { c1: "#100a18", c2: "#201430", c3: "#c084fc", c4: "#f9a8d4" }, // Silk Drape
-                                  { c1: "#081010", c2: "#102424", c3: "#14b8a6", c4: "#818cf8" }, // Vortex Spin
-                                  { c1: "#101010", c2: "#222222", c3: "#ef4444", c4: "#22d3ee" }, // Glitch Noise
-                                  { c1: "#08081a", c2: "#101038", c3: "#a5b4fc", c4: "#fde047" }, // Star Cluster
-                                  { c1: "#0e0e14", c2: "#1e1e2a", c3: "#94a3b8", c4: "#60a5fa" }, // Liquid Metal
-                                ];
-                                const pal = PREVIEW_PALETTES[idx % PREVIEW_PALETTES.length];
-                                const previewSettings: HeroBackgroundSettings = {
-                                  ...settings,
-                                  gradientStyle: id,
-                                  color1: pal.c1,
-                                  color2: pal.c2,
-                                  color3: pal.c3,
-                                  color4: pal.c4,
-                                  singleColorMode: false,
-                                  environmentEnabled: true,
-                                  brightness: 2.0,
-                                  grainEnabled: false,
-                                };
-                                const previewBg = buildHeroGradient(previewSettings);
-                                return (
-                                  <button
-                                    key={id}
-                                    onClick={() => {
-                                      if (settings.singleColorMode) {
-                                        setSettings(prev => ({ ...prev, gradientStyle: id, singleColorMode: false }));
-                                      } else {
-                                        updateSetting("gradientStyle", id);
-                                      }
-                                    }}
-                                    className={cn(
-                                      "flex flex-col gap-1.5 p-0 rounded-lg transition-all group",
-                                      isActive ? "opacity-100" : "opacity-70 hover:opacity-100"
-                                    )}
-                                  >
-                                    <div
-                                      className={cn(
-                                        "h-24 w-full rounded-lg border transition-all overflow-hidden relative shadow-sm",
-                                        isActive
-                                          ? "border-white/60 ring-2 ring-white/10"
-                                          : "border-white/20 group-hover:border-white/30"
-                                      )}
-                                      style={{ background: previewBg, filter: "brightness(2.2) saturate(1.8)" }}
-                                    >
-                                      {/* Subtle grain overlay for preview authenticity */}
-                                      <div
-                                        className="absolute inset-0 opacity-15 pointer-events-none mix-blend-overlay"
-                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
-                                      />
-                                    </div>
-                                    <span className={cn(
-                                      "text-[10px] font-medium block truncate text-center w-full",
-                                      isActive ? "text-white" : "text-white/60 group-hover:text-white/80"
-                                    )}>{label}</span>
-                                  </button>
-                                );
-                              })}
+                            <div className="space-y-4">
+                              {/* Gradient Controls */}
+                              <div className="space-y-2">
+                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Gradient</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Type</span>
+                                  <div className="flex gap-1">
+                                    {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
+                                      <button key={t} onClick={() => updateSetting("gradientType", t)} className={cn("px-2 py-1 rounded text-[10px] font-medium capitalize transition-all", settings.gradientType === t ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{t}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Angle</span>
+                                  <Slider value={[settings.gradientAngle]} onValueChange={([v]) => updateSetting("gradientAngle", v)} min={0} max={360} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.gradientAngle}°</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Blend</span>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {(["normal", "overlay", "soft-light", "multiply", "screen"] as BlendModeOption[]).map((m) => (
+                                      <button key={m} onClick={() => updateSetting("blendMode", m)} className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium capitalize transition-all", settings.blendMode === m ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{m}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Pattern Controls */}
+                              <div className="space-y-2 border-t border-white/5 pt-3">
+                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Pattern</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Noise</span>
+                                  <Slider value={[settings.noiseAmount]} onValueChange={([v]) => updateSetting("noiseAmount", v)} min={0} max={100} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.noiseAmount}%</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Grain</span>
+                                  <div className="flex gap-1">
+                                    {(["fine", "medium", "coarse"] as GrainSize[]).map((s) => (
+                                      <button key={s} onClick={() => updateSetting("grainSize", s)} className={cn("px-2 py-0.5 rounded text-[9px] font-medium capitalize transition-all", settings.grainSize === s ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{s}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Texture</span>
+                                  <Slider value={[settings.textureOpacity]} onValueChange={([v]) => updateSetting("textureOpacity", v)} min={0} max={1} step={0.01} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{(settings.textureOpacity * 100).toFixed(0)}%</span>
+                                </div>
+                              </div>
+
+                              {/* Advanced Controls */}
+                              <div className="space-y-2 border-t border-white/5 pt-3">
+                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Advanced</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Vignette</span>
+                                  <Switch checked={(settings.vignette ?? 0) > 0} onCheckedChange={(checked) => updateSetting("vignette", checked ? 0.4 : 0)} />
+                                  {(settings.vignette ?? 0) > 0 && (
+                                    <>
+                                      <Slider value={[settings.vignette ?? 0]} onValueChange={([v]) => updateSetting("vignette", v)} min={0} max={1} step={0.05} className="flex-1" />
+                                      <span className="text-[10px] text-white/60 w-8 text-right">{((settings.vignette ?? 0) * 100).toFixed(0)}%</span>
+                                    </>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Soft Light</span>
+                                  <Switch checked={settings.environmentEnabled} onCheckedChange={(v) => updateSetting("environmentEnabled", v)} />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Focus X</span>
+                                  <Slider value={[settings.radialFocusX]} onValueChange={([v]) => updateSetting("radialFocusX", v)} min={0} max={100} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.radialFocusX}%</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Focus Y</span>
+                                  <Slider value={[settings.radialFocusY]} onValueChange={([v]) => updateSetting("radialFocusY", v)} min={0} max={100} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.radialFocusY}%</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Exposure</span>
+                                  <Slider value={[settings.exposure]} onValueChange={([v]) => updateSetting("exposure", v)} min={0.5} max={2} step={0.05} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.exposure.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Gamma</span>
+                                  <Slider value={[settings.gamma]} onValueChange={([v]) => updateSetting("gamma", v)} min={0.5} max={2} step={0.05} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.gamma.toFixed(2)}</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </motion.div>
@@ -2432,6 +2575,25 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             <button onClick={() => setFullscreen(!fullscreen)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", fullscreen ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />} Fullscreen</button>
                             <button onClick={() => setShowHints(!showHints)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHints ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{showHints ? <Eye size={12} /> : <EyeOff size={12} />} UI Hints</button>
                             <button onClick={() => setShowHeroPreview(!showHeroPreview)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHeroPreview ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}><Eye size={12} /> Hero Preview</button>
+                            <div className="w-px h-5 bg-white/10" />
+                            <span className="text-[10px] text-white/40 uppercase tracking-wider">Image</span>
+                            {droppedImage && (
+                              <>
+                                {(["hero", "card", "fullscreen"] as ImageSimulateMode[]).map((mode) => (
+                                  <button key={mode} onClick={() => setImageSimulateMode(mode)} className={cn("px-2 py-1 rounded border text-[10px] capitalize transition-all", imageSimulateMode === mode ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{mode}</button>
+                                ))}
+                                <button onClick={() => setImageBlurMask(!imageBlurMask)} className={cn("px-2 py-1 rounded border text-[10px]", imageBlurMask ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>Blur Mask</button>
+                                <button onClick={() => setDroppedImage(null)} className="px-2 py-1 rounded border text-[10px] bg-neutral-900 border-white/10 text-red-400/70 hover:text-red-400"><X size={10} /> Remove</button>
+                              </>
+                            )}
+                            {!droppedImage && (
+                              <span className="text-[10px] text-white/30">Drag & drop an image onto the preview</span>
+                            )}
+                            <div className="w-px h-5 bg-white/10" />
+                            <label className="flex items-center gap-1.5 text-[10px] text-white/50">
+                              <Switch checked={autoAdjustBg} onCheckedChange={setAutoAdjustBg} />
+                              Auto-adjust BG
+                            </label>
                           </div>
                         </motion.div>
                       )}
