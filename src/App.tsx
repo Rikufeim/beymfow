@@ -6,6 +6,7 @@ import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PageTransition } from "./components/PageTransition";
@@ -14,7 +15,7 @@ import { PageTransition } from "./components/PageTransition";
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const About = lazy(() => import("./pages/About"));
-const Auth = lazy(() => import("./pages/Auth"));
+
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
@@ -67,8 +68,6 @@ const AnimatedRoutes = () => {
                 <Index />
               </ErrorBoundary>
             } />
-            {/* Auth route */}
-            <Route path="/auth" element={<Auth />} />
             {/* Flow routes - path selection with sub-routes */}
             <Route path="/flow" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
             <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage initialWorkspace="prompt-generator" /></ErrorBoundary>} />
@@ -123,9 +122,11 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <AuthProvider>
-              <GlobalImagePreloader />
-              <ScrollToTop />
-              <AnimatedRoutes />
+              <AuthDialogProvider>
+                <GlobalImagePreloader />
+                <ScrollToTop />
+                <AnimatedRoutes />
+              </AuthDialogProvider>
             </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>

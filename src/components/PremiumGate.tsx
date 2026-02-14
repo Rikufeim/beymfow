@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Crown, Zap, Lock } from "lucide-react";
@@ -12,6 +13,7 @@ interface PremiumGateProps {
 export const PremiumGate = ({ children }: PremiumGateProps) => {
   const { user, usageInfo, loading } = useAuth();
   const navigate = useNavigate();
+  const { openAuthDialog } = useAuthDialog();
   const [showGate, setShowGate] = useState(false);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export const PremiumGate = ({ children }: PremiumGateProps) => {
 
     // Not logged in -> redirect to auth
     if (!user) {
-      navigate("/auth?redirect=/flow-engine");
+      openAuthDialog();
       return;
     }
 

@@ -41,7 +41,7 @@ serve(async (req) => {
     const BASIC_PRODUCT_ID = 'prod_TJQgWoDVMoKIKM';
     const PREMIUM_PRODUCT_ID = 'prod_TJQgOZ9ghkOhCA';
     const BASIC_CREDITS = 3;
-
+    const FREE_CREDITS = 3;
     // Check subscription status and tier
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2025-08-27.basil',
@@ -100,30 +100,29 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    // If no usage row exists, create one
+    if (!usage) {
+      await supabaseClient.from('user_usage').insert({
+        user_id: user.id,
+        generations_used: 0,
+        daily_credits_reset_at: new Date().toISOString()
+      });
+    }
+
     let creditsUsed = usage?.generations_used || 0;
     
-    // For Basic tier, check if we need to reset daily credits (at midnight Europe/Helsinki time)
-    if (subscriptionTier === 'basic' && usage?.daily_credits_reset_at) {
+    // Daily reset logic for basic and free tiers
+    if ((subscriptionTier === 'basic' || subscriptionTier === 'free') && usage?.daily_credits_reset_at) {
       const now = new Date();
       const lastReset = new Date(usage.daily_credits_reset_at);
-      
-      // Convert to Europe/Helsinki timezone (UTC+2/UTC+3 depending on DST)
       const nowHelsinki = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
       const lastResetHelsinki = new Date(lastReset.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
       
-      // Check if it's a new day in Helsinki time
-      const nowDay = nowHelsinki.toDateString();
-      const lastResetDay = lastResetHelsinki.toDateString();
-      
-      if (nowDay !== lastResetDay) {
-        // Reset credits for new day
+      if (nowHelsinki.toDateString() !== lastResetHelsinki.toDateString()) {
         creditsUsed = 0;
         await supabaseClient
           .from('user_usage')
-          .update({ 
-            generations_used: 0,
-            daily_credits_reset_at: now.toISOString()
-          })
+          .update({ generations_used: 0, daily_credits_reset_at: now.toISOString() })
           .eq('user_id', user.id);
       }
     }
@@ -157,13 +156,14 @@ serve(async (req) => {
       });
     }
 
-    // Free tier: no Prompt Lab access (home generator is unlimited if logged in)
+    // Free tier: 3 prompts per day
+    const freeCreditsRemaining = FREE_CREDITS - creditsUsed;
     return new Response(JSON.stringify({
       hasActiveSubscription: false,
-      canGenerate: false,
+      canGenerate: freeCreditsRemaining > 0,
       subscriptionTier: 'free',
-      creditsRemaining: 0,
-      creditsUsed: 0
+      creditsRemaining: Math.max(0, freeCreditsRemaining),
+      creditsUsed: creditsUsed
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

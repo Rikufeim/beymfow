@@ -1,5 +1,6 @@
 import { CheckCircle, Check, Plus, Minus, ArrowRight, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useState } from "react";
 import BackgroundShader from "@/components/ui/background-shader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,6 +34,7 @@ const Premium = () => {
   const navigate = useNavigate();
   const { user, session, usageInfo } = useAuth();
   const { toast } = useToast();
+  const { openAuthDialog } = useAuthDialog();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -41,7 +43,9 @@ const Premium = () => {
 
   const handleUpgrade = async () => {
     if (!user || !session) {
-      navigate("/auth?redirect=/premium");
+      openAuthDialog(() => {
+        // After login, user can click upgrade again
+      });
       return;
     }
 
@@ -257,7 +261,13 @@ const Premium = () => {
                 So, what are we building?
               </h2>
               <Link
-                to={user ? "/flow" : "/auth"}
+                to={user ? "/flow" : "#"}
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    openAuthDialog(() => navigate("/flow"));
+                  }
+                }}
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors"
               >
                 Start Building
