@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download } from "lucide-react";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
 import { cn } from "@/lib/utils";
 import { buildHeroGradient } from "./heroGradient";
@@ -672,6 +672,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [activeTab, setActiveTab] = useState<TabId>("shape");
   const [fullscreen, setFullscreen] = useState(true);
   const [showHints, setShowHints] = useState(false);
+  const [showHeroPreview, setShowHeroPreview] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
   const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
@@ -743,6 +744,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedJSON, setCopiedJSON] = useState(false);
   const [copiedProjectCode, setCopiedProjectCode] = useState(false);
+  const [copiedCss, setCopiedCss] = useState(false);
+  const [copiedTailwind, setCopiedTailwind] = useState(false);
 
   // Download state
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
@@ -1147,6 +1150,37 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }
   }, [projectCode]);
 
+  const generateCssExport = useCallback((): string => {
+    const bg = buildHeroGradient(settings);
+    const filterParts = [`brightness(${settings.brightness})`];
+    if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
+    if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+    if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+    return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
+  }, [settings]);
+
+  const generateTailwindExport = useCallback((): string => {
+    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "brightness(${settings.brightness})"\n  }}\n/>`;
+  }, [settings]);
+
+  const handleCopyCss = useCallback(async () => {
+    const success = await robustCopyToClipboard(generateCssExport());
+    if (success) {
+      setCopiedCss(true);
+      toast.success("CSS copied!");
+      setTimeout(() => setCopiedCss(false), 2500);
+    }
+  }, [generateCssExport]);
+
+  const handleCopyTailwind = useCallback(async () => {
+    const success = await robustCopyToClipboard(generateTailwindExport());
+    if (success) {
+      setCopiedTailwind(true);
+      toast.success("Tailwind code copied!");
+      setTimeout(() => setCopiedTailwind(false), 2500);
+    }
+  }, [generateTailwindExport]);
+
   // Handle project name editing
   const handleStartEditName = useCallback(() => {
     setIsEditingName(true);
@@ -1470,6 +1504,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             />
           )}
 
+          {/* Anti-banding noise overlay (always on, very subtle) */}
+          <div
+            className="absolute inset-0 pointer-events-none z-[2]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              opacity: 0.018,
+              mixBlendMode: "overlay",
+            }}
+          />
+
           {/* Vignette overlay (Motion tab) */}
           {(settings.vignette ?? 0) > 0 && (
             <div
@@ -1480,6 +1524,38 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                 mixBlendMode: "multiply",
               }}
             />
+          )}
+
+          {/* Live Preview Hero Content */}
+          {showHeroPreview && (
+            <div className="absolute inset-0 z-[5] pointer-events-none flex items-center justify-center">
+              <div className="text-center max-w-2xl px-8">
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>
+                  Your Hero Title
+                </h1>
+                <p className="text-lg md:text-xl text-white/70 mb-8 max-w-lg mx-auto drop-shadow-md" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.4)' }}>
+                  A compelling subtitle that describes your product or service in a few words.
+                </p>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="px-6 py-3 rounded-xl text-sm font-semibold bg-white text-black shadow-lg shadow-white/20">
+                    Get Started
+                  </div>
+                  <div className="px-6 py-3 rounded-xl text-sm font-semibold border border-white/30 text-white backdrop-blur-sm bg-white/5">
+                    Learn More
+                  </div>
+                </div>
+                {/* WCAG Contrast indicator */}
+                <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    settings.brightness >= 0.8 && settings.brightness <= 1.5 ? "bg-green-400" : "bg-yellow-400"
+                  )} />
+                  <span className="text-[10px] text-white/60">
+                    {settings.brightness >= 0.8 && settings.brightness <= 1.5 ? "Good contrast" : "Check contrast"}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Workspace cosmic fade: alhaalta ylös, saumaton */}
@@ -1598,28 +1674,41 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="ml-auto w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
                           </div>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-3">
                               {filteredBackgrounds.map((entry) => {
-                                const isActive = flowState.currentBackgroundStyle === entry.gradientStyle;
+                                const isActive = flowState.currentBackgroundStyle === entry.gradientStyle && flowState.selectedBackgroundId === entry.id;
+                                const previewStyle = buildPreviewStyle(entry, entry.variants[0]);
                                 return (
                                   <div key={entry.id} className="flex flex-col gap-1.5">
                                     <button
                                       onClick={() => applyBackgroundEntry(entry, entry.variants[0])}
                                       className={cn(
-                                        "w-full rounded-lg overflow-hidden transition-all duration-500 ease-out focus:outline-none focus-visible:outline-none active:outline-none select-none",
-                                        isActive ? "opacity-100 scale-100" : "opacity-70 hover:opacity-100 hover:scale-[1.02] active:opacity-100 active:scale-100"
+                                        "group relative w-full rounded-xl overflow-hidden transition-all duration-300 ease-out focus:outline-none select-none",
+                                        isActive
+                                          ? "ring-2 ring-white/40 shadow-lg shadow-white/5 scale-100"
+                                          : "hover:ring-1 hover:ring-white/20 hover:shadow-md hover:shadow-white/5 hover:scale-[1.03]"
                                       )}
                                     >
                                       <div
-                                        className="h-28 w-full shrink-0"
-                                        style={buildPreviewStyle(entry, entry.variants[0])}
-                                      />
+                                        className="h-24 w-full shrink-0 relative"
+                                        style={{
+                                          ...previewStyle,
+                                          filter: `${previewStyle.filter || ''} brightness(1.6) saturate(1.3)`.trim(),
+                                        }}
+                                      >
+                                        {/* Anti-banding noise */}
+                                        <div
+                                          className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay"
+                                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                        />
+                                      </div>
+                                      {/* Hover glow border */}
+                                      <div className="absolute inset-0 rounded-xl border border-white/0 group-hover:border-white/15 transition-all duration-300 pointer-events-none" />
                                     </button>
                                     <span className={cn(
-                                      "text-xs font-medium block truncate transition-all duration-300",
-                                      isActive ? "text-white opacity-100" : "text-white/60 opacity-80"
+                                      "text-[10px] font-medium block truncate transition-all duration-300 px-0.5",
+                                      isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
                                     )}>{entry.name}</span>
-
                                   </div>
                                 );
                               })}
@@ -2342,6 +2431,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           <div className="flex items-center gap-2 flex-wrap">
                             <button onClick={() => setFullscreen(!fullscreen)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", fullscreen ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{fullscreen ? <Minimize2 size={12} /> : <Maximize2 size={12} />} Fullscreen</button>
                             <button onClick={() => setShowHints(!showHints)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHints ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}>{showHints ? <Eye size={12} /> : <EyeOff size={12} />} UI Hints</button>
+                            <button onClick={() => setShowHeroPreview(!showHeroPreview)} className={cn("flex items-center gap-1 px-2 py-1 rounded border text-[10px]", showHeroPreview ? "bg-white/10 border-white/20 text-white" : "bg-neutral-900 border-white/10 text-white/50 hover:text-white")}><Eye size={12} /> Hero Preview</button>
                           </div>
                         </motion.div>
                       )}
@@ -2356,9 +2446,18 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         >
                           <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Export</h4>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedProjectCode ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={12} /> : <Code size={12} />}{copiedProjectCode ? "Copied!" : "Project Code"}</button>
-                            <button onClick={handleCopyCode} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedCode ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedCode ? <Check size={12} /> : <Code size={12} />}{copiedCode ? "Copied!" : "React Code"}</button>
-                            <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedJSON ? "bg-neutral-800 text-white border-white/20" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedJSON ? <Check size={12} /> : <FileJson size={12} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                            <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedProjectCode ? <Check size={12} /> : <Code size={12} />}{copiedProjectCode ? "Copied!" : "React Component"}</button>
+                            <button onClick={handleCopyCode} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedCode ? <Check size={12} /> : <Code size={12} />}{copiedCode ? "Copied!" : "Full React"}</button>
+                            <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedCss ? <Check size={12} /> : <Code size={12} />}{copiedCss ? "Copied!" : "CSS"}</button>
+                            <button onClick={handleCopyTailwind} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedTailwind ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedTailwind ? <Check size={12} /> : <Code size={12} />}{copiedTailwind ? "Copied!" : "Tailwind"}</button>
+                            <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedJSON ? <Check size={12} /> : <FileJson size={12} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                            <div className="w-px h-5 bg-white/10" />
+                            <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20 transition-all"><Download size={12} /> PNG {downloadScale > 1 ? `${Math.round(1920*downloadScale)}×${Math.round(1080*downloadScale)}` : '1920×1080'}</button>
+                            <select value={downloadScale} onChange={(e) => setDownloadScale(parseFloat(e.target.value))} className="px-2 py-1.5 rounded-lg border text-[10px] bg-neutral-900 border-white/10 text-white/70 focus:outline-none">
+                              <option value={1}>1x</option>
+                              <option value={2}>2x (4K)</option>
+                              <option value={3}>3x</option>
+                            </select>
                           </div>
                           <p className="text-[9px] text-white/40 mt-1.5">Style: {settings.gradientStyle} · Brightness: {settings.brightness.toFixed(2)} · Grain: {settings.grainEnabled ? "On" : "Off"}</p>
                         </motion.div>
