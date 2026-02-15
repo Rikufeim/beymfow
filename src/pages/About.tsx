@@ -87,8 +87,8 @@ const FlowCard = ({
     {/* Empty space for desktop layout balance */}
     <div className="hidden w-5/12 md:block" />
 
-    {/* Center Timeline Node */}
-    <div className="absolute left-1/2 z-20 flex -translate-x-1/2 transform items-center justify-center">
+    {/* Center Timeline Node - desktop only */}
+    <div className="absolute left-1/2 z-20 hidden md:flex -translate-x-1/2 transform items-center justify-center">
       <div className={`flex h-12 w-12 cursor-default items-center justify-center rounded-full border-2 bg-black/80 backdrop-blur-sm transition-all duration-700 ease-out hover:scale-110 hover:border-cyan-300/60 ${isActive ? "border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.3),0_0_40px_rgba(168,85,247,0.15)] scale-110" : "border-white/10 opacity-50 hover:opacity-90"}`}>
         <span className={`text-sm font-bold transition-all duration-700 ${isActive ? "text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" : "text-gray-600"}`}>
           0{index + 1}
@@ -96,21 +96,21 @@ const FlowCard = ({
       </div>
     </div>
 
-    {/* Content without Card */}
+    {/* Content */}
     <div className="group relative w-full md:w-5/12">
-      <div className="relative flex flex-col gap-4 p-8">
-        <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+      <div className="relative flex flex-col gap-3 px-5 py-6 md:p-8">
+        <div className="flex items-center gap-3 border-b border-white/10 pb-3 md:pb-4">
           {/* Mobile Index Indicator */}
-          <span className="flex md:hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white ring-1 ring-white/10">
-            0{index + 1}
+          <span className="flex md:hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-xs font-bold text-white/80 ring-1 ring-white/10">
+            {index + 1}
           </span>
 
-          <h3 className="text-lg font-semibold uppercase tracking-widest text-white">
+          <h3 className="text-base md:text-lg font-semibold uppercase tracking-widest text-white">
             {card.question}
           </h3>
         </div>
 
-        <p className="text-base leading-relaxed text-white/70 whitespace-pre-line">{card.answer}</p>
+        <p className="text-sm md:text-base leading-relaxed text-white/70 whitespace-pre-line">{card.answer}</p>
       </div>
     </div>
   </div>;
@@ -168,19 +168,18 @@ const About = () => {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center pt-20 pb-10">
-          <div className="relative mb-8 z-10">
-            <h1 className="relative text-6xl font-extrabold tracking-tighter sm:text-7xl text-white drop-shadow-2xl md:text-7xl">
+        <section className="flex min-h-[40vh] md:min-h-[50vh] flex-col items-center justify-center px-4 text-center pt-16 md:pt-20 pb-6 md:pb-10">
+          <div className="relative mb-6 md:mb-8 z-10">
+            <h1 className="relative text-4xl sm:text-5xl font-extrabold tracking-tighter md:text-7xl text-white drop-shadow-2xl">
               The Future
               <br />
-              {/* KÄYTETÄÄN PÄIVITETTYÄ SPOTLIGHT-KOMPONENTTIA */}
               <SpotlightText />
             </h1>
           </div>
         </section>
 
         {/* Timeline Section */}
-        <section className="relative px-4 py-12 sm:px-6 lg:px-8" ref={containerRef}>
+        <section className="relative px-3 py-8 sm:px-6 md:py-12 lg:px-8" ref={containerRef}>
           <div className="mx-auto max-w-6xl relative">
             {/* --- LINE CONTAINER --- */}
             <div className="absolute left-1/2 top-0 bottom-64 hidden w-1 -translate-x-1/2 md:block">
@@ -211,7 +210,7 @@ const About = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-24 md:gap-32 pb-32 pt-10">
+            <div className="flex flex-col gap-10 md:gap-32 pb-16 md:pb-32 pt-4 md:pt-10">
               {infoCards.map((card, index) => {
                 const cardThreshold = index / (infoCards.length - 0.5) * 100;
                 const isCardActive = scrollProgress > cardThreshold;
@@ -222,9 +221,9 @@ const About = () => {
         </section>
 
         {/* Footer CTA Area */}
-        <section className="pt-0 pb-32 text-center relative overflow-hidden">
+        <section className="pt-0 pb-20 md:pb-32 text-center relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-4xl font-bold mb-8 text-white">Find your flow.</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-white">Find your flow.</h2>
             <GlassButton onClick={handleStartCreating} size="lg">
               Start creating
             </GlassButton>
