@@ -58,7 +58,7 @@ const Index = () => {
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { tier: "pro" },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${session.access_token}` }
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -69,7 +69,7 @@ const Index = () => {
       toast({
         title: "Error",
         description: err.message || "Failed to start checkout",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setCheckoutLoading(false);
@@ -79,10 +79,10 @@ const Index = () => {
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
   const homepageImages = useMemo(() => [
-    // Products section card backgrounds
-    "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
-    // CRYPTO GUIDES
-    "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
+  // Products section card backgrounds
+  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+  // CRYPTO GUIDES
+  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
   ], []);
   useImagePreloader({
     images: homepageImages
@@ -136,7 +136,7 @@ const Index = () => {
                     className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
                     style={{
                       backgroundImage:
-                        "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
                       backgroundSize: "80px 80px, 80px 80px",
                       backgroundRepeat: "repeat, repeat",
                       backgroundPosition: "0 0, 0 0"
@@ -317,22 +317,22 @@ const Index = () => {
                     </div>
                     <ul className="space-y-3 flex-1 mb-6">
                       {[
-                        "Basic prompt generation",
-                        "Limited daily prompts",
-                        "Access to selected templates",
-                        "Standard background styles",
-                        "Community support"
-                      ].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                      "Basic prompt generation",
+                      "Limited daily prompts",
+                      "Access to selected templates",
+                      "Standard background styles",
+                      "Community support"].
+                      map((feature, i) =>
+                      <li key={i} className="flex items-center gap-2 text-sm text-white/80">
                           <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
                           {feature}
                         </li>
-                      ))}
+                      )}
                     </ul>
                     <button
                       onClick={handleStartFree}
-                      className="w-full rounded-lg px-4 py-3 border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30"
-                    >
+                      className="w-full rounded-lg px-4 py-3 border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30">
+
                       Start Free
                     </button>
                   </div>
@@ -340,9 +340,9 @@ const Index = () => {
                   {/* Pro Plan Card (Most Popular) */}
                   <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="inline-block px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold border border-cyan-400/30">
-                        Most Popular
-                      </span>
+                      
+
+
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-1">Pro Plan</h3>
                     <div className="mb-6">
@@ -351,26 +351,26 @@ const Index = () => {
                     </div>
                     <ul className="space-y-3 flex-1 mb-6">
                       {[
-                        "Unlimited prompt generation",
-                        "Full access to all Prompt Generator tools",
-                        "Complete access to Color Codes section",
-                        "Advanced model options",
-                        "All background styles",
-                        "Premium templates",
-                        "Faster processing",
-                        "Priority support"
-                      ].map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                      "Unlimited prompt generation",
+                      "Full access to all Prompt Generator tools",
+                      "Complete access to Color Codes section",
+                      "Advanced model options",
+                      "All background styles",
+                      "Premium templates",
+                      "Faster processing",
+                      "Priority support"].
+                      map((feature, i) =>
+                      <li key={i} className="flex items-center gap-2 text-sm text-white/80">
                           <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
                           {feature}
                         </li>
-                      ))}
+                      )}
                     </ul>
                     <button
                       onClick={handleUpgradeToPro}
                       disabled={checkoutLoading}
-                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90 flex items-center justify-center gap-2"
-                    >
+                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90 flex items-center justify-center gap-2">
+
                       {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                       {isPro ? "Go to Flow" : "Upgrade to Pro"}
                     </button>
@@ -435,7 +435,7 @@ const Index = () => {
           </section>
         </div>
       </BackgroundShader>
-    </Layout >);
+    </Layout>);
 
 };
 export default Index;
