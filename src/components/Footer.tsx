@@ -50,23 +50,23 @@ const Footer = () => {
               Your AI-powered prompt generation platform. Create perfect prompts for any AI model with our advanced
               tools and generators.
             </p>
-            <div className="flex gap-3 pt-2">
-              {[
-              { Icon: Instagram, label: "Instagram", url: "https://www.instagram.com/beymflow/" },
-              { Icon: Twitter, label: "Twitter", url: "https://x.com/beymflow" }].
-              map(({ Icon, label, url }) =>
-              <a
-                key={label}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-11 h-11 rounded-full bg-card border border-border flex items-center justify-center hover:border-foreground hover:bg-foreground/5 transition-all duration-300"
-                aria-label={label}>
+            
 
-                  <Icon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </a>
-              )}
-            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           </div>
 
           {/* Quick Links */}
