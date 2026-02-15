@@ -18,6 +18,8 @@ import Multiagentpage from "./pages/Multiagentpage";
 import Community from "./pages/Community";
 import LandingPageLibrary from "./pages/LandingPageLibrary";
 import Premium from "./pages/Premium";
+import SettingsBilling from "./pages/SettingsBilling";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +78,8 @@ const AppRoutes = () => {
       <Route path="/planningsystem" element={<PlanningSystem />} />
       <Route path="/multiagentpage" element={<Multiagentpage />} />
       <Route path="/landing-pages" element={<LandingPageLibrary />} />
+      <Route path="/settings/billing" element={<SettingsBilling />} />
+      <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
       <Route path="*" element={
         <Layout>
           <NotFound />

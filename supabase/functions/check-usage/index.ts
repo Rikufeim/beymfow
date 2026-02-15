@@ -1,12 +1,12 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const FREE_CREDITS = 3;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
@@ -28,8 +28,8 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -37,72 +37,67 @@ serve(async (req) => {
       });
     }
 
-    // Subscription tier product IDs
-    const BASIC_PRODUCT_ID = 'prod_TJQgWoDVMoKIKM';
-    const PREMIUM_PRODUCT_ID = 'prod_TJQgOZ9ghkOhCA';
-    const BASIC_CREDITS = 3;
-    const FREE_CREDITS = 3;
-    // Check subscription status and tier
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2025-08-27.basil',
-    });
-
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 1
-    });
-
-    let subscriptionTier: 'free' | 'basic' | 'premium' = 'free';
-    let hasActiveSubscription = false;
-    
-    if (customers.data.length > 0) {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
-        status: 'active',
-        limit: 1
-      });
-      
-      if (subscriptions.data.length > 0) {
-        hasActiveSubscription = true;
-        const productId = subscriptions.data[0].items.data[0].price.product;
-        
-        if (productId === PREMIUM_PRODUCT_ID) {
-          subscriptionTier = 'premium';
-        } else if (productId === BASIC_PRODUCT_ID) {
-          subscriptionTier = 'basic';
-        }
-      }
-    }
-
-    // Check if user is admin using proper role-based access control
-    const { data: adminCheck } = await supabaseClient
+    // Check if user is admin
+    const { data: adminCheck } = await supabase
       .rpc('has_role', { _user_id: user.id, _role: 'admin' });
     const isAdmin = adminCheck === true;
 
-    // Admin or Super Admin has unlimited access
     if (isAdmin) {
       return new Response(JSON.stringify({
         hasActiveSubscription: true,
         canGenerate: true,
         isAdmin: true,
         subscriptionTier: 'premium',
+        plan: 'pro',
         creditsRemaining: -1,
-        creditsUsed: 0
+        creditsUsed: 0,
+        subscriptionStatus: 'active',
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Check user credits from user_usage table with daily reset timestamp
-    const { data: usage } = await supabaseClient
+    // Read subscription from DB (source of truth from webhooks)
+    const { data: subscription } = await supabase
+      .from('user_subscriptions')
+      .select('status, plan, current_period_end, cancel_at_period_end, stripe_price_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const plan = subscription?.plan || 'free';
+    const subscriptionStatus = subscription?.status || null;
+    const currentPeriodEnd = subscription?.current_period_end || null;
+    const cancelAtPeriodEnd = subscription?.cancel_at_period_end || false;
+    const isPro = plan === 'pro';
+
+    // Pro users get unlimited access
+    if (isPro) {
+      return new Response(JSON.stringify({
+        hasActiveSubscription: true,
+        canGenerate: true,
+        subscriptionTier: 'premium',
+        plan: 'pro',
+        creditsRemaining: -1,
+        creditsUsed: 0,
+        subscriptionStatus,
+        currentPeriodEnd,
+        cancelAtPeriodEnd,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Free tier: check credits with daily reset
+    const { data: usage } = await supabase
       .from('user_usage')
       .select('generations_used, daily_credits_reset_at')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    // If no usage row exists, create one
     if (!usage) {
-      await supabaseClient.from('user_usage').insert({
+      await supabase.from('user_usage').insert({
         user_id: user.id,
         generations_used: 0,
         daily_credits_reset_at: new Date().toISOString()
@@ -110,60 +105,34 @@ serve(async (req) => {
     }
 
     let creditsUsed = usage?.generations_used || 0;
-    
-    // Daily reset logic for basic and free tiers
-    if ((subscriptionTier === 'basic' || subscriptionTier === 'free') && usage?.daily_credits_reset_at) {
+
+    // Daily reset logic
+    if (usage?.daily_credits_reset_at) {
       const now = new Date();
       const lastReset = new Date(usage.daily_credits_reset_at);
       const nowHelsinki = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
       const lastResetHelsinki = new Date(lastReset.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
-      
+
       if (nowHelsinki.toDateString() !== lastResetHelsinki.toDateString()) {
         creditsUsed = 0;
-        await supabaseClient
+        await supabase
           .from('user_usage')
           .update({ generations_used: 0, daily_credits_reset_at: now.toISOString() })
           .eq('user_id', user.id);
       }
     }
 
-    // Premium tier: unlimited access
-    if (subscriptionTier === 'premium') {
-      return new Response(JSON.stringify({
-        hasActiveSubscription: true,
-        canGenerate: true,
-        subscriptionTier: 'premium',
-        creditsRemaining: -1,
-        creditsUsed: 0
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Basic tier: 3 credits per day
-    if (subscriptionTier === 'basic') {
-      const creditsRemaining = BASIC_CREDITS - creditsUsed;
-      const canGenerate = creditsRemaining > 0;
-      
-      return new Response(JSON.stringify({
-        hasActiveSubscription: true,
-        canGenerate: canGenerate,
-        subscriptionTier: 'basic',
-        creditsRemaining: Math.max(0, creditsRemaining),
-        creditsUsed: creditsUsed
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Free tier: 3 prompts per day
-    const freeCreditsRemaining = FREE_CREDITS - creditsUsed;
+    const creditsRemaining = FREE_CREDITS - creditsUsed;
     return new Response(JSON.stringify({
       hasActiveSubscription: false,
-      canGenerate: freeCreditsRemaining > 0,
+      canGenerate: creditsRemaining > 0,
       subscriptionTier: 'free',
-      creditsRemaining: Math.max(0, freeCreditsRemaining),
-      creditsUsed: creditsUsed
+      plan: 'free',
+      creditsRemaining: Math.max(0, creditsRemaining),
+      creditsUsed,
+      subscriptionStatus,
+      currentPeriodEnd,
+      cancelAtPeriodEnd,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

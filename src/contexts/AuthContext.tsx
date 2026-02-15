@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +7,13 @@ interface UsageInfo {
   hasActiveSubscription: boolean;
   canGenerate: boolean;
   subscriptionTier: 'free' | 'basic' | 'premium';
-  creditsRemaining: number; // -1 = unlimited
+  plan: 'free' | 'pro';
+  creditsRemaining: number;
   creditsUsed: number;
   isAdmin?: boolean;
+  subscriptionStatus: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
 interface AuthContextType {
@@ -31,46 +35,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [usageInfo, setUsageInfo] = useState<UsageInfo | null>(null);
   const navigate = useNavigate();
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const refreshUsage = async () => {
-    if (!session) return;
+  const refreshUsage = useCallback(async () => {
+    const currentSession = session;
+    if (!currentSession) return;
 
     try {
       const { data, error } = await supabase.functions.invoke('check-usage', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`
+          Authorization: `Bearer ${currentSession.access_token}`
         }
       });
 
       if (!error && data) {
-        setUsageInfo(data);
+        setUsageInfo({
+          hasActiveSubscription: data.hasActiveSubscription,
+          canGenerate: data.canGenerate,
+          subscriptionTier: data.subscriptionTier,
+          plan: data.plan || 'free',
+          creditsRemaining: data.creditsRemaining,
+          creditsUsed: data.creditsUsed,
+          isAdmin: data.isAdmin,
+          subscriptionStatus: data.subscriptionStatus || null,
+          currentPeriodEnd: data.currentPeriodEnd || null,
+          cancelAtPeriodEnd: data.cancelAtPeriodEnd || false,
+        });
       }
     } catch (error) {
       console.error('Error refreshing usage:', error);
     }
-  };
+  }, [session]);
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session) {
-          setTimeout(() => {
-            refreshUsage();
-          }, 0);
-          
-          // Handle post-OAuth redirect: check if there's a pending navigation
+          setTimeout(() => refreshUsage(), 0);
+
           if (event === 'SIGNED_IN') {
             const pendingRedirect = sessionStorage.getItem('auth_redirect_after');
             if (pendingRedirect) {
               sessionStorage.removeItem('auth_redirect_after');
-              // Small delay to let state settle
-              setTimeout(() => {
-                navigate(pendingRedirect);
-              }, 100);
+              setTimeout(() => navigate(pendingRedirect), 100);
             }
           }
         } else {
@@ -79,27 +89,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
+
       if (session) {
-        setTimeout(() => {
-          refreshUsage();
-        }, 0);
+        setTimeout(() => refreshUsage(), 0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Periodic refresh every 60 seconds
+  useEffect(() => {
+    if (session) {
+      refreshIntervalRef.current = setInterval(() => {
+        refreshUsage();
+      }, 60_000);
+    } else {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [session, refreshUsage]);
+
+  // Refresh on window focus (e.g. returning from Stripe checkout)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (session) refreshUsage();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [session, refreshUsage]);
+
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
   };
 
@@ -107,9 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`
-      }
+      options: { emailRedirectTo: `${window.location.origin}/` }
     });
     return { error };
   };
@@ -118,10 +148,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await supabase.auth.signOut();
     } catch (error) {
-      // Ignore logout errors - clear local state anyway
       console.log('Logout error (ignored):', error);
     }
-    // Always clear local state and redirect, even if server logout fails
     setSession(null);
     setUser(null);
     setUsageInfo(null);
@@ -130,14 +158,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      usageInfo,
-      signIn,
-      signUp,
-      signOut,
-      refreshUsage
+      user, session, loading, usageInfo,
+      signIn, signUp, signOut, refreshUsage
     }}>
       {children}
     </AuthContext.Provider>
