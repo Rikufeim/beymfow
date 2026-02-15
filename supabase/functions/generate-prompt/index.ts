@@ -1,14 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const validCategories = ['creativity', 'personal', 'business', 'crypto'];
+const FREE_CREDITS = 3;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,8 +17,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    
-    // Manual validation
+
     const category = body.category;
     if (!category || !validCategories.includes(category)) {
       return new Response(
@@ -26,129 +25,100 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     const cost = body.cost || 1;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
+
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Check authentication and usage limits
+    // --- AUTHENTICATION REQUIRED ---
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const authHeader = req.headers.get('Authorization');
-    let user = null;
-    let hasActiveSubscription = false;
-    let isAdmin = false;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    // Check if this is a real user token or just the anon key
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-    const isAnonKey = authHeader && authHeader.includes(anonKey || '');
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
-    // If no auth header or if it's just the anon key, allow one anonymous generation
-    if (!authHeader || isAnonKey) {
-      console.log('Anonymous user - allowing one free generation');
-    } else {
-      // Authenticated user
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user: authUser }, error: userError } = await supabaseClient.auth.getUser(token);
-      
-      if (userError || !authUser) {
-        return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-          status: 401,
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check admin status
+    const { data: adminCheck } = await supabaseClient
+      .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+    const isAdmin = adminCheck === true;
+
+    // Read plan from DB (source of truth)
+    const { data: subscription } = await supabaseClient
+      .from('user_subscriptions')
+      .select('plan')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const plan = subscription?.plan || 'free';
+    const isPro = plan === 'pro';
+
+    // Enforce credit limits for free-tier non-admin users
+    if (!isAdmin && !isPro) {
+      let { data: usage } = await supabaseClient
+        .from('user_usage')
+        .select('generations_used, daily_credits_reset_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!usage) {
+        const { data: newUsage } = await supabaseClient
+          .from('user_usage')
+          .insert({ user_id: user.id, generations_used: 0, daily_credits_reset_at: new Date().toISOString() })
+          .select()
+          .single();
+        usage = newUsage;
+      }
+
+      // Daily reset
+      let creditsUsed = usage?.generations_used || 0;
+      if (usage?.daily_credits_reset_at) {
+        const now = new Date();
+        const lastReset = new Date(usage.daily_credits_reset_at);
+        const nowHelsinki = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
+        const lastResetHelsinki = new Date(lastReset.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
+
+        if (nowHelsinki.toDateString() !== lastResetHelsinki.toDateString()) {
+          creditsUsed = 0;
+          await supabaseClient
+            .from('user_usage')
+            .update({ generations_used: 0, daily_credits_reset_at: now.toISOString() })
+            .eq('user_id', user.id);
+        }
+      }
+
+      const creditsRemaining = FREE_CREDITS - creditsUsed;
+      if (creditsRemaining < cost) {
+        return new Response(JSON.stringify({
+          error: `Not enough credits. Need ${cost}, have ${creditsRemaining}`,
+          requiresSubscription: true
+        }), {
+          status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
-      
-      user = authUser;
-
-      // Check if user is admin
-      const { data: adminCheck } = await supabaseClient
-        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
-      isAdmin = adminCheck === true;
-      
-      console.log('User authenticated:', { userId: user.id, email: user.email, isAdmin });
-
-      // Check subscription status for authenticated users
-      const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-        apiVersion: '2025-08-27.basil',
-      });
-
-      const customers = await stripe.customers.list({
-        email: user.email,
-        limit: 1
-      });
-
-      if (customers.data.length > 0) {
-        const customerId = customers.data[0].id;
-        console.log('Found Stripe customer:', { customerId, email: user.email });
-        
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customerId,
-          status: 'active',
-          limit: 1
-        });
-        hasActiveSubscription = subscriptions.data.length > 0;
-        
-        console.log('Subscription check:', { 
-          hasActiveSubscription, 
-          subscriptionCount: subscriptions.data.length,
-          subscriptions: subscriptions.data.map((s: { id: string; status: string }) => ({ id: s.id, status: s.status }))
-        });
-      } else {
-        console.log('No Stripe customer found for:', user.email);
-      }
-
-      // Admin has unlimited access
-      if (!isAdmin && !hasActiveSubscription) {
-        console.log('Checking usage limits for non-subscriber');
-        
-        // Get or create user usage
-        let { data: usage } = await supabaseClient
-          .from('user_usage')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (!usage) {
-          const { data: newUsage } = await supabaseClient
-            .from('user_usage')
-            .insert({ user_id: user.id, generations_used: 0 })
-            .select()
-            .single();
-          usage = newUsage;
-        }
-
-        const FREE_CREDITS = 5;
-        const creditsUsed = usage.generations_used;
-        const creditsRemaining = FREE_CREDITS - creditsUsed;
-
-        // Check if user has enough credits
-        if (creditsRemaining < cost) {
-          console.log('User does not have enough credits:', { 
-            userId: user.id, 
-            creditsRemaining, 
-            cost 
-          });
-          return new Response(JSON.stringify({ 
-            error: `Not enough credits. Need ${cost}, have ${creditsRemaining}`,
-            requiresSubscription: true
-          }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          });
-        }
-      } else if (isAdmin) {
-        console.log('Admin user - unlimited access');
-      } else if (hasActiveSubscription) {
-        console.log('Subscriber user - unlimited access:', { userId: user.id, email: user.email });
-      }
     }
 
+    // --- Generate prompt ---
     const systemPrompt = `You are an expert prompt engineer specializing in creating high-quality prompts for various AI tools. Generate 3 unique, creative, and highly detailed prompts for the given category.
 
 IMPORTANT RULES:
@@ -226,7 +196,7 @@ Return in JSON format:
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
       throw new Error('AI gateway error');
@@ -234,24 +204,23 @@ Return in JSON format:
 
     const data = await response.json();
     const generatedContent = data.choices[0].message.content;
-    
-    // Update usage count for authenticated users if not admin and not subscribed
-    if (user && !isAdmin && !hasActiveSubscription) {
+
+    // Update usage count for free-tier non-admin users
+    if (!isAdmin && !isPro) {
       const { data: currentUsage } = await supabaseClient
         .from('user_usage')
         .select('generations_used')
         .eq('user_id', user.id)
         .single();
-      
+
       if (currentUsage) {
         await supabaseClient
           .from('user_usage')
           .update({ generations_used: currentUsage.generations_used + cost })
           .eq('user_id', user.id);
-        console.log('Updated usage count:', { userId: user.id, newCount: currentUsage.generations_used + cost });
       }
     }
-    
+
     return new Response(
       JSON.stringify({ prompts: JSON.parse(generatedContent) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
