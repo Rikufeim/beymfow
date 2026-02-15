@@ -103,11 +103,6 @@ export const QuickPromptGenerator = () => {
   useEffect(() => {
     const payload = getColorPromptPayload();
     if (payload && Date.now() - payload.timestamp < 60_000) {
-      if (!isPro) {
-        toast.error("Color Prompt is a Pro feature");
-        clearColorPromptPayload();
-        return;
-      }
       setColorPaletteAttachment({
         colors: payload.colors,
         gradientStyle: payload.gradientStyle,
