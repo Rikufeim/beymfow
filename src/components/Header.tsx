@@ -1,12 +1,13 @@
 "use client";
 
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useEffect, useState } from "react";
+import PlanBadge from "@/components/PlanBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,17 +97,26 @@ const Header = () => {
 
           {/* Auth Button/User Menu */}
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-                <User size={20} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-black border-white/10">
-                <DropdownMenuItem onClick={handleSignOut} className="text-white hover:bg-white/10 cursor-pointer">
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <PlanBadge />
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                  <User size={20} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-black border-white/10">
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/10 cursor-pointer">
+                    <Link to="/settings/billing">
+                      <Settings size={16} className="mr-2" />
+                      Billing
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="text-white hover:bg-white/10 cursor-pointer">
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <button
               onClick={() => openAuthDialog()}
@@ -148,8 +158,17 @@ const Header = () => {
 
               {/* Mobile Auth */}
               {user ? (
-                <div className="border-t border-white/10 pt-6 px-4 space-y-2">
-                  <div className="text-sm text-gray-400 mb-2">Account</div>
+                <div className="border-t border-white/10 pt-6 px-4 space-y-3">
+                  <div className="text-sm text-gray-400 mb-2 flex items-center gap-2">
+                    Account <PlanBadge />
+                  </div>
+                  <Link
+                    to="/settings/billing"
+                    className="w-full flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm"
+                  >
+                    <Settings size={16} />
+                    Billing
+                  </Link>
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm"
