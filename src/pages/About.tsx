@@ -89,8 +89,8 @@ const FlowCard = ({
 
     {/* Center Timeline Node */}
     <div className="absolute left-1/2 z-20 flex -translate-x-1/2 transform items-center justify-center">
-      <div className={`flex h-12 w-12 cursor-default items-center justify-center rounded-full border-2 bg-black transition-all duration-300 ease-out hover:scale-110 hover:border-cyan-300 hover:brightness-125 ${isActive ? "border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] scale-110" : "border-white/10 opacity-70 hover:opacity-100"}`}>
-        <span className={`text-sm font-bold transition-colors duration-500 ${isActive ? "text-cyan-300" : "text-gray-500 group-hover:text-cyan-200"}`}>
+      <div className={`flex h-12 w-12 cursor-default items-center justify-center rounded-full border-2 bg-black/80 backdrop-blur-sm transition-all duration-700 ease-out hover:scale-110 hover:border-cyan-300/60 ${isActive ? "border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.3),0_0_40px_rgba(168,85,247,0.15)] scale-110" : "border-white/10 opacity-50 hover:opacity-90"}`}>
+        <span className={`text-sm font-bold transition-all duration-700 ${isActive ? "text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" : "text-gray-600"}`}>
           0{index + 1}
         </span>
       </div>
@@ -184,10 +184,31 @@ const About = () => {
           <div className="mx-auto max-w-6xl relative">
             {/* --- LINE CONTAINER --- */}
             <div className="absolute left-1/2 top-0 bottom-64 hidden w-1 -translate-x-1/2 md:block">
-              <div className="h-full w-full bg-white/10" />
-              <div className="absolute top-0 w-full bg-gradient-to-b from-purple-500 via-cyan-400 to-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-[height] duration-75 ease-linear" style={{
-                height: `${scrollProgress}%`
-              }} />
+              <div className="h-full w-full bg-white/5 rounded-full" />
+              {/* Filled progress */}
+              <div
+                className="absolute top-0 w-full rounded-full"
+                style={{
+                  height: `${scrollProgress}%`,
+                  background: 'linear-gradient(to bottom, rgba(168,85,247,0.0) 0%, rgba(168,85,247,0.3) 30%, rgba(34,211,238,0.5) 70%, rgba(34,211,238,0.0) 100%)',
+                  transition: 'height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                }}
+              />
+              {/* Glowing tip */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                style={{
+                  top: `${scrollProgress}%`,
+                  transform: `translate(-50%, -50%)`,
+                  width: '6px',
+                  height: '40px',
+                  borderRadius: '999px',
+                  background: 'linear-gradient(to bottom, transparent, rgba(34,211,238,0.8), transparent)',
+                  boxShadow: '0 0 20px 6px rgba(34,211,238,0.4), 0 0 60px 10px rgba(168,85,247,0.2)',
+                  opacity: scrollProgress > 1 ? 1 : 0,
+                  transition: 'top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease',
+                }}
+              />
             </div>
 
             <div className="flex flex-col gap-24 md:gap-32 pb-32 pt-10">
