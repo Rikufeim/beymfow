@@ -1,86 +1,148 @@
 
 
-# Background Studio - Seuraavat vaiheet
+# Stripe Subscription Integration Improvement Plan
 
-## Yhteenveto
+## Current State Summary
 
-Rakennetaan kaksi keskeista ominaisuutta Background Studioon: **Background Controls -sätöpaneeli** ja **Hero Image Drop Zone**. Molemmat integroidaan olemassa olevaan HeroBackgroundWorkspace-komponenttiin.
+The existing setup has:
+- `create-checkout` edge function (uses inline `price_data` instead of a fixed Stripe Price ID)
+- `check-usage` edge function (queries Stripe API live on every call to determine tier)
+- `customer-portal` edge function (works)
+- `stripe-webhook` edge function (saves to `user_subscriptions` table but is not used by the frontend)
+- `user_subscriptions` table (has `stripe_customer_id`, `stripe_subscription_id`, `status`, `current_period_end`)
+- `AuthContext` calls `check-usage` which queries Stripe API directly every time
 
----
-
-## Vaihe 1: Background Controls -säätöpaneeli
-
-Päivitetään nykyinen Style-tab kattavaksi Background Controls -paneeliksi, joka sisältää:
-
-**Gradient Controls:**
-- Gradient type selector (linear / radial / conic) -- valinta vaihtaa gradient-renderöintiä `buildHeroGradient`-funktiossa
-- Angle slider (0-360 astetta) -- ohjaa linear-gradientin kulmaa
-- Blend mode selector (normal, overlay, soft-light, multiply, screen)
-
-**Pattern Controls:**
-- Noise amount slider (0-100%)
-- Grain size slider (fine / medium / coarse)
-- Texture opacity slider
-
-**Advanced Controls:**
-- Vignette toggle + intensity slider
-- Soft light overlay toggle
-- Radial focus position (x/y sliderit, jotka ohjaavat radial-gradientin keskipistettä)
-- Exposure control slider
-- Gamma control slider
-
-**Tekniset muutokset:**
-- Lisätään `HeroBackgroundSettings`-interfaceen uudet kentät: `gradientType`, `gradientAngle`, `blendMode`, `noiseAmount`, `grainSize`, `radialFocusX`, `radialFocusY`, `exposure`, `gamma`
-- Päivitetään `buildHeroGradient` (heroGradient.ts) tukemaan uusia gradient-tyyppejä ja kulmia
-- Päivitetään `DEFAULT_SETTINGS` uusilla oletusarvoilla
-- Style-tabin UI rakennetaan uudelleen sisältämään kaikki kontrollit selkeissä osioissa (Gradient / Pattern / Advanced)
-- Slider-komponenttia (`@radix-ui/react-slider`) käytetään kaikkiin liukusäätimiin
+The main problems: the webhook writes to `user_subscriptions` but `check-usage` ignores it and queries Stripe directly; missing fields like `stripe_price_id`, `plan`, `cancel_at_period_end`; no plan badge in header; no billing settings page; `create-checkout` uses `price_data` instead of a fixed price ID.
 
 ---
 
-## Vaihe 2: Hero Image Drop Zone
+## Phase 1: Database Schema Extension
 
-Rakennetaan drag-and-drop -ominaisuus, jolla käyttäjä voi pudottaa kuvan taustan päälle.
+Add missing columns to `user_subscriptions`:
 
-**Toiminnallisuus:**
-- Drop zone ilmestyy kun käyttäjä raahaa tiedoston preview-alueen päälle
-- Tukee PNG, JPG, WebP -formaatteja
-- Kuva renderöidään taustan päälle automaattisilla efekteillä:
-  - Soft shadow (`drop-shadow`)
-  - Subtle glow (box-shadow accent-värillä)
-  - Contrast correction (automaattinen)
-  - Background blur mask (valinnainen toggle)
+- `stripe_price_id` (text, nullable)
+- `plan` (text, default `'free'`)
+- `cancel_at_period_end` (boolean, default `false`)
 
-**Simulate-togglet:**
-- "Simulate website hero" -- kuva keskellä, otsikko ja napit näkyvissä
-- "Simulate card layout" -- kuva korttimuodossa
-- "Simulate full-screen section" -- kuva koko näkymän kokoisena
+Create `webhook_events` table for idempotent event handling:
+- `id` (text, primary key -- Stripe event ID)
+- `processed_at` (timestamptz, default now())
 
-**"Auto adjust background to image" -toiminto:**
-- Analysoi pudotetun kuvan dominant-värin Canvas-API:lla (piirtää kuvan pieneen canvasiin, lukee pikselitiedot, laskee keskiarvon)
-- Säätää gradientin sävyjä automaattisesti yhteensopivaksi kuvan kanssa
-
-**Tekniset muutokset:**
-- Lisätään uusi state: `droppedImage` (data URL), `imageSimulateMode`, `imageBlurMask`, `autoAdjustBg`
-- Lisätään `onDragOver`, `onDragLeave`, `onDrop` -handlerit preview-containeriin
-- Lisätään `extractDominantColor`-apufunktio, joka käyttää canvasia värin analysointiin
-- Kuva näytetään `<img>`-elementtinä taustan päällä z-index-kerroksessa
-- Lisätään View-tabiin tai erilliseen osioon togglet simulate-moodeja varten
+RLS: `webhook_events` -- service role only (no user access needed).
 
 ---
 
-## Vaihe 3: heroGradient.ts-päivitykset
+## Phase 2: Improve Webhook (Source of Truth)
 
-- Lisätään tuki `gradientAngle`-parametrille linear-gradienteissa
-- Lisätään tuki `conic-gradient`-tyypille
-- Lisätään tuki `radialFocusX` / `radialFocusY` -parametreille radial-gradienteissa
-- Blend mode sovelletaan CSS `mix-blend-mode` -tyylillä preview-elementtiin
+Update `supabase/functions/stripe-webhook/index.ts`:
+
+- Add handling for `customer.subscription.created` and `invoice.paid`
+- Store processed event IDs in `webhook_events` for idempotency
+- Compute `plan`: if status is `active` or `trialing` then `'pro'`, else `'free'`
+- Save `stripe_price_id`, `cancel_at_period_end`, and `plan` to `user_subscriptions`
+- Look up user by email from `stripe.customers.retrieve(customerId)` when not available from checkout session
 
 ---
 
-## Muutettavat tiedostot
+## Phase 3: Rewrite `check-usage` to Use Database
 
-1. **src/components/flow-engine/HeroBackgroundWorkspace.tsx** -- Pääkomponentti: uudet statet, Style-tabin UI-uudistus, Drop Zone -logiikka, simulate-togglet
-2. **src/components/flow-engine/heroGradient.ts** -- Gradient-renderöinti: uudet gradient-tyypit, kulmat, radial focus
-3. Molemmat vaiheet toteutetaan samassa komponentissa ilman uusia tiedostoja
+Update `supabase/functions/check-usage/index.ts`:
+
+- Instead of querying Stripe API on every call, read from `user_subscriptions` table
+- Return additional fields: `plan`, `subscription_status`, `current_period_end`, `cancel_at_period_end`
+- Keep the admin check and credit logic as-is
+- Fall back to `free` if no subscription record exists
+
+This makes the function faster and makes webhooks the true source of truth.
+
+---
+
+## Phase 4: Fix `create-checkout` to Use Real Price ID
+
+Update `supabase/functions/create-checkout/index.ts`:
+
+- Replace inline `price_data` with a fixed Stripe Price ID (will use the existing product `prod_TJQgOZ9ghkOhCA` referenced in `check-usage`)
+- Set `success_url` to include a `?session_id={CHECKOUT_SESSION_ID}` param for post-checkout refresh
+- Set `cancel_url` to `/premium`
+
+---
+
+## Phase 5: Update `customer-portal` Return URL
+
+Change `return_url` from `${origin}/` to `${origin}/settings/billing`.
+
+---
+
+## Phase 6: Extend AuthContext
+
+Update `src/contexts/AuthContext.tsx`:
+
+- Expand `UsageInfo` interface with: `plan`, `subscriptionStatus`, `currentPeriodEnd`, `cancelAtPeriodEnd`
+- Add periodic refresh (every 60 seconds) when user is logged in
+- Auto-refresh on window focus (for post-checkout return)
+- Map the new fields from the `check-usage` response
+
+---
+
+## Phase 7: Plan Badge in Header
+
+Update `src/components/Header.tsx`:
+
+- Add a small badge next to the user icon showing:
+  - **PRO** (cyan/highlighted) when plan is `pro`
+  - **FREE** (subtle/gray) when plan is `free`
+  - "Pro - ends {date}" when `cancel_at_period_end` is true
+  - "Payment issue" when status is `past_due`
+- Show on both desktop and mobile navigation
+
+---
+
+## Phase 8: Settings/Billing Page
+
+Create `src/pages/SettingsBilling.tsx`:
+
+- Current plan display (FREE or PRO with visual distinction)
+- Subscription status badge
+- Renewal/expiry date
+- Buttons:
+  - FREE users: "Upgrade to Pro" (calls `create-checkout`)
+  - PRO users: "Manage Subscription" (calls `customer-portal`)
+- Styled consistently with the existing Beymflow dark theme
+
+Add route `/settings/billing` in `App.tsx`.
+
+---
+
+## Phase 9: Payment Success Page Enhancement
+
+Update or verify `src/pages/PaymentSuccess.tsx`:
+
+- On mount, call `refreshUsage()` to immediately sync the plan
+- Add polling (every 3 seconds for 30 seconds) until plan shows as `pro`
+- Show success message and redirect to `/flow` or `/settings/billing`
+
+---
+
+## Technical Details
+
+### Files to Create
+| File | Purpose |
+|------|---------|
+| `src/pages/SettingsBilling.tsx` | Billing settings page |
+
+### Files to Modify
+| File | Changes |
+|------|---------|
+| `supabase/functions/stripe-webhook/index.ts` | Idempotency, new events, plan field, price ID storage |
+| `supabase/functions/check-usage/index.ts` | Read from DB instead of Stripe API |
+| `supabase/functions/create-checkout/index.ts` | Use real price ID instead of price_data |
+| `supabase/functions/customer-portal/index.ts` | Update return URL |
+| `src/contexts/AuthContext.tsx` | Extended usage info, periodic refresh |
+| `src/components/Header.tsx` | Plan badge |
+| `src/App.tsx` | Add `/settings/billing` route |
+| `src/pages/PaymentSuccess.tsx` | Polling for plan activation |
+
+### Database Migration
+- ALTER `user_subscriptions`: add `stripe_price_id`, `plan`, `cancel_at_period_end`
+- CREATE `webhook_events` table with RLS (service role only)
 
