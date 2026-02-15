@@ -72,41 +72,14 @@ serve(async (req) => {
 
     const isPro = subscription?.plan === 'pro';
 
-    // Enforce credits for free-tier non-admin
+    // Atomic credit deduction for free-tier non-admin
     if (!isAdmin && !isPro) {
-      const { data: usage } = await supabaseClient
-        .from('user_usage')
-        .select('generations_used, daily_credits_reset_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data: success } = await supabaseClient
+        .rpc('deduct_credits', { _user_id: user.id, _cost: cost, _free_limit: FREE_CREDITS });
 
-      if (!usage) {
-        await supabaseClient.from('user_usage').insert({
-          user_id: user.id, generations_used: 0,
-          daily_credits_reset_at: new Date().toISOString()
-        });
-      }
-
-      let creditsUsed = usage?.generations_used || 0;
-
-      // Daily reset
-      if (usage?.daily_credits_reset_at) {
-        const now = new Date();
-        const lastReset = new Date(usage.daily_credits_reset_at);
-        const nowH = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
-        const lastH = new Date(lastReset.toLocaleString('en-US', { timeZone: 'Europe/Helsinki' }));
-        if (nowH.toDateString() !== lastH.toDateString()) {
-          creditsUsed = 0;
-          await supabaseClient.from('user_usage')
-            .update({ generations_used: 0, daily_credits_reset_at: now.toISOString() })
-            .eq('user_id', user.id);
-        }
-      }
-
-      const creditsRemaining = FREE_CREDITS - creditsUsed;
-      if (creditsRemaining < cost) {
+      if (!success) {
         return new Response(
-          JSON.stringify({ error: `Not enough credits. Need ${cost}, have ${creditsRemaining}`, requiresSubscription: true }),
+          JSON.stringify({ error: 'Not enough credits', requiresSubscription: true }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -175,21 +148,7 @@ serve(async (req) => {
       );
     }
 
-    // Update usage for free-tier non-admin
-    if (!isAdmin && !isPro) {
-      const { data: currentUsage } = await supabaseClient
-        .from('user_usage')
-        .select('generations_used')
-        .eq('user_id', user.id)
-        .single();
-
-      if (currentUsage) {
-        await supabaseClient
-          .from('user_usage')
-          .update({ generations_used: currentUsage.generations_used + cost })
-          .eq('user_id', user.id);
-      }
-    }
+    // Credits already deducted atomically before generation
 
     return new Response(
       JSON.stringify({ image: imageUrl }),
