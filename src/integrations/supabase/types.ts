@@ -201,6 +201,10 @@ export type Database = {
       }
     }
     Functions: {
+      deduct_credits: {
+        Args: { _cost: number; _free_limit?: number; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
