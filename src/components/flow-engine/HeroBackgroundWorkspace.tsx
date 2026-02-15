@@ -729,11 +729,18 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      const newHeight = window.innerHeight - e.clientY - 48; // 48px offset for tab bar
+      const newHeight = window.innerHeight - e.clientY - 48;
       setPanelHeight(Math.max(150, Math.min(newHeight, window.innerHeight - 100)));
     };
 
-    const handleMouseUp = () => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      const newHeight = window.innerHeight - touch.clientY - 48;
+      setPanelHeight(Math.max(150, Math.min(newHeight, window.innerHeight - 100)));
+    };
+
+    const handleEnd = () => {
       setIsDragging(false);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
@@ -741,14 +748,18 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mouseup', handleEnd);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleEnd);
       document.body.style.cursor = 'row-resize';
       document.body.style.userSelect = 'none';
     }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleEnd);
     };
   }, [isDragging]);
   const [flowState, setFlowState] = useState<FlowState>(() => ({
@@ -1484,16 +1495,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         {/* Back button (left) */}
         <button
           onClick={onBack}
-          className="px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs"
+          className="px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs flex-shrink-0"
         >
           <ArrowLeft size={14} />
-          <span className="text-xs font-medium">Back</span>
+          <span className="text-xs font-medium hidden sm:inline">Back</span>
         </button>
 
         {/* Project name + save status (center) */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 pointer-events-auto">
+        <div className="flex items-center gap-2 sm:gap-3 pointer-events-auto min-w-0 flex-1 justify-center">
           {isEditingName ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <input
                 type="text"
                 value={editedName}
@@ -1506,21 +1517,21 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                     handleCancelEditName();
                   }
                 }}
-                className="bg-black/60 border border-white/20 rounded-lg px-3 py-1.5 text-white/80 text-lg font-medium tracking-tight focus:outline-none focus:border-white/40 min-w-[200px]"
+                className="bg-black/60 border border-white/20 rounded-lg px-3 py-1.5 text-white/80 text-sm sm:text-lg font-medium tracking-tight focus:outline-none focus:border-white/40 w-full max-w-[200px]"
                 autoFocus
               />
             </div>
           ) : (
-            <div className="flex items-center gap-2 group">
+            <div className="flex items-center gap-2 group min-w-0">
               <h1
-                className="text-white/80 text-lg font-medium tracking-tight cursor-pointer hover:text-white transition-colors"
+                className="text-white/80 text-sm sm:text-lg font-medium tracking-tight cursor-pointer hover:text-white transition-colors truncate max-w-[120px] sm:max-w-none"
                 onClick={handleStartEditName}
               >
                 {currentProjectName}
               </h1>
               <button
                 onClick={handleStartEditName}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/10 transition-all flex-shrink-0"
                 title="Edit name"
               >
                 <Pencil size={14} className="text-white/60 hover:text-white" />
@@ -1528,7 +1539,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             </div>
           )}
           <div className={cn(
-            "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all",
+            "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all flex-shrink-0",
             saveStatus === "saving" && "bg-yellow-500/20 text-yellow-400",
             saveStatus === "saved" && "bg-green-500/20 text-green-400",
             saveStatus === "idle" && "bg-white/5 text-white/40"
@@ -1536,12 +1547,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             {saveStatus === "saving" && <Save size={12} className="animate-pulse" />}
             {saveStatus === "saved" && <Check size={12} />}
             {saveStatus === "idle" && <Save size={12} />}
-            <span>{saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Auto-save"}</span>
+            <span className="hidden sm:inline">{saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "Auto-save"}</span>
           </div>
         </div>
 
         {/* Spacer for right side alignment */}
-        <div className="w-[120px]" />
+        <div className="w-8 sm:w-[120px] flex-shrink-0" />
       </div>
 
       <div
@@ -1711,9 +1722,13 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           <div className="bg-[#0c0c14]/80 backdrop-blur-2xl border-t border-white/[0.06] relative">
             {/* Drag Handle */}
             <div
-              className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 cursor-row-resize flex items-center justify-center z-50 group hover:bg-white/5 rounded-full transition-colors"
+              className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-6 cursor-row-resize flex items-center justify-center z-50 group hover:bg-white/5 rounded-full transition-colors touch-none"
               onMouseDown={(e) => {
                 e.preventDefault();
+                setIsDragging(true);
+                setMinimizedBar(false);
+              }}
+              onTouchStart={(e) => {
                 setIsDragging(true);
                 setMinimizedBar(false);
               }}
@@ -1722,8 +1737,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             </div>
 
             {/* Tabs + Minimize button */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.04]">
-          <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between px-2 sm:px-4 py-2 border-b border-white/[0.04]">
+              <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
                 {FLOW_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -1732,7 +1747,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
-                      "px-3 py-1.5 text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md",
+                      "px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md whitespace-nowrap flex-shrink-0",
                       activeTab === tab.id
                         ? "text-white bg-white/10"
                         : "text-white/40 hover:text-white/70 hover:bg-white/5"
@@ -1746,10 +1761,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
               {/* Minimize button */}
               <button
                 onClick={() => setMinimizedBar(!minimizedBar)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs flex-shrink-0 ml-1"
               >
                 {minimizedBar ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                <span className="text-[10px] font-medium">{minimizedBar ? "Expand" : "Minimize"}</span>
+                <span className="text-[10px] font-medium hidden sm:inline">{minimizedBar ? "Expand" : "Minimize"}</span>
               </button>
             </div>
 
@@ -1773,15 +1788,15 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col"
                         >
-                          <div className="flex items-center gap-4 flex-shrink-0 mb-3">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-shrink-0 mb-3">
 
-                            <div className="flex items-center gap-1 flex-wrap">
+                            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto [&::-webkit-scrollbar]:hidden w-full sm:w-auto" style={{ scrollbarWidth: "none" }}>
                               {CATEGORY_LABELS.map((cat) => (
                                 <button
                                   key={cat}
                                   onClick={() => setActiveCategory(cat)}
                                   className={cn(
-                                    "px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 ease-out",
+                                    "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] font-medium transition-all duration-300 ease-out whitespace-nowrap flex-shrink-0",
                                     activeCategory === cat
                                       ? "text-white opacity-100"
                                       : "text-white/40 opacity-60 hover:opacity-100 hover:text-white/70"
@@ -1791,10 +1806,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 </button>
                               ))}
                             </div>
-                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="ml-auto w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="sm:ml-auto w-full sm:w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
                           </div>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                               {filteredBackgrounds.map((entry) => {
                                 const isActive = flowState.currentBackgroundStyle === entry.gradientStyle && flowState.selectedBackgroundId === entry.id;
                                 const previewStyle = buildPreviewStyle(entry, entry.variants[0]);

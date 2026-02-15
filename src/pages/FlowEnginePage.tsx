@@ -151,19 +151,19 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         />
         {/* Header */}
         <div className="sticky top-0 z-50">
-          <div className="w-full px-6 py-4 flex items-center gap-4">
+          <div className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4">
             <button
               onClick={handleBack}
               className="p-2 rounded-lg hover:bg-white/5 transition-colors"
             >
               <ArrowLeft size={20} className="text-neutral-400" />
             </button>
-            <h1 className="text-xl font-semibold">Prompt Generator</h1>
+            <h1 className="text-lg sm:text-xl font-semibold">Prompt Generator</h1>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-5xl mx-auto px-6 py-12">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-12">
           <QuickPromptGenerator />
         </div>
       </div>
@@ -182,32 +182,32 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
       {/* Header */}
       <div className="sticky top-0 z-50 bg-transparent">
-        <div className="w-full px-6 py-4 flex items-center gap-4">
+        <div className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4">
           <button
             onClick={handleBack}
             className="p-2 rounded-lg hover:bg-white/5 transition-colors"
           >
             <ArrowLeft size={20} className="text-neutral-400" />
           </button>
-          <h1 className="text-xl font-semibold">Flow Engine</h1>
+          <h1 className="text-lg sm:text-xl font-semibold">Flow Engine</h1>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-12">
         <div className="max-w-4xl w-full">
           {/* Title */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
               Choose Your Path
             </h2>
-            <p className="text-neutral-400 text-lg max-w-xl mx-auto">
+            <p className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto">
               Select a workspace to start building. Each tool is designed to help you create amazing content.
             </p>
           </div>
 
           {/* Cards Grid */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {cards.map((card, index) => {
               const Icon = card.icon;
               const isLocked = false;
@@ -219,7 +219,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   transition={{ delay: index * 0.1, duration: 0.4 }}
                   onClick={() => handleCardClick(card.id)}
                   className={cn(
-                    "relative group text-left p-8 rounded-2xl border transition-all duration-300",
+                    "relative group text-left p-5 sm:p-8 rounded-2xl border transition-all duration-300",
                     "bg-transparent",
                     "border-white/5 hover:border-white/10",
                     "focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black"
