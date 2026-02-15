@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { AuthDialog } from '@/components/AuthDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthDialogContextType {
   openAuthDialog: (onSuccess?: () => void) => void;
@@ -11,6 +12,16 @@ const AuthDialogContext = createContext<AuthDialogContextType | undefined>(undef
 export const AuthDialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [onSuccessCallback, setOnSuccessCallback] = useState<(() => void) | undefined>();
+  const { user } = useAuth();
+
+  // Auto-close dialog when user becomes authenticated (e.g. after OAuth redirect)
+  useEffect(() => {
+    if (user && open) {
+      setOpen(false);
+      onSuccessCallback?.();
+      setOnSuccessCallback(undefined);
+    }
+  }, [user, open, onSuccessCallback]);
 
   const openAuthDialog = useCallback((onSuccess?: () => void) => {
     setOnSuccessCallback(() => onSuccess);
