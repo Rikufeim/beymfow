@@ -17,6 +17,7 @@ import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-eng
 import {
   generateProjectName as generateHeroProjectName,
   loadLocalProjects,
+  getProject as getHeroProject,
   deleteProject as deleteHeroProject,
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
@@ -37,8 +38,20 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const { openAuthDialog } = useAuthDialog();
   const isPro = usageInfo?.subscriptionTier === 'premium';
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
-  const [selectedHeroProject, setSelectedHeroProject] = useState<HeroBackgroundProject | null>(null);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
+
+  // Resolve editing project from sessionStorage
+  const editingProjectId = initialWorkspace === "color-codes"
+    ? sessionStorage.getItem('beymflow.editing-project-id')
+    : null;
+  const selectedHeroProject = editingProjectId ? getHeroProject(editingProjectId) : null;
+
+  // Clear the editing flag when entering color-codes from the card (no project selected)
+  useEffect(() => {
+    if (initialWorkspace === "color-codes" && !editingProjectId) {
+      sessionStorage.removeItem('beymflow.editing-project-id');
+    }
+  }, [initialWorkspace, editingProjectId]);
 
   // Load saved projects
   useEffect(() => {
@@ -52,7 +65,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   };
 
   const handleOpenProject = (project: HeroBackgroundProject) => {
-    setSelectedHeroProject(project);
+    // Store selected project ID in sessionStorage so it persists across route changes
+    sessionStorage.setItem('beymflow.editing-project-id', project.id);
     navigate("/flow/color-codes");
   };
 
@@ -88,6 +102,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     if (cardId === "prompt-generator") {
       navigate("/flow/prompt-generator");
     } else if (cardId === "color-codes") {
+      sessionStorage.removeItem('beymflow.editing-project-id');
       navigate("/flow/color-codes");
     }
   };
