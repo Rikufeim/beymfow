@@ -33,8 +33,7 @@ const CreditsDisplay = () => {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
-        toast.success("Opening Stripe Checkout...");
+        window.location.href = data.url;
       }
     } catch (error: any) {
       console.error('Checkout error:', error);
@@ -58,8 +57,7 @@ const CreditsDisplay = () => {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
-        toast.success("Opening Stripe Portal...");
+        window.location.href = data.url;
       }
     } catch (error: any) {
       console.error('Portal error:', error);

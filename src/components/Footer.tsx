@@ -79,16 +79,13 @@ const Footer = () => {
               { to: "#community", label: "Community" },
               { to: "/prompt-lab-page", label: "Prompt Lab" },
               { to: "/flow-engine-page", label: "Flow Engine" }].
-              map(({ to, label }) => {}
-
-
-
-
-
-
-
-
-              )}
+              map(({ to, label }) => (
+                <li key={to}>
+                  <Link to={to} className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
