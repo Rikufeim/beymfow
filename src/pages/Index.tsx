@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 
 import ColorWorkspaceDemo from "@/components/demo/ColorWorkspaceDemo";
 import BackgroundShader from "@/components/ui/background-shader";
@@ -30,6 +30,38 @@ const Index = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const isPro = usageInfo?.subscriptionTier === "premium";
+  const pendingCheckoutRef = useRef(false);
+
+  // Auto-trigger checkout after login if pending
+  useEffect(() => {
+    if (user && session && sessionStorage.getItem('pending_checkout') === 'true' && !pendingCheckoutRef.current) {
+      pendingCheckoutRef.current = true;
+      sessionStorage.removeItem('pending_checkout');
+      (async () => {
+        setCheckoutLoading(true);
+        try {
+          const { data, error } = await supabase.functions.invoke("create-checkout", {
+            body: { tier: "pro" },
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          if (data?.url) {
+            window.location.href = data.url;
+          }
+        } catch (err: any) {
+          toast({
+            title: "Error",
+            description: err.message || "Failed to start checkout",
+            variant: "destructive"
+          });
+        } finally {
+          setCheckoutLoading(false);
+          pendingCheckoutRef.current = false;
+        }
+      })();
+    }
+  }, [user, session, toast]);
 
   const handleStartFree = useCallback(() => {
     if (user) {
@@ -43,11 +75,8 @@ const Index = () => {
 
   const handleUpgradeToPro = useCallback(async () => {
     if (!user || !session) {
-      sessionStorage.setItem('auth_redirect_after', '/premium');
-      openAuthDialog(async () => {
-        // After login, navigate to premium page where they can upgrade
-        navigate("/premium");
-      });
+      sessionStorage.setItem('pending_checkout', 'true');
+      openAuthDialog();
       return;
     }
     if (isPro) {

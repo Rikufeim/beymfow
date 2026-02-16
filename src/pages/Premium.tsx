@@ -1,7 +1,7 @@
 import { CheckCircle, Check, Plus, Minus, ArrowRight, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import BackgroundShader from "@/components/ui/background-shader";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,22 +40,25 @@ const Premium = () => {
   const [portalLoading, setPortalLoading] = useState(false);
 
   const isPro = usageInfo?.subscriptionTier === "premium";
+  const pendingCheckoutRef = useRef(false);
 
-  const handleUpgrade = async () => {
-    if (!user || !session) {
-      openAuthDialog(() => {
-        // After login, user can click upgrade again
-      });
-      return;
+  // Auto-trigger checkout after login if pending
+  useEffect(() => {
+    if (user && session && sessionStorage.getItem('pending_checkout') === 'true' && !pendingCheckoutRef.current) {
+      pendingCheckoutRef.current = true;
+      sessionStorage.removeItem('pending_checkout');
+      handleCheckoutFlow();
     }
+  }, [user, session]);
 
+  const handleCheckoutFlow = async () => {
+    if (!session) return;
     setCheckoutLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { tier: "pro" },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.url) {
@@ -69,7 +72,17 @@ const Premium = () => {
       });
     } finally {
       setCheckoutLoading(false);
+      pendingCheckoutRef.current = false;
     }
+  };
+
+  const handleUpgrade = async () => {
+    if (!user || !session) {
+      sessionStorage.setItem('pending_checkout', 'true');
+      openAuthDialog();
+      return;
+    }
+    handleCheckoutFlow();
   };
 
   const handleManageSubscription = async () => {
