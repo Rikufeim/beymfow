@@ -4,6 +4,7 @@ import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromp
 import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/lib/notifications";
 import {
   DropdownMenu,
@@ -14,6 +15,16 @@ import {
 import { GeneratedPromptDisplay } from "./GeneratedPromptDisplay";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 const PROMPT_ENGINEER_SYSTEM_PROMPT = `
 You are an expert-level prompt engineer and AI workflow designer.
@@ -51,6 +62,7 @@ Infer. Design. Decide. Execute.
 
 export const QuickPromptGenerator = () => {
   const { user, usageInfo } = useAuth();
+  const navigate = useNavigate();
   const isPro = usageInfo?.subscriptionTier === "premium";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
@@ -67,6 +79,7 @@ export const QuickPromptGenerator = () => {
   );
   const [promptType, setPromptType] = useState<"lovable" | "gemini" | "canvas" | "image" | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string; base64: string; mimeType: string }>>([]);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; name: string; content: string; extension: string }>>([]);
@@ -556,7 +569,7 @@ export const QuickPromptGenerator = () => {
     }
 
     if (selectedModel === "premium" && !isPro) {
-      toast.error("Premium Model requires Pro subscription");
+      setShowPremiumGate(true);
       return;
     }
 
@@ -752,6 +765,38 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
 
   return (
     <div className={`w-full mx-auto flex flex-col transition-all duration-700 ease-in-out ${hasContent ? 'justify-end min-h-[85vh] pb-8' : 'justify-center min-h-[60vh]'}`}>
+
+      {/* Premium Model Gate Dialog */}
+      <AlertDialog open={showPremiumGate} onOpenChange={setShowPremiumGate}>
+        <AlertDialogContent className="bg-black border-2 border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-bold text-white text-center">
+              ⚡ Premium Model
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-center text-lg">
+              Premium Model uses GPT-5 for the highest quality prompts. Upgrade to Pro to unlock this feature.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowPremiumGate(false)}
+              className="bg-transparent border-white/30 text-white hover:bg-white/10 hover:border-white/50"
+            >
+              Not Now
+            </Button>
+            <AlertDialogAction
+              onClick={() => {
+                setShowPremiumGate(false);
+                navigate('/premium');
+              }}
+              className="bg-white text-black border-2 border-white/30 hover:bg-white/90 font-bold px-8 py-6 text-lg"
+            >
+              Upgrade to Pro — €9.90/month
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AnimatePresence>
         {hasContent && (
