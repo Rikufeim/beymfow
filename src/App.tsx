@@ -2,6 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -45,9 +46,33 @@ const ScrollToTop = () => {
   return null;
 };
 
+const pageTransition = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+  },
+};
+
 const AppRoutes = () => {
+  const location = useLocation();
+
   return (
-    <Routes>
+    <div className="relative min-h-screen w-full">
+      <AnimatePresence mode="sync">
+        <motion.div
+          key={location.pathname}
+          variants={pageTransition}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="absolute inset-0 w-full overflow-y-auto"
+        >
+        <Routes location={location}>
       <Route path="/" element={
         <ErrorBoundary>
           <Index />
@@ -85,7 +110,10 @@ const AppRoutes = () => {
           <NotFound />
         </Layout>
       } />
-    </Routes>
+        </Routes>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 };
 
