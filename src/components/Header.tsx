@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import { Menu, User, LogOut, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
@@ -21,10 +21,21 @@ let logoCacheLoaded = false;
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { prefetchRoute } = usePrefetchRoute();
   const { user, signOut } = useAuth();
   const { openAuthDialog } = useAuthDialog();
+
+  const handleFlowClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user) {
+      navigate("/flow");
+    } else {
+      sessionStorage.setItem("auth_redirect_after", "/flow");
+      openAuthDialog(() => navigate("/flow"));
+    }
+  };
   const [logoLoaded, setLogoLoaded] = useState(logoCacheLoaded);
 
   const isHeroBackgroundMode = (location.pathname.startsWith("/flow") && searchParams.get("workspace") === "hero-background") || location.pathname === "/" || location.pathname === "/about" || location.pathname === "/premium";
@@ -80,13 +91,14 @@ const Header = () => {
           >
             Pricing
           </Link>
-          <Link
-            to="/flow"
+          <button
+            type="button"
+            onClick={handleFlowClick}
             onMouseEnter={() => prefetchRoute("/flow")}
-            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
+            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm bg-transparent border-none cursor-pointer font-medium"
           >
             Flow
-          </Link>
+          </button>
           <Link
             to="/about"
             onMouseEnter={() => prefetchRoute("/about")}
@@ -141,13 +153,14 @@ const Header = () => {
               >
                 Pricing
               </Link>
-              <Link
-                to="/flow"
+              <button
+                type="button"
+                onClick={handleFlowClick}
                 onMouseEnter={() => prefetchRoute("/flow")}
-                className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4"
+                className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4 text-left w-full bg-transparent border-none cursor-pointer"
               >
                 Flow
-              </Link>
+              </button>
               <Link
                 to="/about"
                 onMouseEnter={() => prefetchRoute("/about")}
