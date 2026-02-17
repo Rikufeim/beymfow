@@ -1,34 +1,14 @@
 /* Optimized font loading - consolidated with reduced weights */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;500;600;700&family=Ubuntu:wght@400;500;700&display=swap');
 
-/* Custom scrollbar - dark theme */
+/* Hide all scrollbars globally */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(0 0% 25%) hsl(0 0% 10%);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-*::-webkit-scrollbar-track {
-  background: hsl(0 0% 8%);
-  border-radius: 5px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 22%);
-  border-radius: 5px;
-  border: 2px solid hsl(0 0% 8%);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 30%);
-}
-
-*::-webkit-scrollbar-corner {
-  background: hsl(0 0% 8%);
+  display: none;
 }
 
 @tailwind base;
