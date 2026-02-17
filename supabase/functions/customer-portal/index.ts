@@ -4,7 +4,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CUSTOMER-PORTAL] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -27,22 +32,48 @@ serve(async (req) => {
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
+    logStep("User authenticated", { email: user.email });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found");
+    let customerId: string | null = null;
+
+    // 1. Try to find customer ID from our database first
+    const { data: subData } = await supabaseClient
+      .from("user_subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (subData?.stripe_customer_id) {
+      customerId = subData.stripe_customer_id;
+      logStep("Found customer ID from database", { customerId });
     }
-    const customerId = customers.data[0].id;
+
+    // 2. Fallback: search Stripe by email
+    if (!customerId) {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Found customer ID from Stripe by email", { customerId });
+      }
+    }
+
+    if (!customerId) {
+      return new Response(
+        JSON.stringify({ error: "No active subscription found. Please subscribe first." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+      );
+    }
 
     const origin = req.headers.get("origin") || "https://testerbeym.lovable.app";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/settings/billing`,
     });
+    logStep("Portal session created", { url: portalSession.url });
 
     return new Response(JSON.stringify({ url: portalSession.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -42,9 +42,13 @@ const SettingsBilling = () => {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
-      if (data?.url) window.location.href = data.url;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      if (data?.url) window.open(data.url, '_blank');
     } catch (e: any) {
-      toast.error(e.message || 'Failed to open portal');
+      toast.error(e.message || 'Failed to open subscription management');
     } finally {
       setLoading(false);
     }
