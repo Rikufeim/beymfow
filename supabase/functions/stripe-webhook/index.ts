@@ -26,21 +26,34 @@ serve(async (req) => {
   );
 
   try {
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    if (!webhookSecret) {
+      console.error("STRIPE_WEBHOOK_SECRET not configured");
+      return new Response(
+        JSON.stringify({ error: "Webhook not configured" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const body = await req.text();
     const sig = req.headers.get("stripe-signature");
 
-    let event: Stripe.Event;
+    if (!sig) {
+      return new Response(
+        JSON.stringify({ error: "Missing signature" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    if (webhookSecret && sig) {
-      try {
-        event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-      } catch (err) {
-        logStep("Signature verification failed", { error: err instanceof Error ? err.message : err });
-        return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
-      }
-    } else {
-      event = JSON.parse(body) as Stripe.Event;
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    } catch (err) {
+      logStep("Signature verification failed", { error: err instanceof Error ? err.message : err });
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     logStep("Received event", { type: event.type, id: event.id });
