@@ -189,7 +189,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           >
             <ArrowLeft size={20} className="text-neutral-400" />
           </button>
-          <h1 className="text-lg sm:text-xl font-semibold">Flow Engine</h1>
+          <h1 className="text-lg sm:text-xl font-semibold">Flow</h1>
         </div>
       </div>
 

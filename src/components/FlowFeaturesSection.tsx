@@ -61,7 +61,7 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
           </div>
         </div>
 
-        {/* Flow Engine Section - Image Right, Text Left (mirrored from Prompt Lab) */}
+        {/* Flow Section - Image Right, Text Left (mirrored from Prompt Lab) */}
         <div className={sharedCardClasses}>
           {/* Text Content - Left */}
           <div className="order-1 md:order-1">
@@ -80,10 +80,10 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
                 }} aria-hidden="true" />
 
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 lg:mb-6 relative z-10">
-                  Flow Engine
+                  Flow
                 </h2>
                 <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">
-                  The Flow Engine turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe
+                  The Flow turns your ideas into clean, build-ready prompts for apps, websites, and games. It supports vibe
                   coding and sharpens the way you build, and it works with all major AI models.
                 </p>
                 <div className="text-sm font-semibold relative z-10 cursor-pointer inline-flex items-center gap-2 transition-all duration-200 group" style={{
@@ -111,7 +111,7 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
                 transform: 'translateZ(0)',
                 backfaceVisibility: 'hidden'
               }} onClick={() => handleNavigate("/flow-engine")}>
-                <img src={beymflowBg} alt="Flow Engine" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
+                <img src={beymflowBg} alt="Flow" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
               </div>
             </div>
           </div>

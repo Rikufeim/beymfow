@@ -84,7 +84,7 @@ export const PremiumGate = ({ children }: PremiumGateProps) => {
               </span>
             </h1>
             <p className="text-lg text-gray-400 max-w-xl mx-auto">
-              Flow Engine is a premium feature. Unlock unlimited access to advanced
+              Flow is a premium feature. Unlock unlimited access to advanced
               prompt engineering with our Premium plan.
             </p>
           </div>
@@ -95,7 +95,7 @@ export const PremiumGate = ({ children }: PremiumGateProps) => {
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-yellow-500" />
               </div>
-              <span className="text-gray-200">Unlimited Flow Engine access</span>
+              <span className="text-gray-200">Unlimited Flow access</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center">

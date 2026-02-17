@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { GlassButton } from "@/components/ui/glass-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
@@ -121,14 +122,14 @@ const About = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const handleStartCreating = () => {
     if (user) {
-      navigate("/");
+      navigate("/flow");
     } else {
-      navigate("/auth");
+      sessionStorage.setItem("auth_redirect_after", "/flow");
+      openAuthDialog(() => navigate("/flow"));
     }
   };
 

@@ -149,13 +149,13 @@ const Index = () => {
                     Start Building
                   </h2>
                   <p className="text-white/65 max-w-xl">
-                    Jump into Flow Engine or Prompt Lab with premium, interactive previews inspired by Aceternity UI.
+                    Create impressive backgrounds for websites, apps, or anything — quickly.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <button
-                      onClick={() => navigate("/flow")}
+                      onClick={handleStartFree}
                       className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40">
-                      Flow Engine
+                      Start your flow
                     </button>
                   </div>
                 </div>
@@ -327,12 +327,14 @@ const Index = () => {
               <div className="grid lg:grid-cols-5 gap-10 lg:gap-12 items-center">
                 {/* Left: Headline & Subheadline */}
                 <div className="lg:col-span-2 space-y-4">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-                    Pricing
-                  </h2>
-                  <p className="text-sm sm:text-base md:text-lg text-white/70">
-                    Upgrade when you need full creative flow
-                  </p>
+                  <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 md:p-8 w-fit">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+                      Pricing
+                    </h2>
+                    <p className="text-sm sm:text-base md:text-lg text-white/70 mt-2">
+                      Upgrade when you need full creative flow
+                    </p>
+                  </div>
                 </div>
 
                 {/* Right: Two black pricing cards */}

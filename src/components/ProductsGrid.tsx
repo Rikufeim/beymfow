@@ -14,7 +14,7 @@ const products = [
   },
   {
     icon: Workflow,
-    title: "Flow Engine",
+    title: "Flow",
     description: "Build complex AI workflows with our visual flow editor.",
     buttonText: "Try Now >",
     link: "/flow-engine",
