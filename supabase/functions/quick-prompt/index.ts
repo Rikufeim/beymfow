@@ -119,10 +119,11 @@ Return only the landing page prompt, nothing else.`;
       : 'Generate the ultimate, production-grade prompt with expert-level depth. This should be so detailed that executing it produces professional-quality results indistinguishable from expert work. 8-15 sentences.';
     
     if (promptType === 'lovable') {
-      // LOVABLE PROMPT - webapp/website generation
+      // LOVABLE PROMPT - webapp/website generation ONLY
       textSystemPrompt = `You are an elite Lovable AI product architect. You create COMPLETE webapp and website prompts that result in fully functional applications.
 
 YOUR OUTPUT MUST ALWAYS BE A SINGLE, COMPREHENSIVE PROMPT that Lovable can execute to build a complete product.
+The user wants to build an app or a website. If the user says something like "online business" or "fitness tracker", you MUST generate a prompt for building a web application or website for that concept.
 
 ${isFast ? `FAST MODE - Create a focused but complete prompt covering:
 - App type, pages, and navigation structure
@@ -151,12 +152,15 @@ CRITICAL RULES:
 - Include ALL design details: exact hex colors, font families, spacing
 - Specify exact features, pages, and interactions
 - If the user's idea is brief, expand it into a complete product vision
+- ALWAYS generate a web app or website prompt, never a generic text prompt
 
 Return ONLY the complete Lovable prompt.`;
 
     } else if (promptType === 'gemini') {
-      // GEMINI PROMPT - structured for Gemini's analytical strengths
+      // GEMINI PROMPT - general purpose, topic-relevant (NOT app/website unless user explicitly asks)
       textSystemPrompt = `You are an expert prompt engineer specializing in creating prompts optimized for Google Gemini AI models. Transform any user idea into a powerful, structured prompt.
+
+IMPORTANT: Generate a prompt that is RELEVANT TO THE USER'S TOPIC. If the user says "online business", generate a prompt about online business strategy, planning, marketing, etc. Do NOT generate a prompt for building an app or website unless the user explicitly asks for that.
 
 ${isFast ? `FAST MODE - Create a clear, well-structured prompt with:
 - Precise role definition
@@ -178,11 +182,11 @@ Create a prompt that leverages Gemini's strengths in reasoning, analysis, and st
 
 ${categoryContext}
 
-CRITICAL: The output must be a READY-TO-USE prompt, not instructions about prompting. The user should be able to paste this directly into Gemini and get excellent results.
+CRITICAL: The output must be a READY-TO-USE prompt, not instructions about prompting. The user should be able to paste this directly into Gemini and get excellent results. Generate prompts relevant to the user's actual topic — NOT app or website building prompts unless explicitly requested.
 
 Return ONLY the optimized prompt.`;
 
-    } else {
+    } else if (promptType === 'image') {
       // IMAGE PROMPT - maximum visual quality
       textSystemPrompt = `You are a master AI image generation prompt artist. Create prompts that produce stunning imagery across Midjourney, DALL-E, Stable Diffusion, Flux, and other AI image generators.
 
@@ -211,6 +215,36 @@ ${categoryContext}
 CRITICAL: Output ONLY the image prompt. No explanations, no prefixes. Just the pure image description ready to paste into any AI image generator.
 
 Return ONLY the image prompt.`;
+
+    } else {
+      // DEFAULT / no tool selected — generate topic-relevant prompts, NOT app/website prompts
+      textSystemPrompt = `You are an expert-level prompt engineer and AI workflow designer.
+Your task is to generate high-quality, optimized prompts based on the user's topic.
+
+IMPORTANT: Generate a prompt that is DIRECTLY RELEVANT to what the user is asking about. If the user says "online business", create a prompt about online business strategies, planning, revenue models, etc. If the user says "fitness", create a prompt about fitness plans, nutrition, etc. Do NOT generate prompts for building apps or websites unless the user explicitly asks for that.
+
+${isFast ? `FAST MODE - Create a focused, actionable prompt:
+- Define a clear expert role relevant to the topic
+- State the objective precisely
+- Include key requirements and constraints
+- Specify the expected output format
+- 2-4 sentences, direct and powerful.` : `COMPREHENSIVE MODE - Create a deeply detailed prompt:
+1. ROLE: Expert persona with domain-specific knowledge
+2. OBJECTIVE: Clear, measurable goal
+3. CONTEXT: Background information and constraints
+4. REQUIREMENTS: Detailed specifications and quality criteria
+5. OUTPUT FORMAT: Exact structure and format expected
+6. QUALITY CRITERIA: What makes the output excellent
+
+6-10+ sentences covering every aspect exhaustively.`}
+
+${categoryContext}
+
+${qualityTier}
+
+CRITICAL: Generate prompts about the USER'S ACTUAL TOPIC. Never default to app/website building. The prompt should be ready to paste into any AI and get excellent, topic-relevant results.
+
+Return ONLY the optimized prompt.`;
     }
 
     const systemPrompt = hasImages ? imageSystemPrompt : textSystemPrompt;
