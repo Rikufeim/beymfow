@@ -1356,25 +1356,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     generatePreview();
   }, [settings]);
 
-  // Handle color picker open (only one at a time)
+  // Handle color picker open (only one at a time) - don't reset effects
   const handleColorPickerOpen = useCallback((colorKey: string) => {
-    setActiveColorPicker((prev) => {
-      // If opening a new picker (not closing), reset effects
-      if (prev !== colorKey) {
-        setSettings(prevSettings => ({
-          ...prevSettings,
-          brightness: 1.0,
-          contrast: 1.0,
-          saturation: 1.0,
-          blurPx: 0,
-          vignette: 0,
-          grainEnabled: false,
-          environmentEnabled: false,
-        }));
-        return colorKey;
-      }
-      return null;
-    });
+    setActiveColorPicker((prev) => prev === colorKey ? null : colorKey);
   }, []);
 
   // Extract dominant color from an image using canvas
@@ -1965,58 +1949,47 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col w-full"
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Colors</h4>
-                          <div className="flex items-center gap-3 w-full flex-wrap flex-1 min-h-0 content-start">
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <button
-                                onClick={() => handleColorPickerOpen("color1")}
-                                className={cn(
-                                  "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                  activeColorPicker === "color1" ? "border-white" : "border-white/40"
-                                )}
-                                style={{ backgroundColor: settings.color1 }}
-                              />
-                              {!settings.singleColorMode && (
-                                <>
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color2")}
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Colors</h4>
+                          <div className="flex gap-4 flex-1 min-h-0">
+                            {/* Color swatches column */}
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              {[
+                                { key: "color1", label: "Base", value: settings.color1 },
+                                { key: "color2", label: "Surface", value: settings.color2 },
+                                ...(!settings.singleColorMode ? [
+                                  { key: "color3", label: "Accent", value: settings.color3 },
+                                  { key: "color4", label: "Highlight", value: settings.color4 },
+                                ] : []),
+                              ].map(({ key, label, value }) => (
+                                <button
+                                  key={key}
+                                  onClick={() => handleColorPickerOpen(key)}
+                                  className={cn(
+                                    "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
+                                    activeColorPicker === key
+                                      ? "bg-white/10 ring-1 ring-white/20"
+                                      : "hover:bg-white/5"
+                                  )}
+                                >
+                                  <span
                                     className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color2" ? "border-white" : "border-white/40"
+                                      "w-6 h-6 rounded-full border-2 transition-all flex-shrink-0",
+                                      activeColorPicker === key ? "border-white scale-110" : "border-white/30"
                                     )}
-                                    style={{ backgroundColor: settings.color2 }}
+                                    style={{ backgroundColor: value }}
                                   />
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color3")}
-                                    className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color3" ? "border-white" : "border-white/40"
-                                    )}
-                                    style={{ backgroundColor: settings.color3 }}
-                                  />
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color4")}
-                                    className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color4" ? "border-white" : "border-white/40"
-                                    )}
-                                    style={{ backgroundColor: settings.color4 }}
-                                  />
-                                </>
-                              )}
+                                  <span className="text-[10px] text-white/50 w-12">{label}</span>
+                                </button>
+                              ))}
                             </div>
-                          </div>
-                          {activeColorPicker && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              className="flex items-center gap-2 flex-shrink-0"
-                            >
-                              <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
-                                {activeColorPicker.replace("color", "Color ")}
-                              </span>
-                              <div className="flex-1 min-w-0">
+
+                            {/* Color picker area */}
+                            {activeColorPicker && (
+                              <motion.div
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex-1 flex flex-col gap-2 min-w-0"
+                              >
                                 <HexColorPicker
                                   color={
                                     activeColorPicker === "color1" ? settings.color1 :
@@ -2030,11 +2003,39 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                     else if (activeColorPicker === "color3") updateSetting("color3", color);
                                     else updateSetting("color4", color);
                                   }}
-                                  style={{ width: "100%", height: 48 }}
+                                  style={{ width: "100%", height: "100%" }}
                                 />
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 uppercase tracking-wider flex-shrink-0">Hex</span>
+                                  <input
+                                    type="text"
+                                    value={
+                                      activeColorPicker === "color1" ? settings.color1 :
+                                        activeColorPicker === "color2" ? settings.color2 :
+                                          activeColorPicker === "color3" ? settings.color3 :
+                                            settings.color4
+                                    }
+                                    onChange={(e) => {
+                                      const hex = e.target.value;
+                                      const val = hex.startsWith("#") ? hex : "#" + hex;
+                                      if (activeColorPicker === "color1") updateSetting("color1", val);
+                                      else if (activeColorPicker === "color2") updateSetting("color2", val);
+                                      else if (activeColorPicker === "color3") updateSetting("color3", val);
+                                      else updateSetting("color4", val);
+                                    }}
+                                    className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/80 placeholder:text-white/30 focus:outline-none focus:border-white/20 font-mono"
+                                    placeholder="#000000"
+                                  />
+                                </div>
+                              </motion.div>
+                            )}
+
+                            {!activeColorPicker && (
+                              <div className="flex-1 flex items-center justify-center text-white/20 text-xs">
+                                Click a color to edit
                               </div>
-                            </motion.div>
-                          )}
+                            )}
+                          </div>
                         </motion.div>
                       )}
 
