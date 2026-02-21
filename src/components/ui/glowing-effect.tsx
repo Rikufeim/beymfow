@@ -2,7 +2,6 @@
 
 import type { CSSProperties } from "react";
 import { memo, useCallback, useEffect, useRef } from "react";
-import { animate } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface GlowingEffectProps {
@@ -18,6 +17,7 @@ interface GlowingEffectProps {
   borderWidth?: number;
   customGradient?: string;
 }
+
 const GlowingEffect = memo(
   ({
     blur = 0,
@@ -35,10 +35,11 @@ const GlowingEffect = memo(
     const containerRef = useRef<HTMLDivElement>(null);
     const lastPosition = useRef({ x: 0, y: 0 });
     const animationFrameRef = useRef<number>(0);
+    const isVisibleRef = useRef(false);
 
     const handleMove = useCallback(
       (e?: MouseEvent | { x: number; y: number }) => {
-        if (!containerRef.current) return;
+        if (!containerRef.current || !isVisibleRef.current) return;
 
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
@@ -88,34 +89,39 @@ const GlowingEffect = memo(
           const angleDiff = ((targetAngle - currentAngle + 180) % 360) - 180;
           const newAngle = currentAngle + angleDiff;
 
-          animate(currentAngle, newAngle, {
-            duration: movementDuration,
-            ease: [0.16, 1, 0.3, 1],
-            onUpdate: (value) => {
-              element.style.setProperty("--start", String(value));
-            },
-          });
+          // Use direct style update instead of framer-motion animate for performance
+          element.style.setProperty("--start", String(newAngle));
         });
       },
-      [inactiveZone, proximity, movementDuration]
+      [inactiveZone, proximity]
     );
 
     useEffect(() => {
       if (disabled) return;
 
-      const handleScroll = () => handleMove();
-      const handlePointerMove = (e: PointerEvent) => handleMove(e);
+      const element = containerRef.current;
+      if (!element) return;
 
-      window.addEventListener("scroll", handleScroll, { passive: true });
+      // Use IntersectionObserver to only listen when visible
+      const observer = new IntersectionObserver(
+        (entries) => {
+          isVisibleRef.current = entries[0]?.isIntersecting ?? false;
+        },
+        { rootMargin: "100px" }
+      );
+      observer.observe(element);
+
+      // Only listen for pointermove, not scroll (scroll glow is not worth the cost)
+      const handlePointerMove = (e: PointerEvent) => handleMove(e);
       document.body.addEventListener("pointermove", handlePointerMove, {
         passive: true,
       });
 
       return () => {
+        observer.disconnect();
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
-        window.removeEventListener("scroll", handleScroll);
         document.body.removeEventListener("pointermove", handlePointerMove);
       };
     }, [handleMove, disabled]);

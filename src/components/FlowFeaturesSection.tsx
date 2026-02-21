@@ -65,15 +65,9 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
         <div className={sharedCardClasses}>
           {/* Text Content - Left */}
           <div className="order-1 md:order-1">
-            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
-              transform: 'translateZ(0)',
-              willChange: 'transform'
-            }}>
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }}>
+              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`}>
                 {/* Soft warm glow - right corner */}
                 <span className="pointer-events-none absolute -top-24 -right-10 h-44 w-44 rounded-full blur-3xl" style={{
                   background: 'radial-gradient(circle, rgba(212,212,212,0.12) 0%, rgba(163,163,163,0.08) 40%, rgba(115,115,115,0.04) 70%, transparent 100%)'
@@ -102,15 +96,9 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
 
           {/* Image - Right */}
           <div className="order-2 md:order-2" onMouseEnter={() => handlePrefetch("/flow-engine")}>
-            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
-              transform: 'translateZ(0)',
-              willChange: 'transform'
-            }}>
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }} onClick={() => handleNavigate("/flow-engine")}>
+              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} onClick={() => handleNavigate("/flow-engine")}>
                 <img src={beymflowBg} alt="Flow" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
               </div>
             </div>
@@ -121,15 +109,9 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
         <div className={sharedCardClasses}>
           {/* Image - Left */}
           <div className="order-2 md:order-1" onMouseEnter={() => handlePrefetch("/landing-pages")}>
-            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
-              transform: 'translateZ(0)',
-              willChange: 'transform'
-            }}>
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }} onClick={() => handleNavigate("/landing-pages")}>
+              <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} onClick={() => handleNavigate("/landing-pages")}>
                 <img src={beymflowBg} alt="Landing Page Library" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
               </div>
             </div>
@@ -137,15 +119,9 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
 
           {/* Text Content - Right */}
           <div className="order-1 md:order-2" onMouseEnter={() => handlePrefetch("/landing-pages")}>
-            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{
-              transform: 'translateZ(0)',
-              willChange: 'transform'
-            }}>
+            <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} style={{
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden'
-              }}>
+              <div className={`${sharedTextClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`}>
                 {/* Soft warm glow - left corner */}
                 <span className="pointer-events-none absolute -top-24 -left-10 h-44 w-44 rounded-full blur-3xl" style={{
                   background: 'radial-gradient(circle, rgba(212,212,212,0.12) 0%, rgba(163,163,163,0.08) 40%, rgba(115,115,115,0.04) 70%, transparent 100%)'
