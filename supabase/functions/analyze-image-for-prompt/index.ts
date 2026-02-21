@@ -346,7 +346,7 @@ Return ONLY the prompt text, nothing else.`;
     console.error('Error in analyze-image-for-prompt function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Failed to analyze image' 
+        error: 'An internal error occurred. Please try again.' 
       }),
       { 
         status: 500, 
