@@ -131,7 +131,7 @@ Generate the optimized prompt now.`;
   } catch (error) {
     console.error("Error in agent-refine:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'An error occurred' }),
+      JSON.stringify({ error: 'An internal error occurred. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

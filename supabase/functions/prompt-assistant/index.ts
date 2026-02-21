@@ -97,7 +97,7 @@ Keep responses concise, friendly, and actionable. Focus on understanding what th
   } catch (error) {
     console.error("Error in prompt-assistant:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An internal error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
