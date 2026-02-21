@@ -64,9 +64,11 @@ const generateBackgroundComponent = (settings: HeroBackgroundSettings): string =
   const gradientCSS = generateGradientCSS(settings);
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
-  // Start logic for filter
-  const filterParts = [`brightness(${settings.brightness})`];
-  if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
+  // Start logic for filter - include exposure and gamma like the live preview
+  const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
+  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`];
+  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
   if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
@@ -118,7 +120,7 @@ export const HeroBackground: React.FC<HeroBackgroundProps> = ({ children, classN
       className={\`relative w-full h-screen overflow-hidden \${className || ""}\`}
       style={{
         background: "${gradientCSS}",
-        filter: "${filterString}",
+        filter: "${filterString}",${settings.blendMode && settings.blendMode !== "normal" ? `\n        mixBlendMode: "${settings.blendMode}",` : ""}
       }}
     >${grainOverlay}${vignetteOverlay}
       
