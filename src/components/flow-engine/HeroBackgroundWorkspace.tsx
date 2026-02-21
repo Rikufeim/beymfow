@@ -196,48 +196,23 @@ const FLOW_TABS: Array<{ id: TabId; label: string }> = [
 // Layout categories for grouping gradient styles
 const LAYOUT_CATEGORIES = [
   { label: "All", filter: () => true },
-  { label: "Smooth", filter: (id: string) => ["halo", "soft-sweep", "orb", "spotlight", "silk-drape", "velvet-wrap", "midnight-mist"].includes(id) },
-  { label: "Angular", filter: (id: string) => ["diagonal-blend", "crystal", "glass-shards", "prism-refraction", "geometric-shapes"].includes(id) },
-  { label: "Organic", filter: (id: string) => ["aurora", "wave", "fluid-flow", "abstract-curves", "neon-smoke", "nebula-cloud"].includes(id) },
-  { label: "Grid", filter: (id: string) => ["mesh", "grid-perspective", "cyber-grid", "digital-rain", "glitch-noise"].includes(id) },
-  { label: "Cosmic", filter: (id: string) => ["cosmic", "radial-pulse", "bokeh-lights", "star-cluster", "sunset", "solar-wind", "vortex-spin", "liquid-metal"].includes(id) },
+  { label: "Smooth", filter: (id: string) => ["halo", "soft-sweep", "orb", "spotlight"].includes(id) },
+  { label: "Angular", filter: (id: string) => ["diagonal-blend", "crystal", "sunset"].includes(id) },
+  { label: "Organic", filter: (id: string) => ["aurora", "wave"].includes(id) },
 ];
 
-// 10 background shapes – gradient style only (colors stay the same)
+// Background shapes – only visually distinctive styles that render clearly in thumbnails
 type GradientStyleId = HeroBackgroundSettings["gradientStyle"];
 const SHAPE_STYLES: Array<{ id: GradientStyleId; label: string }> = [
   { id: "halo", label: "Halo" },
   { id: "soft-sweep", label: "Soft Sweep" },
   { id: "orb", label: "Orb" },
-  { id: "diagonal-blend", label: "Diagonal Blend" },
-  { id: "noise-wash", label: "Noise Wash" },
+  { id: "diagonal-blend", label: "Diagonal" },
   { id: "aurora", label: "Aurora" },
-  { id: "mesh", label: "Mesh" },
   { id: "spotlight", label: "Spotlight" },
   { id: "wave", label: "Wave" },
   { id: "crystal", label: "Crystal" },
   { id: "sunset", label: "Sunset" },
-  { id: "cosmic", label: "Cosmic" },
-  { id: "nebula-cloud", label: "Nebula Cloud" },
-  { id: "radial-pulse", label: "Radial Pulse" },
-  { id: "glass-shards", label: "Glass Shards" },
-  { id: "grid-perspective", label: "Grid Perspective" },
-  { id: "fluid-flow", label: "Fluid Flow" },
-  { id: "cyber-grid", label: "Cyber Grid" },
-  { id: "bokeh-lights", label: "Bokeh Lights" },
-  { id: "velvet-wrap", label: "Velvet Wrap" },
-  { id: "prism-refraction", label: "Prism Refraction" },
-  { id: "midnight-mist", label: "Midnight Mist" },
-  { id: "solar-wind", label: "Solar Wind" },
-  { id: "digital-rain", label: "Digital Rain" },
-  { id: "abstract-curves", label: "Abstract Curves" },
-  { id: "neon-smoke", label: "Neon Smoke" },
-  { id: "geometric-shapes", label: "Geometric Shapes" },
-  { id: "silk-drape", label: "Silk Drape" },
-  { id: "vortex-spin", label: "Vortex Spin" },
-  { id: "glitch-noise", label: "Glitch Noise" },
-  { id: "star-cluster", label: "Star Cluster" },
-  { id: "liquid-metal", label: "Liquid Metal" },
 ];
 
 const COLOR_WORDS: Record<string, string> = {
@@ -1882,10 +1857,25 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
                                 .map((shape) => {
                                 const isActive = settings.gradientStyle === shape.id;
-                                // Build a mini preview using current colors + this gradient style
+                                // Use bright fixed colors for thumbnails so patterns are always visible
                                 const previewSettings: HeroBackgroundSettings = {
                                   ...settings,
                                   gradientStyle: shape.id,
+                                  color1: "#303060",
+                                  color2: "#505090",
+                                  color3: "#e879f9",
+                                  color4: "#67e8f9",
+                                  environmentEnabled: true,
+                                  singleColorMode: false,
+                                  brightness: 1,
+                                  contrast: 1,
+                                  saturation: 1,
+                                  blurPx: 0,
+                                  exposure: 1,
+                                  gamma: 1,
+                                  radialFocusX: 50,
+                                  radialFocusY: 50,
+                                  gradientAngle: 135,
                                 };
                                 const previewBg = buildHeroGradient(previewSettings);
                                 return (
@@ -1905,7 +1895,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                         className="h-16 w-full relative"
                                         style={{
                                           background: previewBg,
-                                          filter: "brightness(1.4) saturate(1.2)",
+                                          filter: "brightness(1.6) saturate(1.4)",
                                         }}
                                       >
                                         <div
