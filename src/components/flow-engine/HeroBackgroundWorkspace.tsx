@@ -1857,14 +1857,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
                                 .map((shape) => {
                                 const isActive = settings.gradientStyle === shape.id;
-                                // Use bright fixed colors for thumbnails so patterns are always visible
+                                // Use the user's current colors for thumbnails
                                 const previewSettings: HeroBackgroundSettings = {
                                   ...settings,
                                   gradientStyle: shape.id,
-                                  color1: "#303060",
-                                  color2: "#505090",
-                                  color3: "#e879f9",
-                                  color4: "#67e8f9",
                                   environmentEnabled: true,
                                   singleColorMode: false,
                                   brightness: 1,
@@ -1873,9 +1869,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   blurPx: 0,
                                   exposure: 1,
                                   gamma: 1,
-                                  radialFocusX: 50,
-                                  radialFocusY: 50,
-                                  gradientAngle: 135,
                                 };
                                 const previewBg = buildHeroGradient(previewSettings);
                                 return (
