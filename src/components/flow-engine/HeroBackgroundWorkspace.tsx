@@ -180,16 +180,27 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "style" | "colors" | "motion" | "components" | "view" | "export";
+type TabId = "shape" | "layout" | "style" | "colors" | "motion" | "components" | "view" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
+  { id: "layout", label: "Layout" },
   { id: "style", label: "Style" },
   { id: "colors", label: "Colors" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
   { id: "view", label: "View" },
   { id: "export", label: "Export" },
+];
+
+// Layout categories for grouping gradient styles
+const LAYOUT_CATEGORIES = [
+  { label: "All", filter: () => true },
+  { label: "Smooth", filter: (id: string) => ["halo", "soft-sweep", "orb", "spotlight", "silk-drape", "velvet-wrap", "midnight-mist"].includes(id) },
+  { label: "Angular", filter: (id: string) => ["diagonal-blend", "crystal", "glass-shards", "prism-refraction", "geometric-shapes"].includes(id) },
+  { label: "Organic", filter: (id: string) => ["aurora", "wave", "fluid-flow", "abstract-curves", "neon-smoke", "nebula-cloud"].includes(id) },
+  { label: "Grid", filter: (id: string) => ["mesh", "grid-perspective", "cyber-grid", "digital-rain", "glitch-noise"].includes(id) },
+  { label: "Cosmic", filter: (id: string) => ["cosmic", "radial-pulse", "bokeh-lights", "star-cluster", "sunset", "solar-wind", "vortex-spin", "liquid-metal"].includes(id) },
 ];
 
 // 10 background shapes – gradient style only (colors stay the same)
@@ -521,8 +532,9 @@ const generateLiveCode = (settings: HeroBackgroundSettings): string => {
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
   // Build filter string
-  const filterParts = [`brightness(${settings.brightness})`];
-  if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
+  const filterParts = [`brightness(${(settings.brightness * (settings.exposure ?? 1)).toFixed(2)})`];
+  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
   if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
@@ -574,7 +586,7 @@ export const HeroBackground: React.FC<HeroBackgroundProps> = ({ children, classN
       className={\`relative w-full h-screen overflow-hidden \${className || ""}\`}
       style={{
         background: "${gradientCSS}",
-        filter: "${filterString}",
+        filter: "${filterString}",${settings.blendMode && settings.blendMode !== "normal" ? `\n        mixBlendMode: "${settings.blendMode}",` : ""}
       }}
     >${grainOverlay}${vignetteOverlay}
       
@@ -776,6 +788,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }));
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<BackgroundCategory>("Soft/Ambient");
+  const [activeLayoutCategory, setActiveLayoutCategory] = useState(0);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // Component editing state
@@ -1835,6 +1848,80 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             {filteredBackgrounds.length === 0 && (
                               <div className="flex items-center justify-center py-8 text-white/40 text-sm">No backgrounds match your search.</div>
                             )}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {activeTab === "layout" && (
+                        <motion.div
+                          key="layout"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="h-full min-h-0 flex flex-col"
+                        >
+                          <div className="flex items-center gap-1 mb-3 flex-shrink-0 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            {LAYOUT_CATEGORIES.map((cat, idx) => (
+                              <button
+                                key={cat.label}
+                                onClick={() => setActiveLayoutCategory(idx)}
+                                className={cn(
+                                  "px-2.5 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
+                                  activeLayoutCategory === idx
+                                    ? "text-white bg-white/10"
+                                    : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                                )}
+                              >
+                                {cat.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {SHAPE_STYLES
+                                .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
+                                .map((shape) => {
+                                const isActive = settings.gradientStyle === shape.id;
+                                // Build a mini preview using current colors + this gradient style
+                                const previewSettings: HeroBackgroundSettings = {
+                                  ...settings,
+                                  gradientStyle: shape.id,
+                                };
+                                const previewBg = buildHeroGradient(previewSettings);
+                                return (
+                                  <div key={shape.id} className="flex flex-col gap-1">
+                                    <button
+                                      onClick={() => {
+                                        updateSetting("gradientStyle", shape.id);
+                                      }}
+                                      className={cn(
+                                        "group relative w-full rounded-lg overflow-hidden transition-all duration-300 focus:outline-none",
+                                        isActive
+                                          ? "ring-2 ring-white/40 shadow-lg shadow-white/5"
+                                          : "hover:ring-1 hover:ring-white/20 hover:scale-[1.03]"
+                                      )}
+                                    >
+                                      <div
+                                        className="h-16 w-full relative"
+                                        style={{
+                                          background: previewBg,
+                                          filter: "brightness(1.4) saturate(1.2)",
+                                        }}
+                                      >
+                                        <div
+                                          className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
+                                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                        />
+                                      </div>
+                                    </button>
+                                    <span className={cn(
+                                      "text-[9px] font-medium truncate px-0.5 transition-all",
+                                      isActive ? "text-white" : "text-white/40"
+                                    )}>{shape.label}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         </motion.div>
                       )}
