@@ -104,23 +104,38 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ open, onOpenChange, onSu
 
     setLoading(true);
     try {
-      const { error } = isLogin ? await signIn(email, password) : await signUp(email, password);
-      if (error) {
-        let message = error.message;
-        if (message.includes('Invalid login credentials')) message = 'Invalid email or password.';
-        else if (message.includes('User already registered')) message = 'An account with this email already exists. Try signing in.';
-        else if (message.includes('Email not confirmed')) message = 'Please verify your email first.';
-        setFormError(message);
-      } else {
-        if (!isLogin) {
-          toast({ title: "Check your email", description: "We've sent you a confirmation link." });
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          let message = error.message;
+          if (message.includes('Invalid login credentials')) message = 'Invalid email or password.';
+          else if (message.includes('Email not confirmed')) message = 'Please verify your email first. Check your inbox or spam folder.';
+          setFormError(message);
         } else {
+          // Close immediately – AuthDialogContext will fire onSuccess via useEffect
           onOpenChange(false);
-          onSuccess?.();
+        }
+      } else {
+        const { error } = await signUp(email, password);
+        if (error) {
+          let message = error.message;
+          if (message.includes('User already registered')) message = 'An account with this email already exists. Try signing in.';
+          else if (message.includes('rate limit')) message = 'Too many attempts. Please wait a moment.';
+          setFormError(message);
+        } else {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link. Check your spam folder too.",
+            duration: 8000,
+          });
+          // Switch to login mode so user can sign in after confirming
+          setIsLogin(true);
+          setPassword('');
+          setConfirmPassword('');
         }
       }
     } catch (error: any) {
-      setFormError(error.message || 'An unexpected error occurred.');
+      setFormError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }

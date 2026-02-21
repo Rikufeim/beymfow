@@ -36,16 +36,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [usageInfo, setUsageInfo] = useState<UsageInfo | null>(null);
   const navigate = useNavigate();
   const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Keep a ref to the latest session so async callbacks always have fresh data
+  const sessionRef = useRef<Session | null>(null);
 
-  const refreshUsage = useCallback(async () => {
-    const currentSession = session;
-    if (!currentSession) return;
-
+  const fetchUsage = useCallback(async (accessToken: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('check-usage', {
-        headers: {
-          Authorization: `Bearer ${currentSession.access_token}`
-        }
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
 
       if (!error && data) {
@@ -65,16 +62,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('Error refreshing usage:', error);
     }
-  }, [session]);
+  }, []);
+
+  // Public refreshUsage reads from the session ref
+  const refreshUsage = useCallback(async () => {
+    const token = sessionRef.current?.access_token;
+    if (token) await fetchUsage(token);
+  }, [fetchUsage]);
 
   useEffect(() => {
+    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (event, newSession) => {
+        sessionRef.current = newSession;
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
 
-        if (session) {
-          setTimeout(() => refreshUsage(), 0);
+        if (newSession) {
+          // Use the token directly – no stale closure
+          fetchUsage(newSession.access_token);
 
           if (event === 'SIGNED_IN') {
             const pendingRedirect = sessionStorage.getItem('auth_redirect_after');
@@ -89,13 +95,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      sessionRef.current = existingSession;
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
       setLoading(false);
 
-      if (session) {
-        setTimeout(() => refreshUsage(), 0);
+      if (existingSession) {
+        fetchUsage(existingSession.access_token);
       }
     });
 
@@ -124,11 +132,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Refresh on window focus (e.g. returning from Stripe checkout)
   useEffect(() => {
     const handleFocus = () => {
-      if (session) refreshUsage();
+      if (sessionRef.current) refreshUsage();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [session, refreshUsage]);
+  }, [refreshUsage]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -150,6 +158,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.log('Logout error (ignored):', error);
     }
+    sessionRef.current = null;
     setSession(null);
     setUser(null);
     setUsageInfo(null);
