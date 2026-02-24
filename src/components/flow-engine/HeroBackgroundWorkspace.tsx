@@ -613,34 +613,57 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
 
 // Generate full project code as a React component
 const generateProjectCode = (settings: HeroBackgroundSettings): string => {
-  const { brightness, grainEnabled, grainIntensity } = settings;
-  const background = buildHeroGradient({ ...settings, singleColorMode: false });
+  const background = buildHeroGradient(settings);
 
-  const grainOverlay = grainEnabled
+  // Build filter string matching the live preview exactly
+  const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
+  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`];
+  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
+  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+  const filterString = filterParts.join(" ");
+
+  const grainOverlay = settings.grainEnabled
     ? `\n      {/* Grain overlay */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: \`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")\`,
-          opacity: ${(grainIntensity * 0.25).toFixed(2)},
+          opacity: ${(settings.grainIntensity * 0.25).toFixed(2)},
           mixBlendMode: "overlay",
+        }}
+      />`
+    : '';
+
+  const vignetteOverlay = (settings.vignette && settings.vignette > 0)
+    ? `\n      {/* Vignette overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 65%, rgba(0,0,0,0.5) 100%)",
+          opacity: ${settings.vignette},
+          mixBlendMode: "multiply",
         }}
       />`
     : '';
 
   return `import React from 'react';
 
-export const HeroBackground: React.FC = () => {
+export const HeroBackground: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <div 
-      className="fixed inset-0"
+      className="relative w-full h-screen overflow-hidden"
       style={{
         background: "${background}",
-        filter: "brightness(${brightness})",
-        width: "100%",
-        height: "100vh",
+        filter: "${filterString}",${settings.blendMode && settings.blendMode !== "normal" ? `\n        mixBlendMode: "${settings.blendMode}",` : ""}
       }}
-    >${grainOverlay}
+    >${grainOverlay}${vignetteOverlay}
+      {children && (
+        <div className="relative z-10 h-full">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
@@ -1208,7 +1231,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   const generateTailwindExport = useCallback((): string => {
     const b = settings.brightness * (settings.exposure ?? 1);
-    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "brightness(${b})"\n  }}\n/>`;
+    const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+    const s = settings.saturation ?? 1;
+    const filterParts = [`brightness(${b})`];
+    if (c !== 1) filterParts.push(`contrast(${c})`);
+    if (s !== 1) filterParts.push(`saturate(${s})`);
+    if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+    const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
+    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
   }, [settings]);
 
   const handleCopyCss = useCallback(async () => {
