@@ -501,9 +501,12 @@ const buildEvolvedPalette = (
   };
 };
 
+// Sanitize multi-line gradient strings into a single line for safe embedding in JS/CSS strings
+const sanitizeGradient = (bg: string): string => bg.replace(/\s*\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
 // Generate React component code for live preview - Full implementation
 const generateLiveCode = (settings: HeroBackgroundSettings): string => {
-  const gradientCSS = buildHeroGradient(settings);
+  const gradientCSS = sanitizeGradient(buildHeroGradient(settings));
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
   // Build filter string
@@ -613,7 +616,7 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
 
 // Generate full project code as a React component
 const generateProjectCode = (settings: HeroBackgroundSettings): string => {
-  const background = buildHeroGradient(settings);
+  const background = sanitizeGradient(buildHeroGradient(settings));
 
   // Build filter string matching the live preview exactly
   const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
@@ -1217,7 +1220,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [projectCode]);
 
   const generateCssExport = useCallback((): string => {
-    const bg = buildHeroGradient(settings);
+    const bg = sanitizeGradient(buildHeroGradient(settings));
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
@@ -1238,7 +1241,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     if (s !== 1) filterParts.push(`saturate(${s})`);
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
-    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
+    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${sanitizeGradient(buildHeroGradient(settings))}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
   }, [settings]);
 
   const handleCopyCss = useCallback(async () => {
