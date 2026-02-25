@@ -11,6 +11,8 @@ import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { Lock } from "lucide-react";
+import SEOHead from "@/components/SEOHead";
+import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 // Import workspace components
 import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-engine/HeroBackgroundWorkspace";
@@ -127,14 +129,27 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   // Render Color Codes Workspace
   if (activeWorkspace === "color-codes") {
     return (
-      <HeroBackgroundWorkspace
-        projectId={selectedHeroProject?.id}
-        projectName={selectedHeroProject?.name || generateHeroProjectName()}
-        initialSettings={selectedHeroProject?.settings || DEFAULT_SETTINGS}
-        isLoggedIn={true}
-        onBack={handleHeroWorkspaceBack}
-        onSave={handleHeroProjectSave}
-      />
+      <>
+        <SEOHead
+          pathname="/flow/color-codes"
+          schemas={[
+            buildOrganizationSchema(),
+            buildBreadcrumbSchema([
+              { name: "Beymflow", url: `${SITE_URL}/` },
+              { name: "Flow", url: `${SITE_URL}/flow` },
+              { name: "Color Codes", url: `${SITE_URL}/flow/color-codes` },
+            ]),
+          ]}
+        />
+        <HeroBackgroundWorkspace
+          projectId={selectedHeroProject?.id}
+          projectName={selectedHeroProject?.name || generateHeroProjectName()}
+          initialSettings={selectedHeroProject?.settings || DEFAULT_SETTINGS}
+          isLoggedIn={true}
+          onBack={handleHeroWorkspaceBack}
+          onSave={handleHeroProjectSave}
+        />
+      </>
     );
   }
 
@@ -142,6 +157,17 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   if (activeWorkspace === "prompt-generator") {
     return (
       <div className="relative min-h-screen bg-transparent text-white">
+        <SEOHead
+          pathname="/flow/prompt-generator"
+          schemas={[
+            buildOrganizationSchema(),
+            buildBreadcrumbSchema([
+              { name: "Beymflow", url: `${SITE_URL}/` },
+              { name: "Flow", url: `${SITE_URL}/flow` },
+              { name: "Prompt Generator", url: `${SITE_URL}/flow/prompt-generator` },
+            ]),
+          ]}
+        />
         <div
           className="fixed inset-0 z-[-1]"
           style={{
@@ -173,6 +199,16 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   // Render Selection View
   return (
     <div className="relative min-h-screen bg-transparent text-white flex flex-col">
+      <SEOHead
+        pathname="/flow"
+        schemas={[
+          buildOrganizationSchema(),
+          buildBreadcrumbSchema([
+            { name: "Beymflow", url: `${SITE_URL}/` },
+            { name: "Flow", url: `${SITE_URL}/flow` },
+          ]),
+        ]}
+      />
       <div
         className="fixed inset-0 z-[-1]"
         style={{

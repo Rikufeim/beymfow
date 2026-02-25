@@ -1,7 +1,51 @@
-User-agent: Googlebot
+# robots.txt — Beymflow
+# https://beymflow.com/robots.txt
+
+# ── All well-behaved crawlers ─────────────────────────────────────
+User-agent: *
 Allow: /
 
+# Block private/utility routes from indexing
+Disallow: /auth
+Disallow: /payment-success
+Disallow: /settings/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+
+# ── AI training crawlers (opt-out) ────────────────────────────────
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+# ── Allow major search engines explicitly ─────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /auth
+Disallow: /payment-success
+Disallow: /settings/
+
 User-agent: Bingbot
+Allow: /
+Disallow: /auth
+Disallow: /payment-success
+Disallow: /settings/
+
+User-agent: DuckDuckBot
 Allow: /
 
 User-agent: Twitterbot
@@ -10,5 +54,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+# ── Sitemap location ──────────────────────────────────────────────
+Sitemap: https://beymflow.com/sitemap.xml

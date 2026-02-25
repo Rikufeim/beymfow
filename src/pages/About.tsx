@@ -6,6 +6,8 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import BackgroundShader from "@/components/ui/background-shader";
+import SEOHead from "@/components/SEOHead";
+import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 // --- TYPES ---
 type InfoCard = {
@@ -155,6 +157,16 @@ const About = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   return <BackgroundShader>
+    <SEOHead
+      pathname="/about"
+      schemas={[
+        buildOrganizationSchema(),
+        buildBreadcrumbSchema([
+          { name: "Beymflow", url: `${SITE_URL}/` },
+          { name: "About", url: `${SITE_URL}/about` },
+        ]),
+      ]}
+    />
     <div className="relative min-h-screen bg-transparent text-white selection:bg-cyan-500/30 selection:text-cyan-100">
       {/* Custom Styles for Animations */}
       <style>{`

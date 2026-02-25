@@ -20,6 +20,7 @@ import LandingPageLibrary from "./pages/LandingPageLibrary";
 import Premium from "./pages/Premium";
 import SettingsBilling from "./pages/SettingsBilling";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -80,6 +81,7 @@ const AppRoutes = () => {
       <Route path="/landing-pages" element={<LandingPageLibrary />} />
       <Route path="/settings/billing" element={<SettingsBilling />} />
       <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
+      <Route path="/auth" element={<Auth />} />
       <Route path="*" element={
         <Layout>
           <NotFound />

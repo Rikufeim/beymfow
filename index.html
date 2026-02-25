@@ -1,60 +1,162 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- ── Viewport & Theme ──────────────────────────────────────────────── -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Beymflow</title>
-    <meta name="description" content="IT`S ALL ABOUT THE PROMPT">
-    <meta name="author" content="Lovable" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
 
-    <!-- Performance: Preconnect to external domains -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
+    <!-- ── Primary SEO (overridden per-route by useSEO hook) ────────────── -->
+    <title>Beymflow — AI Prompt Generator &amp; Creative Design Tools</title>
+    <meta name="description" content="Generate AI prompts, explore color palettes, color codes, and create stunning web backgrounds in seconds. Built for developers, designers, and startups." />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Beymflow" />
+    <meta name="generator" content="Vite" />
+
+    <!-- ── Canonical (overridden per-route by useSEO hook) ───────────────── -->
+    <link rel="canonical" href="https://beymflow.com/" />
+
+    <!-- ── Open Graph ────────────────────────────────────────────────────── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="Beymflow" />
+    <meta property="og:title"       content="Beymflow — AI Prompt Generator &amp; Creative Design Tools" />
+    <meta property="og:description" content="Generate AI prompts, explore color palettes, color codes, and create stunning web backgrounds in seconds. Built for developers, designers, and startups." />
+    <meta property="og:url"         content="https://beymflow.com/" />
+    <meta property="og:image"       content="https://beymflow.com/images/beymflow-logo.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"    content="Beymflow — AI Prompt Generator &amp; Creative Design Tools" />
+    <meta property="og:locale"       content="en_US" />
+
+    <!-- ── Twitter / X Card ──────────────────────────────────────────────── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@beymflow" />
+    <meta name="twitter:title"       content="Beymflow — AI Prompt Generator &amp; Creative Design Tools" />
+    <meta name="twitter:description" content="Generate AI prompts, explore color palettes, color codes, and create stunning web backgrounds in seconds." />
+    <meta name="twitter:image"       content="https://beymflow.com/images/beymflow-logo.png" />
+    <meta name="twitter:image:alt"   content="Beymflow — AI Prompt Generator &amp; Creative Design Tools" />
+
+    <!-- ── hreflang / GEO (global shell; per-route overrides in useSEO) ─── -->
+    <link rel="alternate" hreflang="x-default" href="https://beymflow.com/" />
+    <link rel="alternate" hreflang="en"         href="https://beymflow.com/" />
+    <link rel="alternate" hreflang="en-US"      href="https://beymflow.com/" />
+    <link rel="alternate" hreflang="en-GB"      href="https://beymflow.com/" />
+    <link rel="alternate" hreflang="fi"         href="https://beymflow.com/" />
+    <link rel="alternate" hreflang="fi-FI"      href="https://beymflow.com/" />
+
+    <!-- ── Performance: DNS Prefetch & Preconnect ───────────────────────── -->
+    <link rel="preconnect"   href="https://fonts.googleapis.com" />
+    <link rel="preconnect"   href="https://fonts.gstatic.com"    crossorigin />
+    <link rel="preconnect"   href="https://cdn.jsdelivr.net"     crossorigin />
+    <link rel="preconnect"   href="https://storage.googleapis.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.gpteng.co" />
-    
-    <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1JL7W0Q5nw.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v14/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC0O4a0Ew.woff2" as="font" type="font/woff2" crossorigin />
-    
-    <!-- Preload critical logo to prevent flickering -->
-    <link rel="preload" href="/images/beymflow-logo.png" as="image" type="image/png" fetchpriority="high" />
-    
-    <meta property="og:type" content="website" />
-    
+    <link rel="dns-prefetch" href="https://beymflow.com" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    
-    <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/N7QsiNd5CDQgGQkG5aalJNP8jb63/uploads/1763237038624-BeymflowlogoREAL.png">
-    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <meta property="og:title" content="Beymflow">
-  <meta name="twitter:title" content="Beymflow">
-  <meta property="og:description" content="IT`S ALL ABOUT THE PROMPT">
-  <meta name="twitter:description" content="IT`S ALL ABOUT THE PROMPT">
-</head>
+    <!-- ── Font preloading (critical path) ───────────────────────────────── -->
+    <link
+      rel="preload"
+      href="https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1JL7W0Q5nw.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://fonts.gstatic.com/s/outfit/v14/QGYyz_MVcBeNP4NjuGObqx1XmO1I4TC0O4a0Ew.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- ── Critical image preload ─────────────────────────────────────────── -->
+    <link
+      rel="preload"
+      href="/images/beymflow-logo.png"
+      as="image"
+      type="image/png"
+      fetchpriority="high"
+    />
+
+    <!-- ── Favicons ───────────────────────────────────────────────────────── -->
+    <link rel="icon"          type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon"          type="image/png"    href="/images/beymflow-logo.png" sizes="512x512" />
+    <link rel="apple-touch-icon"                  href="/images/beymflow-logo.png" />
+
+    <!-- ── Structured Data: Global Organization + WebSite + WebApp ──────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://beymflow.com/#organization",
+          "name": "Beymflow",
+          "url": "https://beymflow.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://beymflow.com/images/beymflow-logo.png",
+            "width": 512,
+            "height": 512
+          },
+          "areaServed": [
+            { "@type": "Country", "name": "United States" },
+            { "@type": "Country", "name": "United Kingdom" },
+            { "@type": "AdministrativeArea", "name": "European Union" },
+            { "@type": "Country", "name": "Finland" }
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://beymflow.com/#website",
+          "url": "https://beymflow.com",
+          "name": "Beymflow",
+          "description": "AI prompt generator and creative design toolkit for developers, designers, and startups.",
+          "publisher": { "@id": "https://beymflow.com/#organization" },
+          "inLanguage": ["en", "fi"]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://beymflow.com/#webapp",
+          "name": "Beymflow",
+          "url": "https://beymflow.com",
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "Web",
+          "description": "AI prompt generator, color palette generator, gradient background creator and creative design toolkit for developers and designers.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR",
+              "name": "Free Plan"
+            },
+            {
+              "@type": "Offer",
+              "price": "9.99",
+              "priceCurrency": "EUR",
+              "name": "Pro Plan",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "9.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1M"
+              }
+            }
+          ],
+          "publisher": { "@id": "https://beymflow.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Twemoji (non-critical; defer) ──────────────────────────────────── -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+  </head>
 
   <body>
     <div id="root"></div>

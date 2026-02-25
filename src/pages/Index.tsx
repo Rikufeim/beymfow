@@ -20,6 +20,8 @@ import BackgroundShader from "@/components/ui/background-shader";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { HeroBackground } from "@/components/ui/hero-background";
 import Products from "@/components/Products";
+import SEOHead from "@/components/SEOHead";
+import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 
 const Index = () => {
@@ -108,10 +110,10 @@ const Index = () => {
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
   const homepageImages = useMemo(() => [
-  // Products section card backgrounds
-  "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
-  // CRYPTO GUIDES
-  "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
+    // Products section card backgrounds
+    "/lovable-uploads/45481b23-2d43-4186-a282-479adb37456b.png",
+    // CRYPTO GUIDES
+    "/lovable-uploads/65f7d709-a319-4bd3-ae8b-fb7acfb196db.png" // PROMPTS
   ], []);
   useImagePreloader({
     images: homepageImages
@@ -119,6 +121,17 @@ const Index = () => {
 
   return (
     <Layout>
+      <SEOHead
+        pathname="/"
+        schemas={[
+          buildOrganizationSchema(),
+          buildWebSiteSchema(),
+          buildWebApplicationSchema(),
+          buildBreadcrumbSchema([
+            { name: "Beymflow", url: `${SITE_URL}/` },
+          ]),
+        ]}
+      />
       <BackgroundShader>
         {/* Hero Section */}
         <div className="relative">
@@ -165,7 +178,7 @@ const Index = () => {
                     className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
                     style={{
                       backgroundImage:
-                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                        "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
                       backgroundSize: "80px 80px, 80px 80px",
                       backgroundRepeat: "repeat, repeat",
                       backgroundPosition: "0 0, 0 0"
@@ -348,17 +361,17 @@ const Index = () => {
                     </div>
                     <ul className="space-y-3 flex-1 mb-6">
                       {[
-                      "Basic prompt generation",
-                      "Limited daily prompts",
-                      "Access to selected templates",
-                      "Standard background styles",
-                      "Community support"].
-                      map((feature, i) =>
-                      <li key={i} className="flex items-center gap-2 text-sm text-white/80">
-                          <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
-                          {feature}
-                        </li>
-                      )}
+                        "Basic prompt generation",
+                        "Limited daily prompts",
+                        "Access to selected templates",
+                        "Standard background styles",
+                        "Community support"].
+                        map((feature, i) =>
+                          <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                            <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
+                            {feature}
+                          </li>
+                        )}
                     </ul>
                     <button
                       onClick={handleStartFree}
@@ -371,7 +384,7 @@ const Index = () => {
                   {/* Pro Plan Card (Most Popular) */}
                   <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      
+
 
 
                     </div>
@@ -382,20 +395,20 @@ const Index = () => {
                     </div>
                     <ul className="space-y-3 flex-1 mb-6">
                       {[
-                      "Unlimited prompt generation",
-                      "Full access to all Prompt Generator tools",
-                      "Complete access to Color Codes section",
-                      "Advanced model options",
-                      "All background styles",
-                      "Premium templates",
-                      "Faster processing",
-                      "Priority support"].
-                      map((feature, i) =>
-                      <li key={i} className="flex items-center gap-2 text-sm text-white/80">
-                          <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
-                          {feature}
-                        </li>
-                      )}
+                        "Unlimited prompt generation",
+                        "Full access to all Prompt Generator tools",
+                        "Complete access to Color Codes section",
+                        "Advanced model options",
+                        "All background styles",
+                        "Premium templates",
+                        "Faster processing",
+                        "Priority support"].
+                        map((feature, i) =>
+                          <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                            <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
+                            {feature}
+                          </li>
+                        )}
                     </ul>
                     <button
                       onClick={handleUpgradeToPro}
@@ -412,7 +425,7 @@ const Index = () => {
           </section>
 
           <div className="py-16 sm:py-20 md:py-24 lg:py-32">
-              <Products />
+            <Products />
           </div>
 
           {/* CTA Section Before Footer */}
