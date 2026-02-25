@@ -46,10 +46,12 @@ const Premium = () => {
 
   // Auto-trigger checkout after login if pending
   useEffect(() => {
-    if (user && session && sessionStorage.getItem('pending_checkout') === 'true' && !pendingCheckoutRef.current) {
+    if (user && session && sessionStorage.getItem('pending_checkout') === 'true' && !pendingCheckoutRef.current && !checkoutLoading) {
       pendingCheckoutRef.current = true;
       sessionStorage.removeItem('pending_checkout');
-      handleCheckoutFlow();
+      // Small delay to ensure auth state is fully settled
+      const timer = setTimeout(() => handleCheckoutFlow(), 300);
+      return () => clearTimeout(timer);
     }
   }, [user, session]);
 

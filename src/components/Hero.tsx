@@ -40,7 +40,7 @@ const Hero = memo(function Hero() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mb-8 leading-relaxed">
-          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects — without the unnecessary hassle.
+          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.     
         </p>
 
         {/* CTA Buttons */}
@@ -55,7 +55,7 @@ const Hero = memo(function Hero() {
           </button>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 });
 export default Hero;

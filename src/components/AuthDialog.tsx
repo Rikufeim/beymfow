@@ -74,8 +74,8 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ open, onOpenChange, onSu
         if (!isLogin) {
           setEmailSent(true);
         } else {
+          // Close immediately – AuthDialogContext will fire onSuccess via useEffect
           onOpenChange(false);
-          onSuccess?.();
         }
       }
     } catch (error: any) {

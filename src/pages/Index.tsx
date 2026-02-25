@@ -245,9 +245,9 @@ const Index = () => {
                   title: "Usage and Refinement",
                   description: "You can instantly view the generated prompt. Copy and paste it directly into ChatGPT, Claude, Gemini, or any other AI model."
                 }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
                     <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden">
                       <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
                         <div className="flex flex-col gap-3">
                           <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
@@ -306,9 +306,9 @@ const Index = () => {
                   title: "Refine and Test",
                   description: "Iterate and improve your prompt based on the results"
                 }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")} style={{ transform: 'translateZ(0)', willChange: 'transform' }}>
+                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
                     <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden will-change-transform" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden">
                       <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
                         <div className="flex flex-col gap-3">
                           <div className="flex items-center justify-between">

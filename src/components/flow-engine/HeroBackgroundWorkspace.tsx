@@ -180,10 +180,11 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "style" | "colors" | "motion" | "components" | "view" | "export";
+type TabId = "shape" | "layout" | "style" | "colors" | "motion" | "components" | "view" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
+  { id: "layout", label: "Layout" },
   { id: "style", label: "Style" },
   { id: "colors", label: "Colors" },
   { id: "motion", label: "Motion" },
@@ -192,41 +193,26 @@ const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "export", label: "Export" },
 ];
 
-// 10 background shapes – gradient style only (colors stay the same)
+// Layout categories for grouping gradient styles
+const LAYOUT_CATEGORIES = [
+  { label: "All", filter: () => true },
+  { label: "Smooth", filter: (id: string) => ["halo", "soft-sweep", "orb", "spotlight"].includes(id) },
+  { label: "Angular", filter: (id: string) => ["diagonal-blend", "crystal", "sunset"].includes(id) },
+  { label: "Organic", filter: (id: string) => ["aurora", "wave"].includes(id) },
+];
+
+// Background shapes – only visually distinctive styles that render clearly in thumbnails
 type GradientStyleId = HeroBackgroundSettings["gradientStyle"];
 const SHAPE_STYLES: Array<{ id: GradientStyleId; label: string }> = [
   { id: "halo", label: "Halo" },
   { id: "soft-sweep", label: "Soft Sweep" },
   { id: "orb", label: "Orb" },
-  { id: "diagonal-blend", label: "Diagonal Blend" },
-  { id: "noise-wash", label: "Noise Wash" },
+  { id: "diagonal-blend", label: "Diagonal" },
   { id: "aurora", label: "Aurora" },
-  { id: "mesh", label: "Mesh" },
   { id: "spotlight", label: "Spotlight" },
   { id: "wave", label: "Wave" },
   { id: "crystal", label: "Crystal" },
   { id: "sunset", label: "Sunset" },
-  { id: "cosmic", label: "Cosmic" },
-  { id: "nebula-cloud", label: "Nebula Cloud" },
-  { id: "radial-pulse", label: "Radial Pulse" },
-  { id: "glass-shards", label: "Glass Shards" },
-  { id: "grid-perspective", label: "Grid Perspective" },
-  { id: "fluid-flow", label: "Fluid Flow" },
-  { id: "cyber-grid", label: "Cyber Grid" },
-  { id: "bokeh-lights", label: "Bokeh Lights" },
-  { id: "velvet-wrap", label: "Velvet Wrap" },
-  { id: "prism-refraction", label: "Prism Refraction" },
-  { id: "midnight-mist", label: "Midnight Mist" },
-  { id: "solar-wind", label: "Solar Wind" },
-  { id: "digital-rain", label: "Digital Rain" },
-  { id: "abstract-curves", label: "Abstract Curves" },
-  { id: "neon-smoke", label: "Neon Smoke" },
-  { id: "geometric-shapes", label: "Geometric Shapes" },
-  { id: "silk-drape", label: "Silk Drape" },
-  { id: "vortex-spin", label: "Vortex Spin" },
-  { id: "glitch-noise", label: "Glitch Noise" },
-  { id: "star-cluster", label: "Star Cluster" },
-  { id: "liquid-metal", label: "Liquid Metal" },
 ];
 
 const COLOR_WORDS: Record<string, string> = {
@@ -515,14 +501,18 @@ const buildEvolvedPalette = (
   };
 };
 
+// Sanitize multi-line gradient strings into a single line for safe embedding in JS/CSS strings
+const sanitizeGradient = (bg: string): string => bg.replace(/\s*\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
 // Generate React component code for live preview - Full implementation
 const generateLiveCode = (settings: HeroBackgroundSettings): string => {
-  const gradientCSS = buildHeroGradient(settings);
+  const gradientCSS = sanitizeGradient(buildHeroGradient(settings));
   const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
   // Build filter string
-  const filterParts = [`brightness(${settings.brightness})`];
-  if (settings.contrast !== 1 && settings.contrast !== undefined) filterParts.push(`contrast(${settings.contrast})`);
+  const filterParts = [`brightness(${(settings.brightness * (settings.exposure ?? 1)).toFixed(2)})`];
+  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
   if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
@@ -574,7 +564,7 @@ export const HeroBackground: React.FC<HeroBackgroundProps> = ({ children, classN
       className={\`relative w-full h-screen overflow-hidden \${className || ""}\`}
       style={{
         background: "${gradientCSS}",
-        filter: "${filterString}",
+        filter: "${filterString}",${settings.blendMode && settings.blendMode !== "normal" ? `\n        mixBlendMode: "${settings.blendMode}",` : ""}
       }}
     >${grainOverlay}${vignetteOverlay}
       
@@ -626,34 +616,57 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
 
 // Generate full project code as a React component
 const generateProjectCode = (settings: HeroBackgroundSettings): string => {
-  const { brightness, grainEnabled, grainIntensity } = settings;
-  const background = buildHeroGradient({ ...settings, singleColorMode: false });
+  const background = sanitizeGradient(buildHeroGradient(settings));
 
-  const grainOverlay = grainEnabled
+  // Build filter string matching the live preview exactly
+  const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
+  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`];
+  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
+  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+  const filterString = filterParts.join(" ");
+
+  const grainOverlay = settings.grainEnabled
     ? `\n      {/* Grain overlay */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: \`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")\`,
-          opacity: ${(grainIntensity * 0.25).toFixed(2)},
+          opacity: ${(settings.grainIntensity * 0.25).toFixed(2)},
           mixBlendMode: "overlay",
+        }}
+      />`
+    : '';
+
+  const vignetteOverlay = (settings.vignette && settings.vignette > 0)
+    ? `\n      {/* Vignette overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 65%, rgba(0,0,0,0.5) 100%)",
+          opacity: ${settings.vignette},
+          mixBlendMode: "multiply",
         }}
       />`
     : '';
 
   return `import React from 'react';
 
-export const HeroBackground: React.FC = () => {
+export const HeroBackground: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <div 
-      className="fixed inset-0"
+      className="relative w-full h-screen overflow-hidden"
       style={{
         background: "${background}",
-        filter: "brightness(${brightness})",
-        width: "100%",
-        height: "100vh",
+        filter: "${filterString}",${settings.blendMode && settings.blendMode !== "normal" ? `\n        mixBlendMode: "${settings.blendMode}",` : ""}
       }}
-    >${grainOverlay}
+    >${grainOverlay}${vignetteOverlay}
+      {children && (
+        <div className="relative z-10 h-full">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
@@ -776,6 +789,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }));
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<BackgroundCategory>("Soft/Ambient");
+  const [activeLayoutCategory, setActiveLayoutCategory] = useState(0);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // Component editing state
@@ -1206,7 +1220,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [projectCode]);
 
   const generateCssExport = useCallback((): string => {
-    const bg = buildHeroGradient(settings);
+    const bg = sanitizeGradient(buildHeroGradient(settings));
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
@@ -1220,7 +1234,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   const generateTailwindExport = useCallback((): string => {
     const b = settings.brightness * (settings.exposure ?? 1);
-    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${buildHeroGradient(settings)}",\n    filter: "brightness(${b})"\n  }}\n/>`;
+    const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+    const s = settings.saturation ?? 1;
+    const filterParts = [`brightness(${b})`];
+    if (c !== 1) filterParts.push(`contrast(${c})`);
+    if (s !== 1) filterParts.push(`saturate(${s})`);
+    if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+    const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
+    return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${sanitizeGradient(buildHeroGradient(settings))}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
   }, [settings]);
 
   const handleCopyCss = useCallback(async () => {
@@ -1356,25 +1377,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     generatePreview();
   }, [settings]);
 
-  // Handle color picker open (only one at a time)
+  // Handle color picker open (only one at a time) - don't reset effects
   const handleColorPickerOpen = useCallback((colorKey: string) => {
-    setActiveColorPicker((prev) => {
-      // If opening a new picker (not closing), reset effects
-      if (prev !== colorKey) {
-        setSettings(prevSettings => ({
-          ...prevSettings,
-          brightness: 1.0,
-          contrast: 1.0,
-          saturation: 1.0,
-          blurPx: 0,
-          vignette: 0,
-          grainEnabled: false,
-          environmentEnabled: false,
-        }));
-        return colorKey;
-      }
-      return null;
-    });
+    setActiveColorPicker((prev) => prev === colorKey ? null : colorKey);
   }, []);
 
   // Extract dominant color from an image using canvas
@@ -1855,6 +1860,88 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         </motion.div>
                       )}
 
+                      {activeTab === "layout" && (
+                        <motion.div
+                          key="layout"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="h-full min-h-0 flex flex-col"
+                        >
+                          <div className="flex items-center gap-1 mb-3 flex-shrink-0 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            {LAYOUT_CATEGORIES.map((cat, idx) => (
+                              <button
+                                key={cat.label}
+                                onClick={() => setActiveLayoutCategory(idx)}
+                                className={cn(
+                                  "px-2.5 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
+                                  activeLayoutCategory === idx
+                                    ? "text-white bg-white/10"
+                                    : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                                )}
+                              >
+                                {cat.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {SHAPE_STYLES
+                                .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
+                                .map((shape) => {
+                                const isActive = settings.gradientStyle === shape.id;
+                                // Use the user's current colors for thumbnails
+                                const previewSettings: HeroBackgroundSettings = {
+                                  ...settings,
+                                  gradientStyle: shape.id,
+                                  environmentEnabled: true,
+                                  singleColorMode: false,
+                                  brightness: 1,
+                                  contrast: 1,
+                                  saturation: 1,
+                                  blurPx: 0,
+                                  exposure: 1,
+                                  gamma: 1,
+                                };
+                                const previewBg = buildHeroGradient(previewSettings);
+                                return (
+                                  <div key={shape.id} className="flex flex-col gap-1">
+                                    <button
+                                      onClick={() => {
+                                        updateSetting("gradientStyle", shape.id);
+                                      }}
+                                      className={cn(
+                                        "group relative w-full rounded-lg overflow-hidden transition-all duration-300 focus:outline-none",
+                                        isActive
+                                          ? "ring-2 ring-white/40 shadow-lg shadow-white/5"
+                                          : "hover:ring-1 hover:ring-white/20 hover:scale-[1.03]"
+                                      )}
+                                    >
+                                      <div
+                                        className="h-16 w-full relative"
+                                        style={{
+                                          background: previewBg,
+                                          filter: "brightness(1.6) saturate(1.4)",
+                                        }}
+                                      >
+                                        <div
+                                          className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
+                                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                        />
+                                      </div>
+                                    </button>
+                                    <span className={cn(
+                                      "text-[9px] font-medium truncate px-0.5 transition-all",
+                                      isActive ? "text-white" : "text-white/40"
+                                    )}>{shape.label}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
                       {activeTab === "style" && (
                         <motion.div
                           key="style"
@@ -1965,58 +2052,47 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col w-full"
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Colors</h4>
-                          <div className="flex items-center gap-3 w-full flex-wrap flex-1 min-h-0 content-start">
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <button
-                                onClick={() => handleColorPickerOpen("color1")}
-                                className={cn(
-                                  "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                  activeColorPicker === "color1" ? "border-white" : "border-white/40"
-                                )}
-                                style={{ backgroundColor: settings.color1 }}
-                              />
-                              {!settings.singleColorMode && (
-                                <>
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color2")}
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Colors</h4>
+                          <div className="flex gap-4 flex-1 min-h-0">
+                            {/* Color swatches column */}
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              {[
+                                { key: "color1", label: "Base", value: settings.color1 },
+                                { key: "color2", label: "Surface", value: settings.color2 },
+                                ...(!settings.singleColorMode ? [
+                                  { key: "color3", label: "Accent", value: settings.color3 },
+                                  { key: "color4", label: "Highlight", value: settings.color4 },
+                                ] : []),
+                              ].map(({ key, label, value }) => (
+                                <button
+                                  key={key}
+                                  onClick={() => handleColorPickerOpen(key)}
+                                  className={cn(
+                                    "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
+                                    activeColorPicker === key
+                                      ? "bg-white/10 ring-1 ring-white/20"
+                                      : "hover:bg-white/5"
+                                  )}
+                                >
+                                  <span
                                     className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color2" ? "border-white" : "border-white/40"
+                                      "w-6 h-6 rounded-full border-2 transition-all flex-shrink-0",
+                                      activeColorPicker === key ? "border-white scale-110" : "border-white/30"
                                     )}
-                                    style={{ backgroundColor: settings.color2 }}
+                                    style={{ backgroundColor: value }}
                                   />
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color3")}
-                                    className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color3" ? "border-white" : "border-white/40"
-                                    )}
-                                    style={{ backgroundColor: settings.color3 }}
-                                  />
-                                  <button
-                                    onClick={() => handleColorPickerOpen("color4")}
-                                    className={cn(
-                                      "w-7 h-7 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === "color4" ? "border-white" : "border-white/40"
-                                    )}
-                                    style={{ backgroundColor: settings.color4 }}
-                                  />
-                                </>
-                              )}
+                                  <span className="text-[10px] text-white/50 w-12">{label}</span>
+                                </button>
+                              ))}
                             </div>
-                          </div>
-                          {activeColorPicker && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              className="flex items-center gap-2 flex-shrink-0"
-                            >
-                              <span className="text-[10px] text-white/50 uppercase tracking-wider whitespace-nowrap">
-                                {activeColorPicker.replace("color", "Color ")}
-                              </span>
-                              <div className="flex-1 min-w-0">
+
+                            {/* Color picker area */}
+                            {activeColorPicker && (
+                              <motion.div
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex-1 flex flex-col gap-2 min-w-0"
+                              >
                                 <HexColorPicker
                                   color={
                                     activeColorPicker === "color1" ? settings.color1 :
@@ -2030,11 +2106,39 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                     else if (activeColorPicker === "color3") updateSetting("color3", color);
                                     else updateSetting("color4", color);
                                   }}
-                                  style={{ width: "100%", height: 48 }}
+                                  style={{ width: "100%", height: "100%" }}
                                 />
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 uppercase tracking-wider flex-shrink-0">Hex</span>
+                                  <input
+                                    type="text"
+                                    value={
+                                      activeColorPicker === "color1" ? settings.color1 :
+                                        activeColorPicker === "color2" ? settings.color2 :
+                                          activeColorPicker === "color3" ? settings.color3 :
+                                            settings.color4
+                                    }
+                                    onChange={(e) => {
+                                      const hex = e.target.value;
+                                      const val = hex.startsWith("#") ? hex : "#" + hex;
+                                      if (activeColorPicker === "color1") updateSetting("color1", val);
+                                      else if (activeColorPicker === "color2") updateSetting("color2", val);
+                                      else if (activeColorPicker === "color3") updateSetting("color3", val);
+                                      else updateSetting("color4", val);
+                                    }}
+                                    className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/80 placeholder:text-white/30 focus:outline-none focus:border-white/20 font-mono"
+                                    placeholder="#000000"
+                                  />
+                                </div>
+                              </motion.div>
+                            )}
+
+                            {!activeColorPicker && (
+                              <div className="flex-1 flex items-center justify-center text-white/20 text-xs">
+                                Click a color to edit
                               </div>
-                            </motion.div>
-                          )}
+                            )}
+                          </div>
                         </motion.div>
                       )}
 
