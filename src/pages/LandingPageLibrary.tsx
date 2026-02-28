@@ -2,6 +2,8 @@ import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink, Download, Star, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
+import { buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 interface LandingPageTemplate {
     id: string;
@@ -98,6 +100,7 @@ const LandingPageLibrary = memo(function LandingPageLibrary() {
 
     return (
         <div className="min-h-screen bg-black text-white">
+            <SEOHead pathname="/landing-pages" schemas={[buildBreadcrumbSchema([{ name: "Beymflow", url: `${SITE_URL}/` }, { name: "Landing Pages", url: `${SITE_URL}/landing-pages` }])]} />
             {/* Header */}
             <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">

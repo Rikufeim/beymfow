@@ -193,6 +193,46 @@ export const PAGE_SEO: Record<string, SEOMeta> = {
         ogType: "website",
         robots: "noindex, follow",
     },
+    "/features": {
+        title: "Features — Beymflow AI Prompt & Design Platform",
+        description:
+            "Explore Beymflow's powerful features: AI prompt generation, color code tools, gradient backgrounds, and creative design workflows for developers.",
+        canonical: `${SITE_URL}/features`,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: "website",
+        robots: "index, follow",
+        keywords:
+            "Beymflow features, AI tools, prompt generator features, color codes, design tools",
+    },
+    "/landing-pages": {
+        title: "Landing Page Templates — Beymflow",
+        description:
+            "Browse free and premium landing page templates. Modern, responsive designs optimized for startups, SaaS products, and portfolios.",
+        canonical: `${SITE_URL}/landing-pages`,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: "website",
+        robots: "index, follow",
+        keywords:
+            "landing page templates, free templates, premium templates, SaaS landing page, startup templates",
+    },
+    "/planningsystem": {
+        title: "Planning System — Beymflow",
+        description:
+            "Organize your creative projects with Beymflow's built-in planning system. Manage tasks, workflows, and design assets in one place.",
+        canonical: `${SITE_URL}/planningsystem`,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: "website",
+        robots: "noindex, nofollow",
+    },
+    "/multiagentpage": {
+        title: "Multi-Agent AI — Beymflow",
+        description:
+            "Leverage multi-agent AI workflows to generate, refine, and optimize creative outputs at scale with Beymflow.",
+        canonical: `${SITE_URL}/multiagentpage`,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: "website",
+        robots: "noindex, nofollow",
+    },
 };
 
 /** Fallback for unknown routes */
