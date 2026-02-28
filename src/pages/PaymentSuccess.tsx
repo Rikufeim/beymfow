@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import SEOHead from '@/components/SEOHead';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const PaymentSuccess = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
+      <SEOHead pathname="/payment-success" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

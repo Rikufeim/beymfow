@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card } from '@/components/ui/card';
+import SEOHead from '@/components/SEOHead';
+import { buildBreadcrumbSchema, SITE_URL } from '@/lib/seo';
 
 const Features = () => {
   const [searchParams] = useSearchParams();
@@ -119,6 +121,7 @@ const Features = () => {
 
   return (
     <Layout>
+      <SEOHead pathname="/features" schemas={[buildBreadcrumbSchema([{ name: "Beymflow", url: `${SITE_URL}/` }, { name: "Features", url: `${SITE_URL}/features` }])]} />
       <div className="min-h-screen bg-black text-white pt-[100px] pb-20">
         
         {/* Desktop Layout - Scattered Cards with Timeline */}

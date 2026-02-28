@@ -7,6 +7,7 @@ import { CreditCard, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import Layout from '@/components/Layout';
+import SEOHead from '@/components/SEOHead';
 
 const SettingsBilling = () => {
   const { usageInfo, session, user } = useAuth();
@@ -86,6 +87,7 @@ const SettingsBilling = () => {
 
   return (
     <Layout>
+      <SEOHead pathname="/settings/billing" />
       <div className="min-h-screen bg-background text-foreground px-4 py-12">
         <div className="max-w-lg mx-auto space-y-8">
           <div className="flex items-center gap-3">
