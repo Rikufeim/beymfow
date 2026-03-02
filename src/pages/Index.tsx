@@ -361,9 +361,7 @@ const Index = () => {
                     {[
                       "Basic prompt generation",
                       "Daily prompt limit",
-                      "Selected templates & UI elements",
-                      "Standard background styles",
-                      "Project saving & auto-save",
+                      "Selected templates",
                       "Community support",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
@@ -396,13 +394,8 @@ const Index = () => {
                   <ul className="space-y-2.5 flex-1 mb-8">
                     {[
                       "Everything in Free",
-                      "Unlimited prompt generation",
-                      "Full Prompt Generator toolkit",
-                      "Full Color Codes (HEX/RGB/gradients)",
-                      "Advanced model options & complex outputs",
-                      "All background styles & visual element libraries",
-                      "Premium templates",
-                      "Faster processing",
+                      "Unlimited prompts",
+                      "Full toolkit & Color Codes",
                       "Priority support",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
@@ -432,12 +425,9 @@ const Index = () => {
                   <ul className="space-y-2.5 flex-1 mb-8">
                     {[
                       "Everything in Creator",
-                      "Shared workspaces & project libraries",
-                      "Shared template & color libraries",
-                      "Team comments & review approval",
-                      "Unlimited prompt generation for the team",
-                      "Extended priority support",
-                      "Flexible team seats (per seat)",
+                      "Shared workspaces",
+                      "Unlimited team prompts",
+                      "Team collaboration",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
                         <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
