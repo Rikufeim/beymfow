@@ -156,7 +156,7 @@ const SettingsBilling = () => {
                 <Button
                   onClick={handleCheckout}
                   disabled={loading}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full bg-black text-white hover:bg-neutral-800 border border-white/10"
                 >
                   Upgrade to Pro — €9.99/mo
                 </Button>
