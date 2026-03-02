@@ -69,11 +69,10 @@ const Index = () => {
     if (user) {
       navigate("/flow");
     } else {
-      // Store redirect so OAuth flow also lands here
       sessionStorage.setItem('auth_redirect_after', '/flow');
-      openAuthDialog(() => navigate("/flow"));
+      navigate("/auth");
     }
-  }, [user, navigate, openAuthDialog]);
+  }, [user, navigate]);
 
   const handleUpgradeToPro = useCallback(async () => {
     if (!user || !session) {
