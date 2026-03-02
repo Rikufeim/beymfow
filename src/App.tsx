@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthDialogProvider } from "./contexts/AuthDialogContext";
@@ -35,7 +36,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/landing-pages", "/auth"];
+const HIDDEN_HEADER_PREFIXES = ["/image-generator", "/planningsystem", "/multiagentpage", "/landing-pages", "/auth"];
 
 const PersistentHeader = () => {
   const { pathname } = useLocation();
@@ -65,9 +66,9 @@ const AppRoutes = () => {
         </ErrorBoundary>
       } />
       {/* Flow routes - path selection with sub-routes */}
-      <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
-      <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
-      <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
+      <Route path="/flow" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/prompt-generator" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/color-codes" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary></ProtectedRoute>} />
       {/* Legacy route - redirect to new /flow */}
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={
