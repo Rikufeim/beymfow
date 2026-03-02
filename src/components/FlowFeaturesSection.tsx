@@ -99,7 +99,7 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
             <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
               <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} onClick={() => handleNavigate("/flow-engine")}>
-                <img src={beymflowBg} alt="Flow" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
+                <img src={beymflowBg} alt="Flow" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="eager" decoding="async" />
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
             <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
               <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
               <div className={`${sharedImageClasses} rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000]`} onClick={() => handleNavigate("/landing-pages")}>
-                <img src={beymflowBg} alt="Landing Page Library" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="lazy" decoding="async" fetchPriority="low" />
+                <img src={beymflowBg} alt="Landing Page Library" className="absolute inset-0 w-full h-full object-cover rounded-[1.05rem]" loading="eager" decoding="async" />
               </div>
             </div>
           </div>
