@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2 } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, User, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,14 @@ import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { Lock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
+import PlanBadge from "@/components/PlanBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 // Import workspace components
 import { HeroBackgroundWorkspace, DEFAULT_SETTINGS } from "@/components/flow-engine/HeroBackgroundWorkspace";
@@ -36,7 +44,7 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
-  const { user, usageInfo } = useAuth();
+  const { user, usageInfo, signOut } = useAuth();
   const { openAuthDialog } = useAuthDialog();
   const isPro = usageInfo?.subscriptionTier === 'premium';
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
@@ -218,14 +226,39 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
       {/* Header */}
       <div className="sticky top-0 z-50 bg-transparent">
-        <div className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4">
-          <button
-            onClick={handleBack}
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-          >
-            <ArrowLeft size={20} className="text-neutral-400" />
-          </button>
-          <h1 className="text-lg sm:text-xl font-semibold">Flow</h1>
+        <div className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <ArrowLeft size={20} className="text-neutral-400" />
+            </button>
+            <h1 className="text-lg sm:text-xl font-semibold">Flow</h1>
+          </div>
+          {/* User controls */}
+          {user && (
+            <div className="flex items-center gap-2">
+              <PlanBadge />
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
+                  <User size={20} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-black border-white/10">
+                  <DropdownMenuItem asChild className="text-white hover:bg-white/10 cursor-pointer">
+                    <Link to="/settings/billing">
+                      <Settings size={16} className="mr-2" />
+                      Billing
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-white/10 cursor-pointer">
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
 
