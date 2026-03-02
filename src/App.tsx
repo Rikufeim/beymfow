@@ -2,6 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import Header from "./components/Header";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -33,6 +34,15 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/landing-pages", "/auth"];
+
+const PersistentHeader = () => {
+  const { pathname } = useLocation();
+  const hidden = HIDDEN_HEADER_PREFIXES.some(p => pathname === p || pathname.startsWith(p + "/"));
+  if (hidden) return null;
+  return <Header />;
+};
 
 const ScrollToTop = () => {
   const location = useLocation();
@@ -110,6 +120,7 @@ function App() {
             <AuthProvider>
               <AuthDialogProvider>
                 <GlobalImagePreloader />
+                <PersistentHeader />
                 <ScrollToTop />
                 <AppRoutes />
               </AuthDialogProvider>

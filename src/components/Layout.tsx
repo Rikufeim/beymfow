@@ -1,18 +1,15 @@
 
 import React from 'react';
-import Header from './Header';
 import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
   hideFooter?: boolean;
-  hideHeader?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = React.memo(({ children, hideFooter = false, hideHeader = false }) => {
+const Layout: React.FC<LayoutProps> = React.memo(({ children, hideFooter = false }) => {
   return (
     <>
-      {!hideHeader && <Header />}
       {children}
       {!hideFooter && <Footer />}
     </>
