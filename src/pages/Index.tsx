@@ -354,17 +354,17 @@ const Index = () => {
                   <h3 className="text-xl font-semibold text-white mb-4">Free</h3>
                   <div className="mb-1">
                     <span className="text-4xl font-bold text-white">€0</span>
-                    <span className="text-white/50 text-sm"> / kk</span>
+                    <span className="text-white/50 text-sm"> / mo</span>
                   </div>
-                  <p className="text-sm text-white/50 mb-6">Täydellinen aloitukseen</p>
+                  <p className="text-sm text-white/50 mb-6">Perfect for getting started</p>
                   <ul className="space-y-2.5 flex-1 mb-8">
                     {[
-                      "Perus prompt-generointi",
-                      "Päivittäinen prompt-rajoitus",
-                      "Valikoidut template- ja UI-elementit",
-                      "Vakiot taustatyylit",
-                      "Projektien tallennus & auto-save",
-                      "Yhteisötuki",
+                      "Basic prompt generation",
+                      "Daily prompt limit",
+                      "Selected templates & UI elements",
+                      "Standard background styles",
+                      "Project saving & auto-save",
+                      "Community support",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
                         <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
@@ -376,7 +376,7 @@ const Index = () => {
                     onClick={handleStartFree}
                     className="w-full rounded-xl px-4 py-3 bg-purple-600 text-white font-semibold text-sm transition-all hover:bg-purple-500"
                   >
-                    Aloita ilmaiseksi
+                    Get Started Free
                   </button>
                 </div>
 
@@ -390,20 +390,20 @@ const Index = () => {
                   <h3 className="text-xl font-bold text-white mb-4">Creator</h3>
                   <div className="mb-1">
                     <span className="text-4xl font-bold text-white">€14.99</span>
-                    <span className="text-white/50 text-sm"> / kk</span>
+                    <span className="text-white/50 text-sm"> / mo</span>
                   </div>
-                  <p className="text-sm text-white/50 mb-6">Yksinyrittäjille ja tekijöille</p>
+                  <p className="text-sm text-white/50 mb-6">For solo creators and makers</p>
                   <ul className="space-y-2.5 flex-1 mb-8">
                     {[
-                      "Kaikki Free-tason sisältö",
-                      "Rajaton prompt-generointi",
-                      "Täysi Prompt Generator -työkalupakki",
-                      "Täysi Color Codes (HEX/RGB/gradients)",
-                      "Edistyneet mallioptiot & kompleksiset tulosteet",
-                      "Kaikki taustatyylit ja visual element -kirjastot",
-                      "Premium-templatepohjat",
-                      "Nopeampi prosessointi",
-                      "Prioriteettituki",
+                      "Everything in Free",
+                      "Unlimited prompt generation",
+                      "Full Prompt Generator toolkit",
+                      "Full Color Codes (HEX/RGB/gradients)",
+                      "Advanced model options & complex outputs",
+                      "All background styles & visual element libraries",
+                      "Premium templates",
+                      "Faster processing",
+                      "Priority support",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
                         <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
@@ -417,7 +417,7 @@ const Index = () => {
                     className="w-full rounded-xl px-4 py-3 bg-white text-black font-semibold text-sm transition-all hover:bg-white/90 flex items-center justify-center gap-2"
                   >
                     {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Aloita Creatorilla
+                    Get Started with Creator
                   </button>
                 </div>
 
@@ -426,18 +426,18 @@ const Index = () => {
                   <h3 className="text-xl font-semibold text-white mb-4">Team</h3>
                   <div className="mb-1">
                     <span className="text-4xl font-bold text-white">€49.99</span>
-                    <span className="text-white/50 text-sm"> / kk</span>
+                    <span className="text-white/50 text-sm"> / mo</span>
                   </div>
-                  <p className="text-sm text-white/50 mb-6">Tiimeille ja toimistoille</p>
+                  <p className="text-sm text-white/50 mb-6">For teams and agencies</p>
                   <ul className="space-y-2.5 flex-1 mb-8">
                     {[
-                      "Kaikki Creator-tason sisältö",
-                      "Jaetut työtilat (workspaces) ja projektikirjastot",
-                      "Jaetut template- ja värikirjastot",
-                      "Tiimikommentit & hyväksyntä (review)",
-                      "Rajaton prompt-generointi tiimille",
-                      "Prioriteettituki (laajennettu)",
-                      "Tiimijäsenet joustavasti (per seat)",
+                      "Everything in Creator",
+                      "Shared workspaces & project libraries",
+                      "Shared template & color libraries",
+                      "Team comments & review approval",
+                      "Unlimited prompt generation for the team",
+                      "Extended priority support",
+                      "Flexible team seats (per seat)",
                     ].map((f, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
                         <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
@@ -449,7 +449,7 @@ const Index = () => {
                     onClick={handleStartFree}
                     className="w-full rounded-xl px-4 py-3 bg-purple-600 text-white font-semibold text-sm transition-all hover:bg-purple-500"
                   >
-                    Aloita ilmaiseksi
+                    Get Started Free
                   </button>
                 </div>
               </div>
