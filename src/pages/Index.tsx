@@ -337,88 +337,120 @@ const Index = () => {
           {/* Pricing Section */}
           <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12">
             <div className="max-w-6xl mx-auto">
-              <div className="grid lg:grid-cols-5 gap-10 lg:gap-12 items-center">
-                {/* Left: Headline & Subheadline */}
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 md:p-8 w-fit">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-                      Pricing
-                    </h2>
-                    <p className="text-sm sm:text-base md:text-lg text-white/70 mt-2">
-                      Upgrade when you need full creative flow
-                    </p>
+              {/* Header */}
+              <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-3">
+                  Simple, transparent pricing
+                </h2>
+                <p className="text-base sm:text-lg text-white/60">
+                  Start for free. Cancel anytime. No credit card required.
+                </p>
+              </div>
+
+              {/* 3 Cards */}
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+                {/* Free */}
+                <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/80 backdrop-blur-sm p-6 sm:p-8">
+                  <h3 className="text-xl font-semibold text-white mb-4">Free</h3>
+                  <div className="mb-1">
+                    <span className="text-4xl font-bold text-white">€0</span>
+                    <span className="text-white/50 text-sm"> / kk</span>
                   </div>
+                  <p className="text-sm text-white/50 mb-6">Täydellinen aloitukseen</p>
+                  <ul className="space-y-2.5 flex-1 mb-8">
+                    {[
+                      "Perus prompt-generointi",
+                      "Päivittäinen prompt-rajoitus",
+                      "Valikoidut template- ja UI-elementit",
+                      "Vakiot taustatyylit",
+                      "Projektien tallennus & auto-save",
+                      "Yhteisötuki",
+                    ].map((f, i) => (
+                      <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
+                        <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleStartFree}
+                    className="w-full rounded-xl px-4 py-3 bg-purple-600 text-white font-semibold text-sm transition-all hover:bg-purple-500"
+                  >
+                    Aloita ilmaiseksi
+                  </button>
                 </div>
 
-                {/* Right: Two black pricing cards */}
-                <div className="lg:col-span-3 grid sm:grid-cols-2 gap-6">
-                  {/* Free Plan Card */}
-                  <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
-                    <h3 className="text-xl font-semibold text-white mb-1">Free Plan</h3>
-                    <div className="mb-6">
-                      <span className="text-3xl font-bold text-white">€0</span>
-                      <span className="text-white/60"> / month</span>
-                    </div>
-                    <ul className="space-y-3 flex-1 mb-6">
-                      {[
-                        "Basic prompt generation",
-                        "Limited daily prompts",
-                        "Access to selected templates",
-                        "Standard background styles",
-                        "Community support"].
-                        map((feature, i) =>
-                          <li key={i} className="flex items-center gap-2 text-sm text-white/80">
-                            <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
-                            {feature}
-                          </li>
-                        )}
-                    </ul>
-                    <button
-                      onClick={handleStartFree}
-                      className="w-full rounded-lg px-4 py-3 border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30">
-
-                      Start Free
-                    </button>
+                {/* Creator — highlighted */}
+                <div className="relative flex flex-col rounded-2xl border border-purple-500/40 bg-gradient-to-br from-[#1a0533] via-[#0d0019] to-[#0a0014] backdrop-blur-sm p-6 sm:p-8 shadow-[0_0_40px_-10px_rgba(128,0,255,0.3)]">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span className="inline-block px-4 py-1 rounded-full bg-amber-400 text-black text-xs font-bold tracking-wide">
+                      Most Popular
+                    </span>
                   </div>
-
-                  {/* Pro Plan Card (Most Popular) */}
-                  <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/90 backdrop-blur-sm p-6 sm:p-8">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-
-
-
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-1">Pro Plan</h3>
-                    <div className="mb-6">
-                      <span className="text-3xl font-bold text-white">€9.99</span>
-                      <span className="text-white/60"> / month</span>
-                    </div>
-                    <ul className="space-y-3 flex-1 mb-6">
-                      {[
-                        "Unlimited prompt generation",
-                        "Full access to all Prompt Generator tools",
-                        "Complete access to Color Codes section",
-                        "Advanced model options",
-                        "All background styles",
-                        "Premium templates",
-                        "Faster processing",
-                        "Priority support"].
-                        map((feature, i) =>
-                          <li key={i} className="flex items-center gap-2 text-sm text-white/80">
-                            <CheckCircle className="h-4 w-4 text-cyan-400 shrink-0" />
-                            {feature}
-                          </li>
-                        )}
-                    </ul>
-                    <button
-                      onClick={handleUpgradeToPro}
-                      disabled={checkoutLoading}
-                      className="w-full rounded-lg px-4 py-3 bg-white text-black font-medium border border-white transition-all hover:bg-white/90 flex items-center justify-center gap-2">
-
-                      {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                      {isPro ? "Go to Flow" : "Upgrade to Pro"}
-                    </button>
+                  <h3 className="text-xl font-bold text-white mb-4">Creator</h3>
+                  <div className="mb-1">
+                    <span className="text-4xl font-bold text-white">€14.99</span>
+                    <span className="text-white/50 text-sm"> / kk</span>
                   </div>
+                  <p className="text-sm text-white/50 mb-6">Yksinyrittäjille ja tekijöille</p>
+                  <ul className="space-y-2.5 flex-1 mb-8">
+                    {[
+                      "Kaikki Free-tason sisältö",
+                      "Rajaton prompt-generointi",
+                      "Täysi Prompt Generator -työkalupakki",
+                      "Täysi Color Codes (HEX/RGB/gradients)",
+                      "Edistyneet mallioptiot & kompleksiset tulosteet",
+                      "Kaikki taustatyylit ja visual element -kirjastot",
+                      "Premium-templatepohjat",
+                      "Nopeampi prosessointi",
+                      "Prioriteettituki",
+                    ].map((f, i) => (
+                      <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
+                        <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleUpgradeToPro}
+                    disabled={checkoutLoading}
+                    className="w-full rounded-xl px-4 py-3 bg-white text-black font-semibold text-sm transition-all hover:bg-white/90 flex items-center justify-center gap-2"
+                  >
+                    {checkoutLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Aloita Creatorilla
+                  </button>
+                </div>
+
+                {/* Team */}
+                <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/80 backdrop-blur-sm p-6 sm:p-8">
+                  <h3 className="text-xl font-semibold text-white mb-4">Team</h3>
+                  <div className="mb-1">
+                    <span className="text-4xl font-bold text-white">€49.99</span>
+                    <span className="text-white/50 text-sm"> / kk</span>
+                  </div>
+                  <p className="text-sm text-white/50 mb-6">Tiimeille ja toimistoille</p>
+                  <ul className="space-y-2.5 flex-1 mb-8">
+                    {[
+                      "Kaikki Creator-tason sisältö",
+                      "Jaetut työtilat (workspaces) ja projektikirjastot",
+                      "Jaetut template- ja värikirjastot",
+                      "Tiimikommentit & hyväksyntä (review)",
+                      "Rajaton prompt-generointi tiimille",
+                      "Prioriteettituki (laajennettu)",
+                      "Tiimijäsenet joustavasti (per seat)",
+                    ].map((f, i) => (
+                      <li key={i} className="flex items-center gap-2.5 text-sm text-white/80">
+                        <CheckCircle className="h-4 w-4 text-purple-400 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleStartFree}
+                    className="w-full rounded-xl px-4 py-3 bg-purple-600 text-white font-semibold text-sm transition-all hover:bg-purple-500"
+                  >
+                    Aloita ilmaiseksi
+                  </button>
                 </div>
               </div>
             </div>
