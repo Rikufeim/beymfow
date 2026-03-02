@@ -183,23 +183,23 @@ const Auth = () => {
         </Link>
       </div>
 
-      <div className="flex min-h-[calc(100vh-88px)]">
+      <div className="flex flex-1 min-h-[calc(100vh-88px)]">
         {/* Left — Auth Card */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-md rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-8 sm:p-10"
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8"
           >
-            <div className="text-center mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                {isLogin ? 'Welcome to Beymflow' : 'Create your account'}
+            <div className="text-center mb-5">
+              <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
+                {isLogin ? 'Welcome back' : 'Create account'}
               </h1>
-              <p className="text-sm text-gray-400">
+              <p className="text-xs text-gray-400">
                 {isLogin
-                  ? 'Create AI prompts and design elements with ease.'
-                  : 'Start for free today. No credit card required.'}
+                  ? 'Sign in to continue to Beymflow.'
+                  : 'Start for free. No credit card required.'}
               </p>
             </div>
 
@@ -208,12 +208,12 @@ const Auth = () => {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={googleLoading || loading}
-              className="w-full bg-white text-black hover:bg-gray-100 h-12 text-sm font-medium rounded-xl flex items-center justify-center gap-3 mb-5 border-0"
+              className="w-full bg-white text-black hover:bg-gray-100 h-10 text-sm font-medium rounded-xl flex items-center justify-center gap-3 mb-4 border-0"
             >
               {googleLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -223,7 +223,7 @@ const Auth = () => {
               Sign in with Google
             </Button>
 
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-white/10" />
               <span className="text-xs text-gray-500">or</span>
               <div className="flex-1 h-px bg-white/10" />
@@ -236,17 +236,17 @@ const Auth = () => {
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
-                  className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-2"
+                  className="mb-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-2"
                 >
                   <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-sm text-red-400">{formError}</p>
+                  <p className="text-xs text-red-400">{formError}</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-300">Email</label>
+            <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-300">Email</label>
                 <Input
                   type="email"
                   placeholder="you@example.com"
@@ -255,16 +255,16 @@ const Auth = () => {
                   required
                   autoComplete="email"
                   autoFocus
-                  className="w-full bg-neutral-900/60 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500/50 h-12 rounded-xl transition-all"
+                  className="w-full bg-neutral-900/60 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500/50 h-10 rounded-xl text-sm transition-all"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-300">Password</label>
+                  <label className="text-xs font-medium text-gray-300">Password</label>
                   {isLogin && (
                     <Link to="/forgot-password" className="text-xs text-gray-400 hover:text-white transition-colors">
-                      Forgot password?
+                      Forgot?
                     </Link>
                   )}
                 </div>
@@ -276,7 +276,7 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoComplete={isLogin ? "current-password" : "new-password"}
-                    className="w-full bg-neutral-900/60 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500/50 h-12 pr-10 rounded-xl transition-all"
+                    className="w-full bg-neutral-900/60 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500/50 h-10 pr-10 rounded-xl text-sm transition-all"
                   />
                   <button
                     type="button"
@@ -288,20 +288,12 @@ const Auth = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {!isLogin && password.length > 0 && password.length < 6 && (
-                  <p className="text-xs text-orange-400">Password is too short (min. 6 characters)</p>
-                )}
-                {!isLogin && password.length >= 6 && (
-                  <p className="text-xs text-green-400 flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" /> Password looks good
-                  </p>
-                )}
               </div>
 
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 text-white hover:bg-purple-500 h-12 text-sm font-semibold rounded-xl mt-1"
+                className="w-full bg-purple-600 text-white hover:bg-purple-500 h-10 text-sm font-semibold rounded-xl"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -314,41 +306,31 @@ const Auth = () => {
               </Button>
             </form>
 
-            <p className="mt-4 text-center text-xs text-gray-500">
-              We'll email you a magic link for a password-free sign in.
-            </p>
-
-            <div className="mt-5 text-center">
-              <span className="text-sm text-gray-400">
+            <div className="mt-4 text-center">
+              <span className="text-xs text-gray-400">
                 {isLogin ? "Don't have an account? " : 'Already have an account? '}
               </span>
               <button
                 onClick={switchMode}
                 type="button"
-                className="text-sm text-white hover:text-gray-300 font-medium transition-colors underline"
+                className="text-xs text-white hover:text-gray-300 font-medium transition-colors underline"
               >
                 {isLogin ? 'Sign up' : 'Sign in'}
               </button>
             </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500">
-                By signing up, you agree to our{' '}
-                <Link to="#" className="text-gray-400 hover:text-white underline">Terms of Service</Link>
-                {' and '}
-                <Link to="#" className="text-gray-400 hover:text-white underline">Privacy Policy</Link>
-              </p>
-              <button className="mt-2 text-xs text-gray-500 hover:text-white transition-colors">
-                Need help?
-              </button>
-            </div>
+            <p className="mt-3 text-center text-[10px] text-gray-500">
+              By signing up, you agree to our{' '}
+              <Link to="#" className="text-gray-400 hover:text-white underline">Terms</Link>
+              {' & '}
+              <Link to="#" className="text-gray-400 hover:text-white underline">Privacy</Link>
+            </p>
           </motion.div>
         </div>
 
         {/* Right — Video placeholder */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
+        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-10">
           <div className="relative w-full max-w-xl rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-purple-800/20 to-black border border-white/10 aspect-[4/3] flex items-end">
-            {/* Placeholder for video — replace src later */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-purple-900/30 to-black" />
             <div className="relative z-10 p-8">
               <h2 className="text-2xl font-bold text-white mb-1">See how easy it is</h2>
