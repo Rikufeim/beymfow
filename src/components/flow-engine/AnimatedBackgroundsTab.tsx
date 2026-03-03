@@ -222,7 +222,13 @@ export default function AnimatedBackgroundsTab({ settings, onChange }: AnimatedB
             return (
               <div key={preset.id} className="flex flex-col gap-1.5">
                 <button
-                  onClick={() => applyPreset(preset)}
+                  onClick={() => {
+                    if (isActive) {
+                      onChange({ ...DEFAULT_ANIMATED_BG });
+                    } else {
+                      applyPreset(preset);
+                    }
+                  }}
                   className={cn(
                     "group relative w-full rounded-xl overflow-hidden transition-all duration-300 ease-out focus:outline-none select-none",
                     isActive
