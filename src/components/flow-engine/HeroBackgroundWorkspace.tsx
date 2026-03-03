@@ -180,7 +180,7 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "layout" | "style" | "colors" | "motion" | "components" | "view" | "export";
+type TabId = "shape" | "layout" | "style" | "colors" | "motion" | "components" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
@@ -189,7 +189,6 @@ const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "colors", label: "Colors" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
-  { id: "view", label: "View" },
   { id: "export", label: "Export" },
 ];
 
