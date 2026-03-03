@@ -87,28 +87,37 @@ const SHADER_CATEGORIES = [
   { label: "Swirl", filter: (p: AnimatedPreset) => p.shaderType === "swirl" },
 ];
 
+// ── CSS gradient fallback for preset thumbnails ──
+
+function buildPresetGradientCSS(preset: AnimatedPreset): string {
+  const c = preset.colors;
+  switch (preset.shaderType) {
+    case "mesh-gradient":
+      return `radial-gradient(ellipse at 30% 50%, ${c[2] || c[0]}cc 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, ${c[3] || c[1]}99 0%, transparent 55%), linear-gradient(135deg, ${c[0]} 0%, ${c[1]} 100%)`;
+    case "neuro-noise":
+      return `radial-gradient(circle at 50% 50%, ${c[0]}bb 0%, ${c[1]}88 50%, ${c[2]} 100%)`;
+    case "god-rays":
+      return `conic-gradient(from 180deg at 50% 120%, ${c[0]}dd, ${c[1]}88, ${c[2]}66, transparent 70%), radial-gradient(circle at 50% 100%, ${c[0]}99 0%, #000 80%)`;
+    case "smoke-ring":
+      return `radial-gradient(circle at 50% 50%, ${c[0]}88 0%, ${c[1]}55 40%, ${c[c.length - 1]} 100%)`;
+    case "grain-gradient":
+      return `linear-gradient(135deg, ${c[0]} 0%, ${c[1]} 50%, ${c[2] || c[0]} 100%)`;
+    case "swirl":
+      return `conic-gradient(from 0deg at 50% 50%, ${c[0]}, ${c[1]}, ${c[2] || c[0]}, ${c[3] || c[1]}, ${c[0]})`;
+    default:
+      return `linear-gradient(135deg, ${c[0] || '#111'} 0%, ${c[1] || '#333'} 100%)`;
+  }
+}
+
 // ── Mini Preview for preset thumbnails ──
 
 const PresetThumbnail = memo(({ preset }: { preset: AnimatedPreset }) => {
-  const style: React.CSSProperties = { width: "100%", height: "100%" };
-  const speed = 0.15;
-
-  switch (preset.shaderType) {
-    case "mesh-gradient":
-      return <MeshGradient style={style} colors={preset.colors} distortion={preset.params.distortion ?? 0.8} swirl={preset.params.swirl ?? 0.1} speed={speed} />;
-    case "neuro-noise":
-      return <NeuroNoise style={style} colorFront={preset.colors[0]} colorMid={preset.colors[1]} colorBack={preset.colors[2]} brightness={preset.params.brightness ?? 0.5} contrast={preset.params.contrast ?? 0.5} speed={speed} />;
-    case "god-rays":
-      return <GodRays style={style} colorBack="#000000" colorBloom={preset.colors[0]} colors={preset.colors} intensity={preset.params.intensity ?? 0.5} density={preset.params.density ?? 0.4} speed={speed} />;
-    case "smoke-ring":
-      return <SmokeRing style={style} colorBack={preset.colors[preset.colors.length - 1] || "#000000"} colors={preset.colors.slice(0, -1)} noiseScale={preset.params.noiseScale ?? 1.5} speed={speed} />;
-    case "grain-gradient":
-      return <GrainGradient style={style} colorBack="#000000" colors={preset.colors} softness={preset.params.softness ?? 0.5} intensity={preset.params.intensity ?? 0.4} speed={speed} />;
-    case "swirl":
-      return <Swirl style={style} colors={preset.colors} speed={speed} />;
-    default:
-      return <div style={{ ...style, background: "#111" }} />;
-  }
+  return (
+    <div
+      className="w-full h-full"
+      style={{ background: buildPresetGradientCSS(preset) }}
+    />
+  );
 });
 PresetThumbnail.displayName = "PresetThumbnail";
 
