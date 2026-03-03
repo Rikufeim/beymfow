@@ -5,12 +5,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, User, LogOut, Settings } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
-import { Lock } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 import PlanBadge from "@/components/PlanBadge";
@@ -49,6 +47,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const isPro = usageInfo?.subscriptionTier === 'premium';
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
+  const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
 
   // Resolve editing project from sessionStorage
   const editingProjectId = initialWorkspace === "color-codes"
@@ -205,6 +204,17 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     );
   }
 
+
+  const tabs = [
+    { id: "projects" as const, label: "Projects", icon: FolderOpen },
+    { id: "color-codes" as const, label: "Color Codes", icon: Palette },
+    { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
+  ];
+
+  const userInitials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "?";
+
   // Render Selection View
   return (
     <div className="relative min-h-screen bg-transparent text-white flex flex-col">
@@ -225,173 +235,242 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           filter: "brightness(1.05)",
         }}
       />
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-transparent">
-        <div className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
+
+      {/* Top Nav Bar - ShortSync style */}
+      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between">
+        {/* Logo / Home */}
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img
+            src="/images/beymflow-logo.png"
+            alt="Beymflow"
+            className="h-8 w-auto object-contain"
+            loading="eager"
+          />
+          <span className="text-sm font-semibold tracking-widest text-white hidden sm:block">Beymflow</span>
+        </Link>
+
+        {/* Center Tabs */}
+        <nav className="flex items-center bg-white/[0.06] border border-white/[0.08] rounded-full p-1 gap-0.5">
+          {tabs.map((tab) => (
             <button
-              onClick={handleBack}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === "projects") {
+                  setSelectionTab("projects");
+                } else if (tab.id === "color-codes") {
+                  setSelectionTab("color-codes");
+                } else {
+                  setSelectionTab("prompt-generator");
+                }
+              }}
+              className={cn(
+                "px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                selectionTab === tab.id
+                  ? "bg-white/[0.12] text-white shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+              )}
             >
-              <ArrowLeft size={20} className="text-neutral-400" />
+              {tab.label}
             </button>
-            <h1 className="text-lg sm:text-xl font-semibold">Flow</h1>
-          </div>
-          {/* User controls */}
-          {user && (
-            <div className="flex items-center gap-2">
-              <PlanBadge />
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
-                  <User size={20} />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-black border-white/10">
-                  <DropdownMenuItem asChild className="text-white hover:bg-white/10 cursor-pointer">
-                    <Link to="/settings/billing">
-                      <Settings size={16} className="mr-2" />
-                      Billing
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-white/10 cursor-pointer">
-                    <LogOut size={16} className="mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
-        </div>
-      </div>
+          ))}
+        </nav>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-12">
-        <div className="max-w-4xl w-full">
-          {/* Title */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-              Choose Your Path
-            </h2>
-            <p className="text-neutral-400 text-base sm:text-lg max-w-xl mx-auto">
-              Select a workspace to start building. Each tool is designed to help you create amazing content.
-            </p>
-          </div>
+        {/* User Avatar */}
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-10 h-10 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
+                {userInitials}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-white border-none rounded-xl shadow-2xl p-0 overflow-hidden">
+              {/* User info */}
+              <div className="px-5 pt-5 pb-4 border-b border-neutral-200">
+                <p className="text-sm font-semibold text-neutral-900">{user.email?.split('@')[0] || 'User'}</p>
+                <p className="text-xs text-neutral-500 mt-0.5">{user.email}</p>
+              </div>
 
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {cards.map((card, index) => {
-              const Icon = card.icon;
-              const isLocked = false;
-              return (
-                <motion.button
-                  key={card.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.4 }}
-                  onClick={() => handleCardClick(card.id)}
-                  className={cn(
-                    "relative group text-left p-5 sm:p-8 rounded-2xl border transition-all duration-300",
-                    "bg-transparent",
-                    "border-white/5 hover:border-white/10",
-                    "focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black"
-                  )}
+              {/* Workspace section */}
+              <div className="px-3 py-3 border-b border-neutral-200">
+                <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-2 mb-2">Workspace</p>
+                <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-neutral-700">
+                  <FolderOpen size={16} className="text-neutral-400" />
+                  <span className="truncate flex-1">{user.email?.split('@')[0]}'s Workspace</span>
+                  <span className="text-purple-500">✓</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="px-3 py-2">
+                <DropdownMenuItem asChild className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-2 py-2">
+                  <Link to="/settings/billing" className="flex items-center gap-2">
+                    <Settings size={16} className="text-neutral-400" />
+                    Account Settings
+                  </Link>
+                </DropdownMenuItem>
+              </div>
+
+              {/* Sign out */}
+              <div className="px-3 pb-3">
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  className="text-red-500 hover:bg-red-50 cursor-pointer rounded-lg px-2 py-2"
                 >
-                  <GlowingEffect
-                    spread={60}
-                    glow
-                    disabled={false}
-                    proximity={80}
-                    inactiveZone={0.01}
-                    borderWidth={2}
-                    className="opacity-0 group-hover:opacity-60 transition-opacity duration-300"
-                  />
+                  <LogOut size={16} className="mr-2" />
+                  Log Out
+                </DropdownMenuItem>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <button
+            onClick={() => openAuthDialog()}
+            className="text-sm font-medium px-4 py-2 bg-white text-black rounded-full hover:bg-neutral-200 transition-colors"
+          >
+            Sign In
+          </button>
+        )}
+      </header>
 
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-2xl font-semibold text-white group-hover:text-white transition-colors">
-                        {card.title}
-                      </h3>
-                      {isLocked && (
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-medium">
-                          <Lock size={12} />
-                          Pro
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-neutral-400 text-base leading-relaxed group-hover:text-neutral-300 transition-colors">
-                      {card.description}
-                    </p>
+      {/* Tab Content */}
+      <div className="flex-1 px-4 sm:px-8 py-8">
+        <div className="max-w-5xl mx-auto">
 
-                    <div className="mt-6 flex items-center gap-2 text-neutral-500 group-hover:text-white transition-colors">
-                      <span className="text-sm font-medium">{isLocked ? 'Upgrade to Pro' : 'Get started'}</span>
-                      <svg
-                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+          {/* Projects Tab */}
+          {selectionTab === "projects" && (
+            <motion.div
+              key="projects"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-white">My Projects</h2>
+                <span className="text-sm text-neutral-500">{savedProjects.length} project{savedProjects.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {savedProjects.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                  {savedProjects.map((project, index) => (
+                    <motion.button
+                      key={project.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      onClick={() => handleOpenProject(project)}
+                      className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden text-left"
+                    >
+                      <div className="aspect-[16/9] w-full bg-black/40 overflow-hidden">
+                        {project.thumbnail ? (
+                          <img
+                            src={project.thumbnail}
+                            alt={project.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full"
+                            style={{
+                              background: `linear-gradient(135deg, ${project.settings.color1}, ${project.settings.color2}, ${project.settings.color3 || project.settings.color1})`,
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="p-3 flex items-center justify-between">
+                        <p className="text-sm font-medium text-white truncate">{project.name}</p>
+                        <button
+                          onClick={(e) => handleDeleteProject(e, project.id)}
+                          className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
+                          title="Delete project"
+                        >
+                          <Trash2 size={14} className="text-neutral-500 hover:text-red-400 transition-colors" />
+                        </button>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
+                  <FolderOpen size={40} className="mx-auto text-neutral-600 mb-4" />
+                  <p className="text-neutral-400 text-lg mb-2">No projects yet</p>
+                  <p className="text-neutral-500 text-sm mb-6">Start creating with Color Codes or Prompt Generator</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => setSelectionTab("color-codes")}
+                      className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 rounded-lg text-sm text-white transition-colors"
+                    >
+                      Color Codes
+                    </button>
+                    <button
+                      onClick={() => setSelectionTab("prompt-generator")}
+                      className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 rounded-lg text-sm text-white transition-colors"
+                    >
+                      Prompt Generator
+                    </button>
                   </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* My Projects Section */}
-          {savedProjects.length > 0 && (
-            <div className="mt-16">
-              <div className="flex items-center gap-3 mb-6">
-                <FolderOpen size={20} className="text-neutral-400" />
-                <h3 className="text-xl font-semibold text-white">My Projects</h3>
-                <span className="text-sm text-neutral-500">({savedProjects.length})</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                {savedProjects.map((project, index) => (
-                  <motion.button
-                    key={project.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.3 }}
-                    onClick={() => handleOpenProject(project)}
-                    className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden text-left"
-                  >
-                    {/* Thumbnail */}
-                    <div className="aspect-[16/9] w-full bg-black/40 overflow-hidden">
-                      {project.thumbnail ? (
-                        <img
-                          src={project.thumbnail}
-                          alt={project.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-full"
-                          style={{
-                            background: `linear-gradient(135deg, ${project.settings.color1}, ${project.settings.color2}, ${project.settings.color3 || project.settings.color1})`,
-                          }}
-                        />
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="p-3 flex items-center justify-between">
-                      <p className="text-sm font-medium text-white truncate">{project.name}</p>
-                      <button
-                        onClick={(e) => handleDeleteProject(e, project.id)}
-                        className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
-                        title="Delete project"
-                      >
-                        <Trash2 size={14} className="text-neutral-500 hover:text-red-400 transition-colors" />
-                      </button>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+            </motion.div>
           )}
+
+          {/* Color Codes Tab */}
+          {selectionTab === "color-codes" && (
+            <motion.div
+              key="color-codes"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 mb-3">
+                  <Palette size={24} className="text-cyan-400" />
+                  <h2 className="text-2xl font-bold text-white">Color Codes</h2>
+                </div>
+                <p className="text-neutral-400 text-sm max-w-md mx-auto">Browse and create stunning color palettes & gradient backgrounds</p>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => {
+                    sessionStorage.removeItem('beymflow.editing-project-id');
+                    navigate("/flow/color-codes");
+                  }}
+                  className="px-8 py-3 bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 rounded-xl text-white font-medium transition-all duration-200 flex items-center gap-2"
+                >
+                  <Palette size={18} />
+                  Open Workspace
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Prompt Generator Tab */}
+          {selectionTab === "prompt-generator" && (
+            <motion.div
+              key="prompt-generator"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 mb-3">
+                  <Sparkles size={24} className="text-purple-400" />
+                  <h2 className="text-2xl font-bold text-white">Prompt Generator</h2>
+                </div>
+                <p className="text-neutral-400 text-sm max-w-md mx-auto">Generate powerful AI prompts for your creative projects</p>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => navigate("/flow/prompt-generator")}
+                  className="px-8 py-3 bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 rounded-xl text-white font-medium transition-all duration-200 flex items-center gap-2"
+                >
+                  <Sparkles size={18} />
+                  Open Workspace
+                </button>
+              </div>
+            </motion.div>
+          )}
+
         </div>
       </div>
     </div>
