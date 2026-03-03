@@ -77,7 +77,7 @@ export const QuickPromptGenerator = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
   );
-  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "canvas" | "image" | null>(null);
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "chatgpt" | "image" | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -951,7 +951,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                         <span className="text-xs text-white/80">
                           {promptType === "lovable" && "Lovable Prompts"}
                           {promptType === "gemini" && "Gemini Prompts"}
-                          {promptType === "canvas" && "Gemini Canvas"}
+                          {promptType === "chatgpt" && "ChatGPT Prompts"}
                           {promptType === "image" && "Image Prompts"}
                         </span>
                         <button
@@ -1132,8 +1132,10 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               {/* Pick Tool Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 flex items-center gap-2">
-                    Pick tool
+                  <button className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border flex items-center gap-2 ${promptType ? "bg-white/10 border-white/30 text-white" : "bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}>
+                    {promptType
+                      ? promptType === "lovable" ? "Lovable" : promptType === "gemini" ? "Gemini" : promptType === "chatgpt" ? "ChatGPT" : "Image"
+                      : "Pick tool"}
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </DropdownMenuTrigger>
@@ -1157,13 +1159,13 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     Gemini Prompts
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => setPromptType("canvas")}
-                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "canvas"
+                    onClick={() => setPromptType("chatgpt")}
+                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "chatgpt"
                       ? "bg-white/15 text-white"
                       : "text-white/70 hover:bg-white/10"
                       }`}
                   >
-                    Gemini Canvas
+                    ChatGPT Prompts
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setPromptType("image")}

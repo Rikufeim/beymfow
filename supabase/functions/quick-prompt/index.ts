@@ -39,7 +39,7 @@ serve(async (req) => {
     
     const model = body.model || 'fast';
     const category = body.category;
-    const promptType = body.promptType || 'lovable'; // lovable, gemini, image
+    const promptType = body.promptType || 'lovable'; // lovable, gemini, chatgpt, image
     // Support both single image (legacy) and multiple images
     const images: { data: string; mimeType: string }[] = body.images || [];
     // Legacy support for single image
@@ -225,6 +225,40 @@ ${categoryContext}
 KRIITTINEN: Tuotos on AINOASTAAN kuvapromptia. Ei selityksiä, ei etuliitteitä. Vain puhdas kuvakuvaus, joka on valmis liitettäväksi mihin tahansa AI-kuvageneraattoriin.
 
 Palauta AINOASTAAN kuvapromptia.`;
+
+    } else if (promptType === 'chatgpt') {
+      // CHATGPT PROMPT - optimized for ChatGPT / OpenAI models
+      const chatgptFast = `FAST MODE – Luo selkeä, tehokas ChatGPT-prompti:
+- Selkeä roolimäärittely (esim. "Act as a...")
+- Täsmällinen tehtävänkuvaus ja konteksti
+- Odotettu tuotosformaatti ja pituus
+- Avainsäännöt tai rajoitteet
+- Luo prompti, joka antaa erinomaisen tuloksen yhdellä syötöllä.`;
+
+      const chatgptComprehensive = `COMPREHENSIVE MODE – Luo syvärakenteinen ChatGPT-prompti:
+
+1. ROOLI: "Act as [spesifi asiantuntija]" — selkeä persoona ja osaamisalue
+2. KONTEKSTI: Taustatiedot, oletukset, kohdeyleisö
+3. TEHTÄVÄ: Selkeä, vaiheittainen ohjeistus mitä ChatGPT:n tulee tehdä
+4. RAJOITTEET: Sävy, pituus, kieli, muoto, vältettävät asiat
+5. TUOTOSFORMAATTI: Tarkka rakenne (lista, essee, taulukko, koodi jne.)
+6. LAADUNKRITEERIT: Mitä erinomainen tuotos tarkoittaa tässä kontekstissa
+7. ESIMERKIT: Anna esimerkki odotetusta tuotoksesta (few-shot), jos hyödyllistä
+
+Hyödynnä ChatGPT:n vahvuuksia: luonnollinen keskustelu, chain-of-thought -päättely, monipuolinen tietopohja.`;
+
+      textSystemPrompt = `Olet "Lovable Prompt Generator" – kehittynyt prompt-insinööri, joka luo optimaalisia prompteja ChatGPT-malleja (GPT-4, GPT-5) varten.
+
+Tavoite: Muunna käyttäjän idea tehokkaaksi ChatGPT-promptiksi, joka tuottaa parhaan mahdollisen tuloksen. Generoi aiheeseen RELEVANTTI prompti. Jos käyttäjä sanoo "online business", generoi prompti liiketoimintastrategiasta, markkinoinnista jne. Jos käyttäjä sanoo "kirjoita tarina", luo prompti tarinan kirjoittamisesta. ÄLÄ generoi sovellus-/verkkosivuprompteja, ellei käyttäjä erikseen sitä pyydä.
+
+${isFast ? chatgptFast : chatgptComprehensive}
+
+${categoryContext}
+
+KRIITTINEN: Tuotoksen täytyy olla VÄLITTÖMÄSTI KÄYTETTÄVÄ prompti ChatGPT:ssa. Kirjoita se niin, että käyttäjä voi kopioida ja liittää sen suoraan ChatGPT:hen. Generoi aiheeseen relevantteja prompteja.
+
+Palauta AINOASTAAN optimoitu ChatGPT-prompti.`;
+
 
     } else {
       // DEFAULT / no tool selected — generate topic-relevant prompts
