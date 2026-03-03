@@ -194,14 +194,13 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "animated" | "layout" | "style" | "colors" | "motion" | "components" | "export";
+type TabId = "shape" | "animated" | "layout" | "style" | "motion" | "components" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
   { id: "animated", label: "Animated" },
   { id: "layout", label: "Layout" },
   { id: "style", label: "Style" },
-  { id: "colors", label: "Colors" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
   { id: "export", label: "Export" },
@@ -1576,7 +1575,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         {/* Back button (left) */}
         <button
           onClick={handleBackWithSave}
-          className="px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs flex-shrink-0"
+          className="px-2.5 py-1.5 rounded-lg bg-neutral-900/80 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs flex-shrink-0"
         >
           <ArrowLeft size={14} />
           <span className="text-xs font-medium hidden sm:inline">Back</span>
@@ -1826,7 +1825,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             </div>
 
             {/* Tabs + Minimize button */}
-            <div className="flex items-center justify-between px-2 sm:px-4 py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between px-2 sm:px-4 py-2">
               <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
                 {FLOW_TABS.map((tab) => (
                   <button
@@ -1948,6 +1947,84 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             {filteredBackgrounds.length === 0 && (
                               <div className="flex items-center justify-center py-8 text-white/40 text-sm">No backgrounds match your search.</div>
                             )}
+
+                            {/* Inline Colors Section */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Colors</h4>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {[
+                                  { key: "color1", label: "Base", value: settings.color1 },
+                                  { key: "color2", label: "Surface", value: settings.color2 },
+                                  ...(!settings.singleColorMode ? [
+                                    { key: "color3", label: "Accent", value: settings.color3 },
+                                    { key: "color4", label: "Highlight", value: settings.color4 },
+                                  ] : []),
+                                ].map(({ key, label, value }) => (
+                                  <button
+                                    key={key}
+                                    onClick={() => handleColorPickerOpen(key)}
+                                    className={cn(
+                                      "flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all",
+                                      activeColorPicker === key
+                                        ? "bg-white/10 ring-1 ring-white/20"
+                                        : "hover:bg-white/5"
+                                    )}
+                                  >
+                                    <span
+                                      className={cn(
+                                        "w-5 h-5 rounded-full border-2 transition-all flex-shrink-0",
+                                        activeColorPicker === key ? "border-white scale-110" : "border-white/30"
+                                      )}
+                                      style={{ backgroundColor: value }}
+                                    />
+                                    <span className="text-[9px] text-white/50">{label}</span>
+                                  </button>
+                                ))}
+                              </div>
+
+                              {activeColorPicker && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  className="mt-2 flex items-start gap-3"
+                                >
+                                  <HexColorPicker
+                                    color={
+                                      activeColorPicker === "color1" ? settings.color1 :
+                                        activeColorPicker === "color2" ? settings.color2 :
+                                          activeColorPicker === "color3" ? settings.color3 :
+                                            settings.color4
+                                    }
+                                    onChange={(color) => {
+                                      if (activeColorPicker === "color1") updateSetting("color1", color);
+                                      else if (activeColorPicker === "color2") updateSetting("color2", color);
+                                      else if (activeColorPicker === "color3") updateSetting("color3", color);
+                                      else updateSetting("color4", color);
+                                    }}
+                                    style={{ width: 120, height: 90 }}
+                                  />
+                                  <input
+                                    type="text"
+                                    value={
+                                      activeColorPicker === "color1" ? settings.color1 :
+                                        activeColorPicker === "color2" ? settings.color2 :
+                                          activeColorPicker === "color3" ? settings.color3 :
+                                            settings.color4
+                                    }
+                                    onChange={(e) => {
+                                      const hex = e.target.value;
+                                      const val = hex.startsWith("#") ? hex : "#" + hex;
+                                      if (activeColorPicker === "color1") updateSetting("color1", val);
+                                      else if (activeColorPicker === "color2") updateSetting("color2", val);
+                                      else if (activeColorPicker === "color3") updateSetting("color3", val);
+                                      else updateSetting("color4", val);
+                                    }}
+                                    className="w-20 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-1 text-[10px] text-white/80 font-mono focus:outline-none focus:border-white/20"
+                                    placeholder="#000000"
+                                  />
+                                </motion.div>
+                              )}
+                            </div>
                           </div>
                         </motion.div>
                       )}
@@ -2152,104 +2229,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         </motion.div>
                       )}
 
-                      {activeTab === "colors" && (
-                        <motion.div
-                          key="colors"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col w-full"
-                        >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Colors</h4>
-                          <div className="flex gap-4 flex-1 min-h-0">
-                            {/* Color swatches column */}
-                            <div className="flex flex-col gap-2 flex-shrink-0">
-                              {[
-                                { key: "color1", label: "Base", value: settings.color1 },
-                                { key: "color2", label: "Surface", value: settings.color2 },
-                                ...(!settings.singleColorMode ? [
-                                  { key: "color3", label: "Accent", value: settings.color3 },
-                                  { key: "color4", label: "Highlight", value: settings.color4 },
-                                ] : []),
-                              ].map(({ key, label, value }) => (
-                                <button
-                                  key={key}
-                                  onClick={() => handleColorPickerOpen(key)}
-                                  className={cn(
-                                    "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all",
-                                    activeColorPicker === key
-                                      ? "bg-white/10 ring-1 ring-white/20"
-                                      : "hover:bg-white/5"
-                                  )}
-                                >
-                                  <span
-                                    className={cn(
-                                      "w-6 h-6 rounded-full border-2 transition-all flex-shrink-0",
-                                      activeColorPicker === key ? "border-white scale-110" : "border-white/30"
-                                    )}
-                                    style={{ backgroundColor: value }}
-                                  />
-                                  <span className="text-[10px] text-white/50 w-12">{label}</span>
-                                </button>
-                              ))}
-                            </div>
-
-                            {/* Color picker area */}
-                            {activeColorPicker && (
-                              <motion.div
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="flex-1 flex flex-col gap-2 min-w-0"
-                              >
-                                <HexColorPicker
-                                  color={
-                                    activeColorPicker === "color1" ? settings.color1 :
-                                      activeColorPicker === "color2" ? settings.color2 :
-                                        activeColorPicker === "color3" ? settings.color3 :
-                                          settings.color4
-                                  }
-                                  onChange={(color) => {
-                                    if (activeColorPicker === "color1") updateSetting("color1", color);
-                                    else if (activeColorPicker === "color2") updateSetting("color2", color);
-                                    else if (activeColorPicker === "color3") updateSetting("color3", color);
-                                    else updateSetting("color4", color);
-                                  }}
-                                  style={{ width: "100%", height: "100%" }}
-                                />
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 uppercase tracking-wider flex-shrink-0">Hex</span>
-                                  <input
-                                    type="text"
-                                    value={
-                                      activeColorPicker === "color1" ? settings.color1 :
-                                        activeColorPicker === "color2" ? settings.color2 :
-                                          activeColorPicker === "color3" ? settings.color3 :
-                                            settings.color4
-                                    }
-                                    onChange={(e) => {
-                                      const hex = e.target.value;
-                                      const val = hex.startsWith("#") ? hex : "#" + hex;
-                                      if (activeColorPicker === "color1") updateSetting("color1", val);
-                                      else if (activeColorPicker === "color2") updateSetting("color2", val);
-                                      else if (activeColorPicker === "color3") updateSetting("color3", val);
-                                      else updateSetting("color4", val);
-                                    }}
-                                    className="flex-1 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/80 placeholder:text-white/30 focus:outline-none focus:border-white/20 font-mono"
-                                    placeholder="#000000"
-                                  />
-                                </div>
-                              </motion.div>
-                            )}
-
-                            {!activeColorPicker && (
-                              <div className="flex-1 flex items-center justify-center text-white/20 text-xs">
-                                Click a color to edit
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-
                       {activeTab === "motion" && (
                         <motion.div
                           key="motion"
@@ -2325,37 +2304,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           className="h-full min-h-0 flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden"
                           style={{ scrollbarWidth: "none" }}
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Components</h4>
+                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Button</h4>
                           
-                          {/* Component type selector */}
-                          <div className="flex items-center gap-1.5 flex-shrink-0 mb-3">
-                            {(["button-primary", "button-secondary", "card", "input"] as const).map((id) => (
-                              <button
-                                key={id}
-                                onClick={() => setSelectedComponent(selectedComponent === id ? null : id as typeof selectedComponent)}
-                                className={cn(
-                                  "px-2 py-1 rounded text-[9px] font-medium transition-all capitalize",
-                                  selectedComponent === id
-                                    ? "bg-white/15 text-white border border-white/20"
-                                    : "bg-neutral-900/50 text-white/50 border border-white/5 hover:text-white/70"
-                                )}
-                              >
-                                {id === "button-primary" ? "Primary" : id === "button-secondary" ? "Secondary" : id === "card" ? "Card" : "Input"}
-                              </button>
-                            ))}
-                          </div>
-
-                          {/* Button shape presets - shown for both button types */}
-                          {(selectedComponent === "button-primary" || selectedComponent === "button-secondary") && (() => {
-                            const prefix = selectedComponent === "button-primary" ? "buttonPrimary" : "buttonSecondary";
-                            const bg = settings[`${prefix}Bg` as keyof HeroBackgroundSettings] as string;
-                            const text = settings[`${prefix}Text` as keyof HeroBackgroundSettings] as string;
-                            const gradient = settings[`${prefix}Gradient` as keyof HeroBackgroundSettings] as string;
-                            const gradientColor = settings[`${prefix}GradientColor` as keyof HeroBackgroundSettings] as string;
-                            const radius = settings[`${prefix}Radius` as keyof HeroBackgroundSettings] as number;
-                            const px = settings[`${prefix}PaddingX` as keyof HeroBackgroundSettings] as number;
-                            const py = settings[`${prefix}PaddingY` as keyof HeroBackgroundSettings] as number;
-                            const border = selectedComponent === "button-secondary" ? settings.buttonSecondaryBorder : undefined;
+                          {(() => {
+                            const bg = settings.buttonPrimaryBg;
+                            const text = settings.buttonPrimaryText;
+                            const gradient = settings.buttonPrimaryGradient;
+                            const gradientColor = settings.buttonPrimaryGradientColor;
+                            const radius = settings.buttonPrimaryRadius;
+                            const px = settings.buttonPrimaryPaddingX;
+                            const py = settings.buttonPrimaryPaddingY;
 
                             const getBackground = () => {
                               if (gradient === "none") return bg;
@@ -2370,272 +2328,82 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               { label: "Sharp", radius: 0, px: 20, py: 8 },
                               { label: "Rounded", radius: 8, px: 24, py: 10 },
                               { label: "Pill", radius: 999, px: 28, py: 10 },
-                              { label: "Wide", radius: 8, px: 36, py: 10 },
-                              { label: "Tall", radius: 8, px: 20, py: 14 },
-                              { label: "Circle", radius: 999, px: 12, py: 12 },
                             ];
 
                             return (
-                              <div className="space-y-3">
-                                {/* Shape presets grid */}
-                                <div>
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Shape Presets</span>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {SHAPE_PRESETS.map((preset) => (
-                                      <motion.button
-                                        key={preset.label}
-                                        whileHover={{ scale: 1.03 }}
-                                        whileTap={{ scale: 0.97 }}
-                                        onClick={() => {
-                                          updateSetting(`${prefix}Radius` as keyof HeroBackgroundSettings, preset.radius);
-                                          updateSetting(`${prefix}PaddingX` as keyof HeroBackgroundSettings, preset.px);
-                                          updateSetting(`${prefix}PaddingY` as keyof HeroBackgroundSettings, preset.py);
-                                        }}
-                                        className={cn(
-                                          "p-2 rounded-lg border flex flex-col items-center gap-1.5 transition-all",
-                                          radius === preset.radius && px === preset.px && py === preset.py
-                                            ? "bg-white/10 border-white/25 ring-1 ring-blue-500/40"
-                                            : "bg-neutral-900/60 border-white/8 hover:border-white/15"
-                                        )}
-                                      >
-                                        <div
-                                          className="text-[9px] font-medium whitespace-nowrap"
-                                          style={{
-                                            background: getBackground(),
-                                            color: text,
-                                            borderRadius: `${preset.radius}px`,
-                                            padding: `${preset.py * 0.5}px ${preset.px * 0.5}px`,
-                                            boxShadow: getBoxShadow(),
-                                            border: border ? `1px solid ${border}` : undefined,
-                                            minWidth: preset.label === "Circle" ? "28px" : undefined,
-                                            textAlign: "center" as const,
-                                          }}
-                                        >
-                                          {preset.label === "Circle" ? "●" : "Button"}
-                                        </div>
-                                        <span className="text-[8px] text-white/40">{preset.label}</span>
-                                      </motion.button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Fine-tune sliders */}
-                                <div className="border-t border-white/5 pt-3 space-y-2">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider block">Fine Tune</span>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] text-white/50 w-14">Radius</span>
-                                      <input type="range" min={0} max={50} value={Math.min(radius, 50)} onChange={(e) => updateSetting(`${prefix}Radius` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
-                                      <span className="text-[10px] text-white/40 w-6 text-right">{radius}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] text-white/50 w-14">Padding X</span>
-                                      <input type="range" min={8} max={48} value={px} onChange={(e) => updateSetting(`${prefix}PaddingX` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
-                                      <span className="text-[10px] text-white/40 w-6 text-right">{px}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] text-white/50 w-14">Padding Y</span>
-                                      <input type="range" min={4} max={20} value={py} onChange={(e) => updateSetting(`${prefix}PaddingY` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
-                                      <span className="text-[10px] text-white/40 w-6 text-right">{py}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Gradient type selector */}
-                                <div className="border-t border-white/5 pt-3">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[9px] text-white/40 uppercase tracking-wider">Style</span>
-                                    <div className="flex gap-1">
-                                      {(["none", "linear", "radial", "glossy", "glow"] as const).map((g) => (
-                                        <button
-                                          key={g}
-                                          onClick={() => updateSetting(`${prefix}Gradient` as keyof HeroBackgroundSettings, g)}
-                                          className={cn(
-                                            "px-1.5 py-0.5 rounded text-[8px] font-medium transition-all capitalize",
-                                            gradient === g ? "bg-white/20 text-white" : "bg-neutral-800 text-white/40 hover:text-white/60"
-                                          )}
-                                        >{g}</button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Color controls */}
-                                <div className="border-t border-white/5 pt-3">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Colors</span>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-[9px] text-white/40 w-8">BG</span>
-                                      <input type="color" value={bg} onChange={(e) => updateSetting(`${prefix}Bg` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
-                                      <input type="text" value={bg} onChange={(e) => updateSetting(`${prefix}Bg` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-[9px] text-white/40 w-8">Text</span>
-                                      <input type="color" value={text} onChange={(e) => updateSetting(`${prefix}Text` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
-                                      <input type="text" value={text} onChange={(e) => updateSetting(`${prefix}Text` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
-                                    </div>
-                                    {gradient !== "none" && (
-                                      <div className="flex items-center gap-1.5 col-span-2">
-                                        <span className="text-[9px] text-white/40 w-8">Grad</span>
-                                        <input type="color" value={gradientColor} onChange={(e) => updateSetting(`${prefix}GradientColor` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
-                                        <input type="text" value={gradientColor} onChange={(e) => updateSetting(`${prefix}GradientColor` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
-                                      </div>
-                                    )}
-                                    {border !== undefined && (
-                                      <div className="flex items-center gap-1.5 col-span-2">
-                                        <span className="text-[9px] text-white/40 w-8">Brd</span>
-                                        <input type="text" value={border} onChange={(e) => updateSetting("buttonSecondaryBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
+                              <div className="flex flex-col gap-4">
                                 {/* Live preview */}
-                                <div className="border-t border-white/5 pt-3">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                  <div className="flex items-center gap-3 flex-wrap">
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    className="text-xs font-medium transition-all"
+                                    style={{
+                                      background: getBackground(),
+                                      color: text,
+                                      borderRadius: `${radius}px`,
+                                      padding: `${py}px ${px}px`,
+                                      boxShadow: getBoxShadow(),
+                                    }}
+                                  >
+                                    Button
+                                  </button>
+                                </div>
+
+                                {/* Shape presets */}
+                                <div className="flex items-center gap-2">
+                                  {SHAPE_PRESETS.map((preset) => (
                                     <button
-                                      className="text-xs font-medium transition-all"
-                                      style={{
-                                        background: getBackground(),
-                                        color: text,
-                                        borderRadius: `${radius}px`,
-                                        padding: `${py}px ${px}px`,
-                                        boxShadow: getBoxShadow(),
-                                        border: border ? `1px solid ${border}` : undefined,
+                                      key={preset.label}
+                                      onClick={() => {
+                                        updateSetting("buttonPrimaryRadius", preset.radius);
+                                        updateSetting("buttonPrimaryPaddingX", preset.px);
+                                        updateSetting("buttonPrimaryPaddingY", preset.py);
                                       }}
+                                      className={cn(
+                                        "px-2 py-1 rounded text-[9px] font-medium transition-all",
+                                        radius === preset.radius
+                                          ? "bg-white/15 text-white"
+                                          : "bg-white/[0.03] text-white/40 hover:text-white/60"
+                                      )}
                                     >
-                                      {selectedComponent === "button-primary" ? "Primary Button" : "Secondary Button"}
+                                      {preset.label}
                                     </button>
+                                  ))}
+                                </div>
+
+                                {/* Style */}
+                                <div className="flex items-center gap-1">
+                                  {(["none", "linear", "glossy", "glow"] as const).map((g) => (
                                     <button
-                                      className="text-[10px] font-medium transition-all"
-                                      style={{
-                                        background: getBackground(),
-                                        color: text,
-                                        borderRadius: `${radius}px`,
-                                        padding: `${py * 0.7}px ${px * 0.7}px`,
-                                        boxShadow: getBoxShadow(),
-                                        border: border ? `1px solid ${border}` : undefined,
-                                        opacity: 0.8,
-                                      }}
-                                    >
-                                      Small
-                                    </button>
+                                      key={g}
+                                      onClick={() => updateSetting("buttonPrimaryGradient", g)}
+                                      className={cn(
+                                        "px-1.5 py-0.5 rounded text-[8px] font-medium transition-all capitalize",
+                                        gradient === g ? "bg-white/20 text-white" : "bg-white/[0.03] text-white/40 hover:text-white/60"
+                                      )}
+                                    >{g}</button>
+                                  ))}
+                                </div>
+
+                                {/* Colors */}
+                                <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[9px] text-white/40">BG</span>
+                                    <input type="color" value={bg} onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
                                   </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[9px] text-white/40">Text</span>
+                                    <input type="color" value={text} onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
+                                  </div>
+                                  {gradient !== "none" && (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] text-white/40">Grad</span>
+                                      <input type="color" value={gradientColor} onChange={(e) => updateSetting("buttonPrimaryGradientColor", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             );
                           })()}
-
-                          {selectedComponent === "card" && (
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <label className="text-xs text-white/70 font-medium">Card</label>
-                                <div className="flex gap-1">
-                                  {(["none", "linear", "radial", "glossy", "glass"] as const).map((gradient) => (
-                                    <button
-                                      key={gradient}
-                                      onClick={() => updateSetting("cardGradient", gradient)}
-                                      className={cn(
-                                        "px-2 py-0.5 rounded text-[9px] font-medium transition-all capitalize",
-                                        settings.cardGradient === gradient
-                                          ? "bg-white/20 text-white"
-                                          : "bg-neutral-800 text-white/50 hover:text-white/70"
-                                      )}
-                                    >{gradient}</button>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-12">BG</span>
-                                  <input type="text" value={settings.cardBg} onChange={(e) => updateSetting("cardBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-12">Border</span>
-                                  <input type="text" value={settings.cardBorder} onChange={(e) => updateSetting("cardBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                </div>
-                                {settings.cardGradient !== "none" && settings.cardGradient !== "glass" && (
-                                  <div className="flex items-center gap-2 col-span-2">
-                                    <span className="text-[10px] text-white/40 w-12">Gradient</span>
-                                    <input type="color" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                    <input type="text" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="pt-2 border-t border-white/10">
-                                <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                <div
-                                  className="w-40 h-16 rounded-lg border p-2"
-                                  style={{
-                                    background: settings.cardGradient === "none"
-                                      ? settings.cardBg
-                                      : settings.cardGradient === "glass"
-                                        ? `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`
-                                        : settings.cardGradient === "linear"
-                                          ? `linear-gradient(180deg, ${settings.cardGradientColor}20, transparent)`
-                                          : settings.cardGradient === "radial"
-                                            ? `radial-gradient(circle at top, ${settings.cardGradientColor}30, transparent)`
-                                            : settings.cardBg,
-                                    borderColor: settings.cardBorder,
-                                    backdropFilter: settings.cardGradient === "glass" ? 'blur(10px)' : undefined
-                                  }}
-                                >
-                                  <div className="h-2 bg-white/20 rounded w-3/4 mb-1" />
-                                  <div className="h-2 bg-white/10 rounded w-1/2" />
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {selectedComponent === "input" && (
-                            <div className="space-y-3">
-                              <label className="text-xs text-white/70 font-medium">Input Field</label>
-                              <div className="grid grid-cols-3 gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-8">BG</span>
-                                  <input type="color" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                  <input type="text" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-8">Border</span>
-                                  <input type="text" value={settings.inputBorder} onChange={(e) => updateSetting("inputBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-8">Text</span>
-                                  <input type="color" value={settings.inputText} onChange={(e) => updateSetting("inputText", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-white/40 w-16">Focus Ring</span>
-                                <input type="color" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                <input type="text" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                              </div>
-                              <div className="pt-2 border-t border-white/10">
-                                <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                <input
-                                  type="text"
-                                  placeholder="Type something..."
-                                  className="w-40 px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                                  style={{
-                                    backgroundColor: settings.inputBg,
-                                    borderColor: settings.inputBorder,
-                                    color: settings.inputText,
-                                  }}
-                                  readOnly
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {!selectedComponent && (
-                            <div className="flex items-center justify-center flex-1 text-white/30 text-xs">
-                              <div className="text-center">
-                                <Palette size={24} className="mx-auto mb-2 opacity-50" />
-                                <p>Select a component to edit</p>
-                              </div>
-                            </div>
-                          )}
                         </motion.div>
                       )}
 

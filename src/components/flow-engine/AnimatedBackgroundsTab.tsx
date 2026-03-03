@@ -88,22 +88,45 @@ const SHADER_CATEGORIES = [
 ];
 
 // ── CSS gradient fallback for preset thumbnails ──
+// Each shader type gets a distinctive visual pattern that hints at the actual animation
 
 function buildPresetGradientCSS(preset: AnimatedPreset): string {
   const c = preset.colors;
   switch (preset.shaderType) {
     case "mesh-gradient":
-      return `radial-gradient(ellipse at 30% 50%, ${c[2] || c[0]}cc 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, ${c[3] || c[1]}99 0%, transparent 55%), linear-gradient(135deg, ${c[0]} 0%, ${c[1]} 100%)`;
+      return `
+        radial-gradient(ellipse 70% 60% at 25% 40%, ${c[2] || c[0]}bb 0%, transparent 55%),
+        radial-gradient(ellipse 60% 70% at 75% 30%, ${c[3] || c[1]}99 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 70%, ${c[1]}77 0%, transparent 45%),
+        linear-gradient(135deg, ${c[0]} 0%, ${c[1]}dd 100%)
+      `;
     case "neuro-noise":
-      return `radial-gradient(circle at 50% 50%, ${c[0]}bb 0%, ${c[1]}88 50%, ${c[2]} 100%)`;
+      return `
+        repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 8px, ${c[0]}30 9px, transparent 10px),
+        radial-gradient(ellipse at 40% 40%, ${c[0]}cc 0%, ${c[1]}88 40%, ${c[2]} 100%)
+      `;
     case "god-rays":
-      return `conic-gradient(from 180deg at 50% 120%, ${c[0]}dd, ${c[1]}88, ${c[2]}66, transparent 70%), radial-gradient(circle at 50% 100%, ${c[0]}99 0%, #000 80%)`;
+      return `
+        conic-gradient(from 200deg at 50% 110%, ${c[0]}ee 0deg, transparent 30deg, ${c[1]}aa 60deg, transparent 90deg, ${c[2]}88 120deg, transparent 150deg, ${c[0]}66 180deg, transparent 360deg),
+        radial-gradient(ellipse 120% 80% at 50% 100%, ${c[0]}99 0%, #000 70%)
+      `;
     case "smoke-ring":
-      return `radial-gradient(circle at 50% 50%, ${c[0]}88 0%, ${c[1]}55 40%, ${c[c.length - 1]} 100%)`;
+      return `
+        radial-gradient(circle at 50% 50%, transparent 15%, ${c[0]}55 25%, transparent 35%),
+        radial-gradient(circle at 50% 50%, transparent 35%, ${c[1]}44 45%, transparent 55%),
+        radial-gradient(circle at 50% 50%, ${c[0]}33 0%, ${c[1]}22 40%, ${c[c.length - 1]} 100%)
+      `;
     case "grain-gradient":
-      return `linear-gradient(135deg, ${c[0]} 0%, ${c[1]} 50%, ${c[2] || c[0]} 100%)`;
+      return `
+        radial-gradient(ellipse at 30% 30%, ${c[0]}aa 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, ${c[1]}88 0%, transparent 50%),
+        linear-gradient(160deg, ${c[2] || c[0]}66 0%, #000 100%)
+      `;
     case "swirl":
-      return `conic-gradient(from 0deg at 50% 50%, ${c[0]}, ${c[1]}, ${c[2] || c[0]}, ${c[3] || c[1]}, ${c[0]})`;
+      return `
+        conic-gradient(from 0deg at 50% 50%, ${c[0]}dd, ${c[1]}bb, ${c[2] || c[0]}99, ${c[3] || c[1]}bb, ${c[0]}dd),
+        radial-gradient(circle at 50% 50%, transparent 30%, #00000080 100%)
+      `;
     default:
       return `linear-gradient(135deg, ${c[0] || '#111'} 0%, ${c[1] || '#333'} 100%)`;
   }
@@ -113,10 +136,17 @@ function buildPresetGradientCSS(preset: AnimatedPreset): string {
 
 const PresetThumbnail = memo(({ preset }: { preset: AnimatedPreset }) => {
   return (
-    <div
-      className="w-full h-full"
-      style={{ background: buildPresetGradientCSS(preset) }}
-    />
+    <div className="w-full h-full relative overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{ background: buildPresetGradientCSS(preset) }}
+      />
+      {/* Subtle noise overlay for texture */}
+      <div
+        className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+      />
+    </div>
   );
 });
 PresetThumbnail.displayName = "PresetThumbnail";
