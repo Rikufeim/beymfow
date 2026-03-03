@@ -8,6 +8,7 @@ import { setColorPromptPayload, buildColorSummary } from "@/lib/colorPromptBridg
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import ColorPickerField from "@/components/flow-nodes/ColorPickerField";
+import AnimatedBackgroundsTab, { AnimatedBgPreview, DEFAULT_ANIMATED_BG, type AnimatedBgSettings } from "./AnimatedBackgroundsTab";
 import { cn } from "@/lib/utils";
 import { buildHeroGradient } from "./heroGradient";
 import {
@@ -180,10 +181,11 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "layout" | "style" | "colors" | "motion" | "components" | "export";
+type TabId = "shape" | "animated" | "layout" | "style" | "colors" | "motion" | "components" | "export";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
+  { id: "animated", label: "Animated" },
   { id: "layout", label: "Layout" },
   { id: "style", label: "Style" },
   { id: "colors", label: "Colors" },
@@ -728,6 +730,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [autoAdjustBg, setAutoAdjustBg] = useState(true);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showHeroPreview, setShowHeroPreview] = useState(false);
+
+  const [animatedBg, setAnimatedBg] = useState<AnimatedBgSettings>(DEFAULT_ANIMATED_BG);
 
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
@@ -1577,11 +1581,18 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           ].join(', '),
         }}
       >
+        {/* Animated shader background (renders behind/instead of gradient) */}
+        {animatedBg.enabled && (
+          <div className="absolute inset-0 z-[0]">
+            <AnimatedBgPreview settings={animatedBg} />
+          </div>
+        )}
+
         {/* Fullscreen Preview */}
         <div
           ref={previewContainerRef}
           className="absolute inset-0 transition-all duration-500 z-[1]"
-          style={generateGradientStyle()}
+          style={animatedBg.enabled ? {} : generateGradientStyle()}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -1856,6 +1867,22 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               <div className="flex items-center justify-center py-8 text-white/40 text-sm">No backgrounds match your search.</div>
                             )}
                           </div>
+                        </motion.div>
+                      )}
+
+
+                      {activeTab === "animated" && (
+                        <motion.div
+                          key="animated"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="h-full min-h-0 flex flex-col"
+                        >
+                          <AnimatedBackgroundsTab
+                            settings={animatedBg}
+                            onChange={(newSettings) => setAnimatedBg(newSettings)}
+                          />
                         </motion.div>
                       )}
 
