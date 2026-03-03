@@ -877,7 +877,17 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       if (heroPreviewEl) {
         try {
           const { toJpeg } = await import("html-to-image");
-          thumbnail = await toJpeg(heroPreviewEl, { quality: 0.7, width: 512, height: 288 });
+          // Ensure latest visual frame (especially shader/canvas-based animated backgrounds) is painted
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          });
+          thumbnail = await toJpeg(heroPreviewEl, {
+            quality: 0.7,
+            width: 512,
+            height: 288,
+            pixelRatio: 1,
+            cacheBust: true,
+          });
         } catch (e) {
           console.warn("DOM thumbnail capture failed, using canvas fallback", e);
           thumbnail = await generateThumbnail(settings);
@@ -1533,6 +1543,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     };
   }, []);
 
+  const handleBackWithSave = useCallback(async () => {
+    try {
+      await triggerAutoSave();
+    } finally {
+      onBack();
+    }
+  }, [triggerAutoSave, onBack]);
+
   return (
     <>
       {/* Fixed Header Bar - MUST be outside main container to be truly fixed to viewport */}
@@ -1550,7 +1568,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       >
         {/* Back button (left) */}
         <button
-          onClick={onBack}
+          onClick={handleBackWithSave}
           className="px-2.5 py-1.5 rounded-lg bg-neutral-900 border border-white/10 text-white/70 hover:text-white hover:bg-neutral-800 transition-all flex items-center gap-1.5 pointer-events-auto text-xs flex-shrink-0"
         >
           <ArrowLeft size={14} />
