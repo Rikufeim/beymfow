@@ -1147,6 +1147,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       selectedBackgroundId: entry.id,
     }));
 
+    // Disable animated background when selecting a static background
+    setAnimatedBg({ ...DEFAULT_ANIMATED_BG });
+
     animatePaletteTransition(currentPalette, nextPalette);
 
     setSettings((prev) => ({
