@@ -258,9 +258,10 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 if (tab.id === "projects") {
                   setSelectionTab("projects");
                 } else if (tab.id === "color-codes") {
-                  setSelectionTab("color-codes");
+                  sessionStorage.removeItem('beymflow.editing-project-id');
+                  navigate("/flow/color-codes");
                 } else {
-                  setSelectionTab("prompt-generator");
+                  navigate("/flow/prompt-generator");
                 }
               }}
               className={cn(
