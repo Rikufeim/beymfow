@@ -87,64 +87,115 @@ const SHADER_CATEGORIES = [
   { label: "Swirl", filter: (p: AnimatedPreset) => p.shaderType === "swirl" },
 ];
 
-// ── CSS gradient fallback for preset thumbnails ──
-// Each shader type gets a distinctive visual pattern that hints at the actual animation
+// ── CSS gradient thumbnails – each shader type gets a unique, representative visual ──
 
-function buildPresetGradientCSS(preset: AnimatedPreset): string {
+function buildPresetGradientCSS(preset: AnimatedPreset): { background: string; extra?: React.CSSProperties } {
   const c = preset.colors;
+  const c0 = c[0] || "#111";
+  const c1 = c[1] || "#333";
+  const c2 = c[2] || c0;
+  const c3 = c[3] || c1;
+
   switch (preset.shaderType) {
     case "mesh-gradient":
-      return `
-        radial-gradient(ellipse 70% 60% at 25% 40%, ${c[2] || c[0]}bb 0%, transparent 55%),
-        radial-gradient(ellipse 60% 70% at 75% 30%, ${c[3] || c[1]}99 0%, transparent 50%),
-        radial-gradient(ellipse 50% 50% at 50% 70%, ${c[1]}77 0%, transparent 45%),
-        linear-gradient(135deg, ${c[0]} 0%, ${c[1]}dd 100%)
-      `;
+      return {
+        background: `
+          radial-gradient(ellipse 80% 70% at 20% 30%, ${c2}cc 0%, transparent 60%),
+          radial-gradient(ellipse 60% 80% at 80% 25%, ${c3}aa 0%, transparent 55%),
+          radial-gradient(ellipse 70% 60% at 60% 80%, ${c1}88 0%, transparent 50%),
+          radial-gradient(ellipse 50% 50% at 35% 60%, ${c0}66 0%, transparent 45%),
+          linear-gradient(160deg, ${c0} 0%, ${c1} 100%)
+        `,
+        extra: { filter: "blur(2px) saturate(1.3)" },
+      };
+
     case "neuro-noise":
-      return `
-        repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 8px, ${c[0]}30 9px, transparent 10px),
-        radial-gradient(ellipse at 40% 40%, ${c[0]}cc 0%, ${c[1]}88 40%, ${c[2]} 100%)
-      `;
+      return {
+        background: `
+          repeating-radial-gradient(circle at 30% 40%, ${c0}44 0px, transparent 4px, transparent 8px),
+          repeating-radial-gradient(circle at 70% 60%, ${c1}33 0px, transparent 3px, transparent 7px),
+          repeating-radial-gradient(circle at 50% 50%, ${c0}22 0px, transparent 5px, transparent 12px),
+          radial-gradient(ellipse at 40% 35%, ${c0}dd 0%, transparent 60%),
+          radial-gradient(ellipse at 65% 65%, ${c1}aa 0%, transparent 50%),
+          ${c2}
+        `,
+        extra: { filter: "contrast(1.2) saturate(1.1)" },
+      };
+
     case "god-rays":
-      return `
-        conic-gradient(from 200deg at 50% 110%, ${c[0]}ee 0deg, transparent 30deg, ${c[1]}aa 60deg, transparent 90deg, ${c[2]}88 120deg, transparent 150deg, ${c[0]}66 180deg, transparent 360deg),
-        radial-gradient(ellipse 120% 80% at 50% 100%, ${c[0]}99 0%, #000 70%)
-      `;
+      return {
+        background: `
+          conic-gradient(from 180deg at 50% 100%, 
+            ${c0}ee 0deg, transparent 18deg,
+            ${c1}cc 30deg, transparent 48deg,
+            ${c2}aa 60deg, transparent 78deg,
+            ${c0}88 90deg, transparent 108deg,
+            ${c1}66 120deg, transparent 138deg,
+            ${c2}44 150deg, transparent 168deg,
+            transparent 180deg,
+            transparent 360deg
+          ),
+          radial-gradient(ellipse 100% 60% at 50% 100%, ${c0}88 0%, transparent 70%),
+          linear-gradient(0deg, ${c0}44 0%, #000 100%)
+        `,
+        extra: { filter: "blur(1px) brightness(1.2)" },
+      };
+
     case "smoke-ring":
-      return `
-        radial-gradient(circle at 50% 50%, transparent 15%, ${c[0]}55 25%, transparent 35%),
-        radial-gradient(circle at 50% 50%, transparent 35%, ${c[1]}44 45%, transparent 55%),
-        radial-gradient(circle at 50% 50%, ${c[0]}33 0%, ${c[1]}22 40%, ${c[c.length - 1]} 100%)
-      `;
+      return {
+        background: `
+          radial-gradient(circle at 50% 50%, transparent 10%, ${c0}66 18%, transparent 26%),
+          radial-gradient(circle at 50% 50%, transparent 28%, ${c1}44 36%, transparent 44%),
+          radial-gradient(circle at 48% 52%, transparent 44%, ${c0}22 52%, transparent 60%),
+          radial-gradient(circle at 50% 50%, ${c0}44 0%, ${c1}33 30%, ${c3} 100%)
+        `,
+        extra: { filter: "blur(2px) saturate(1.4)" },
+      };
+
     case "grain-gradient":
-      return `
-        radial-gradient(ellipse at 30% 30%, ${c[0]}aa 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 70%, ${c[1]}88 0%, transparent 50%),
-        linear-gradient(160deg, ${c[2] || c[0]}66 0%, #000 100%)
-      `;
+      return {
+        background: `
+          radial-gradient(ellipse 60% 50% at 25% 30%, ${c0}bb 0%, transparent 60%),
+          radial-gradient(ellipse 50% 60% at 75% 70%, ${c1}99 0%, transparent 55%),
+          radial-gradient(ellipse 80% 40% at 50% 50%, ${c2}55 0%, transparent 50%),
+          linear-gradient(180deg, #0a0a0a 0%, ${c2}33 100%)
+        `,
+        extra: { filter: "contrast(1.1) saturate(1.2)" },
+      };
+
     case "swirl":
-      return `
-        conic-gradient(from 0deg at 50% 50%, ${c[0]}dd, ${c[1]}bb, ${c[2] || c[0]}99, ${c[3] || c[1]}bb, ${c[0]}dd),
-        radial-gradient(circle at 50% 50%, transparent 30%, #00000080 100%)
-      `;
+      return {
+        background: `
+          conic-gradient(from 0deg at 50% 50%, 
+            ${c0}ee, ${c1}cc, ${c2}aa, ${c3}cc, ${c0}ee
+          ),
+          radial-gradient(circle at 50% 50%, transparent 20%, #00000088 80%)
+        `,
+        extra: { filter: "blur(3px) saturate(1.5) brightness(1.1)" },
+      };
+
     default:
-      return `linear-gradient(135deg, ${c[0] || '#111'} 0%, ${c[1] || '#333'} 100%)`;
+      return { background: `linear-gradient(135deg, ${c0} 0%, ${c1} 100%)` };
   }
 }
 
 // ── Mini Preview for preset thumbnails ──
 
 const PresetThumbnail = memo(({ preset }: { preset: AnimatedPreset }) => {
+  const css = buildPresetGradientCSS(preset);
   return (
     <div className="w-full h-full relative overflow-hidden">
       <div
         className="absolute inset-0"
-        style={{ background: buildPresetGradientCSS(preset) }}
+        style={{ background: css.background, ...css.extra }}
       />
-      {/* Subtle noise overlay for texture */}
+      {/* Grain texture overlay */}
       <div
-        className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+        className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundSize: "128px 128px",
+        }}
       />
     </div>
   );
