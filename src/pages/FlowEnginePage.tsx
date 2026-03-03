@@ -237,7 +237,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
 
       {/* Top Nav Bar - ShortSync style */}
-      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
         {/* Logo / Home */}
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img
@@ -250,22 +250,15 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         </Link>
 
         {/* Center Tabs */}
-        <nav className="flex items-center bg-white/[0.06] border border-white/[0.08] rounded-full p-1 gap-0.5">
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-white/[0.06] border border-white/[0.08] rounded-full p-0.5 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => {
-                if (tab.id === "projects") {
-                  setSelectionTab("projects");
-                } else if (tab.id === "color-codes") {
-                  sessionStorage.removeItem('beymflow.editing-project-id');
-                  navigate("/flow/color-codes");
-                } else {
-                  navigate("/flow/prompt-generator");
-                }
+                setSelectionTab(tab.id as typeof selectionTab);
               }}
               className={cn(
-                "px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
                 selectionTab === tab.id
                   ? "bg-white/[0.12] text-white shadow-sm"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
