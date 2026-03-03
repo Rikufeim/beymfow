@@ -871,15 +871,17 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     try {
       let thumbnail: string | undefined;
 
-      // For animated backgrounds, capture the preview DOM element
-      if (animatedBg.enabled && previewContainerRef.current) {
+      // Always capture the actual rendered preview for accurate thumbnails
+      if (previewContainerRef.current) {
         try {
           const { toJpeg } = await import("html-to-image");
-          const container = previewContainerRef.current.closest("[data-hero-preview]") as HTMLElement;
+          // Try the data-hero-preview wrapper first, then fall back to the ref itself
+          const container = previewContainerRef.current.closest("[data-hero-preview]") as HTMLElement || previewContainerRef.current;
           if (container) {
             thumbnail = await toJpeg(container, { quality: 0.7, width: 512, height: 288 });
           }
         } catch {
+          // Fallback to canvas-based thumbnail
           thumbnail = await generateThumbnail(settings);
         }
       } else {
