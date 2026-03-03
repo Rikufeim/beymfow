@@ -51,6 +51,7 @@ export function saveDraft(project: Partial<HeroBackgroundProject> & { settings: 
     updatedAt: new Date().toISOString(),
     settings: project.settings,
     thumbnail: project.thumbnail,
+    animatedBg: project.animatedBg,
   };
   localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
