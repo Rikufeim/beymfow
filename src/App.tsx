@@ -1,7 +1,8 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useAuth } from "./contexts/AuthContext";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -39,6 +40,18 @@ const queryClient = new QueryClient({
 
 const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/landing-pages", "/auth"];
 
+const RedirectLoggedInToFlow = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user) {
+      navigate("/flow", { replace: true });
+    }
+  }, [user, navigate]);
+  if (user) return null;
+  return <>{children}</>;
+};
+
 const PersistentHeader = () => {
   const { pathname } = useLocation();
   const hidden = HIDDEN_HEADER_PREFIXES.some(p => pathname === p || pathname.startsWith(p + "/"));
@@ -62,9 +75,11 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <ErrorBoundary>
-          <Index />
-        </ErrorBoundary>
+        <RedirectLoggedInToFlow>
+          <ErrorBoundary>
+            <Index />
+          </ErrorBoundary>
+        </RedirectLoggedInToFlow>
       } />
       {/* Flow routes - path selection with sub-routes */}
       <Route path="/flow" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary></ProtectedRoute>} />
@@ -73,19 +88,19 @@ const AppRoutes = () => {
       {/* Legacy route - redirect to new /flow */}
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={
-        <Layout>
-          <About />
-        </Layout>
+        <RedirectLoggedInToFlow>
+          <Layout><About /></Layout>
+        </RedirectLoggedInToFlow>
       } />
       <Route path="/premium" element={
-        <Layout>
-          <Premium />
-        </Layout>
+        <RedirectLoggedInToFlow>
+          <Layout><Premium /></Layout>
+        </RedirectLoggedInToFlow>
       } />
       <Route path="/community" element={
-        <Layout>
-          <Community />
-        </Layout>
+        <RedirectLoggedInToFlow>
+          <Layout><Community /></Layout>
+        </RedirectLoggedInToFlow>
       } />
       <Route path="/image-generator" element={<ImageGenerator />} />
       <Route path="/planningsystem" element={<PlanningSystem />} />
