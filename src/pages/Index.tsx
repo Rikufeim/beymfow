@@ -8,7 +8,7 @@ import { FlowFeaturesSection } from "@/components/FlowFeaturesSection";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
-import { Pen, Cpu, Share2, Target, FileText, Layers, Zap, Lightbulb, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -216,124 +216,8 @@ const Index = () => {
           {/* Prompt Lab Section */}
 
 
-          {/* How It Works Section */}
-          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 xl:px-12">
-            <div className="max-w-7xl mx-auto">
-              <div className="text-center mb-10 sm:mb-12 lg:mb-16">
-                <div className="inline-block relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4 text-white">
-                    Create Perfect AI Prompts <span className="text-white/60">in Seconds</span>
-                  </h2>
-                  <p className="text-sm sm:text-base md:text-lg text-white/60 px-4 max-w-3xl mx-auto">
-                    Follow these simple steps to create optimized prompts for AI models in seconds
-                  </p>
-                </div>
-              </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {[{
-                  icon: <Pen className="h-4 w-4 text-cyan-300" />,
-                  title: "Enter Your Idea",
-                  description: "Simply input your task, goal, or a simple prompt. Our tool works with any type of input to create custom AI instructions."
-                }, {
-                  icon: <Cpu className="h-4 w-4 text-cyan-300" />,
-                  title: "AI-Powered Enhancements",
-                  description: "Our AI analyzes your input and generates a comprehensive, optimized prompt tailored for various AI models."
-                }, {
-                  icon: <Share2 className="h-4 w-4 text-purple-300" />,
-                  title: "Usage and Refinement",
-                  description: "You can instantly view the generated prompt. Copy and paste it directly into ChatGPT, Claude, Gemini, or any other AI model."
-                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
-                    <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden">
-                      <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                        <div className="flex flex-col gap-3">
-                          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                            {item.icon}
-                          </div>
-                          <div className="space-y-2">
-                            <h3 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-white">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm leading-relaxed text-white/70 md:text-lg">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>)}
-              </div>
-            </div>
-          </section>
 
-          {/* Essential Steps Section */}
-          <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12 sm:mb-16">
-                <div className="inline-block relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 max-w-4xl mx-auto">
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
-                    Essential Steps for Writing AI Prompts
-                  </h2>
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
-                    Follow these proven steps to create effective AI prompts
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[{
-                  number: "01",
-                  icon: <Target className="h-4 w-4 text-cyan-300" />,
-                  title: "Define Clear Objectives",
-                  description: "Start with a clear goal and specific requirements for your prompt"
-                }, {
-                  number: "02",
-                  icon: <FileText className="h-4 w-4 text-cyan-300" />,
-                  title: "Provide Context",
-                  description: "Include relevant background information and specific details"
-                }, {
-                  number: "03",
-                  icon: <Layers className="h-4 w-4 text-purple-300" />,
-                  title: "Structure Your Prompt",
-                  description: "Organize information logically with clear sections and formatting"
-                }, {
-                  number: "04",
-                  icon: <Zap className="h-4 w-4 text-purple-300" />,
-                  title: "Refine and Test",
-                  description: "Iterate and improve your prompt based on the results"
-                }].map((item, idx) => <div key={idx} className="min-h-[11rem]">
-                  <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
-                    <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-                    <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5 sm:p-6 md:p-8 overflow-hidden">
-                      <div className="relative z-10 flex flex-col justify-between gap-4 h-full">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <div className="text-4xl font-bold text-gray-400">{item.number}</div>
-                            <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
-                              {item.icon}
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white/85">
-                              {item.title}
-                            </h3>
-                            <p className="text-xs leading-relaxed text-white/70 md:text-lg">
-                              {item.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>)}
-              </div>
-            </div>
-          </section>
-
-          {/* Pricing Section */}
           <section className="py-16 sm:py-20 md:py-24 lg:py-32 px-4 sm:px-6 md:px-8 lg:px-12">
             <div className="max-w-6xl mx-auto">
               {/* Header */}
