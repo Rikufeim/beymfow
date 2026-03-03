@@ -1534,11 +1534,18 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       contrast: p.contrast ?? 1,
       saturation: p.saturation ?? 1,
     };
-    const filterParts = [`brightness(${p.brightness})`];
+
+    const generatedBackground = buildHeroGradient(previewSettings);
+    const hasInvalidBackground = /undefined|null/.test(generatedBackground);
+    const fallbackBackground = `radial-gradient(circle at 18% 22%, ${palette.accent}66 0%, transparent 45%), radial-gradient(circle at 82% 78%, ${palette.highlight}55 0%, transparent 45%), linear-gradient(135deg, ${palette.base} 0%, ${palette.surface} 100%)`;
+
+    const filterParts = [`brightness(${Math.max(1.05, p.brightness)})`];
     if (p.contrast != null && p.contrast !== 1) filterParts.push(`contrast(${p.contrast})`);
     if (p.saturation != null && p.saturation !== 1) filterParts.push(`saturate(${p.saturation})`);
+
     return {
-      background: buildHeroGradient(previewSettings),
+      background: hasInvalidBackground ? fallbackBackground : generatedBackground,
+      backgroundColor: palette.base,
       filter: filterParts.join(" "),
     };
   }, []);
@@ -1895,6 +1902,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                               {filteredBackgrounds.map((entry) => {
                                 const isActive = flowState.currentBackgroundStyle === entry.gradientStyle && flowState.selectedBackgroundId === entry.id;
                                 const previewStyle = buildPreviewStyle(entry, entry.variants[0]);
+                                const palette = getPaletteFromPreset(entry.palettePreset);
                                 return (
                                   <div key={entry.id} className="flex flex-col gap-1.5">
                                     <button
@@ -1910,9 +1918,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                         className="h-24 w-full shrink-0 relative"
                                         style={{
                                           ...previewStyle,
-                                          filter: `${previewStyle.filter || ''} brightness(1.6) saturate(1.3)`.trim(),
+                                          filter: `${previewStyle.filter || ''} brightness(1.55) saturate(1.25)`.trim(),
                                         }}
                                       >
+                                        {/* Visibility lift so every preset has a clear thumbnail silhouette */}
+                                        <div
+                                          className="absolute inset-0 pointer-events-none"
+                                          style={{
+                                            background: `radial-gradient(circle at 20% 20%, ${palette.accent}30 0%, transparent 45%), radial-gradient(circle at 80% 80%, ${palette.highlight}25 0%, transparent 45%)`,
+                                          }}
+                                        />
                                         {/* Anti-banding noise */}
                                         <div
                                           className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay"
