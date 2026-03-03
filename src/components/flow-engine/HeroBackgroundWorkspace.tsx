@@ -188,6 +188,7 @@ interface HeroBackgroundWorkspaceProps {
   projectId?: string;
   projectName?: string;
   initialSettings?: HeroBackgroundSettings;
+  initialAnimatedBg?: AnimatedBgSettings;
   isLoggedIn?: boolean;
   onBack: () => void;
   onSave?: (project: HeroBackgroundProject) => void;
@@ -726,6 +727,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   projectId,
   projectName: initialProjectName,
   initialSettings,
+  initialAnimatedBg,
   isLoggedIn = false,
   onBack,
   onSave,
@@ -743,7 +745,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [isDragOver, setIsDragOver] = useState(false);
   const [showHeroPreview, setShowHeroPreview] = useState(false);
 
-  const [animatedBg, setAnimatedBg] = useState<AnimatedBgSettings>(DEFAULT_ANIMATED_BG);
+  const [animatedBg, setAnimatedBg] = useState<AnimatedBgSettings>(initialAnimatedBg || DEFAULT_ANIMATED_BG);
   const activeTabRef = useRef<TabId>("shape");
 
   useEffect(() => {
@@ -857,7 +859,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(async () => {
-    const currentSettingsString = JSON.stringify(settings);
+    const currentSettingsString = JSON.stringify(settings) + JSON.stringify(animatedBg);
 
     // Skip if settings haven't changed
     if (currentSettingsString === lastSavedSettingsRef.current) {
@@ -867,7 +869,22 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     setSaveStatus("saving");
 
     try {
-      const thumbnail = await generateThumbnail(settings);
+      let thumbnail: string | undefined;
+
+      // For animated backgrounds, capture the preview DOM element
+      if (animatedBg.enabled && previewContainerRef.current) {
+        try {
+          const { toJpeg } = await import("html-to-image");
+          const container = previewContainerRef.current.closest("[data-hero-preview]") as HTMLElement;
+          if (container) {
+            thumbnail = await toJpeg(container, { quality: 0.7, width: 512, height: 288 });
+          }
+        } catch {
+          thumbnail = await generateThumbnail(settings);
+        }
+      } else {
+        thumbnail = await generateThumbnail(settings);
+      }
 
       const project: HeroBackgroundProject = {
         id: currentProjectId,
@@ -875,6 +892,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         settings,
+        animatedBg: animatedBg.enabled ? animatedBg : undefined,
         thumbnail,
       };
 
@@ -896,7 +914,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       console.error("Auto-save failed:", error);
       setSaveStatus("idle");
     }
-  }, [settings, currentProjectId, currentProjectName, isLoggedIn, onSave]);
+  }, [settings, animatedBg, currentProjectId, currentProjectName, isLoggedIn, onSave]);
 
   // Debounced auto-save effect
   useEffect(() => {
@@ -913,7 +931,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [settings, triggerAutoSave]);
+  }, [settings, animatedBg, triggerAutoSave]);
 
   // Save on tab change / export close
   useEffect(() => {
@@ -930,6 +948,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         settings,
+        animatedBg: animatedBg.enabled ? animatedBg : undefined,
       };
 
       if (isLoggedIn) {
@@ -1593,6 +1612,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       </div>
 
       <div
+        data-hero-preview
         className="fixed overflow-hidden"
         style={{
           top: '0',

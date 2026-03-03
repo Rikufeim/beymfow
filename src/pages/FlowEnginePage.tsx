@@ -153,6 +153,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           projectId={selectedHeroProject?.id}
           projectName={selectedHeroProject?.name || generateHeroProjectName()}
           initialSettings={selectedHeroProject?.settings || DEFAULT_SETTINGS}
+          initialAnimatedBg={selectedHeroProject?.animatedBg}
           isLoggedIn={true}
           onBack={handleHeroWorkspaceBack}
           onSave={handleHeroProjectSave}

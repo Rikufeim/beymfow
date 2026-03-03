@@ -4,6 +4,7 @@
  */
 
 import type { HeroBackgroundSettings } from "@/components/flow-engine/HeroBackgroundWorkspace";
+import type { AnimatedBgSettings } from "@/components/flow-engine/AnimatedBackgroundsTab";
 
 export interface HeroBackgroundProject {
   id: string;
@@ -12,6 +13,7 @@ export interface HeroBackgroundProject {
   updatedAt: string;
   thumbnail?: string;
   settings: HeroBackgroundSettings;
+  animatedBg?: AnimatedBgSettings;
 }
 
 const LOCAL_STORAGE_KEY = "beymflow.hero-projects";
