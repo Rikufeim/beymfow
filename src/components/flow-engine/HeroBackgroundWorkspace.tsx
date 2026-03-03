@@ -29,6 +29,10 @@ import {
 } from "@/data/heroBackgroundLibrary";
 // BG Library (overlay) removed - Color Codes uses gradient + grain only
 
+// Static SVG noise data URI — avoid re-creating on every render
+const NOISE_SVG_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
+const GRAIN_SVG_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`;
+
 type FlowMode = "refine" | "reset";
 
 interface FlowPalette {
@@ -855,7 +859,62 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     });
   }, [activeCategory, searchQuery]);
 
-  // Auto-save with debounce
+  // Pre-compute preview styles for filtered backgrounds to avoid calling buildHeroGradient per card per render
+  const previewStylesMap = useMemo(() => {
+    const map = new Map<string, React.CSSProperties>();
+    for (const entry of filteredBackgrounds) {
+      const palette = getPaletteFromPreset(entry.palettePreset);
+      const p = entry.variants[0].params;
+      const previewSettings: HeroBackgroundSettings = {
+        ...DEFAULT_SETTINGS,
+        gradientStyle: entry.gradientStyle,
+        color1: palette.base,
+        color2: palette.surface,
+        color3: palette.accent,
+        color4: palette.highlight,
+        brightness: p.brightness,
+        grainEnabled: p.grainEnabled,
+        grainIntensity: p.grainIntensity,
+        environmentEnabled: p.environmentEnabled,
+        contrast: p.contrast ?? 1,
+        saturation: p.saturation ?? 1,
+      };
+      const generatedBackground = buildHeroGradient(previewSettings);
+      const hasInvalidBackground = /undefined|null/.test(generatedBackground);
+      const fallbackBackground = `radial-gradient(circle at 18% 22%, ${palette.accent}66 0%, transparent 45%), radial-gradient(circle at 82% 78%, ${palette.highlight}55 0%, transparent 45%), linear-gradient(135deg, ${palette.base} 0%, ${palette.surface} 100%)`;
+      const filterParts = [`brightness(${Math.max(1.05, p.brightness)})`];
+      if (p.contrast != null && p.contrast !== 1) filterParts.push(`contrast(${p.contrast})`);
+      if (p.saturation != null && p.saturation !== 1) filterParts.push(`saturate(${p.saturation})`);
+      map.set(entry.id, {
+        background: hasInvalidBackground ? fallbackBackground : generatedBackground,
+        backgroundColor: palette.base,
+        filter: filterParts.join(" "),
+      });
+    }
+    return map;
+  }, [filteredBackgrounds]);
+
+  // Pre-compute layout shape preview backgrounds
+  const shapePreviewMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const shape of SHAPE_STYLES) {
+      const previewSettings: HeroBackgroundSettings = {
+        ...settings,
+        gradientStyle: shape.id,
+        environmentEnabled: true,
+        singleColorMode: false,
+        brightness: 1,
+        contrast: 1,
+        saturation: 1,
+        blurPx: 0,
+        exposure: 1,
+        gamma: 1,
+      };
+      map.set(shape.id, buildHeroGradient(previewSettings));
+    }
+    return map;
+  }, [settings.color1, settings.color2, settings.color3, settings.color4]);
+
   const triggerAutoSave = useCallback(async () => {
     const currentSettingsString = JSON.stringify(settings) + JSON.stringify(animatedBg);
 
@@ -924,7 +983,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }
   }, [settings, animatedBg, currentProjectId, currentProjectName, isLoggedIn, onSave]);
 
-  // Debounced auto-save effect
+  // Debounced auto-save effect — longer debounce to avoid blocking UI
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -932,7 +991,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     saveTimeoutRef.current = setTimeout(() => {
       triggerAutoSave();
-    }, 800);
+    }, 3000);
 
     return () => {
       if (saveTimeoutRef.current) {
@@ -940,11 +999,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       }
     };
   }, [settings, animatedBg, triggerAutoSave]);
-
-  // Save on tab change / export close
-  useEffect(() => {
-    triggerAutoSave();
-  }, [activeTab]);
 
   // Save before unload
   useEffect(() => {
@@ -1401,40 +1455,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [generateLiveThumbnail, currentProjectName, downloadFormat]);
 
   // Live preview thumbnail (small version)
-  const [liveThumbnail, setLiveThumbnail] = useState<string>("");
-
-  useEffect(() => {
-    const generatePreview = async () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 320;
-      canvas.height = 180;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const { color1, color2, color3, gradientStyle, singleColorMode } = settings;
-
-      let gradient: CanvasGradient;
-      switch (gradientStyle) {
-        case "halo":
-          gradient = ctx.createRadialGradient(160, 90, 0, 160, 90, 160);
-          gradient.addColorStop(0, singleColorMode ? color1 : color3 + "80");
-          gradient.addColorStop(0.4, color2 + "CC");
-          gradient.addColorStop(1, color1);
-          break;
-        default:
-          gradient = ctx.createLinearGradient(0, 0, 320, 180);
-          gradient.addColorStop(0, color1);
-          gradient.addColorStop(0.5, color2);
-          gradient.addColorStop(1, singleColorMode ? color1 : color3 + "80");
-      }
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 320, 180);
-      setLiveThumbnail(canvas.toDataURL("image/png"));
-    };
-
-    generatePreview();
-  }, [settings]);
+  // Live thumbnail removed — was causing unnecessary canvas work on every settings change
 
   // Handle color picker open (only one at a time) - don't reset effects
   const handleColorPickerOpen = useCallback((colorKey: string) => {
@@ -1498,8 +1519,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     setIsDragOver(false);
   }, []);
 
-  // Generate gradient CSS based on settings (Motion tab: brightness, contrast, saturation, blur)
-  const generateGradientStyle = useCallback((): React.CSSProperties => {
+  // Memoize gradient style to avoid calling buildHeroGradient on every render
+  const gradientStyle = useMemo((): React.CSSProperties => {
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = settings.contrast ?? 1;
     const s = settings.saturation ?? 1;
@@ -1514,39 +1535,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       mixBlendMode: settings.blendMode !== "normal" ? settings.blendMode as React.CSSProperties["mixBlendMode"] : undefined,
     };
   }, [settings]);
-
-  const buildPreviewStyle = useCallback((entry: BackgroundEntry, variant: BackgroundVariant): React.CSSProperties => {
-    const palette = getPaletteFromPreset(entry.palettePreset);
-    const p = variant.params;
-    const previewSettings: HeroBackgroundSettings = {
-      ...DEFAULT_SETTINGS,
-      gradientStyle: entry.gradientStyle,
-      color1: palette.base,
-      color2: palette.surface,
-      color3: palette.accent,
-      color4: palette.highlight,
-      brightness: p.brightness,
-      grainEnabled: p.grainEnabled,
-      grainIntensity: p.grainIntensity,
-      environmentEnabled: p.environmentEnabled,
-      contrast: p.contrast ?? 1,
-      saturation: p.saturation ?? 1,
-    };
-
-    const generatedBackground = buildHeroGradient(previewSettings);
-    const hasInvalidBackground = /undefined|null/.test(generatedBackground);
-    const fallbackBackground = `radial-gradient(circle at 18% 22%, ${palette.accent}66 0%, transparent 45%), radial-gradient(circle at 82% 78%, ${palette.highlight}55 0%, transparent 45%), linear-gradient(135deg, ${palette.base} 0%, ${palette.surface} 100%)`;
-
-    const filterParts = [`brightness(${Math.max(1.05, p.brightness)})`];
-    if (p.contrast != null && p.contrast !== 1) filterParts.push(`contrast(${p.contrast})`);
-    if (p.saturation != null && p.saturation !== 1) filterParts.push(`saturate(${p.saturation})`);
-
-    return {
-      background: hasInvalidBackground ? fallbackBackground : generatedBackground,
-      backgroundColor: palette.base,
-      filter: filterParts.join(" "),
-    };
-  }, []);
 
   const handleBackWithSave = useCallback(async () => {
     try {
@@ -1663,8 +1651,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         {/* Fullscreen Preview */}
         <div
           ref={previewContainerRef}
-          className="absolute inset-0 transition-all duration-500 z-[1]"
-          style={animatedBg.enabled ? {} : generateGradientStyle()}
+          className="absolute inset-0 z-[1]"
+          style={animatedBg.enabled ? {} : gradientStyle}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -1718,22 +1706,14 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                backgroundImage: GRAIN_SVG_URI,
                 opacity: settings.grainIntensity * 0.25,
                 mixBlendMode: "overlay",
               }}
             />
           )}
 
-          {/* Anti-banding noise overlay (always on, very subtle) */}
-          <div
-            className="absolute inset-0 pointer-events-none z-[2]"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-              opacity: 0.018,
-              mixBlendMode: "overlay",
-            }}
-          />
+          {/* Anti-banding noise removed for performance */}
 
           {/* Vignette overlay (Motion tab) */}
           {(settings.vignette ?? 0) > 0 && (
@@ -1899,7 +1879,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                               {filteredBackgrounds.map((entry) => {
                                 const isActive = flowState.currentBackgroundStyle === entry.gradientStyle && flowState.selectedBackgroundId === entry.id;
-                                const previewStyle = buildPreviewStyle(entry, entry.variants[0]);
+                                const previewStyle = previewStylesMap.get(entry.id) || {};
                                 const palette = getPaletteFromPreset(entry.palettePreset);
                                 return (
                                   <div key={entry.id} className="flex flex-col gap-1.5">
@@ -1929,7 +1909,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                         {/* Anti-banding noise */}
                                         <div
                                           className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay"
-                                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                          style={{ backgroundImage: NOISE_SVG_URI }}
                                         />
                                       </div>
                                       {/* Hover glow border */}
@@ -2049,19 +2029,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
                                   .map((shape) => {
                                   const isActive = settings.gradientStyle === shape.id;
-                                  const previewSettings: HeroBackgroundSettings = {
-                                    ...settings,
-                                    gradientStyle: shape.id,
-                                    environmentEnabled: true,
-                                    singleColorMode: false,
-                                    brightness: 1,
-                                    contrast: 1,
-                                    saturation: 1,
-                                    blurPx: 0,
-                                    exposure: 1,
-                                    gamma: 1,
-                                  };
-                                  const previewBg = buildHeroGradient(previewSettings);
+                                  const previewBg = shapePreviewMap.get(shape.id) || "";
                                   return (
                                     <div key={shape.id} className="flex flex-col gap-1">
                                       <button
@@ -2082,7 +2050,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                         >
                                           <div
                                             className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
-                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                            style={{ backgroundImage: NOISE_SVG_URI }}
                                           />
                                         </div>
                                       </button>
@@ -2098,7 +2066,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           </div>
                         </motion.div>
                       )}
-
 
                       {activeTab === "animated" && (
                         <motion.div
