@@ -183,53 +183,31 @@ function buildPresetGradientCSS(preset: AnimatedPreset): { background: string; e
 // ── Mini Preview for preset thumbnails ──
 
 const PresetThumbnail = memo(({ preset }: { preset: AnimatedPreset }) => {
-  const css = buildPresetGradientCSS(preset);
-  const duration =
-    preset.shaderType === "god-rays" ? 7 :
-    preset.shaderType === "swirl" ? 6 :
-    preset.shaderType === "neuro-noise" ? 9 : 8;
+  const style: React.CSSProperties = { width: "100%", height: "100%", position: "absolute", inset: 0 };
+  const speed = 0.15; // slow for thumbnails
+
+  const renderShader = () => {
+    switch (preset.shaderType) {
+      case "mesh-gradient":
+        return <MeshGradient style={style} colors={preset.colors} distortion={preset.params.distortion ?? 0.8} swirl={preset.params.swirl ?? 0.1} speed={speed} />;
+      case "neuro-noise":
+        return <NeuroNoise style={style} colorFront={preset.colors[0] || "#22d3ee"} colorMid={preset.colors[1] || "#6366f1"} colorBack={preset.colors[2] || "#000000"} brightness={preset.params.brightness ?? 0.5} contrast={preset.params.contrast ?? 0.5} speed={speed} />;
+      case "god-rays":
+        return <GodRays style={style} colorBack="#000000" colorBloom={preset.colors[0] || "#fbbf24"} colors={preset.colors} intensity={preset.params.intensity ?? 0.5} density={preset.params.density ?? 0.4} speed={speed} />;
+      case "smoke-ring":
+        return <SmokeRing style={style} colorBack={preset.colors[preset.colors.length - 1] || "#000000"} colors={preset.colors.slice(0, -1)} noiseScale={preset.params.noiseScale ?? 1.5} speed={speed} />;
+      case "grain-gradient":
+        return <GrainGradient style={style} colorBack="#000000" colors={preset.colors} softness={preset.params.softness ?? 0.5} intensity={preset.params.intensity ?? 0.4} noise={0} speed={speed} />;
+      case "swirl":
+        return <Swirl style={style} colors={preset.colors} speed={speed} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="w-full h-full relative overflow-hidden">
-      <motion.div
-        className="absolute inset-[-6%]"
-        style={{
-          background: css.background,
-          backgroundSize: "165% 165%",
-          ...css.extra,
-        }}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 20%", "20% 100%", "0% 0%"],
-          scale: [1, 1.06, 1.03, 1],
-          rotate: [0, 1.8, -1.2, 0],
-        }}
-        transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      <motion.div
-        className={cn(
-          "absolute inset-0 pointer-events-none",
-          preset.shaderType === "god-rays" ? "mix-blend-screen opacity-35" : "mix-blend-soft-light opacity-20"
-        )}
-        style={{
-          background:
-            preset.shaderType === "god-rays"
-              ? `linear-gradient(180deg, transparent 0%, ${preset.colors[0] || "#ffffff"}66 100%)`
-              : `radial-gradient(circle at 30% 35%, ${preset.colors[0] || "#ffffff"}55 0%, transparent 55%)`,
-        }}
-        animate={{ x: [0, 8, -6, 0], y: [0, -6, 4, 0], opacity: [0.16, 0.28, 0.18, 0.16] }}
-        transition={{ duration: duration + 1.5, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      <motion.div
-        className="absolute inset-0 opacity-[0.15] mix-blend-overlay pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: "128px 128px",
-        }}
-        animate={{ backgroundPosition: ["0px 0px", "120px 84px", "0px 0px"] }}
-        transition={{ duration: duration + 2, repeat: Infinity, ease: "linear" }}
-      />
+      {renderShader()}
     </div>
   );
 });
