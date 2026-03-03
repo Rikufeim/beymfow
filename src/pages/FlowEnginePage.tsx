@@ -346,7 +346,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 <span className="text-sm text-neutral-500">({savedProjects.length})</span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 {savedProjects.map((project, index) => (
                   <motion.button
                     key={project.id}
@@ -357,12 +357,13 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                     className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden text-left"
                   >
                     {/* Thumbnail */}
-                    <div className="aspect-video w-full bg-black/40 overflow-hidden">
+                    <div className="aspect-[16/9] w-full bg-black/40 overflow-hidden">
                       {project.thumbnail ? (
                         <img
                           src={project.thumbnail}
                           alt={project.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       ) : (
                         <div
@@ -376,15 +377,10 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
 
                     {/* Info */}
                     <div className="p-3 flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{project.name}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">
-                          {new Date(project.updatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                      <p className="text-sm font-medium text-white truncate">{project.name}</p>
                       <button
                         onClick={(e) => handleDeleteProject(e, project.id)}
-                        className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all"
+                        className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
                         title="Delete project"
                       >
                         <Trash2 size={14} className="text-neutral-500 hover:text-red-400 transition-colors" />
