@@ -107,11 +107,17 @@ export interface HeroBackgroundSettings {
   buttonPrimaryText: string;
   buttonPrimaryGradient: "none" | "linear" | "radial" | "glossy" | "glow";
   buttonPrimaryGradientColor: string;
+  buttonPrimaryRadius: number;
+  buttonPrimaryPaddingX: number;
+  buttonPrimaryPaddingY: number;
   buttonSecondaryBg: string;
   buttonSecondaryText: string;
   buttonSecondaryBorder: string;
   buttonSecondaryGradient: "none" | "linear" | "radial" | "glossy" | "glow";
   buttonSecondaryGradientColor: string;
+  buttonSecondaryRadius: number;
+  buttonSecondaryPaddingX: number;
+  buttonSecondaryPaddingY: number;
   cardBg: string;
   cardBorder: string;
   cardGradient: "none" | "linear" | "radial" | "glossy" | "glass";
@@ -157,11 +163,17 @@ export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
   buttonPrimaryText: "#000000",
   buttonPrimaryGradient: "none",
   buttonPrimaryGradientColor: "#389cff",
+  buttonPrimaryRadius: 8,
+  buttonPrimaryPaddingX: 24,
+  buttonPrimaryPaddingY: 10,
   buttonSecondaryBg: "transparent",
   buttonSecondaryText: "#ffffff",
   buttonSecondaryBorder: "rgba(255,255,255,0.3)",
   buttonSecondaryGradient: "none",
   buttonSecondaryGradientColor: "#8b5cf6",
+  buttonSecondaryRadius: 8,
+  buttonSecondaryPaddingX: 24,
+  buttonSecondaryPaddingY: 10,
   cardBg: "rgba(255,255,255,0.1)",
   cardBorder: "rgba(255,255,255,0.2)",
   cardGradient: "none",
@@ -2261,345 +2273,316 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           style={{ scrollbarWidth: "none" }}
                         >
                           <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Components</h4>
-                          <div className="flex items-center gap-2 flex-shrink-0 mb-2">
-                            <span className="text-[10px] text-white/50">Select:</span>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {[
-                                {
-                                  id: "button-primary", label: "Primary", preview: (
-                                    <button
-                                      className="w-full px-2 py-1 rounded text-[9px] font-medium"
-                                      style={{
-                                        background: settings.buttonPrimaryGradient === "none"
-                                          ? settings.buttonPrimaryBg
-                                          : settings.buttonPrimaryGradient === "linear"
-                                            ? `linear-gradient(135deg, ${settings.buttonPrimaryBg}, ${settings.buttonPrimaryGradientColor})`
-                                            : settings.buttonPrimaryGradient === "radial"
-                                              ? `radial-gradient(circle, ${settings.buttonPrimaryGradientColor}, ${settings.buttonPrimaryBg})`
-                                              : settings.buttonPrimaryGradient === "glossy"
-                                                ? `linear-gradient(180deg, ${settings.buttonPrimaryGradientColor}40 0%, transparent 50%, ${settings.buttonPrimaryBg}40 100%), ${settings.buttonPrimaryBg}`
-                                                : `${settings.buttonPrimaryBg}`,
-                                        color: settings.buttonPrimaryText,
-                                        boxShadow: settings.buttonPrimaryGradient === "glow" ? `0 0 20px ${settings.buttonPrimaryGradientColor}60` : undefined
-                                      }}
-                                    >Primary</button>
-                                  )
-                                },
-                                {
-                                  id: "button-secondary", label: "Secondary", preview: (
-                                    <button
-                                      className="w-full px-2 py-1 rounded text-[9px] font-medium border"
-                                      style={{
-                                        background: settings.buttonSecondaryGradient === "none"
-                                          ? settings.buttonSecondaryBg
-                                          : settings.buttonSecondaryGradient === "linear"
-                                            ? `linear-gradient(135deg, ${settings.buttonSecondaryBg || 'transparent'}, ${settings.buttonSecondaryGradientColor}30)`
-                                            : settings.buttonSecondaryBg,
-                                        color: settings.buttonSecondaryText,
-                                        borderColor: settings.buttonSecondaryBorder,
-                                        boxShadow: settings.buttonSecondaryGradient === "glow" ? `0 0 15px ${settings.buttonSecondaryGradientColor}40` : undefined
-                                      }}
-                                    >Secondary</button>
-                                  )
-                                },
-                                {
-                                  id: "card", label: "Card", preview: (
-                                    <div
-                                      className="w-full h-8 rounded border flex items-center justify-center"
-                                      style={{
-                                        background: settings.cardGradient === "none"
-                                          ? settings.cardBg
-                                          : settings.cardGradient === "glass"
-                                            ? `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`
-                                            : settings.cardGradient === "linear"
-                                              ? `linear-gradient(180deg, ${settings.cardGradientColor}20, transparent)`
-                                              : settings.cardBg,
-                                        borderColor: settings.cardBorder,
-                                        backdropFilter: settings.cardGradient === "glass" ? 'blur(10px)' : undefined
-                                      }}
-                                    >
-                                      <span className="text-[8px] text-white/40">Card</span>
-                                    </div>
-                                  )
-                                },
-                                {
-                                  id: "input", label: "Input", preview: (
-                                    <div
-                                      className="w-full h-6 rounded border px-1.5 flex items-center"
-                                      style={{
-                                        backgroundColor: settings.inputBg,
-                                        borderColor: settings.inputBorder,
-                                      }}
-                                    >
-                                      <span className="text-[8px] text-white/30">Input</span>
-                                    </div>
-                                  )
-                                },
-                              ].map((comp) => (
-                                <motion.div
-                                  key={comp.id}
-                                  whileHover={{ scale: 1.02 }}
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={() => setSelectedComponent(comp.id as typeof selectedComponent)}
-                                  draggable
-                                  onDragStart={(e) => {
-                                    (e as unknown as React.DragEvent).dataTransfer?.setData("componentType", comp.id);
-                                  }}
-                                  className={cn(
-                                    "p-1.5 rounded border cursor-pointer transition-all group flex-shrink-0 w-20",
-                                    selectedComponent === comp.id
-                                      ? "bg-white/10 border-white/30 ring-1 ring-blue-500/50"
-                                      : "bg-neutral-900/50 border-white/10 hover:bg-neutral-800/50 hover:border-white/20"
-                                  )}
-                                >
-                                  <span className="text-[9px] text-white/60 font-medium block mb-1">{comp.label}</span>
-                                  {comp.preview}
-                                </motion.div>
-                              ))}
-                            </div>
+                          
+                          {/* Component type selector */}
+                          <div className="flex items-center gap-1.5 flex-shrink-0 mb-3">
+                            {(["button-primary", "button-secondary", "card", "input"] as const).map((id) => (
+                              <button
+                                key={id}
+                                onClick={() => setSelectedComponent(selectedComponent === id ? null : id as typeof selectedComponent)}
+                                className={cn(
+                                  "px-2 py-1 rounded text-[9px] font-medium transition-all capitalize",
+                                  selectedComponent === id
+                                    ? "bg-white/15 text-white border border-white/20"
+                                    : "bg-neutral-900/50 text-white/50 border border-white/5 hover:text-white/70"
+                                )}
+                              >
+                                {id === "button-primary" ? "Primary" : id === "button-secondary" ? "Secondary" : id === "card" ? "Card" : "Input"}
+                              </button>
+                            ))}
                           </div>
-                          <div className="flex-1 min-h-0 overflow-y-auto border-t border-white/5 pt-2 mt-1 space-y-2 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            {selectedComponent === "button-primary" && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-xs text-white/70 font-medium">Primary Button</label>
-                                  <div className="flex gap-1">
-                                    {(["none", "linear", "radial", "glossy", "glow"] as const).map((gradient) => (
-                                      <button
-                                        key={gradient}
-                                        onClick={() => updateSetting("buttonPrimaryGradient", gradient)}
-                                        className={cn(
-                                          "px-2 py-0.5 rounded text-[9px] font-medium transition-all capitalize",
-                                          settings.buttonPrimaryGradient === gradient
-                                            ? "bg-white/20 text-white"
-                                            : "bg-neutral-800 text-white/50 hover:text-white/70"
-                                        )}
-                                      >
-                                        {gradient}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">BG</span>
-                                    <input type="color" value={settings.buttonPrimaryBg} onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                    <input type="text" value={settings.buttonPrimaryBg} onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">Text</span>
-                                    <input type="color" value={settings.buttonPrimaryText} onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                    <input type="text" value={settings.buttonPrimaryText} onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  {settings.buttonPrimaryGradient !== "none" && (
-                                    <div className="flex items-center gap-2 col-span-2">
-                                      <span className="text-[10px] text-white/40 w-12">Gradient</span>
-                                      <input type="color" value={settings.buttonPrimaryGradientColor} onChange={(e) => updateSetting("buttonPrimaryGradientColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                      <input type="text" value={settings.buttonPrimaryGradientColor} onChange={(e) => updateSetting("buttonPrimaryGradientColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                    </div>
-                                  )}
-                                </div>
-                                {/* Live Preview */}
-                                <div className="pt-2 border-t border-white/10">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                  <button
-                                    className="px-4 py-2 rounded-lg text-xs font-medium transition-all"
-                                    style={{
-                                      background: settings.buttonPrimaryGradient === "none"
-                                        ? settings.buttonPrimaryBg
-                                        : settings.buttonPrimaryGradient === "linear"
-                                          ? `linear-gradient(135deg, ${settings.buttonPrimaryBg}, ${settings.buttonPrimaryGradientColor})`
-                                          : settings.buttonPrimaryGradient === "radial"
-                                            ? `radial-gradient(circle, ${settings.buttonPrimaryGradientColor}, ${settings.buttonPrimaryBg})`
-                                            : settings.buttonPrimaryGradient === "glossy"
-                                              ? `linear-gradient(180deg, ${settings.buttonPrimaryGradientColor}40 0%, transparent 50%, ${settings.buttonPrimaryBg}40 100%), ${settings.buttonPrimaryBg}`
-                                              : `${settings.buttonPrimaryBg}`,
-                                      color: settings.buttonPrimaryText,
-                                      boxShadow: settings.buttonPrimaryGradient === "glow" ? `0 0 20px ${settings.buttonPrimaryGradientColor}60` : undefined
-                                    }}
-                                  >
-                                    Primary Button
-                                  </button>
-                                </div>
-                              </div>
-                            )}
 
-                            {selectedComponent === "button-secondary" && (
+                          {/* Button shape presets - shown for both button types */}
+                          {(selectedComponent === "button-primary" || selectedComponent === "button-secondary") && (() => {
+                            const prefix = selectedComponent === "button-primary" ? "buttonPrimary" : "buttonSecondary";
+                            const bg = settings[`${prefix}Bg` as keyof HeroBackgroundSettings] as string;
+                            const text = settings[`${prefix}Text` as keyof HeroBackgroundSettings] as string;
+                            const gradient = settings[`${prefix}Gradient` as keyof HeroBackgroundSettings] as string;
+                            const gradientColor = settings[`${prefix}GradientColor` as keyof HeroBackgroundSettings] as string;
+                            const radius = settings[`${prefix}Radius` as keyof HeroBackgroundSettings] as number;
+                            const px = settings[`${prefix}PaddingX` as keyof HeroBackgroundSettings] as number;
+                            const py = settings[`${prefix}PaddingY` as keyof HeroBackgroundSettings] as number;
+                            const border = selectedComponent === "button-secondary" ? settings.buttonSecondaryBorder : undefined;
+
+                            const getBackground = () => {
+                              if (gradient === "none") return bg;
+                              if (gradient === "linear") return `linear-gradient(135deg, ${bg}, ${gradientColor})`;
+                              if (gradient === "radial") return `radial-gradient(circle, ${gradientColor}, ${bg})`;
+                              if (gradient === "glossy") return `linear-gradient(180deg, ${gradientColor}40 0%, transparent 50%, ${bg}40 100%), ${bg}`;
+                              return bg;
+                            };
+                            const getBoxShadow = () => gradient === "glow" ? `0 0 20px ${gradientColor}60` : undefined;
+
+                            const SHAPE_PRESETS = [
+                              { label: "Sharp", radius: 0, px: 20, py: 8 },
+                              { label: "Rounded", radius: 8, px: 24, py: 10 },
+                              { label: "Pill", radius: 999, px: 28, py: 10 },
+                              { label: "Wide", radius: 8, px: 36, py: 10 },
+                              { label: "Tall", radius: 8, px: 20, py: 14 },
+                              { label: "Circle", radius: 999, px: 12, py: 12 },
+                            ];
+
+                            return (
                               <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-xs text-white/70 font-medium">Secondary Button</label>
-                                  <div className="flex gap-1">
-                                    {(["none", "linear", "radial", "glossy", "glow"] as const).map((gradient) => (
-                                      <button
-                                        key={gradient}
-                                        onClick={() => updateSetting("buttonSecondaryGradient", gradient)}
+                                {/* Shape presets grid */}
+                                <div>
+                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Shape Presets</span>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {SHAPE_PRESETS.map((preset) => (
+                                      <motion.button
+                                        key={preset.label}
+                                        whileHover={{ scale: 1.03 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={() => {
+                                          updateSetting(`${prefix}Radius` as keyof HeroBackgroundSettings, preset.radius);
+                                          updateSetting(`${prefix}PaddingX` as keyof HeroBackgroundSettings, preset.px);
+                                          updateSetting(`${prefix}PaddingY` as keyof HeroBackgroundSettings, preset.py);
+                                        }}
                                         className={cn(
-                                          "px-2 py-0.5 rounded text-[9px] font-medium transition-all capitalize",
-                                          settings.buttonSecondaryGradient === gradient
-                                            ? "bg-white/20 text-white"
-                                            : "bg-neutral-800 text-white/50 hover:text-white/70"
+                                          "p-2 rounded-lg border flex flex-col items-center gap-1.5 transition-all",
+                                          radius === preset.radius && px === preset.px && py === preset.py
+                                            ? "bg-white/10 border-white/25 ring-1 ring-blue-500/40"
+                                            : "bg-neutral-900/60 border-white/8 hover:border-white/15"
                                         )}
                                       >
-                                        {gradient}
-                                      </button>
+                                        <div
+                                          className="text-[9px] font-medium whitespace-nowrap"
+                                          style={{
+                                            background: getBackground(),
+                                            color: text,
+                                            borderRadius: `${preset.radius}px`,
+                                            padding: `${preset.py * 0.5}px ${preset.px * 0.5}px`,
+                                            boxShadow: getBoxShadow(),
+                                            border: border ? `1px solid ${border}` : undefined,
+                                            minWidth: preset.label === "Circle" ? "28px" : undefined,
+                                            textAlign: "center" as const,
+                                          }}
+                                        >
+                                          {preset.label === "Circle" ? "●" : "Button"}
+                                        </div>
+                                        <span className="text-[8px] text-white/40">{preset.label}</span>
+                                      </motion.button>
                                     ))}
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">BG</span>
-                                    <input type="text" value={settings.buttonSecondaryBg} onChange={(e) => updateSetting("buttonSecondaryBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">Text</span>
-                                    <input type="color" value={settings.buttonSecondaryText} onChange={(e) => updateSetting("buttonSecondaryText", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                    <input type="text" value={settings.buttonSecondaryText} onChange={(e) => updateSetting("buttonSecondaryText", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">Border</span>
-                                    <input type="text" value={settings.buttonSecondaryBorder} onChange={(e) => updateSetting("buttonSecondaryBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  {settings.buttonSecondaryGradient !== "none" && (
+
+                                {/* Fine-tune sliders */}
+                                <div className="border-t border-white/5 pt-3 space-y-2">
+                                  <span className="text-[9px] text-white/40 uppercase tracking-wider block">Fine Tune</span>
+                                  <div className="space-y-2">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-[10px] text-white/40 w-12">Gradient</span>
-                                      <input type="color" value={settings.buttonSecondaryGradientColor} onChange={(e) => updateSetting("buttonSecondaryGradientColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
+                                      <span className="text-[10px] text-white/50 w-14">Radius</span>
+                                      <input type="range" min={0} max={50} value={Math.min(radius, 50)} onChange={(e) => updateSetting(`${prefix}Radius` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
+                                      <span className="text-[10px] text-white/40 w-6 text-right">{radius}</span>
                                     </div>
-                                  )}
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] text-white/50 w-14">Padding X</span>
+                                      <input type="range" min={8} max={48} value={px} onChange={(e) => updateSetting(`${prefix}PaddingX` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
+                                      <span className="text-[10px] text-white/40 w-6 text-right">{px}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] text-white/50 w-14">Padding Y</span>
+                                      <input type="range" min={4} max={20} value={py} onChange={(e) => updateSetting(`${prefix}PaddingY` as keyof HeroBackgroundSettings, parseInt(e.target.value))} className="flex-1 accent-blue-500 h-1" />
+                                      <span className="text-[10px] text-white/40 w-6 text-right">{py}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="pt-2 border-t border-white/10">
+
+                                {/* Gradient type selector */}
+                                <div className="border-t border-white/5 pt-3">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider">Style</span>
+                                    <div className="flex gap-1">
+                                      {(["none", "linear", "radial", "glossy", "glow"] as const).map((g) => (
+                                        <button
+                                          key={g}
+                                          onClick={() => updateSetting(`${prefix}Gradient` as keyof HeroBackgroundSettings, g)}
+                                          className={cn(
+                                            "px-1.5 py-0.5 rounded text-[8px] font-medium transition-all capitalize",
+                                            gradient === g ? "bg-white/20 text-white" : "bg-neutral-800 text-white/40 hover:text-white/60"
+                                          )}
+                                        >{g}</button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Color controls */}
+                                <div className="border-t border-white/5 pt-3">
+                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Colors</span>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] text-white/40 w-8">BG</span>
+                                      <input type="color" value={bg} onChange={(e) => updateSetting(`${prefix}Bg` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
+                                      <input type="text" value={bg} onChange={(e) => updateSetting(`${prefix}Bg` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[9px] text-white/40 w-8">Text</span>
+                                      <input type="color" value={text} onChange={(e) => updateSetting(`${prefix}Text` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
+                                      <input type="text" value={text} onChange={(e) => updateSetting(`${prefix}Text` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
+                                    </div>
+                                    {gradient !== "none" && (
+                                      <div className="flex items-center gap-1.5 col-span-2">
+                                        <span className="text-[9px] text-white/40 w-8">Grad</span>
+                                        <input type="color" value={gradientColor} onChange={(e) => updateSetting(`${prefix}GradientColor` as keyof HeroBackgroundSettings, e.target.value)} className="w-5 h-4 rounded border border-white/10 cursor-pointer" />
+                                        <input type="text" value={gradientColor} onChange={(e) => updateSetting(`${prefix}GradientColor` as keyof HeroBackgroundSettings, e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
+                                      </div>
+                                    )}
+                                    {border !== undefined && (
+                                      <div className="flex items-center gap-1.5 col-span-2">
+                                        <span className="text-[9px] text-white/40 w-8">Brd</span>
+                                        <input type="text" value={border} onChange={(e) => updateSetting("buttonSecondaryBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1 py-0.5 text-white text-[9px] focus:outline-none" />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Live preview */}
+                                <div className="border-t border-white/5 pt-3">
                                   <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                  <button
-                                    className="px-4 py-2 rounded-lg text-xs font-medium transition-all border"
-                                    style={{
-                                      background: settings.buttonSecondaryGradient === "none"
-                                        ? settings.buttonSecondaryBg
-                                        : settings.buttonSecondaryGradient === "linear"
-                                          ? `linear-gradient(135deg, ${settings.buttonSecondaryBg || 'transparent'}, ${settings.buttonSecondaryGradientColor}30)`
-                                          : settings.buttonSecondaryBg,
-                                      color: settings.buttonSecondaryText,
-                                      borderColor: settings.buttonSecondaryBorder,
-                                      boxShadow: settings.buttonSecondaryGradient === "glow" ? `0 0 15px ${settings.buttonSecondaryGradientColor}40` : undefined
-                                    }}
-                                  >
-                                    Secondary Button
-                                  </button>
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                    <button
+                                      className="text-xs font-medium transition-all"
+                                      style={{
+                                        background: getBackground(),
+                                        color: text,
+                                        borderRadius: `${radius}px`,
+                                        padding: `${py}px ${px}px`,
+                                        boxShadow: getBoxShadow(),
+                                        border: border ? `1px solid ${border}` : undefined,
+                                      }}
+                                    >
+                                      {selectedComponent === "button-primary" ? "Primary Button" : "Secondary Button"}
+                                    </button>
+                                    <button
+                                      className="text-[10px] font-medium transition-all"
+                                      style={{
+                                        background: getBackground(),
+                                        color: text,
+                                        borderRadius: `${radius}px`,
+                                        padding: `${py * 0.7}px ${px * 0.7}px`,
+                                        boxShadow: getBoxShadow(),
+                                        border: border ? `1px solid ${border}` : undefined,
+                                        opacity: 0.8,
+                                      }}
+                                    >
+                                      Small
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            )}
+                            );
+                          })()}
 
-                            {selectedComponent === "card" && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <label className="text-xs text-white/70 font-medium">Card</label>
-                                  <div className="flex gap-1">
-                                    {(["none", "linear", "radial", "glossy", "glass"] as const).map((gradient) => (
-                                      <button
-                                        key={gradient}
-                                        onClick={() => updateSetting("cardGradient", gradient)}
-                                        className={cn(
-                                          "px-2 py-0.5 rounded text-[9px] font-medium transition-all capitalize",
-                                          settings.cardGradient === gradient
-                                            ? "bg-white/20 text-white"
-                                            : "bg-neutral-800 text-white/50 hover:text-white/70"
-                                        )}
-                                      >
-                                        {gradient}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">BG</span>
-                                    <input type="text" value={settings.cardBg} onChange={(e) => updateSetting("cardBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-12">Border</span>
-                                    <input type="text" value={settings.cardBorder} onChange={(e) => updateSetting("cardBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  {settings.cardGradient !== "none" && settings.cardGradient !== "glass" && (
-                                    <div className="flex items-center gap-2 col-span-2">
-                                      <span className="text-[10px] text-white/40 w-12">Gradient</span>
-                                      <input type="color" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                      <input type="text" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="pt-2 border-t border-white/10">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                  <div
-                                    className="w-40 h-16 rounded-lg border p-2"
-                                    style={{
-                                      background: settings.cardGradient === "none"
-                                        ? settings.cardBg
-                                        : settings.cardGradient === "glass"
-                                          ? `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`
-                                          : settings.cardGradient === "linear"
-                                            ? `linear-gradient(180deg, ${settings.cardGradientColor}20, transparent)`
-                                            : settings.cardGradient === "radial"
-                                              ? `radial-gradient(circle at top, ${settings.cardGradientColor}30, transparent)`
-                                              : settings.cardBg,
-                                      borderColor: settings.cardBorder,
-                                      backdropFilter: settings.cardGradient === "glass" ? 'blur(10px)' : undefined
-                                    }}
-                                  >
-                                    <div className="h-2 bg-white/20 rounded w-3/4 mb-1" />
-                                    <div className="h-2 bg-white/10 rounded w-1/2" />
-                                  </div>
+                          {selectedComponent === "card" && (
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs text-white/70 font-medium">Card</label>
+                                <div className="flex gap-1">
+                                  {(["none", "linear", "radial", "glossy", "glass"] as const).map((gradient) => (
+                                    <button
+                                      key={gradient}
+                                      onClick={() => updateSetting("cardGradient", gradient)}
+                                      className={cn(
+                                        "px-2 py-0.5 rounded text-[9px] font-medium transition-all capitalize",
+                                        settings.cardGradient === gradient
+                                          ? "bg-white/20 text-white"
+                                          : "bg-neutral-800 text-white/50 hover:text-white/70"
+                                      )}
+                                    >{gradient}</button>
+                                  ))}
                                 </div>
                               </div>
-                            )}
-
-                            {selectedComponent === "input" && (
-                              <div className="space-y-3">
-                                <label className="text-xs text-white/70 font-medium">Input Field</label>
-                                <div className="grid grid-cols-3 gap-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-8">BG</span>
-                                    <input type="color" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                    <input type="text" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-8">Border</span>
-                                    <input type="text" value={settings.inputBorder} onChange={(e) => updateSetting("inputBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] text-white/40 w-8">Text</span>
-                                    <input type="color" value={settings.inputText} onChange={(e) => updateSetting("inputText", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                  </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-12">BG</span>
+                                  <input type="text" value={settings.cardBg} onChange={(e) => updateSetting("cardBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/40 w-16">Focus Ring</span>
-                                  <input type="color" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
-                                  <input type="text" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
+                                  <span className="text-[10px] text-white/40 w-12">Border</span>
+                                  <input type="text" value={settings.cardBorder} onChange={(e) => updateSetting("cardBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
                                 </div>
-                                <div className="pt-2 border-t border-white/10">
-                                  <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
-                                  <input
-                                    type="text"
-                                    placeholder="Type something..."
-                                    className="w-40 px-3 py-2 rounded-lg text-xs border focus:outline-none"
-                                    style={{
-                                      backgroundColor: settings.inputBg,
-                                      borderColor: settings.inputBorder,
-                                      color: settings.inputText,
-                                    }}
-                                    readOnly
-                                  />
+                                {settings.cardGradient !== "none" && settings.cardGradient !== "glass" && (
+                                  <div className="flex items-center gap-2 col-span-2">
+                                    <span className="text-[10px] text-white/40 w-12">Gradient</span>
+                                    <input type="color" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
+                                    <input type="text" value={settings.cardGradientColor} onChange={(e) => updateSetting("cardGradientColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="pt-2 border-t border-white/10">
+                                <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
+                                <div
+                                  className="w-40 h-16 rounded-lg border p-2"
+                                  style={{
+                                    background: settings.cardGradient === "none"
+                                      ? settings.cardBg
+                                      : settings.cardGradient === "glass"
+                                        ? `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`
+                                        : settings.cardGradient === "linear"
+                                          ? `linear-gradient(180deg, ${settings.cardGradientColor}20, transparent)`
+                                          : settings.cardGradient === "radial"
+                                            ? `radial-gradient(circle at top, ${settings.cardGradientColor}30, transparent)`
+                                            : settings.cardBg,
+                                    borderColor: settings.cardBorder,
+                                    backdropFilter: settings.cardGradient === "glass" ? 'blur(10px)' : undefined
+                                  }}
+                                >
+                                  <div className="h-2 bg-white/20 rounded w-3/4 mb-1" />
+                                  <div className="h-2 bg-white/10 rounded w-1/2" />
                                 </div>
                               </div>
-                            )}
+                            </div>
+                          )}
 
-                            {!selectedComponent && (
-                              <div className="flex items-center justify-center h-full text-white/30 text-xs">
-                                <div className="text-center">
-                                  <Palette size={24} className="mx-auto mb-2 opacity-50" />
-                                  <p>Select a component to edit</p>
-                                  <p className="text-[10px] mt-1">or drag & drop to canvas</p>
+                          {selectedComponent === "input" && (
+                            <div className="space-y-3">
+                              <label className="text-xs text-white/70 font-medium">Input Field</label>
+                              <div className="grid grid-cols-3 gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">BG</span>
+                                  <input type="color" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
+                                  <input type="text" value={settings.inputBg} onChange={(e) => updateSetting("inputBg", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Border</span>
+                                  <input type="text" value={settings.inputBorder} onChange={(e) => updateSetting("inputBorder", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/40 w-8">Text</span>
+                                  <input type="color" value={settings.inputText} onChange={(e) => updateSetting("inputText", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
                                 </div>
                               </div>
-                            )}
-                          </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-white/40 w-16">Focus Ring</span>
+                                <input type="color" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="w-6 h-5 rounded border border-white/10 cursor-pointer" />
+                                <input type="text" value={settings.focusRingColor} onChange={(e) => updateSetting("focusRingColor", e.target.value)} className="flex-1 bg-neutral-800 border border-white/10 rounded px-1.5 py-0.5 text-white text-[10px] focus:outline-none" />
+                              </div>
+                              <div className="pt-2 border-t border-white/10">
+                                <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Preview</span>
+                                <input
+                                  type="text"
+                                  placeholder="Type something..."
+                                  className="w-40 px-3 py-2 rounded-lg text-xs border focus:outline-none"
+                                  style={{
+                                    backgroundColor: settings.inputBg,
+                                    borderColor: settings.inputBorder,
+                                    color: settings.inputText,
+                                  }}
+                                  readOnly
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {!selectedComponent && (
+                            <div className="flex items-center justify-center flex-1 text-white/30 text-xs">
+                              <div className="text-center">
+                                <Palette size={24} className="mx-auto mb-2 opacity-50" />
+                                <p>Select a component to edit</p>
+                              </div>
+                            </div>
+                          )}
                         </motion.div>
                       )}
 
