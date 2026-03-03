@@ -199,7 +199,6 @@ type TabId = "shape" | "animated" | "layout" | "style" | "motion" | "components"
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
   { id: "animated", label: "Animated" },
-  { id: "layout", label: "Layout" },
   { id: "style", label: "Style" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
@@ -1569,7 +1568,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           right: 0,
           zIndex: 9999,
           width: '100%',
-          background: 'linear-gradient(to bottom, rgba(12,12,20,0.8) 0%, transparent 100%)',
+          background: 'transparent',
         }}
       >
         {/* Back button (left) */}
@@ -2025,6 +2024,77 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 </motion.div>
                               )}
                             </div>
+
+                            {/* Layout section - moved from separate tab */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Layout</h4>
+                              <div className="flex items-center gap-1 mb-2 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+                                {LAYOUT_CATEGORIES.map((cat, idx) => (
+                                  <button
+                                    key={cat.label}
+                                    onClick={() => setActiveLayoutCategory(idx)}
+                                    className={cn(
+                                      "px-2 py-1 text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
+                                      activeLayoutCategory === idx
+                                        ? "text-white bg-white/10"
+                                        : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                                    )}
+                                  >
+                                    {cat.label}
+                                  </button>
+                                ))}
+                              </div>
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                {SHAPE_STYLES
+                                  .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
+                                  .map((shape) => {
+                                  const isActive = settings.gradientStyle === shape.id;
+                                  const previewSettings: HeroBackgroundSettings = {
+                                    ...settings,
+                                    gradientStyle: shape.id,
+                                    environmentEnabled: true,
+                                    singleColorMode: false,
+                                    brightness: 1,
+                                    contrast: 1,
+                                    saturation: 1,
+                                    blurPx: 0,
+                                    exposure: 1,
+                                    gamma: 1,
+                                  };
+                                  const previewBg = buildHeroGradient(previewSettings);
+                                  return (
+                                    <div key={shape.id} className="flex flex-col gap-1">
+                                      <button
+                                        onClick={() => updateSetting("gradientStyle", shape.id)}
+                                        className={cn(
+                                          "group relative w-full rounded-lg overflow-hidden transition-all duration-300 focus:outline-none",
+                                          isActive
+                                            ? "ring-2 ring-white/40 shadow-lg shadow-white/5"
+                                            : "hover:ring-1 hover:ring-white/20 hover:scale-[1.03]"
+                                        )}
+                                      >
+                                        <div
+                                          className="h-14 w-full relative"
+                                          style={{
+                                            background: previewBg,
+                                            filter: "brightness(1.6) saturate(1.4)",
+                                          }}
+                                        >
+                                          <div
+                                            className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
+                                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
+                                          />
+                                        </div>
+                                      </button>
+                                      <span className={cn(
+                                        "text-[9px] font-medium truncate px-0.5 transition-all",
+                                        isActive ? "text-white" : "text-white/40"
+                                      )}>{shape.label}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           </div>
                         </motion.div>
                       )}
@@ -2045,87 +2115,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         </motion.div>
                       )}
 
-                      {activeTab === "layout" && (
-                        <motion.div
-                          key="layout"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col"
-                        >
-                          <div className="flex items-center gap-1 mb-3 flex-shrink-0 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            {LAYOUT_CATEGORIES.map((cat, idx) => (
-                              <button
-                                key={cat.label}
-                                onClick={() => setActiveLayoutCategory(idx)}
-                                className={cn(
-                                  "px-2.5 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
-                                  activeLayoutCategory === idx
-                                    ? "text-white bg-white/10"
-                                    : "text-white/40 hover:text-white/70 hover:bg-white/5"
-                                )}
-                              >
-                                {cat.label}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                              {SHAPE_STYLES
-                                .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
-                                .map((shape) => {
-                                const isActive = settings.gradientStyle === shape.id;
-                                // Use the user's current colors for thumbnails
-                                const previewSettings: HeroBackgroundSettings = {
-                                  ...settings,
-                                  gradientStyle: shape.id,
-                                  environmentEnabled: true,
-                                  singleColorMode: false,
-                                  brightness: 1,
-                                  contrast: 1,
-                                  saturation: 1,
-                                  blurPx: 0,
-                                  exposure: 1,
-                                  gamma: 1,
-                                };
-                                const previewBg = buildHeroGradient(previewSettings);
-                                return (
-                                  <div key={shape.id} className="flex flex-col gap-1">
-                                    <button
-                                      onClick={() => {
-                                        updateSetting("gradientStyle", shape.id);
-                                      }}
-                                      className={cn(
-                                        "group relative w-full rounded-lg overflow-hidden transition-all duration-300 focus:outline-none",
-                                        isActive
-                                          ? "ring-2 ring-white/40 shadow-lg shadow-white/5"
-                                          : "hover:ring-1 hover:ring-white/20 hover:scale-[1.03]"
-                                      )}
-                                    >
-                                      <div
-                                        className="h-16 w-full relative"
-                                        style={{
-                                          background: previewBg,
-                                          filter: "brightness(1.6) saturate(1.4)",
-                                        }}
-                                      >
-                                        <div
-                                          className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay"
-                                          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }}
-                                        />
-                                      </div>
-                                    </button>
-                                    <span className={cn(
-                                      "text-[9px] font-medium truncate px-0.5 transition-all",
-                                      isActive ? "text-white" : "text-white/40"
-                                    )}>{shape.label}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
 
                       {activeTab === "style" && (
                         <motion.div
