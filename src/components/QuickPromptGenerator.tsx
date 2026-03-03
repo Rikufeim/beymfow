@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromptBridge";
-import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, ChevronDown, FileText, FileCode } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, FileText, FileCode } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -77,7 +77,7 @@ export const QuickPromptGenerator = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "creativity" | "personal" | "business" | "crypto">(
     "all",
   );
-  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "chatgpt" | "image" | null>(null);
+  const [promptType, setPromptType] = useState<"lovable" | "gemini" | "chatgpt" | "image">("chatgpt");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -845,7 +845,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 className="relative flex flex-col gap-2 bg-transparent rounded-[2rem] px-3 sm:px-4 py-4 border border-white/10 transition-all duration-300"
               >
                 {/* Pasted Contents, Code Files, Images & Tool Chip (largest first) */}
-                {(promptType || uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0 || colorPaletteAttachment) && (
+                {(uploadedImages.length > 0 || uploadedFiles.length > 0 || pastedContents.length > 0 || colorPaletteAttachment) && (
                   <div className="flex items-start gap-2 mb-2 flex-wrap">
                     {/* Pasted Content Chips - Largest, comes first */}
                     {pastedContents.map((pasted, index) => (
@@ -945,24 +945,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                       </div>
                     ))}
 
-                    {/* Selected Tool Chip - Smallest, comes last */}
-                    {promptType && (
-                      <div className="relative flex items-center bg-white/5 border border-white/20 rounded-lg px-3 py-2 gap-2">
-                        <span className="text-xs text-white/80">
-                          {promptType === "lovable" && "Lovable Prompts"}
-                          {promptType === "gemini" && "Gemini Prompts"}
-                          {promptType === "chatgpt" && "ChatGPT Prompts"}
-                          {promptType === "image" && "Image Prompts"}
-                        </span>
-                        <button
-                          onClick={() => setPromptType(null)}
-                          className="text-white/40 hover:text-white/70 transition-colors"
-                          title="Remove tool"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -1129,55 +1111,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 Premium Model
               </GlassButton>
 
-              {/* Pick Tool Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border flex items-center gap-2 ${promptType ? "bg-white/10 border-white/30 text-white" : "bg-white/5 border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10"}`}>
-                    {promptType
-                      ? promptType === "lovable" ? "Lovable" : promptType === "gemini" ? "Gemini" : promptType === "chatgpt" ? "ChatGPT" : "Image"
-                      : "Pick tool"}
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
-                  <DropdownMenuItem
-                    onClick={() => setPromptType("lovable")}
-                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "lovable"
-                      ? "bg-white/15 text-white"
-                      : "text-white/70 hover:bg-white/10"
-                      }`}
-                  >
-                    Lovable Prompts
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setPromptType("gemini")}
-                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "gemini"
-                      ? "bg-white/15 text-white"
-                      : "text-white/70 hover:bg-white/10"
-                      }`}
-                  >
-                    Gemini Prompts
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setPromptType("chatgpt")}
-                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "chatgpt"
-                      ? "bg-white/15 text-white"
-                      : "text-white/70 hover:bg-white/10"
-                      }`}
-                  >
-                    ChatGPT Prompts
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setPromptType("image")}
-                    className={`px-3 py-2 text-sm cursor-pointer ${promptType === "image"
-                      ? "bg-white/15 text-white"
-                      : "text-white/70 hover:bg-white/10"
-                      }`}
-                  >
-                    Image Prompts
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
 
 

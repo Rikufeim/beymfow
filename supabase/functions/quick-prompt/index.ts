@@ -39,7 +39,7 @@ serve(async (req) => {
     
     const model = body.model || 'fast';
     const category = body.category;
-    const promptType = body.promptType || 'lovable'; // lovable, gemini, chatgpt, image
+    const promptType = body.promptType || 'chatgpt'; // chatgpt is now default
     // Support both single image (legacy) and multiple images
     const images: { data: string; mimeType: string }[] = body.images || [];
     // Legacy support for single image
