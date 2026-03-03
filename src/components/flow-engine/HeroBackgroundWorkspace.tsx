@@ -2304,8 +2304,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           className="h-full min-h-0 flex flex-col overflow-y-auto [&::-webkit-scrollbar]:hidden"
                           style={{ scrollbarWidth: "none" }}
                         >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-3 flex-shrink-0">Button</h4>
-                          
                           {(() => {
                             const bg = settings.buttonPrimaryBg;
                             const text = settings.buttonPrimaryText;
@@ -2331,11 +2329,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             ];
 
                             return (
-                              <div className="flex flex-col gap-4">
-                                {/* Live preview */}
-                                <div className="flex items-center gap-3">
+                              <div className="flex flex-col items-center gap-6">
+                                {/* Centered live button preview */}
+                                <div className="flex items-center justify-center w-full py-6">
                                   <button
-                                    className="text-xs font-medium transition-all"
+                                    className="text-sm font-medium transition-all"
                                     style={{
                                       background: getBackground(),
                                       color: text,
@@ -2348,58 +2346,92 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   </button>
                                 </div>
 
-                                {/* Shape presets */}
-                                <div className="flex items-center gap-2">
-                                  {SHAPE_PRESETS.map((preset) => (
-                                    <button
-                                      key={preset.label}
-                                      onClick={() => {
-                                        updateSetting("buttonPrimaryRadius", preset.radius);
-                                        updateSetting("buttonPrimaryPaddingX", preset.px);
-                                        updateSetting("buttonPrimaryPaddingY", preset.py);
-                                      }}
-                                      className={cn(
-                                        "px-2 py-1 rounded text-[9px] font-medium transition-all",
-                                        radius === preset.radius
-                                          ? "bg-white/15 text-white"
-                                          : "bg-white/[0.03] text-white/40 hover:text-white/60"
-                                      )}
-                                    >
-                                      {preset.label}
-                                    </button>
-                                  ))}
-                                </div>
-
-                                {/* Style */}
-                                <div className="flex items-center gap-1">
-                                  {(["none", "linear", "glossy", "glow"] as const).map((g) => (
-                                    <button
-                                      key={g}
-                                      onClick={() => updateSetting("buttonPrimaryGradient", g)}
-                                      className={cn(
-                                        "px-1.5 py-0.5 rounded text-[8px] font-medium transition-all capitalize",
-                                        gradient === g ? "bg-white/20 text-white" : "bg-white/[0.03] text-white/40 hover:text-white/60"
-                                      )}
-                                    >{g}</button>
-                                  ))}
-                                </div>
-
-                                {/* Colors */}
-                                <div className="flex items-center gap-3">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[9px] text-white/40">BG</span>
-                                    <input type="color" value={bg} onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[9px] text-white/40">Text</span>
-                                    <input type="color" value={text} onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
-                                  </div>
-                                  {gradient !== "none" && (
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-[9px] text-white/40">Grad</span>
-                                      <input type="color" value={gradientColor} onChange={(e) => updateSetting("buttonPrimaryGradientColor", e.target.value)} className="w-5 h-4 rounded cursor-pointer" />
+                                {/* Editing controls below */}
+                                <div className="w-full space-y-5">
+                                  {/* Shape */}
+                                  <div>
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Shape</span>
+                                    <div className="flex items-center gap-2">
+                                      {SHAPE_PRESETS.map((preset) => (
+                                        <button
+                                          key={preset.label}
+                                          onClick={() => {
+                                            updateSetting("buttonPrimaryRadius", preset.radius);
+                                            updateSetting("buttonPrimaryPaddingX", preset.px);
+                                            updateSetting("buttonPrimaryPaddingY", preset.py);
+                                          }}
+                                          className={cn(
+                                            "flex-1 py-1.5 rounded text-[10px] font-medium transition-all",
+                                            radius === preset.radius
+                                              ? "bg-white/15 text-white"
+                                              : "bg-white/[0.04] text-white/40 hover:text-white/60"
+                                          )}
+                                        >
+                                          {preset.label}
+                                        </button>
+                                      ))}
                                     </div>
-                                  )}
+                                  </div>
+
+                                  {/* Style */}
+                                  <div>
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Style</span>
+                                    <div className="flex items-center gap-1.5">
+                                      {(["none", "linear", "glossy", "glow"] as const).map((g) => (
+                                        <button
+                                          key={g}
+                                          onClick={() => updateSetting("buttonPrimaryGradient", g)}
+                                          className={cn(
+                                            "flex-1 py-1.5 rounded text-[10px] font-medium transition-all capitalize",
+                                            gradient === g ? "bg-white/20 text-white" : "bg-white/[0.04] text-white/40 hover:text-white/60"
+                                          )}
+                                        >{g}</button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Colors */}
+                                  <div>
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Colors</span>
+                                    <div className="flex items-center gap-4">
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="color" value={bg} onChange={(e) => updateSetting("buttonPrimaryBg", e.target.value)} className="w-6 h-6 rounded-md cursor-pointer border border-white/10" />
+                                        <span className="text-[10px] text-white/50">Fill</span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="color" value={text} onChange={(e) => updateSetting("buttonPrimaryText", e.target.value)} className="w-6 h-6 rounded-md cursor-pointer border border-white/10" />
+                                        <span className="text-[10px] text-white/50">Text</span>
+                                      </label>
+                                      {gradient !== "none" && (
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                          <input type="color" value={gradientColor} onChange={(e) => updateSetting("buttonPrimaryGradientColor", e.target.value)} className="w-6 h-6 rounded-md cursor-pointer border border-white/10" />
+                                          <span className="text-[10px] text-white/50">Gradient</span>
+                                        </label>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Size */}
+                                  <div>
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Size</span>
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-[10px] text-white/40 w-5">H</span>
+                                        <input type="range" min={4} max={20} value={py} onChange={(e) => updateSetting("buttonPrimaryPaddingY", Number(e.target.value))} className="flex-1 accent-white/60 h-1" />
+                                        <span className="text-[10px] text-white/40 w-5 text-right">{py}</span>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-[10px] text-white/40 w-5">W</span>
+                                        <input type="range" min={12} max={48} value={px} onChange={(e) => updateSetting("buttonPrimaryPaddingX", Number(e.target.value))} className="flex-1 accent-white/60 h-1" />
+                                        <span className="text-[10px] text-white/40 w-5 text-right">{px}</span>
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-[10px] text-white/40 w-5">R</span>
+                                        <input type="range" min={0} max={50} value={Math.min(radius, 50)} onChange={(e) => updateSetting("buttonPrimaryRadius", Number(e.target.value))} className="flex-1 accent-white/60 h-1" />
+                                        <span className="text-[10px] text-white/40 w-5 text-right">{Math.min(radius, 50)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             );
