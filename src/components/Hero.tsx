@@ -15,10 +15,9 @@ const Hero = memo(function Hero() {
     if (user) {
       navigate("/flow");
     } else {
-      sessionStorage.setItem('auth_redirect_after', '/flow');
-      openAuthDialog(() => navigate("/flow"));
+      navigate("/auth?redirect=/flow");
     }
-  }, [user, navigate, openAuthDialog]);
+  }, [user, navigate]);
 
   const handleGoogleLogin = useCallback(async () => {
     if (user) {

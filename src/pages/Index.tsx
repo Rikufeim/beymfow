@@ -69,8 +69,7 @@ const Index = () => {
     if (user) {
       navigate("/flow");
     } else {
-      sessionStorage.setItem('auth_redirect_after', '/flow');
-      navigate("/auth");
+      navigate("/auth?redirect=/flow");
     }
   }, [user, navigate]);
 

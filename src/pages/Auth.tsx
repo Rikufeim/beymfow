@@ -23,7 +23,7 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const redirectPath = new URLSearchParams(window.location.search).get('redirect') || '/';
+  const redirectPath = new URLSearchParams(window.location.search).get('redirect') || sessionStorage.getItem('auth_redirect_after') || '/flow';
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -44,6 +44,7 @@ const Auth = () => {
 
   React.useEffect(() => {
     if (user) {
+      sessionStorage.removeItem('auth_redirect_after');
       navigate(redirectPath);
     }
   }, [user, navigate, redirectPath]);
