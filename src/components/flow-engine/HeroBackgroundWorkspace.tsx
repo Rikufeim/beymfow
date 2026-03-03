@@ -732,6 +732,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [showHeroPreview, setShowHeroPreview] = useState(false);
 
   const [animatedBg, setAnimatedBg] = useState<AnimatedBgSettings>(DEFAULT_ANIMATED_BG);
+  const activeTabRef = useRef<TabId>("shape");
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
 
   const [showExport, setShowExport] = useState(false);
   const [minimizedBar, setMinimizedBar] = useState(false);
@@ -1170,6 +1175,15 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       saturation: p.saturation ?? prev.saturation,
     }));
   }, [animatePaletteTransition, settings]);
+
+  const handleAnimatedBgChange = useCallback((newSettings: AnimatedBgSettings) => {
+    setAnimatedBg((prev) => {
+      if (activeTabRef.current !== "animated") {
+        return prev.enabled ? { ...prev, enabled: false } : prev;
+      }
+      return newSettings;
+    });
+  }, []);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {
     setSettings({ ...DEFAULT_SETTINGS, ...importedSettings });
@@ -1884,7 +1898,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         >
                           <AnimatedBackgroundsTab
                             settings={animatedBg}
-                            onChange={(newSettings) => setAnimatedBg(newSettings)}
+                            onChange={handleAnimatedBgChange}
                           />
                         </motion.div>
                       )}
