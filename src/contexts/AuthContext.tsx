@@ -40,10 +40,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const sessionRef = useRef<Session | null>(null);
 
   const fetchUsage = useCallback(async (accessToken: string) => {
+    // Skip if we've already signed out
+    if (!sessionRef.current) return;
     try {
       const { data, error } = await supabase.functions.invoke('check-usage', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
+
+      // Ignore errors if session was cleared while request was in-flight
+      if (!sessionRef.current) return;
 
       if (!error && data) {
         setUsageInfo({
@@ -60,6 +65,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
     } catch (error) {
+      // Silently ignore if logged out
+      if (!sessionRef.current) return;
       console.error('Error refreshing usage:', error);
     }
   }, []);
@@ -153,15 +160,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    // Clear refs and state FIRST to prevent stale-token requests
+    sessionRef.current = null;
+    setSession(null);
+    setUser(null);
+    setUsageInfo(null);
     try {
       await supabase.auth.signOut();
     } catch (error) {
       console.log('Logout error (ignored):', error);
     }
-    sessionRef.current = null;
-    setSession(null);
-    setUser(null);
-    setUsageInfo(null);
     navigate('/');
   };
 
