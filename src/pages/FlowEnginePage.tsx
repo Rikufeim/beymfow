@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, LogOut, Settings } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, LogOut, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
@@ -277,40 +277,54 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 {userInitials}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="w-64 bg-white border-none rounded-xl shadow-2xl p-0 overflow-hidden">
-              {/* User info */}
-              <div className="px-5 pt-5 pb-4 border-b border-neutral-200">
-                <p className="text-sm font-semibold text-neutral-900">{user.email?.split('@')[0] || 'User'}</p>
-                <p className="text-xs text-neutral-500 mt-0.5">{user.email}</p>
-              </div>
-
+            <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-white border-none rounded-xl shadow-2xl p-0 overflow-hidden">
               {/* Workspace section */}
-              <div className="px-3 py-3 border-b border-neutral-200">
-                <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-2 mb-2">Workspace</p>
-                <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-neutral-700">
+              <div className="px-5 pt-5 pb-3">
+                <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider mb-3">Workspace</p>
+                <div className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-800 font-medium">
                   <FolderOpen size={16} className="text-neutral-400" />
-                  <span className="truncate flex-1">{user.email?.split('@')[0]}'s Workspace</span>
+                  <span className="truncate flex-1">{user.email?.split('@')[0]}'s Works...</span>
                   <span className="text-purple-500">✓</span>
                 </div>
+                <button className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-700 hover:text-neutral-900 transition-colors w-full mt-1">
+                  <Plus size={16} className="text-neutral-400" />
+                  Create Workspace
+                </button>
               </div>
 
-              {/* Actions */}
-              <div className="px-3 py-2">
-                <DropdownMenuItem asChild className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-2 py-2">
-                  <Link to="/settings/billing" className="flex items-center gap-2">
-                    <Settings size={16} className="text-neutral-400" />
+              <div className="border-t border-neutral-200" />
+
+              {/* Menu items */}
+              <div className="px-3 py-2 space-y-0.5">
+                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                  <Users size={16} className="mr-2.5 text-neutral-400" />
+                  Team Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                  <Link to="/settings/billing" className="flex items-center">
+                    <Settings size={16} className="mr-2.5 text-neutral-400" />
                     Account Settings
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                  <BookOpen size={16} className="mr-2.5 text-neutral-400" />
+                  Documentation
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                  <MessageSquare size={16} className="mr-2.5 text-neutral-400" />
+                  Give Feedback
+                </DropdownMenuItem>
               </div>
 
+              <div className="border-t border-neutral-200" />
+
               {/* Sign out */}
-              <div className="px-3 pb-3">
+              <div className="px-3 py-3">
                 <DropdownMenuItem
                   onClick={() => signOut()}
-                  className="text-red-500 hover:bg-red-50 cursor-pointer rounded-lg px-2 py-2"
+                  className="text-red-500 hover:bg-red-50 cursor-pointer rounded-lg px-3 py-2.5 text-sm"
                 >
-                  <LogOut size={16} className="mr-2" />
+                  <LogOut size={16} className="mr-2.5" />
                   Log Out
                 </DropdownMenuItem>
               </div>
