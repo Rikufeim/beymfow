@@ -237,16 +237,15 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
 
       {/* Top Nav Bar - ShortSync style */}
-      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
-        {/* Logo / Home */}
-        <div className="flex items-center gap-2">
+      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative bg-black">
+        {/* Logo */}
+        <div className="flex items-center">
           <img
             src="/images/beymflow-logo.png"
             alt="Beymflow"
-            className="h-8 w-auto object-contain"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
             loading="eager"
           />
-          <span className="text-sm font-semibold tracking-widest text-white hidden sm:block">Beymflow</span>
         </div>
 
         {/* Center Tabs */}
