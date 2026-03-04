@@ -237,7 +237,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       />
 
       {/* Top Nav Bar - ShortSync style */}
-      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative bg-black">
+      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
         {/* Logo */}
         <div className="flex items-center">
           <img
@@ -425,29 +425,28 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           {selectionTab === "color-codes" && (
             <motion.div
               key="color-codes"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-40 flex items-center justify-center"
             >
-              <div className="text-center mb-10">
-                <div className="inline-flex items-center gap-2 mb-3">
-                  <Palette size={24} className="text-cyan-400" />
-                  <h2 className="text-2xl font-bold text-white">Color Codes</h2>
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="w-full h-full" style={{ background: "linear-gradient(135deg, #080808 0%, #121214 25%, #0a2a2a 50%, #121214 75%, #080808 100%)", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
+                <div className="absolute inset-0 flex flex-col items-center pt-20 gap-6 opacity-30" style={{ filter: "blur(4px)" }}>
+                  <div className="w-[80%] max-w-4xl h-16 rounded-xl bg-white/5 border border-white/10" />
+                  <div className="w-[80%] max-w-4xl flex gap-4">
+                    <div className="flex-1 h-64 rounded-xl bg-white/5 border border-white/10" />
+                    <div className="w-64 h-64 rounded-xl bg-white/5 border border-white/10" />
+                  </div>
+                  <div className="w-[80%] max-w-4xl h-32 rounded-xl bg-white/5 border border-white/10" />
                 </div>
-                <p className="text-neutral-400 text-sm max-w-md mx-auto">Browse and create stunning color palettes & gradient backgrounds</p>
               </div>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => {
-                    sessionStorage.removeItem('beymflow.editing-project-id');
-                    navigate("/flow/color-codes");
-                  }}
-                  className="px-8 py-3 bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 rounded-xl text-white font-medium transition-all duration-200 flex items-center gap-2"
-                >
-                  <Palette size={18} />
-                  Open Workspace
-                </button>
-              </div>
+              <button
+                onClick={() => { sessionStorage.removeItem('beymflow.editing-project-id'); navigate("/flow/color-codes"); }}
+                className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
+              >
+                Open Workspace
+              </button>
             </motion.div>
           )}
 
@@ -455,26 +454,30 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           {selectionTab === "prompt-generator" && (
             <motion.div
               key="prompt-generator"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-40 flex items-center justify-center"
             >
-              <div className="text-center mb-10">
-                <div className="inline-flex items-center gap-2 mb-3">
-                  <Sparkles size={24} className="text-purple-400" />
-                  <h2 className="text-2xl font-bold text-white">Prompt Generator</h2>
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="w-full h-full" style={{ background: "radial-gradient(at 40% 20%, #3e18fb40 0px, transparent 55%), radial-gradient(at 80% 60%, #1a0a3a 0px, transparent 55%), #0a0a0f", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
+                <div className="absolute inset-0 flex flex-col items-center pt-20 gap-6 opacity-30" style={{ filter: "blur(4px)" }}>
+                  <div className="w-[80%] max-w-3xl h-12 rounded-xl bg-white/5 border border-white/10" />
+                  <div className="w-[80%] max-w-3xl h-40 rounded-xl bg-white/5 border border-white/10" />
+                  <div className="w-[80%] max-w-3xl flex gap-3">
+                    <div className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10" />
+                    <div className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10" />
+                    <div className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10" />
+                  </div>
+                  <div className="w-[80%] max-w-3xl h-64 rounded-xl bg-white/5 border border-white/10" />
                 </div>
-                <p className="text-neutral-400 text-sm max-w-md mx-auto">Generate powerful AI prompts for your creative projects</p>
               </div>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => navigate("/flow/prompt-generator")}
-                  className="px-8 py-3 bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 hover:border-white/20 rounded-xl text-white font-medium transition-all duration-200 flex items-center gap-2"
-                >
-                  <Sparkles size={18} />
-                  Open Workspace
-                </button>
-              </div>
+              <button
+                onClick={() => navigate("/flow/prompt-generator")}
+                className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
+              >
+                Open Workspace
+              </button>
             </motion.div>
           )}
 
