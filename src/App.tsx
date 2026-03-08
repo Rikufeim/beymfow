@@ -68,7 +68,6 @@ const AppRoutes = () => {
       <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={<Layout><About /></Layout>} />
-      <Route path="/premium" element={<Layout><Premium /></Layout>} />
       <Route path="/community" element={<Layout><Community /></Layout>} />
       <Route path="/image-generator" element={<ImageGenerator />} />
       <Route path="/planningsystem" element={<PlanningSystem />} />
