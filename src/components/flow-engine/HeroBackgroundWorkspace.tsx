@@ -2238,6 +2238,47 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 })}
                               </div>
                             </div>
+
+                            {/* Style Controls (inline) */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Style</h4>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Type</span>
+                                  <div className="flex gap-1">
+                                    {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
+                                      <button key={t} onClick={() => updateSetting("gradientType", t)} className={cn("px-2 py-1 rounded text-[10px] font-medium capitalize transition-all", settings.gradientType === t ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{t}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Angle</span>
+                                  <Slider value={[settings.gradientAngle]} onValueChange={([v]) => updateSetting("gradientAngle", v)} min={0} max={360} step={1} className="flex-1" />
+                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.gradientAngle}°</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-white/50 w-14">Blend</span>
+                                  <div className="flex gap-1 flex-wrap">
+                                    {(["normal", "overlay", "soft-light", "multiply", "screen"] as BlendModeOption[]).map((m) => (
+                                      <button key={m} onClick={() => updateSetting("blendMode", m)} className={cn("px-1.5 py-0.5 rounded text-[9px] font-medium capitalize transition-all", settings.blendMode === m ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{m}</button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Export (inline) */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Export</h4>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={10} /> : <Code size={10} />}{copiedProjectCode ? "Copied!" : "React"}</button>
+                                <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedCss ? <Check size={10} /> : <Code size={10} />}{copiedCss ? "Copied!" : "CSS"}</button>
+                                <button onClick={handleCopyTailwind} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedTailwind ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedTailwind ? <Check size={10} /> : <Code size={10} />}{copiedTailwind ? "Copied!" : "Tailwind"}</button>
+                                <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedJSON ? <Check size={10} /> : <FileJson size={10} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                                <button onClick={handleCopyPrompt} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedPrompt ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25"}`}>{copiedPrompt ? <Check size={10} /> : <FileText size={10} />}{copiedPrompt ? "Copied!" : "Prompt"}</button>
+                                <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 transition-all"><Download size={10} /> PNG</button>
+                              </div>
+                            </div>
                           </div>
                         </motion.div>
                       )}
