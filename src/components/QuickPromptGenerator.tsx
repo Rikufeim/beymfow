@@ -1112,6 +1112,68 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 Premium Model
               </GlassButton>
 
+              <div className="w-px h-6 bg-white/20 mx-1 hidden sm:block" />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div>
+                    <GlassButton
+                      size="sm"
+                      contentClassName="flex items-center gap-1.5"
+                      isSelected={promptType !== "chatgpt"}
+                    >
+                      <Wrench className="w-3 h-3" />
+                      {promptType === "lovable" ? "Lovable" : promptType === "gemini" ? "Gemini" : promptType === "image" ? "Image AI" : "Tools"}
+                      <ChevronDown className="w-3 h-3 opacity-60" />
+                    </GlassButton>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="center"
+                  className="bg-black/95 backdrop-blur-xl border border-white/20 rounded-xl min-w-[200px] p-1"
+                >
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("chatgpt")}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "chatgpt" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                  >
+                    <span className="text-lg">🤖</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">ChatGPT</span>
+                      <span className="text-[10px] text-white/40">Optimoitu GPT-malleille</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("lovable")}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "lovable" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                  >
+                    <span className="text-lg">💜</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Lovable</span>
+                      <span className="text-[10px] text-white/40">Full-stack app builder promptit</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("gemini")}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "gemini" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                  >
+                    <span className="text-lg">✨</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Gemini</span>
+                      <span className="text-[10px] text-white/40">Multimodal & reasoning</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setPromptType("image")}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "image" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                  >
+                    <span className="text-lg">🎨</span>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">Image AI</span>
+                      <span className="text-[10px] text-white/40">Midjourney, DALL-E, Flux</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
 
