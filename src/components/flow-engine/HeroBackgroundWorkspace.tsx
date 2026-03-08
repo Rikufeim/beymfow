@@ -736,16 +736,40 @@ const generateProjectCode = (settings: HeroBackgroundSettings, animBg?: Animated
   // If animated background is enabled, generate shader-based code
   if (animBg?.enabled) {
     const { importLine, component } = generateAnimatedBgCode(animBg);
+
+    const b = settings.brightness * (settings.exposure ?? 1);
+    const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+    const s = settings.saturation ?? 1;
+    const filterParts = [`brightness(${b.toFixed(2)})`, `contrast(${c.toFixed(2)})`, `saturate(${s})`];
+    if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+    const filterString = filterParts.join(" ");
+
+    const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
+
+    const grainOverlay = settings.grainEnabled
+      ? `\n      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: \\\`url("${grainSVG}")\\\`, opacity: ${(settings.grainIntensity * 0.25).toFixed(3)}, mixBlendMode: "overlay" as const }} />`
+      : "";
+
+    const vignetteOverlay = (settings.vignette && settings.vignette > 0)
+      ? `\n      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0,0,0,0.15) 65%, rgba(0,0,0,0.5) 100%)", opacity: ${settings.vignette}, mixBlendMode: "multiply" }} />`
+      : "";
+
+    const baseBg = [
+      "radial-gradient(ellipse 120% 80% at 50% 0%, rgba(60,40,90,0.25) 0%, transparent 50%)",
+      "radial-gradient(ellipse 100% 60% at 50% 10%, rgba(30,30,60,0.2) 0%, transparent 45%)",
+      "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 25%)",
+      "linear-gradient(to top, #030308 0%, #060612 18%, #0a0a1a 38%, #0d0d22 55%, #10102a 72%, #141438 88%, #18183f 100%)",
+    ].join(", ");
+
     return `import React from 'react';
 ${importLine}
 
 export const HeroBackground: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Animated shader background */}
-      <div className="absolute inset-0">
+    <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: "#030308", background: "${baseBg}" }}>
+      <div className="absolute inset-0" style={{ filter: "${filterString}"${settings.blendMode && settings.blendMode !== "normal" ? `, mixBlendMode: "${settings.blendMode}"` : ""} }}>
         ${component}
-      </div>
+      </div>${grainOverlay}${vignetteOverlay}
       {children && (
         <div className="relative z-10 h-full">
           {children}
