@@ -113,7 +113,7 @@ Return only the landing page prompt, nothing else.`;
     
     // Quality tier instruction
     const qualityTier = isFast 
-      ? 'Generate a focused, high-quality prompt. Be direct and concise but ensure every detail matters. 2-4 sentences.'
+      ? 'Vastaa HETI suoraan optimoidulla promptilla. Ei johdantoa, ei selityksiä. Pelkkä prompti. Max 3-4 lausetta. Jokainen sana merkitsee.'
       : isAdvanced
       ? 'Generate an extremely comprehensive, deeply detailed prompt. Cover every aspect exhaustively. Leave nothing to interpretation. 6-10 sentences minimum.'
       : 'Generate the ultimate, production-grade prompt with expert-level depth. This should be so detailed that executing it produces professional-quality results indistinguishable from expert work. 8-15 sentences.';
