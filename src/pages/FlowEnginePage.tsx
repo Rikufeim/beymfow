@@ -538,7 +538,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   transition={{ duration: 0.4, delay: 0.2 }}
                   className="relative z-10 mt-auto pb-6 w-full px-6"
                 >
-                  <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Prompts</p>
+                  <p className="text-sm font-semibold text-white tracking-wide mb-4">Saved Prompts</p>
                   <div className="flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-hide">
                     {savedPrompts.slice(0, 6).map((sp) => (
                       <div
