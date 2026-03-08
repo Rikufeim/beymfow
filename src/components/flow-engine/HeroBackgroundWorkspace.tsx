@@ -1144,38 +1144,64 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   // Flow input effect moved below applyFlowInput declaration
 
+  // Throttled color update using rAF to avoid flooding state on color picker drag
+  const pendingColorRef = useRef<{ key: string; value: string } | null>(null);
+  const colorRafRef = useRef<number | null>(null);
+
+  const updateColorThrottled = useCallback((key: keyof HeroBackgroundSettings, value: string) => {
+    pendingColorRef.current = { key, value };
+    if (colorRafRef.current) return; // already scheduled
+    colorRafRef.current = requestAnimationFrame(() => {
+      colorRafRef.current = null;
+      const pending = pendingColorRef.current;
+      if (!pending) return;
+      pendingColorRef.current = null;
+      setSettings((prev) => ({ ...prev, [pending.key]: pending.value }));
+    });
+  }, []);
+
+  // Cleanup rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (colorRafRef.current) cancelAnimationFrame(colorRafRef.current);
+    };
+  }, []);
+
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
     value: HeroBackgroundSettings[K]
   ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
-    setFlowState((prev) => {
-      if (key === "gradientStyle") {
-        return { ...prev, currentBackgroundStyle: value as HeroBackgroundSettings["gradientStyle"] };
-      }
-      if (key === "brightness" || key === "grainEnabled" || key === "grainIntensity" || key === "environmentEnabled") {
-        const paramKey = key as keyof FlowBackgroundParams;
-        return {
-          ...prev,
-          backgroundParams: {
-            ...prev.backgroundParams,
-            [paramKey]: value as FlowBackgroundParams[typeof paramKey],
-          },
-        };
-      }
-      if (key === "color1" || key === "color2" || key === "color3" || key === "color4") {
-        return {
-          ...prev,
-          palette: {
-            ...prev.palette,
-            base: key === "color1" ? (value as string) : prev.palette.base,
-            surface: key === "color2" ? (value as string) : prev.palette.surface,
-            accent: key === "color3" ? (value as string) : prev.palette.accent,
-            highlight: key === "color4" ? (value as string) : prev.palette.highlight,
-          },
-        };
-      }
-      return prev;
+    // Use startTransition for flowState updates (non-urgent)
+    startTransition(() => {
+      setFlowState((prev) => {
+        if (key === "gradientStyle") {
+          return { ...prev, currentBackgroundStyle: value as HeroBackgroundSettings["gradientStyle"] };
+        }
+        if (key === "brightness" || key === "grainEnabled" || key === "grainIntensity" || key === "environmentEnabled") {
+          const paramKey = key as keyof FlowBackgroundParams;
+          return {
+            ...prev,
+            backgroundParams: {
+              ...prev.backgroundParams,
+              [paramKey]: value as FlowBackgroundParams[typeof paramKey],
+            },
+          };
+        }
+        if (key === "color1" || key === "color2" || key === "color3" || key === "color4") {
+          return {
+            ...prev,
+            palette: {
+              ...prev.palette,
+              base: key === "color1" ? (value as string) : prev.palette.base,
+              surface: key === "color2" ? (value as string) : prev.palette.surface,
+              accent: key === "color3" ? (value as string) : prev.palette.accent,
+              highlight: key === "color4" ? (value as string) : prev.palette.highlight,
+            },
+          };
+        }
+        return prev;
+      });
     });
   }, []);
 
