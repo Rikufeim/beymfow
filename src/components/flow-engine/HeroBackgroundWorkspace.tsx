@@ -1492,6 +1492,37 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }
   }, [generateTailwindExport]);
 
+  const generatePromptExport = useCallback((): string => {
+    const lines: string[] = [];
+    if (animatedBg.enabled) {
+      lines.push(`Create a full-screen animated background using the "${animatedBg.shaderType}" shader from @paper-design/shaders-react.`);
+      lines.push(`Colors: ${animatedBg.colors.join(", ")}.`);
+      lines.push(`Speed: ${animatedBg.speed}, Distortion: ${animatedBg.distortion}, Brightness: ${animatedBg.brightness}.`);
+      if (animatedBg.shaderType === "mesh-gradient") lines.push(`Swirl: ${animatedBg.swirl}.`);
+      if (animatedBg.shaderType === "neuro-noise") lines.push(`Noise scale: ${animatedBg.noiseScale}.`);
+      if (animatedBg.shaderType === "god-rays") lines.push(`Intensity: ${animatedBg.intensity}.`);
+    } else {
+      lines.push(`Create a full-screen hero background with a "${settings.gradientStyle}" gradient style.`);
+      lines.push(`Colors: ${settings.color1}, ${settings.color2}, ${settings.color3}, ${settings.color4}.`);
+      lines.push(`Brightness: ${settings.brightness.toFixed(2)}, Contrast: ${(settings.contrast ?? 1).toFixed(2)}, Saturation: ${(settings.saturation ?? 1).toFixed(2)}.`);
+      if (settings.grainEnabled) lines.push(`Enable a subtle grain/noise overlay at intensity ${settings.grainIntensity.toFixed(2)}.`);
+      if ((settings.vignette ?? 0) > 0) lines.push(`Add a vignette effect at opacity ${settings.vignette}.`);
+      if (settings.blendMode !== "normal") lines.push(`Use "${settings.blendMode}" blend mode.`);
+    }
+    lines.push(`\nThe background should be responsive (w-full, min-h-screen) and accept children as content overlay.`);
+    lines.push(`Wrap it as a reusable React component called HeroBackground.`);
+    return lines.join("\n");
+  }, [settings, animatedBg]);
+
+  const handleCopyPrompt = useCallback(async () => {
+    const success = await robustCopyToClipboard(generatePromptExport());
+    if (success) {
+      setCopiedPrompt(true);
+      toast.success("Prompt copied!");
+      setTimeout(() => setCopiedPrompt(false), 2500);
+    }
+  }, [generatePromptExport]);
+
   // Handle project name editing
   const handleStartEditName = useCallback(() => {
     setIsEditingName(true);
