@@ -76,9 +76,6 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent side="right" className="bg-black border-white/10 w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
-              <Link to="/premium" className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4">
-                Pricing
-              </Link>
               <Link to="/flow" className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4">
                 Flow
               </Link>

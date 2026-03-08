@@ -72,7 +72,7 @@ const AppRoutes = () => {
       <Route path="/image-generator" element={<ImageGenerator />} />
       <Route path="/planningsystem" element={<PlanningSystem />} />
       <Route path="/multiagentpage" element={<Multiagentpage />} />
-      <Route path="/landing-pages" element={<LandingPageLibrary />} />
+      
       <Route path="/settings/billing" element={<SettingsBilling />} />
       <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
       <Route path="*" element={<Layout><NotFound /></Layout>} />
