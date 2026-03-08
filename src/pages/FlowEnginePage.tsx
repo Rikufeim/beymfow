@@ -221,13 +221,32 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           ]),
         ]}
       />
-      <div
-        className="fixed inset-0 z-[-1]"
-        style={{
-          background: "radial-gradient(at 40% 20%, #3e18fb60 0px, #3e18fb30 15%, transparent 55%), radial-gradient(at 80% 5%, #00000055 0px, #00000025 15%, transparent 55%), radial-gradient(at 5% 55%, #00605570 0px, #00605535 15%, transparent 55%), radial-gradient(at 85% 55%, #3e18fb45 0px, #3e18fb20 15%, transparent 55%), radial-gradient(at 10% 95%, #00000060 0px, #00000030 15%, transparent 55%), radial-gradient(at 85% 95%, #00605550 0px, #00605525 15%, transparent 55%), #000000",
-          filter: "brightness(1.05)",
-        }}
-      />
+      {/* Layered ambient background */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden">
+        {/* Base */}
+        <div className="absolute inset-0" style={{ background: "#050507" }} />
+        {/* Primary glow – deep indigo */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 70% 55% at 35% 25%, rgba(62,24,251,0.35) 0%, transparent 70%)",
+        }} />
+        {/* Secondary glow – teal accent */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 60% 50% at 75% 65%, rgba(0,180,160,0.18) 0%, transparent 65%)",
+        }} />
+        {/* Warm highlight – subtle amber kiss */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 45% 40% at 60% 15%, rgba(255,140,50,0.07) 0%, transparent 60%)",
+        }} />
+        {/* Depth shadow – bottom corners */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 60%)",
+        }} />
+        {/* Subtle noise grain via CSS */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundSize: "128px 128px",
+        }} />
+      </div>
 
       {/* Top Nav Bar - ShortSync style */}
       <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
