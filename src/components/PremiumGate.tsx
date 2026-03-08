@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
+
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Crown, Zap, Lock } from "lucide-react";
