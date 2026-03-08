@@ -198,15 +198,13 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "animated" | "layout" | "style" | "motion" | "components" | "export";
+type TabId = "shape" | "animated" | "motion" | "components";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
   { id: "animated", label: "Animated" },
-  { id: "style", label: "Style" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
-  { id: "export", label: "Export" },
 ];
 
 // Layout categories for grouping gradient styles
@@ -2240,39 +2238,11 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                 })}
                               </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      )}
 
-                      {activeTab === "animated" && (
-                        <motion.div
-                          key="animated"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col"
-                        >
-                          <AnimatedBackgroundsTab
-                            settings={animatedBg}
-                            onChange={handleAnimatedBgChange}
-                          />
-                        </motion.div>
-                      )}
-
-
-                      {activeTab === "style" && (
-                        <motion.div
-                          key="style"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col"
-                        >
-                          <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-                            <div className="space-y-4">
-                              {/* Gradient Controls */}
+                            {/* Style Controls (inline) */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Style</h4>
                               <div className="space-y-2">
-                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Gradient</h4>
                                 <div className="flex items-center gap-2">
                                   <span className="text-[10px] text-white/50 w-14">Type</span>
                                   <div className="flex gap-1">
@@ -2295,72 +2265,52 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                   </div>
                                 </div>
                               </div>
+                            </div>
 
-                              {/* Pattern Controls */}
-                              <div className="space-y-2 border-t border-white/5 pt-3">
-                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Pattern</h4>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Noise</span>
-                                  <Slider value={[settings.noiseAmount]} onValueChange={([v]) => updateSetting("noiseAmount", v)} min={0} max={100} step={1} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.noiseAmount}%</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Grain</span>
-                                  <div className="flex gap-1">
-                                    {(["fine", "medium", "coarse"] as GrainSize[]).map((s) => (
-                                      <button key={s} onClick={() => updateSetting("grainSize", s)} className={cn("px-2 py-0.5 rounded text-[9px] font-medium capitalize transition-all", settings.grainSize === s ? "bg-white/15 text-white border border-white/20" : "bg-neutral-900 text-white/50 border border-white/10 hover:text-white/70")}>{s}</button>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Texture</span>
-                                  <Slider value={[settings.textureOpacity]} onValueChange={([v]) => updateSetting("textureOpacity", v)} min={0} max={1} step={0.01} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{(settings.textureOpacity * 100).toFixed(0)}%</span>
-                                </div>
-                              </div>
-
-                              {/* Advanced Controls */}
-                              <div className="space-y-2 border-t border-white/5 pt-3">
-                                <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Advanced</h4>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Vignette</span>
-                                  <Switch checked={(settings.vignette ?? 0) > 0} onCheckedChange={(checked) => updateSetting("vignette", checked ? 0.4 : 0)} />
-                                  {(settings.vignette ?? 0) > 0 && (
-                                    <>
-                                      <Slider value={[settings.vignette ?? 0]} onValueChange={([v]) => updateSetting("vignette", v)} min={0} max={1} step={0.05} className="flex-1" />
-                                      <span className="text-[10px] text-white/60 w-8 text-right">{((settings.vignette ?? 0) * 100).toFixed(0)}%</span>
-                                    </>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Soft Light</span>
-                                  <Switch checked={settings.environmentEnabled} onCheckedChange={(v) => updateSetting("environmentEnabled", v)} />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Focus X</span>
-                                  <Slider value={[settings.radialFocusX]} onValueChange={([v]) => updateSetting("radialFocusX", v)} min={0} max={100} step={1} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.radialFocusX}%</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Focus Y</span>
-                                  <Slider value={[settings.radialFocusY]} onValueChange={([v]) => updateSetting("radialFocusY", v)} min={0} max={100} step={1} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.radialFocusY}%</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Exposure</span>
-                                  <Slider value={[settings.exposure]} onValueChange={([v]) => updateSetting("exposure", v)} min={0.5} max={2} step={0.05} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.exposure.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] text-white/50 w-14">Gamma</span>
-                                  <Slider value={[settings.gamma]} onValueChange={([v]) => updateSetting("gamma", v)} min={0.5} max={2} step={0.05} className="flex-1" />
-                                  <span className="text-[10px] text-white/60 w-8 text-right">{settings.gamma.toFixed(2)}</span>
-                                </div>
+                            {/* Export (inline) */}
+                            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Export</h4>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={10} /> : <Code size={10} />}{copiedProjectCode ? "Copied!" : "React"}</button>
+                                <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedCss ? <Check size={10} /> : <Code size={10} />}{copiedCss ? "Copied!" : "CSS"}</button>
+                                <button onClick={handleCopyTailwind} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedTailwind ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedTailwind ? <Check size={10} /> : <Code size={10} />}{copiedTailwind ? "Copied!" : "Tailwind"}</button>
+                                <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedJSON ? <Check size={10} /> : <FileJson size={10} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                                <button onClick={handleCopyPrompt} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedPrompt ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25"}`}>{copiedPrompt ? <Check size={10} /> : <FileText size={10} />}{copiedPrompt ? "Copied!" : "Prompt"}</button>
+                                <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 transition-all"><Download size={10} /> PNG</button>
                               </div>
                             </div>
                           </div>
                         </motion.div>
                       )}
+
+                      {activeTab === "animated" && (
+                        <motion.div
+                          key="animated"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="h-full min-h-0 flex flex-col"
+                        >
+                          <div className="flex-1 min-h-0 flex flex-col">
+                            <AnimatedBackgroundsTab
+                              settings={animatedBg}
+                              onChange={handleAnimatedBgChange}
+                            />
+                            {/* Inline Export */}
+                            <div className="mt-3 pt-3 border-t border-white/[0.06] flex-shrink-0">
+                              <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Export</h4>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={10} /> : <Code size={10} />}{copiedProjectCode ? "Copied!" : "React"}</button>
+                                <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedCss ? <Check size={10} /> : <Code size={10} />}{copiedCss ? "Copied!" : "CSS"}</button>
+                                <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedJSON ? <Check size={10} /> : <FileJson size={10} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                                <button onClick={handleCopyPrompt} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedPrompt ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25"}`}>{copiedPrompt ? <Check size={10} /> : <FileText size={10} />}{copiedPrompt ? "Copied!" : "Prompt"}</button>
+                                <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 transition-all"><Download size={10} /> PNG</button>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
 
                       {activeTab === "motion" && (
                         <motion.div
@@ -2572,53 +2522,6 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                         </motion.div>
                       )}
 
-                      {activeTab === "export" && (
-                        <motion.div
-                          key="export"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="h-full min-h-0 flex flex-col"
-                        >
-                          <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2 flex-shrink-0">Export</h4>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedProjectCode ? <Check size={12} /> : <Code size={12} />}{copiedProjectCode ? "Copied!" : "React Component"}</button>
-                            <button onClick={handleCopyCode} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedCode ? <Check size={12} /> : <Code size={12} />}{copiedCode ? "Copied!" : "Full React"}</button>
-                            <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedCss ? <Check size={12} /> : <Code size={12} />}{copiedCss ? "Copied!" : "CSS"}</button>
-                            <button onClick={handleCopyTailwind} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedTailwind ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedTailwind ? <Check size={12} /> : <Code size={12} />}{copiedTailwind ? "Copied!" : "Tailwind"}</button>
-                            <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedJSON ? <Check size={12} /> : <FileJson size={12} />}{copiedJSON ? "Copied!" : "JSON"}</button>
-                            <button onClick={handleCopyPrompt} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedPrompt ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:border-purple-500/40"}`}>{copiedPrompt ? <Check size={12} /> : <FileText size={12} />}{copiedPrompt ? "Copied!" : "Prompt"}</button>
-                            <div className="w-px h-5 bg-white/10" />
-                            <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20 transition-all"><Download size={12} /> PNG {downloadScale > 1 ? `${Math.round(1920*downloadScale)}×${Math.round(1080*downloadScale)}` : '1920×1080'}</button>
-                            <select value={downloadScale} onChange={(e) => setDownloadScale(parseFloat(e.target.value))} className="px-2 py-1.5 rounded-lg border text-[10px] bg-neutral-900 border-white/10 text-white/70 focus:outline-none">
-                              <option value={1}>1x</option>
-                              <option value={2}>2x (4K)</option>
-                              <option value={3}>3x</option>
-                            </select>
-                            <div className="w-px h-5 bg-white/10" />
-                            <button
-                              onClick={() => {
-                                const colors = { color1: settings.color1, color2: settings.color2, color3: settings.color3, color4: settings.color4 };
-                                setColorPromptPayload({
-                                  colors,
-                                  gradientStyle: settings.gradientStyle,
-                                  brightness: settings.brightness,
-                                  grainEnabled: settings.grainEnabled,
-                                  summary: buildColorSummary(colors, settings.gradientStyle),
-                                  timestamp: Date.now(),
-                                });
-                                toast.success("Colors sent to Prompt Generator");
-                                navigate("/flow/prompt-generator");
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-medium bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:border-purple-500/40 transition-all"
-                            >
-                              <Sparkles size={12} />
-                              Generate Color Prompt
-                            </button>
-                          </div>
-                          <p className="text-[9px] text-white/40 mt-1.5">Style: {settings.gradientStyle} · Brightness: {settings.brightness.toFixed(2)} · Grain: {settings.grainEnabled ? "On" : "Off"}</p>
-                        </motion.div>
-                      )}
 
                     </AnimatePresence>
                   </div>
