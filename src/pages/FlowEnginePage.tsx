@@ -380,7 +380,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               }}
               className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
             >
-              Open Workspace
+              {selectionTab === "color-codes" ? "Open Color Codes" : "Open Prompt Generator"}
             </button>
           </div>
 
