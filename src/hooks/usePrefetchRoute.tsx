@@ -4,7 +4,7 @@ import { useCallback } from "react";
 const routeMap: Record<string, () => Promise<any>> = {
   "/": () => import("../pages/Index"),
   "/features": () => import("../pages/Features"),
-  "/premium": () => import("../pages/Premium"),
+  
   "/flow-engine": () => import("../pages/FlowEnginePage"),
   "/prompt-lab-page": () => import("../pages/PromptLabPage"),
   "/prompt-lab-page/library": () => import("../pages/promptlab/PromptLibraryPage"),
