@@ -1710,6 +1710,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       background,
       filter: parts.join(" "),
       mixBlendMode: settings.blendMode !== "normal" ? settings.blendMode as React.CSSProperties["mixBlendMode"] : undefined,
+      willChange: 'background, filter',
+      transition: 'none',
     };
   }, [settings]);
 
