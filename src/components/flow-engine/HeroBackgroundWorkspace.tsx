@@ -2152,10 +2152,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                             settings.color4
                                     }
                                     onChange={(color) => {
-                                      if (activeColorPicker === "color1") updateSetting("color1", color);
-                                      else if (activeColorPicker === "color2") updateSetting("color2", color);
-                                      else if (activeColorPicker === "color3") updateSetting("color3", color);
-                                      else updateSetting("color4", color);
+                                      const key = activeColorPicker as "color1" | "color2" | "color3" | "color4";
+                                      updateColorThrottled(key, color);
                                     }}
                                     style={{ width: 120, height: 90 }}
                                   />
