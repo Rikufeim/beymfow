@@ -3,23 +3,10 @@ import { useCallback } from "react";
 // Route to component mapping for prefetching
 const routeMap: Record<string, () => Promise<any>> = {
   "/": () => import("../pages/Index"),
-  "/features": () => import("../pages/Features"),
-  
   "/flow-engine": () => import("../pages/FlowEnginePage"),
-  "/prompt-lab-page": () => import("../pages/PromptLabPage"),
-  "/prompt-lab-page/library": () => import("../pages/promptlab/PromptLibraryPage"),
-  "/auth": () => import("../pages/Auth"),
   "/about": () => import("../pages/About"),
-  "/business-prompts": () => import("../pages/BusinessPrompts"),
-  "/prompt-lab": () => import("../pages/PromptLab"),
   "/image-generator": () => import("../pages/ImageGenerator"),
   "/planningsystem": () => import("../pages/PlanningSystem"),
-  "/prompt-lab/ai-generator": () => import("../pages/promptlab/AIGenerator"),
-  "/prompt-lab/checking": () => import("../pages/promptlab/PromptChecking"),
-  "/prompt-lab/image-prompts": () => import("../pages/promptlab/ImagePrompts"),
-  "/prompt-lab/video-prompts": () => import("../pages/promptlab/VideoPrompts"),
-  "/prompt-lab/text-detector": () => import("../pages/promptlab/TextDetector"),
-  "/prompt-lab/humanizer": () => import("../pages/promptlab/Humanizer"),
   "/multiagentpage": () => import("../pages/Multiagentpage"),
 };
 
