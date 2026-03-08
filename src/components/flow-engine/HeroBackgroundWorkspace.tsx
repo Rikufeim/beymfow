@@ -1109,7 +1109,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     saveTimeoutRef.current = setTimeout(() => {
       triggerAutoSave();
-    }, 3000);
+    }, 5000);
 
     return () => {
       if (saveTimeoutRef.current) {
