@@ -364,7 +364,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               style={{ width: "100%", height: "100%" }}
               colors={["#000000", "#6366f1", "#000000", "#7c3aed"]}
               speed={0.8}
-              noiseScale={3}
               seed={42}
             />
           </div>
