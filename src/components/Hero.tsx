@@ -31,6 +31,8 @@ const Hero = memo(function Hero() {
       console.error("Google sign-in error:", error);
     }
   }, [user, navigate]);
+  const handlePrefetchAuth = useCallback(() => prefetchRoute("/auth"), [prefetchRoute]);
+
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
