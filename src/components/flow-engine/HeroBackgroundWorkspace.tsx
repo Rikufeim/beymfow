@@ -2291,13 +2291,13 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                           exit={{ opacity: 0, y: -10 }}
                           className="h-full min-h-0 flex flex-col"
                         >
-                          <div className="flex-1 min-h-0 flex flex-col">
+                          <div className="flex-1 min-h-0 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
                             <AnimatedBackgroundsTab
                               settings={animatedBg}
                               onChange={handleAnimatedBgChange}
                             />
                             {/* Inline Export */}
-                            <div className="mt-3 pt-3 border-t border-white/[0.06] flex-shrink-0">
+                            <div className="mt-3 pt-3 border-t border-white/[0.06]">
                               <h4 className="text-[10px] text-white/40 uppercase tracking-wider font-medium mb-2">Export</h4>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <button onClick={handleCopyProjectCode} className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[9px] font-medium transition-all ${copiedProjectCode ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800"}`}>{copiedProjectCode ? <Check size={10} /> : <Code size={10} />}{copiedProjectCode ? "Copied!" : "React"}</button>
