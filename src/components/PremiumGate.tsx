@@ -19,9 +19,8 @@ export const PremiumGate = ({ children }: PremiumGateProps) => {
   useEffect(() => {
     if (loading) return;
 
-    // Not logged in -> redirect to auth
     if (!user) {
-      openAuthDialog();
+      navigate("/flow");
       return;
     }
 

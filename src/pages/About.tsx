@@ -125,14 +125,8 @@ const About = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { openAuthDialog } = useAuthDialog();
   const handleStartCreating = () => {
-    if (user) {
-      navigate("/flow");
-    } else {
-      sessionStorage.setItem("auth_redirect_after", "/flow");
-      openAuthDialog(() => navigate("/flow"));
-    }
+    navigate("/flow");
   };
 
   // Scroll Progress Logic
