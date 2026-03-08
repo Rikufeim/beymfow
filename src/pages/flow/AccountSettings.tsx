@@ -6,7 +6,7 @@ import SEOHead from "@/components/SEOHead";
 const AccountSettings = () => {
   return (
     <>
-      <SEOHead title="Account Settings — Beymflow" description="Manage your profile, security, billing, and connected services in Beymflow." />
+      <SEOHead pathname="/flow/account-settings" overrides={{ title: "Account Settings — Beymflow", description: "Manage your profile, security, billing, and connected services in Beymflow." }} />
       <div className="min-h-screen bg-neutral-950 text-white">
         <header className="sticky top-0 z-50 flex items-center gap-4 px-6 md:px-10 h-16 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl">
           <Link to="/flow" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm">

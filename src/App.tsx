@@ -64,6 +64,10 @@ const AppRoutes = () => {
       <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
       <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
       <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
+      <Route path="/flow/team-settings" element={<ErrorBoundary><TeamSettings /></ErrorBoundary>} />
+      <Route path="/flow/account-settings" element={<ErrorBoundary><AccountSettingsPage /></ErrorBoundary>} />
+      <Route path="/flow/documentation" element={<ErrorBoundary><DocumentationPage /></ErrorBoundary>} />
+      <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={<Layout><About /></Layout>} />
       <Route path="/premium" element={<Layout><Premium /></Layout>} />
