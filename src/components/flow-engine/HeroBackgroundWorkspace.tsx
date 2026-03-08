@@ -1480,9 +1480,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
-    const filterParts = [`brightness(${b})`];
-    if (c !== 1) filterParts.push(`contrast(${c})`);
-    if (s !== 1) filterParts.push(`saturate(${s})`);
+    const filterParts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode !== "normal" ? `\n  mix-blend-mode: ${settings.blendMode};` : "";
     return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};${blendLine}\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
@@ -1492,9 +1490,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
-    const filterParts = [`brightness(${b})`];
-    if (c !== 1) filterParts.push(`contrast(${c})`);
-    if (s !== 1) filterParts.push(`saturate(${s})`);
+    const filterParts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
     return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${sanitizeGradient(buildHeroGradient(settings))}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
