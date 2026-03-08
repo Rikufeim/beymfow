@@ -3,15 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, Suspense, lazy } from "react";
 import { useAuth } from "./contexts/AuthContext";
-import Header from "./components/Header";
 import Layout from "./components/Layout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import CookieBanner from "./components/CookieBanner";
 import Auth from "./pages/Auth";
 
 const Index = lazy(() => import("./pages/Index"));
