@@ -29,6 +29,7 @@ import {
 
 // Prompt Generator Workspace - simplified view
 import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
+import { loadPromptProjects, deletePromptProject, type PromptProject } from "@/lib/promptProjectStore";
 
 type WorkspaceType = "selection" | "prompt-generator" | "color-codes";
 
