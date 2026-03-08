@@ -279,13 +279,7 @@ const Premium = () => {
                 So, what are we building?
               </h2>
               <Link
-                to={user ? "/flow" : "#"}
-                onClick={(e) => {
-                  if (!user) {
-                    e.preventDefault();
-                    openAuthDialog(() => navigate("/flow"));
-                  }
-                }}
+                to="/flow"
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-semibold text-sm hover:bg-white/90 transition-colors">
 
                 Start Building
