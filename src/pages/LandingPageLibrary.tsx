@@ -67,7 +67,7 @@ const SECTIONS: Section[] = [
   {
     id: "templates",
     title: "Agent Templates",
-    viewAllHref: "#",
+    
     cards: [
       { id: "tmpl-1", title: "Chat Bot" },
       { id: "tmpl-2", title: "Terminal Agent" },
