@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
 import { toPng, toJpeg } from "html-to-image";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, FileText, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { setColorPromptPayload, buildColorSummary } from "@/lib/colorPromptBridge";
 import { Slider } from "@/components/ui/slider";
