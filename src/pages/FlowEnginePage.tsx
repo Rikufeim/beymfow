@@ -458,7 +458,16 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           {selectionTab === "prompt-generator" && (
             <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
               <div className="absolute inset-0 overflow-hidden">
-                <div className="w-full h-full" style={{ background: "radial-gradient(at 40% 20%, #3e18fb40 0px, transparent 55%), radial-gradient(at 80% 60%, #1a0a3a 0px, transparent 55%), #0a0a0f", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
+                <div className="w-full h-full" style={{ filter: "brightness(0.4)", transform: "scale(1.05)" }}>
+                  <NeuroNoise
+                    style={{ width: "100%", height: "100%" }}
+                    colorFront="#000000"
+                    colorBack="#6366f1"
+                    speed={0.5}
+                    scale={1}
+                    brightness={1.2}
+                  />
+                </div>
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.3 }}
@@ -483,7 +492,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => navigate("/flow/prompt-generator")}
-                className="relative z-10 px-8 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-white/20 transition-all duration-200 shadow-2xl"
+                className="relative z-10 px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
               </motion.button>
