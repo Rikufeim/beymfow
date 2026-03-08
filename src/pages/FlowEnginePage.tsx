@@ -5,13 +5,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, LogOut, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
-import PlanBadge from "@/components/PlanBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
