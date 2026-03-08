@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo, startTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
 import { toPng, toJpeg } from "html-to-image";
@@ -1011,8 +1011,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     return map;
   }, [filteredBackgrounds]);
 
-  // Pre-compute layout shape preview backgrounds
+  // Pre-compute layout shape preview backgrounds — only when shape tab is active
   const shapePreviewMap = useMemo(() => {
+    if (activeTab !== "shape") return new Map<string, string>();
     const map = new Map<string, string>();
     for (const shape of SHAPE_STYLES) {
       const previewSettings: HeroBackgroundSettings = {
@@ -1030,7 +1031,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       map.set(shape.id, buildHeroGradient(previewSettings));
     }
     return map;
-  }, [settings.color1, settings.color2, settings.color3, settings.color4]);
+  }, [activeTab === "shape" ? settings.color1 : "", activeTab === "shape" ? settings.color2 : "", activeTab === "shape" ? settings.color3 : "", activeTab === "shape" ? settings.color4 : "", activeTab]);
 
   const triggerAutoSave = useCallback(async () => {
     const currentSettingsString = JSON.stringify(settings) + JSON.stringify(animatedBg);
@@ -1108,7 +1109,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
     saveTimeoutRef.current = setTimeout(() => {
       triggerAutoSave();
-    }, 3000);
+    }, 5000);
 
     return () => {
       if (saveTimeoutRef.current) {
@@ -1143,38 +1144,64 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
   // Flow input effect moved below applyFlowInput declaration
 
+  // Throttled color update using rAF to avoid flooding state on color picker drag
+  const pendingColorRef = useRef<{ key: string; value: string } | null>(null);
+  const colorRafRef = useRef<number | null>(null);
+
+  const updateColorThrottled = useCallback((key: keyof HeroBackgroundSettings, value: string) => {
+    pendingColorRef.current = { key, value };
+    if (colorRafRef.current) return; // already scheduled
+    colorRafRef.current = requestAnimationFrame(() => {
+      colorRafRef.current = null;
+      const pending = pendingColorRef.current;
+      if (!pending) return;
+      pendingColorRef.current = null;
+      setSettings((prev) => ({ ...prev, [pending.key]: pending.value }));
+    });
+  }, []);
+
+  // Cleanup rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (colorRafRef.current) cancelAnimationFrame(colorRafRef.current);
+    };
+  }, []);
+
   const updateSetting = useCallback(<K extends keyof HeroBackgroundSettings>(
     key: K,
     value: HeroBackgroundSettings[K]
   ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
-    setFlowState((prev) => {
-      if (key === "gradientStyle") {
-        return { ...prev, currentBackgroundStyle: value as HeroBackgroundSettings["gradientStyle"] };
-      }
-      if (key === "brightness" || key === "grainEnabled" || key === "grainIntensity" || key === "environmentEnabled") {
-        const paramKey = key as keyof FlowBackgroundParams;
-        return {
-          ...prev,
-          backgroundParams: {
-            ...prev.backgroundParams,
-            [paramKey]: value as FlowBackgroundParams[typeof paramKey],
-          },
-        };
-      }
-      if (key === "color1" || key === "color2" || key === "color3" || key === "color4") {
-        return {
-          ...prev,
-          palette: {
-            ...prev.palette,
-            base: key === "color1" ? (value as string) : prev.palette.base,
-            surface: key === "color2" ? (value as string) : prev.palette.surface,
-            accent: key === "color3" ? (value as string) : prev.palette.accent,
-            highlight: key === "color4" ? (value as string) : prev.palette.highlight,
-          },
-        };
-      }
-      return prev;
+    // Use startTransition for flowState updates (non-urgent)
+    startTransition(() => {
+      setFlowState((prev) => {
+        if (key === "gradientStyle") {
+          return { ...prev, currentBackgroundStyle: value as HeroBackgroundSettings["gradientStyle"] };
+        }
+        if (key === "brightness" || key === "grainEnabled" || key === "grainIntensity" || key === "environmentEnabled") {
+          const paramKey = key as keyof FlowBackgroundParams;
+          return {
+            ...prev,
+            backgroundParams: {
+              ...prev.backgroundParams,
+              [paramKey]: value as FlowBackgroundParams[typeof paramKey],
+            },
+          };
+        }
+        if (key === "color1" || key === "color2" || key === "color3" || key === "color4") {
+          return {
+            ...prev,
+            palette: {
+              ...prev.palette,
+              base: key === "color1" ? (value as string) : prev.palette.base,
+              surface: key === "color2" ? (value as string) : prev.palette.surface,
+              accent: key === "color3" ? (value as string) : prev.palette.accent,
+              highlight: key === "color4" ? (value as string) : prev.palette.highlight,
+            },
+          };
+        }
+        return prev;
+      });
     });
   }, []);
 
@@ -1183,8 +1210,15 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       cancelAnimationFrame(paletteAnimationRef.current);
     }
     const start = performance.now();
+    let lastUpdate = 0;
     const step = (now: number) => {
       const progress = clamp((now - start) / duration, 0, 1);
+      // Throttle to ~30fps during animation to reduce re-renders
+      if (now - lastUpdate < 33 && progress < 1) {
+        paletteAnimationRef.current = requestAnimationFrame(step);
+        return;
+      }
+      lastUpdate = now;
       const eased = progress * (2 - progress);
       const blended: FlowPalette = {
         ...to,
@@ -1676,6 +1710,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       background,
       filter: parts.join(" "),
       mixBlendMode: settings.blendMode !== "normal" ? settings.blendMode as React.CSSProperties["mixBlendMode"] : undefined,
+      willChange: 'background, filter',
+      transition: 'none',
     };
   }, [settings]);
 
@@ -2118,10 +2154,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                                             settings.color4
                                     }
                                     onChange={(color) => {
-                                      if (activeColorPicker === "color1") updateSetting("color1", color);
-                                      else if (activeColorPicker === "color2") updateSetting("color2", color);
-                                      else if (activeColorPicker === "color3") updateSetting("color3", color);
-                                      else updateSetting("color4", color);
+                                      const key = activeColorPicker as "color1" | "color2" | "color3" | "color4";
+                                      updateColorThrottled(key, color);
                                     }}
                                     style={{ width: 120, height: 90 }}
                                   />
@@ -2385,7 +2419,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
                               {/* Quick Actions */}
                               <div className="flex items-center gap-1.5 pt-1">
-                                <button onClick={() => { updateSetting("brightness", 1.0); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
+                                <button onClick={() => { setSettings(prev => ({ ...prev, brightness: 1.0, contrast: 1, saturation: 1, blurPx: 0, vignette: 0, grainEnabled: false, environmentEnabled: false })); }} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
                                   Reset All
                                 </button>
                               </div>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useRef, useEffect } from "react";
 import { MeshGradient, NeuroNoise, GodRays, SmokeRing, GrainGradient, Swirl } from "@paper-design/shaders-react";
 import { motion } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
@@ -281,6 +281,28 @@ export default function AnimatedBackgroundsTab({ settings, onChange }: AnimatedB
     setEditingColorIdx(null);
   }, [onChange, settings]);
 
+  // Throttled color update for smooth picker dragging
+  const pendingColorRef = useRef<{ index: number; color: string } | null>(null);
+  const colorRafRef = useRef<number | null>(null);
+
+  const updateColorThrottled = useCallback((index: number, color: string) => {
+    pendingColorRef.current = { index, color };
+    if (colorRafRef.current) return;
+    colorRafRef.current = requestAnimationFrame(() => {
+      colorRafRef.current = null;
+      const pending = pendingColorRef.current;
+      if (!pending) return;
+      pendingColorRef.current = null;
+      const newColors = [...settings.colors];
+      newColors[pending.index] = pending.color;
+      onChange({ ...settings, colors: newColors });
+    });
+  }, [onChange, settings]);
+
+  useEffect(() => {
+    return () => { if (colorRafRef.current) cancelAnimationFrame(colorRafRef.current); };
+  }, []);
+
   const updateColor = useCallback((index: number, color: string) => {
     const newColors = [...settings.colors];
     newColors[index] = color;
@@ -391,7 +413,7 @@ export default function AnimatedBackgroundsTab({ settings, onChange }: AnimatedB
                   <div className="flex-1">
                     <HexColorPicker
                       color={settings.colors[editingColorIdx]}
-                      onChange={(c) => updateColor(editingColorIdx, c)}
+                      onChange={(c) => updateColorThrottled(editingColorIdx, c)}
                       style={{ width: "100%", height: 80 }}
                     />
                   </div>
