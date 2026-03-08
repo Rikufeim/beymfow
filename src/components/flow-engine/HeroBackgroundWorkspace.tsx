@@ -1557,6 +1557,28 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [projectCode]);
 
   const generateCssExport = useCallback((): string => {
+    if (animatedBg.enabled) {
+      const b = settings.brightness * (settings.exposure ?? 1);
+      const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+      const s = settings.saturation ?? 1;
+      const filterParts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
+      if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
+      return `/* Animated shader — use React component export for full shader code */
+.hero-background {
+  background-color: #030308;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(60,40,90,0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 50% 10%, rgba(30,30,60,0.2) 0%, transparent 45%),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 25%),
+    linear-gradient(to top, #030308 0%, #060612 18%, #0a0a1a 38%, #0d0d22 55%, #10102a 72%, #141438 88%, #18183f 100%);
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+.hero-background .shader-layer {
+  filter: ${filterParts.join(' ')};
+}`;
+    }
     const bg = sanitizeGradient(buildHeroGradient(settings));
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
@@ -1565,9 +1587,12 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode !== "normal" ? `\n  mix-blend-mode: ${settings.blendMode};` : "";
     return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};${blendLine}\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
-  }, [settings]);
+  }, [settings, animatedBg]);
 
   const generateTailwindExport = useCallback((): string => {
+    if (animatedBg.enabled) {
+      return `{/* Animated shader — use React component export for full implementation */}\n{/* Base container with dark background matching preview */}\n<div\n  className="relative w-full min-h-screen overflow-hidden"\n  style={{\n    backgroundColor: "#030308",\n    background: "radial-gradient(ellipse 120% 80% at 50% 0%, rgba(60,40,90,0.25) 0%, transparent 50%), radial-gradient(ellipse 100% 60% at 50% 10%, rgba(30,30,60,0.2) 0%, transparent 45%), linear-gradient(to top, #030308 0%, #060612 18%, #0a0a1a 38%, #0d0d22 55%, #10102a 72%, #141438 88%, #18183f 100%)",\n  }}\n>\n  {/* Shader component goes here */}\n</div>`;
+    }
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
@@ -1575,7 +1600,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
     return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${sanitizeGradient(buildHeroGradient(settings))}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
-  }, [settings]);
+  }, [settings, animatedBg]);
 
   const handleCopyCss = useCallback(async () => {
     const success = await robustCopyToClipboard(generateCssExport());
