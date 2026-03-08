@@ -53,13 +53,6 @@ const Header = () => {
       <div className="flex items-center justify-end flex-1 gap-8">
         <nav className="hidden md:flex items-center gap-8 font-medium">
           <Link
-            to="/premium"
-            onMouseEnter={() => prefetchRoute("/premium")}
-            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
-          >
-            Pricing
-          </Link>
-          <Link
             to="/flow"
             onMouseEnter={() => prefetchRoute("/flow")}
             className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
