@@ -188,7 +188,6 @@ const Auth = () => {
             className="h-10 w-auto object-contain"
             loading="eager"
             decoding="async"
-            fetchPriority="high"
             width={160}
             height={40}
           />

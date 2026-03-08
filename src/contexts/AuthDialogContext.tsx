@@ -37,7 +37,11 @@ export const AuthDialogProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <AuthDialogContext.Provider value={{ openAuthDialog, closeAuthDialog }}>
       {children}
-      <AuthDialog open={open} onOpenChange={setOpen} onSuccess={onSuccessCallback} />
+      {open ? (
+        <Suspense fallback={null}>
+          <LazyAuthDialog open={open} onOpenChange={setOpen} onSuccess={onSuccessCallback} />
+        </Suspense>
+      ) : null}
     </AuthDialogContext.Provider>
   );
 };
