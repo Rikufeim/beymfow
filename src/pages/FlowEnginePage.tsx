@@ -206,9 +206,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
   ];
 
-  const userInitials = user?.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : "?";
+  const userInitials = "U";
 
   // Render Selection View
   return (
