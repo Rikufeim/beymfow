@@ -380,7 +380,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 >
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Projects</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 pb-2">
-                    {savedProjects.slice(0, 8).map((project) => (
+                    {savedProjects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleOpenProject(project)}
