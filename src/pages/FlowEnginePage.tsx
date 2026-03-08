@@ -540,6 +540,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 </motion.div>
               )}
             </div>
+          )}
+        </div>
       </div>
     </div>
   );
