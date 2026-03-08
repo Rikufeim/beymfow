@@ -81,6 +81,15 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     setSavedPrompts(loadPromptProjects());
   };
 
+  const handleRenameProject = (project: HeroBackgroundProject, newName: string) => {
+    const trimmed = newName.trim();
+    if (trimmed && trimmed !== project.name) {
+      saveHeroProject({ ...project, name: trimmed });
+      setSavedProjects(loadLocalProjects());
+    }
+    setRenamingProjectId(null);
+  };
+
   const handleOpenProject = (project: HeroBackgroundProject) => {
     // Store selected project ID in sessionStorage so it persists across route changes
     sessionStorage.setItem('beymflow.editing-project-id', project.id);
