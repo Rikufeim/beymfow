@@ -283,7 +283,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         </div>
 
         {/* Center Tabs */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-white/[0.06] border border-white/[0.08] rounded-full p-0.5 gap-0.5">
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -293,8 +293,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               className={cn(
                 "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
                 selectionTab === tab.id
-                  ? "bg-white/[0.12] text-white shadow-sm"
-                  : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+                  ? "bg-white/[0.15] text-white shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
               )}
             >
               {tab.label}
