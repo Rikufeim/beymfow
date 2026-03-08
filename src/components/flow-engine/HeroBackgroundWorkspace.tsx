@@ -2419,7 +2419,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
 
                               {/* Quick Actions */}
                               <div className="flex items-center gap-1.5 pt-1">
-                                <button onClick={() => { updateSetting("brightness", 1.0); updateSetting("contrast", 1); updateSetting("saturation", 1); updateSetting("blurPx", 0); updateSetting("vignette", 0); updateSetting("grainEnabled", false); updateSetting("environmentEnabled", false); }} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
+                                <button onClick={() => { setSettings(prev => ({ ...prev, brightness: 1.0, contrast: 1, saturation: 1, blurPx: 0, vignette: 0, grainEnabled: false, environmentEnabled: false })); }} className="px-2.5 py-1 rounded-md text-[10px] font-medium bg-white/[0.03] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all">
                                   Reset All
                                 </button>
                               </div>
