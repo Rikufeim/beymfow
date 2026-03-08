@@ -3,7 +3,7 @@
 // Each card opens its own workspace
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { NeuroNoise } from "@paper-design/shaders-react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy } from "lucide-react";
