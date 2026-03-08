@@ -266,12 +266,11 @@ Vaiheittainen menettely:
 2. Roolita avustaja: määrittele asiantuntija-persoona, jolla on spesifi alueen osaaminen.
 3. Muodosta promptirakenne: konteksti → päätehtävä → rajoitukset → formaattivaatimukset.
 
-${isFast ? `FAST MODE – Luo kohdennettu, toimintakelpoinen prompti:
-- Selkeä asiantuntija-rooli aiheeseen liittyen
-- Täsmällinen tavoite
-- Keskeiset vaatimukset ja rajoitteet
-- Odotettu tuotosformaatti
-- 2-4 lausetta, suora ja tehokas.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis prompti aiheesta. Suoraan asiaan:
+- Asiantuntijarooli
+- Selkeä tehtävä ja tavoite
+- Tuotosformaatti
+- Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
 1. ROOLI: Asiantuntija-persoona ja toimialapesifinen tieto
 2. TAVOITE: Selkeä, mitattava päämäärä
 3. KONTEKSTI: Taustatiedot ja rajoitteet
