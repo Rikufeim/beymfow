@@ -155,7 +155,11 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   // Render Color Codes Workspace
   if (activeWorkspace === "color-codes") {
     return (
-      <>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
         <SEOHead
           pathname="/flow/color-codes"
           schemas={[
@@ -176,7 +180,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           onBack={handleHeroWorkspaceBack}
           onSave={handleHeroProjectSave}
         />
-      </>
+      </motion.div>
     );
   }
 
