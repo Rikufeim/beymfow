@@ -335,8 +335,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       </header>
 
       {/* Tab Content */}
-      <div className="flex-1 px-4 sm:px-8 py-8">
-        <div className="max-w-5xl mx-auto">
+      <div className="flex-1 px-4 sm:px-6 py-8">
+        <div className="w-full">
 
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
