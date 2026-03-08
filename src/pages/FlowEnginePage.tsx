@@ -362,11 +362,28 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
             <NeuroNoise
               style={{ width: "100%", height: "100%" }}
               colorFront="#000000"
-              colorBack="#6366f1"
+              colorBack={selectionTab === "color-codes" ? "#6366f1" : "#7c3aed"}
               speed={0.5}
               scale={1}
               brightness={1.2}
             />
+            {/* Color accent overlay that fades between tabs */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectionTab}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="absolute inset-0"
+                style={{
+                  background: selectionTab === "color-codes"
+                    ? "radial-gradient(ellipse 70% 55% at 35% 25%, rgba(99,102,241,0.25) 0%, transparent 70%)"
+                    : "radial-gradient(ellipse 70% 55% at 65% 35%, rgba(124,58,237,0.25) 0%, transparent 70%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            </AnimatePresence>
           </div>
 
           <AnimatePresence mode="wait">
