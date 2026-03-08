@@ -185,14 +185,6 @@ const LandingPageLibrary = memo(function LandingPageLibrary() {
               <h2 className="text-sm font-semibold text-foreground tracking-wide">
                 {section.title}
               </h2>
-              {section.viewAllHref && (
-                <a
-                  href={section.viewAllHref}
-                  className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                >
-                  View all <ChevronRight size={14} />
-                </a>
-              )}
             </div>
 
             {/* Content */}
