@@ -30,7 +30,6 @@ const SECTIONS: Section[] = [
   {
     id: "landing-pages",
     title: "Landing Pages",
-    viewAllHref: "#",
     cards: [
       { id: "lp-1", title: "SaaS Landing" },
       { id: "lp-2", title: "Startup Hero" },
