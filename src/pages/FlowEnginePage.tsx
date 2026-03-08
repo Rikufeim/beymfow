@@ -357,6 +357,18 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
 
+          {/* Shared persistent background — never unmounts */}
+          <div className="fixed inset-0 z-30 overflow-hidden pointer-events-none">
+            <NeuroNoise
+              style={{ width: "100%", height: "100%" }}
+              colorFront="#000000"
+              colorBack="#6366f1"
+              speed={0.5}
+              scale={1}
+              brightness={1.2}
+            />
+          </div>
+
           <AnimatePresence mode="wait">
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
@@ -369,14 +381,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               className="fixed inset-0 z-40 flex flex-col items-center justify-center"
             >
               <div className="absolute inset-0 overflow-hidden">
-                <NeuroNoise
-                  style={{ width: "100%", height: "100%" }}
-                  colorFront="#000000"
-                  colorBack="#6366f1"
-                  speed={0.5}
-                  scale={1}
-                  brightness={1.2}
-                />
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.3 }}
@@ -481,21 +485,13 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               className="fixed inset-0 z-40 flex flex-col"
             >
               <div className="absolute inset-0 overflow-hidden">
-                <div className="w-full h-full" style={{ filter: "brightness(0.4)", transform: "scale(1.05)" }}>
-                  <NeuroNoise
-                    style={{ width: "100%", height: "100%" }}
-                    colorFront="#000000"
-                    colorBack="#6366f1"
-                    speed={0.5}
-                    scale={1}
-                    brightness={1.2}
-                  />
-                </div>
+                {/* Darkening overlay for prompt tab */}
+                <div className="absolute inset-0 bg-black/50 z-[1]" />
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.3 }}
                   transition={{ duration: 0.4 }}
-                  className="absolute inset-0 flex flex-col items-center pt-20 gap-6"
+                  className="absolute inset-0 z-[2] flex flex-col items-center pt-20 gap-6"
                   style={{ filter: "blur(4px)" }}
                 >
                   <div className="w-[80%] max-w-3xl h-12 rounded-xl bg-white/5 border border-white/10" />
