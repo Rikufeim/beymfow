@@ -391,30 +391,54 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   className="relative z-10 mt-10 w-full px-6"
                 >
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Projects</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 pb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-2">
                     {savedProjects.map((project) => (
-                      <button
+                      <div
                         key={project.id}
+                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden cursor-pointer"
                         onClick={() => handleOpenProject(project)}
-                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
                       >
                         <div className="aspect-[16/9] w-full overflow-hidden">
                           {project.thumbnail ? (
-                            <img src={project.thumbnail} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
+                            <img src={project.thumbnail} alt={project.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                           ) : (
                             <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${project.settings.color1}, ${project.settings.color2})` }} />
                           )}
                         </div>
-                        <div className="p-2 flex items-center justify-between">
-                          <span className="text-[11px] text-white/70 truncate">{project.name}</span>
+                        <div className="p-3 flex items-center justify-between gap-2">
+                          {renamingProjectId === project.id ? (
+                            <input
+                              autoFocus
+                              value={editingName}
+                              onChange={(e) => setEditingName(e.target.value)}
+                              onBlur={() => handleRenameProject(project, editingName)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRenameProject(project, editingName);
+                                if (e.key === "Escape") setRenamingProjectId(null);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 bg-transparent border border-white/20 rounded px-2 py-0.5 text-xs text-white outline-none focus:border-white/40"
+                            />
+                          ) : (
+                            <span
+                              className="text-xs text-white/70 truncate flex-1 cursor-text hover:text-white transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRenamingProjectId(project.id);
+                                setEditingName(project.name);
+                              }}
+                            >
+                              {project.name}
+                            </span>
+                          )}
                           <button
                             onClick={(e) => handleDeleteProject(e, project.id)}
                             className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
                           >
-                            <Trash2 size={10} className="text-neutral-500 hover:text-red-400" />
+                            <Trash2 size={12} className="text-neutral-500 hover:text-red-400" />
                           </button>
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
