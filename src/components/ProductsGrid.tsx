@@ -26,13 +26,6 @@ const products = [
     buttonText: "Open Lab >",
     link: "/prompt-lab-page",
   },
-  {
-    icon: Package,
-    title: "Community",
-    description: "Supercharge your workflow with ultimate AI resources.",
-    buttonText: "Join Now >",
-    link: "/community",
-  },
 ];
 
 const ProductsGrid = memo(function ProductsGrid() {
