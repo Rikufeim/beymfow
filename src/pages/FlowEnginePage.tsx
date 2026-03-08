@@ -403,7 +403,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                     {savedProjects.map((project) => (
                       <div
                         key={project.id}
-                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden cursor-pointer"
+                        className="group relative rounded-xl border border-white/10 hover:border-white/20 bg-black/60 hover:bg-black/70 transition-all overflow-hidden cursor-pointer backdrop-blur-sm"
                         onClick={() => handleOpenProject(project)}
                       >
                         <div className="aspect-[16/9] w-full overflow-hidden">
