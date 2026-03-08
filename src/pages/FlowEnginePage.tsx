@@ -283,7 +283,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         </div>
 
         {/* Center Tabs */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-white/[0.06] border border-white/[0.08] rounded-full p-0.5 gap-0.5">
+        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -293,8 +293,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               className={cn(
                 "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
                 selectionTab === tab.id
-                  ? "bg-white/[0.12] text-white shadow-sm"
-                  : "text-neutral-400 hover:text-white hover:bg-white/[0.04]"
+                  ? "bg-white/[0.15] text-white shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
               )}
             >
               {tab.label}
@@ -305,7 +305,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-10 h-10 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
+            <button className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/80 backdrop-blur-md transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
               {userInitials}
             </button>
           </DropdownMenuTrigger>
@@ -385,7 +385,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => { sessionStorage.removeItem('beymflow.editing-project-id'); navigate("/flow/color-codes"); }}
-                className="relative z-10 px-8 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-white/20 transition-all duration-200 shadow-2xl"
+                className="relative z-10 px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
               </motion.button>
@@ -403,7 +403,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                     {savedProjects.map((project) => (
                       <div
                         key={project.id}
-                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden cursor-pointer"
+                        className="group relative rounded-xl border border-white/10 hover:border-white/20 bg-black/60 hover:bg-black/70 transition-all overflow-hidden cursor-pointer backdrop-blur-sm"
                         onClick={() => handleOpenProject(project)}
                       >
                         <div className="aspect-[16/9] w-full overflow-hidden">
