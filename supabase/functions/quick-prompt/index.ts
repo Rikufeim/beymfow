@@ -52,12 +52,12 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Model selection: fast = instant quality, advanced = deep & comprehensive, premium = maximum
+    // Model selection: fast = instant quality (lightweight model), advanced = deep, premium = maximum
     const selectedModel = model === 'premium' 
       ? 'openai/gpt-5'
       : model === 'advanced' 
       ? 'google/gemini-2.5-pro' 
-      : 'google/gemini-3-flash-preview';
+      : 'google/gemini-2.5-flash-lite';
     
     const isFast = model === 'fast';
     const isAdvanced = model === 'advanced';
