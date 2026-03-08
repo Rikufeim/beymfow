@@ -132,6 +132,30 @@ const GlobalImagePreloader = () => {
   return null;
 };
 
+const AppShell = () => {
+  const { pathname } = useLocation();
+  const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/");
+
+  if (isAuthRoute) {
+    return (
+      <>
+        <ScrollToTop />
+        <Suspense fallback={null}><AppRoutes /></Suspense>
+      </>
+    );
+  }
+
+  return (
+    <AuthDialogProvider>
+      <GlobalImagePreloader />
+      <PersistentHeader />
+      <ScrollToTop />
+      <Suspense fallback={null}><AppRoutes /></Suspense>
+      <Suspense fallback={null}><CookieBanner /></Suspense>
+    </AuthDialogProvider>
+  );
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -139,13 +163,7 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <AuthProvider>
-              <AuthDialogProvider>
-                <GlobalImagePreloader />
-                <PersistentHeader />
-                <ScrollToTop />
-                <Suspense fallback={null}><AppRoutes /></Suspense>
-                <CookieBanner />
-              </AuthDialogProvider>
+              <AppShell />
             </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>
