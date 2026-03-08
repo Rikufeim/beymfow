@@ -19,8 +19,6 @@ const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 const Community = lazy(() => import("./pages/Community"));
-const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
-const Premium = lazy(() => import("./pages/Premium"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Header = lazy(() => import("./components/Header"));
