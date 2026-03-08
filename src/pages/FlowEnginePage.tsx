@@ -355,7 +355,15 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           {selectionTab === "color-codes" && (
             <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
               <div className="absolute inset-0 overflow-hidden">
-                <div className="w-full h-full" style={{ background: "radial-gradient(ellipse 140% 100% at 50% 50%, #389cff35 0%, #389cff20 15%, #1a1a1a60 40%, #1a1a1a30 60%, #000000 100%), radial-gradient(ellipse 100% 50% at 50% 25%, #389cff40 0%, transparent 70%)", filter: "brightness(1.20)" }} />
+                <NeuroNoise
+                  style={{ width: "100%", height: "100%" }}
+                  colorFront="#22d3ee"
+                  colorBack="#6366f1"
+                  colorBackground="#000000"
+                  speed={0.5}
+                  scale={1}
+                  brightness={1.2}
+                />
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.3 }}
