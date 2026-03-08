@@ -14,6 +14,9 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import FlowEnginePage from "./pages/FlowEnginePage";
+import Auth from "./pages/Auth";
+
 const About = lazy(() => import("./pages/About"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
@@ -23,7 +26,6 @@ const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
 const Premium = lazy(() => import("./pages/Premium"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
-import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
