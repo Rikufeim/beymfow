@@ -198,14 +198,13 @@ Palauta AINOASTAAN optimoitu prompti.`;
 
 Tavoite: Laadi jokaisesta käyttäjän ideasta selkeä, yksityiskohtainen kuvapromptia. Varmista riittävät visuaaliset yksityiskohdat: asetelma, tyyli, värit, kuvasuhde. Jos käyttäjä ei määrittele kaikkea, täydennä älykkäästi.
 
-${isFast ? `FAST MODE – Luo eloisa, yksityiskohtainen kuvapromptia:
-- Selkeä aiheen kuvaus tarkkojen attribuuttien kanssa
-- Taiteellinen tyyli ja medium
-- Valaistus ja tunnelma
-- Sommittelu ja perspektiivi
-- Olennaiset laadun modifikaattorit (8k, detailed, cinematic jne.)
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis kuvapromptia. Suoraan asiaan:
+- Aihe ja visuaaliset yksityiskohdat
+- Tyyli ja valaistus
+- Sommittelu
+- Laadun modifikaattorit (8k, cinematic jne.)
 
-Kirjoita YKSI vakuuttava kuvagenerointiprompti. Ole tarkka ja visuaalinen.` : `COMPREHENSIVE MODE – Luo mestariteostason kuvapromptia:
+YKSI kuvapromptilause. Ei johdantoa.` : `COMPREHENSIVE MODE – Luo mestariteostason kuvapromptia:
 
 1. KOHDE: Äärimmäisen yksityiskohtainen kuvaus materiaaleilla, tekstuureilla, ilmeillä, asennolla
 2. YMPÄRISTÖ: Tausta, sää, vuorokaudenaika, ympäristötekijät
