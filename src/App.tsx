@@ -1,7 +1,7 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
@@ -14,17 +14,18 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import About from "./pages/About";
 import FlowEnginePage from "./pages/FlowEnginePage";
-import ImageGenerator from "./pages/ImageGenerator";
-import PlanningSystem from "./pages/PlanningSystem";
-import Multiagentpage from "./pages/Multiagentpage";
-import Community from "./pages/Community";
-import LandingPageLibrary from "./pages/LandingPageLibrary";
-import Premium from "./pages/Premium";
-import SettingsBilling from "./pages/SettingsBilling";
-import PaymentSuccess from "./pages/PaymentSuccess";
 import Auth from "./pages/Auth";
+
+const About = lazy(() => import("./pages/About"));
+const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
+const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
+const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
+const Community = lazy(() => import("./pages/Community"));
+const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
+const Premium = lazy(() => import("./pages/Premium"));
+const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,7 +140,7 @@ function App() {
                 <GlobalImagePreloader />
                 <PersistentHeader />
                 <ScrollToTop />
-                <AppRoutes />
+                <Suspense fallback={null}><AppRoutes /></Suspense>
                 <CookieBanner />
               </AuthDialogProvider>
             </AuthProvider>

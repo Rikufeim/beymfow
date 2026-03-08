@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Cover } from "./ui/cover";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { lovable } from "@/integrations/lovable/index";
 
 const Hero = memo(function Hero() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { openAuthDialog } = useAuthDialog();
+  const { prefetchRoute } = usePrefetchRoute();
 
   const handleFlowClick = useCallback(() => {
     if (user) {
@@ -31,6 +31,8 @@ const Hero = memo(function Hero() {
       console.error("Google sign-in error:", error);
     }
   }, [user, navigate]);
+  const handlePrefetchAuth = useCallback(() => prefetchRoute("/auth"), [prefetchRoute]);
+
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
@@ -54,7 +56,7 @@ const Hero = memo(function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap gap-4">
-          <button onClick={handleFlowClick} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
+          <button onClick={handleFlowClick} onMouseEnter={handlePrefetchAuth} onFocus={handlePrefetchAuth} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
             Go to Flow
             <ArrowRight className="w-4 h-4" />
           </button>
