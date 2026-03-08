@@ -390,45 +390,52 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
 
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
-            <motion.div
-              key="color-codes"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+            <div
               className="fixed inset-0 z-40 flex items-center justify-center"
             >
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ background: "linear-gradient(135deg, #080808 0%, #121214 25%, #0a2a2a 50%, #121214 75%, #080808 100%)", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
-                <div className="absolute inset-0 flex flex-col items-center pt-20 gap-6 opacity-30" style={{ filter: "blur(4px)" }}>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.3 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 flex flex-col items-center pt-20 gap-6"
+                  style={{ filter: "blur(4px)" }}
+                >
                   <div className="w-[80%] max-w-4xl h-16 rounded-xl bg-white/5 border border-white/10" />
                   <div className="w-[80%] max-w-4xl flex gap-4">
                     <div className="flex-1 h-64 rounded-xl bg-white/5 border border-white/10" />
                     <div className="w-64 h-64 rounded-xl bg-white/5 border border-white/10" />
                   </div>
                   <div className="w-[80%] max-w-4xl h-32 rounded-xl bg-white/5 border border-white/10" />
-                </div>
+                </motion.div>
               </div>
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => { sessionStorage.removeItem('beymflow.editing-project-id'); navigate("/flow/color-codes"); }}
                 className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
-              </button>
-            </motion.div>
+              </motion.button>
+            </div>
           )}
 
           {/* Prompt Generator Tab */}
           {selectionTab === "prompt-generator" && (
-            <motion.div
-              key="prompt-generator"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+            <div
               className="fixed inset-0 z-40 flex items-center justify-center"
             >
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ background: "radial-gradient(at 40% 20%, #3e18fb40 0px, transparent 55%), radial-gradient(at 80% 60%, #1a0a3a 0px, transparent 55%), #0a0a0f", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
-                <div className="absolute inset-0 flex flex-col items-center pt-20 gap-6 opacity-30" style={{ filter: "blur(4px)" }}>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.3 }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 flex flex-col items-center pt-20 gap-6"
+                  style={{ filter: "blur(4px)" }}
+                >
                   <div className="w-[80%] max-w-3xl h-12 rounded-xl bg-white/5 border border-white/10" />
                   <div className="w-[80%] max-w-3xl h-40 rounded-xl bg-white/5 border border-white/10" />
                   <div className="w-[80%] max-w-3xl flex gap-3">
@@ -437,15 +444,18 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                     <div className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10" />
                   </div>
                   <div className="w-[80%] max-w-3xl h-64 rounded-xl bg-white/5 border border-white/10" />
-                </div>
+                </motion.div>
               </div>
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => navigate("/flow/prompt-generator")}
                 className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
-              </button>
-            </motion.div>
+              </motion.button>
+            </div>
           )}
 
         </div>
