@@ -184,40 +184,18 @@ function buildPresetGradientCSS(preset: AnimatedPreset): { background: string; e
 // ── Mini Preview for preset thumbnails ──
 
 const PresetThumbnail = memo(({ preset }: { preset: AnimatedPreset }) => {
-  // Build full settings exactly as applyPreset would, so preview matches 1:1
-  const s: AnimatedBgSettings = {
-    ...DEFAULT_ANIMATED_BG,
-    enabled: true,
-    shaderType: preset.shaderType,
-    presetId: preset.id,
-    colors: [...preset.colors],
-    ...preset.params,
-  };
-  const style: React.CSSProperties = { width: "100%", height: "100%", position: "absolute", inset: 0 };
-
-  const renderShader = () => {
-    switch (s.shaderType) {
-      case "mesh-gradient":
-        return <MeshGradient style={style} colors={s.colors} distortion={s.distortion} swirl={s.swirl} speed={s.speed} grainOverlay={s.grainOverlay} />;
-      case "neuro-noise":
-        return <NeuroNoise style={style} colorFront={s.colors[0] || "#22d3ee"} colorMid={s.colors[1] || "#6366f1"} colorBack={s.colors[2] || "#000000"} brightness={s.brightness} contrast={s.contrast} speed={s.speed} />;
-      case "god-rays":
-        return <GodRays style={style} colorBack="#000000" colorBloom={s.colors[0] || "#fbbf24"} colors={s.colors} intensity={s.intensity} density={s.density} speed={s.speed} />;
-      case "smoke-ring":
-        return <SmokeRing style={style} colorBack={s.colors[s.colors.length - 1] || "#000000"} colors={s.colors.slice(0, -1)} noiseScale={s.noiseScale} speed={s.speed} />;
-      case "grain-gradient":
-        return <GrainGradient style={style} colorBack="#000000" colors={s.colors} softness={s.softness} intensity={s.intensity} noise={s.grainOverlay} speed={s.speed} />;
-      case "swirl":
-        return <Swirl style={style} colors={s.colors} speed={s.speed} />;
-      default:
-        return null;
-    }
-  };
+  const { background, extra } = buildPresetGradientCSS(preset);
 
   return (
-    <div className="w-full h-full relative overflow-hidden">
-      {renderShader()}
-    </div>
+    <div
+      className="w-full h-full relative overflow-hidden"
+      style={{
+        background,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        ...extra,
+      }}
+    />
   );
 });
 PresetThumbnail.displayName = "PresetThumbnail";
