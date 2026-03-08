@@ -56,7 +56,7 @@ const Hero = memo(function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap gap-4">
-          <button onClick={handleFlowClick} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
+          <button onClick={handleFlowClick} onMouseEnter={handlePrefetchAuth} onFocus={handlePrefetchAuth} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
             Go to Flow
             <ArrowRight className="w-4 h-4" />
           </button>

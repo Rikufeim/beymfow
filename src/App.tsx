@@ -138,7 +138,7 @@ function App() {
                 <GlobalImagePreloader />
                 <PersistentHeader />
                 <ScrollToTop />
-                <AppRoutes />
+                <Suspense fallback={null}><AppRoutes /></Suspense>
                 <CookieBanner />
               </AuthDialogProvider>
             </AuthProvider>
