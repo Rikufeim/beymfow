@@ -2584,6 +2584,23 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Export */}
+                                  <div className="pt-2 border-t border-white/5">
+                                    <span className="text-[9px] text-white/40 uppercase tracking-wider mb-2 block">Export</span>
+                                    <button
+                                      onClick={handleCopyComponentCode}
+                                      className={cn(
+                                        "flex items-center gap-1.5 px-3 py-2 rounded-lg border text-[10px] font-medium transition-all w-full justify-center",
+                                        copiedComponentCode
+                                          ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                          : "bg-cyan-500/15 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25"
+                                      )}
+                                    >
+                                      {copiedComponentCode ? <Check size={12} /> : <Code size={12} />}
+                                      {copiedComponentCode ? "Copied!" : "Copy React Component"}
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             );
