@@ -190,10 +190,6 @@ const Index = () => {
 
           {/* Video carousels moved to Hero component */}
 
-          {/* Flow Features Section */}
-          <div className="">
-            <FlowFeaturesSection className="py-16 sm:py-20 md:py-24 lg:py-32" />
-          </div>
 
           {/* Beymflow Premium highlight */}
 
