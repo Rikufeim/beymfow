@@ -362,6 +362,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               transition={{ duration: 0.4, ease: "easeInOut" }}
               className="fixed inset-0 z-40 flex flex-col items-center justify-center"
             >
+              <div className="absolute inset-0 overflow-hidden">
                 <NeuroNoise
                   style={{ width: "100%", height: "100%" }}
                   colorFront="#000000"
@@ -460,12 +461,19 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   </div>
                 </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Prompt Generator Tab */}
           {selectionTab === "prompt-generator" && (
-            <div className="fixed inset-0 z-40 flex flex-col">
+            <motion.div
+              key="prompt-generator"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="fixed inset-0 z-40 flex flex-col"
+            >
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ filter: "brightness(0.4)", transform: "scale(1.05)" }}>
                   <NeuroNoise
@@ -548,9 +556,9 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   </div>
                 </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
-        </div>
+          </AnimatePresence>
       </div>
     </div>
   );
