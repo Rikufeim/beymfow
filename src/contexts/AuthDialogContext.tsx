@@ -8,6 +8,7 @@ interface AuthDialogContextType {
 }
 
 const AuthDialogContext = createContext<AuthDialogContextType | undefined>(undefined);
+const LazyAuthDialog = lazy(() => import('@/components/AuthDialog').then((module) => ({ default: module.AuthDialog })));
 
 export const AuthDialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
