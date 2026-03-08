@@ -364,7 +364,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               style={{ width: "100%", height: "100%", transition: "filter 0.8s ease" }}
               colors={selectionTab === "prompt-generator"
                 ? ["#000000", "#0d9488", "#000000", "#06b6d4"]
-                : ["#000000", "#6366f1", "#000000", "#7c3aed"]
+                : ["#000000", "#818cf8", "#000000", "#a78bfa"]
               }
               speed={0.8}
             />
