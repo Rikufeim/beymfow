@@ -568,13 +568,13 @@ export default HeroBackground;
   }
 
   const gradientCSS = sanitizeGradient(buildHeroGradient(settings));
-  const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
+  const grainSVG = `data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E`;
 
-  // Build filter string
-  const filterParts = [`brightness(${(settings.brightness * (settings.exposure ?? 1)).toFixed(2)})`];
-  const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
-  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
-  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  // Build filter string — must match the live preview exactly
+  const b = settings.brightness * (settings.exposure ?? 1);
+  const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
+  const s = settings.saturation ?? 1;
+  const filterParts = [`brightness(${b.toFixed(2)})`, `contrast(${c.toFixed(2)})`, `saturate(${s})`];
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
 
@@ -598,7 +598,7 @@ export default HeroBackground;
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: \`url("${grainSVG}")\`,
-          opacity: ${(settings.grainIntensity * 0.3).toFixed(3)},
+          opacity: ${(settings.grainIntensity * 0.25).toFixed(3)},
           mixBlendMode: "overlay" as const,
         }}
       />`
@@ -708,9 +708,8 @@ export default HeroBackground;
   // Build filter string matching the live preview exactly
   const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
   const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
-  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`];
-  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
-  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  const effectiveSaturation = settings.saturation ?? 1;
+  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`, `contrast(${effectiveContrast.toFixed(2)})`, `saturate(${effectiveSaturation})`];
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
 
@@ -1481,9 +1480,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
-    const filterParts = [`brightness(${b})`];
-    if (c !== 1) filterParts.push(`contrast(${c})`);
-    if (s !== 1) filterParts.push(`saturate(${s})`);
+    const filterParts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode !== "normal" ? `\n  mix-blend-mode: ${settings.blendMode};` : "";
     return `.hero-background {\n  background: ${bg};\n  filter: ${filterParts.join(' ')};${blendLine}\n  width: 100%;\n  min-height: 100vh;\n  position: relative;\n}`;
@@ -1493,9 +1490,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     const b = settings.brightness * (settings.exposure ?? 1);
     const c = (settings.contrast ?? 1) * (settings.gamma ?? 1);
     const s = settings.saturation ?? 1;
-    const filterParts = [`brightness(${b})`];
-    if (c !== 1) filterParts.push(`contrast(${c})`);
-    if (s !== 1) filterParts.push(`saturate(${s})`);
+    const filterParts = [`brightness(${b})`, `contrast(${c})`, `saturate(${s})`];
     if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
     const blendLine = settings.blendMode && settings.blendMode !== "normal" ? `\n    mixBlendMode: "${settings.blendMode}",` : "";
     return `{/* Tailwind utility classes + inline style */}\n<div\n  className="relative w-full min-h-screen"\n  style={{\n    background: "${sanitizeGradient(buildHeroGradient(settings))}",\n    filter: "${filterParts.join(' ')}",${blendLine}\n  }}\n/>`;
