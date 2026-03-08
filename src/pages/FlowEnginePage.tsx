@@ -362,10 +362,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           <div className="fixed inset-0 z-30 overflow-hidden pointer-events-none">
             <GrainGradient
               style={{ width: "100%", height: "100%" }}
-              color1="#000000"
-              color2="#6366f1"
-              color3="#000000"
-              color4="#7c3aed"
+              colors={["#000000", "#6366f1", "#000000", "#7c3aed"]}
               speed={0.8}
               noiseScale={3}
               seed={42}
