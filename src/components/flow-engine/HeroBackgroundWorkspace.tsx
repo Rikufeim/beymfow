@@ -1810,6 +1810,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           zIndex: 50,
           transform: 'none',
           willChange: 'auto',
+          backgroundColor: '#030308',
           background: [
             'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(60,40,90,0.25) 0%, transparent 50%)',
             'radial-gradient(ellipse 100% 60% at 50% 10%, rgba(30,30,60,0.2) 0%, transparent 45%)',
@@ -1820,7 +1821,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       >
         {/* Animated shader background (renders behind/instead of gradient) */}
         {animatedBg.enabled && (
-          <div className="absolute inset-0 z-[0]">
+          <div className="absolute inset-0 z-[0]" style={{ width: '100%', height: '100%' }}>
             <AnimatedBgPreview settings={animatedBg} />
           </div>
         )}
