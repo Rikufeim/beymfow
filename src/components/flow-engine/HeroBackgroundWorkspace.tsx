@@ -690,6 +690,49 @@ export const HeroBackground: React.FC<{ children?: React.ReactNode }> = ({ child
 export default HeroBackground;`;
 };
 
+// Generate code for animated shader backgrounds
+const generateAnimatedBgCode = (abg: AnimatedBgSettings): { importLine: string; component: string } => {
+  const colorsStr = JSON.stringify(abg.colors);
+  
+  switch (abg.shaderType) {
+    case "mesh-gradient":
+      return {
+        importLine: `import { MeshGradient } from "@paper-design/shaders-react";`,
+        component: `<MeshGradient style={{ width: "100%", height: "100%" }} colors={${colorsStr}} distortion={${abg.distortion}} swirl={${abg.swirl}} speed={${abg.speed}} grainOverlay={${abg.grainOverlay}} />`,
+      };
+    case "neuro-noise":
+      return {
+        importLine: `import { NeuroNoise } from "@paper-design/shaders-react";`,
+        component: `<NeuroNoise style={{ width: "100%", height: "100%" }} colorFront="${abg.colors[0] || "#22d3ee"}" colorMid="${abg.colors[1] || "#6366f1"}" colorBack="${abg.colors[2] || "#000000"}" brightness={${abg.brightness}} contrast={${abg.contrast}} speed={${abg.speed}} />`,
+      };
+    case "god-rays":
+      return {
+        importLine: `import { GodRays } from "@paper-design/shaders-react";`,
+        component: `<GodRays style={{ width: "100%", height: "100%" }} colorBack="#000000" colorBloom="${abg.colors[0] || "#fbbf24"}" colors={${colorsStr}} intensity={${abg.intensity}} density={${abg.density}} speed={${abg.speed}} />`,
+      };
+    case "smoke-ring": {
+      const bgColor = abg.colors[abg.colors.length - 1] || "#000000";
+      const ringColors = JSON.stringify(abg.colors.slice(0, -1));
+      return {
+        importLine: `import { SmokeRing } from "@paper-design/shaders-react";`,
+        component: `<SmokeRing style={{ width: "100%", height: "100%" }} colorBack="${bgColor}" colors={${ringColors}} noiseScale={${abg.noiseScale}} speed={${abg.speed}} />`,
+      };
+    }
+    case "grain-gradient":
+      return {
+        importLine: `import { GrainGradient } from "@paper-design/shaders-react";`,
+        component: `<GrainGradient style={{ width: "100%", height: "100%" }} colorBack="#000000" colors={${colorsStr}} softness={${abg.softness}} intensity={${abg.intensity}} noise={${abg.grainOverlay}} speed={${abg.speed}} />`,
+      };
+    case "swirl":
+      return {
+        importLine: `import { Swirl } from "@paper-design/shaders-react";`,
+        component: `<Swirl style={{ width: "100%", height: "100%" }} colors={${colorsStr}} speed={${abg.speed}} />`,
+      };
+    default:
+      return { importLine: "", component: "" };
+  }
+};
+
 // Helper for robust clipboard copying with fallback
 const robustCopyToClipboard = async (text: string): Promise<boolean> => {
   if (!text) return false;
