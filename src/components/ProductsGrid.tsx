@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
-import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
+import { BookOpen, Workflow } from "lucide-react";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 const products = [
