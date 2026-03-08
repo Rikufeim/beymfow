@@ -281,6 +281,28 @@ export default function AnimatedBackgroundsTab({ settings, onChange }: AnimatedB
     setEditingColorIdx(null);
   }, [onChange, settings]);
 
+  // Throttled color update for smooth picker dragging
+  const pendingColorRef = useRef<{ index: number; color: string } | null>(null);
+  const colorRafRef = useRef<number | null>(null);
+
+  const updateColorThrottled = useCallback((index: number, color: string) => {
+    pendingColorRef.current = { index, color };
+    if (colorRafRef.current) return;
+    colorRafRef.current = requestAnimationFrame(() => {
+      colorRafRef.current = null;
+      const pending = pendingColorRef.current;
+      if (!pending) return;
+      pendingColorRef.current = null;
+      const newColors = [...settings.colors];
+      newColors[pending.index] = pending.color;
+      onChange({ ...settings, colors: newColors });
+    });
+  }, [onChange, settings]);
+
+  useEffect(() => {
+    return () => { if (colorRafRef.current) cancelAnimationFrame(colorRafRef.current); };
+  }, []);
+
   const updateColor = useCallback((index: number, color: string) => {
     const newColors = [...settings.colors];
     newColors[index] = color;
