@@ -1136,7 +1136,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     onClick={() => setPromptType("chatgpt")}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "chatgpt" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
-                    <span className="text-lg">🤖</span>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">ChatGPT</span>
                       <span className="text-[10px] text-white/40">Optimoitu GPT-malleille</span>
@@ -1146,7 +1145,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     onClick={() => setPromptType("lovable")}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "lovable" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
-                    <span className="text-lg">💜</span>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Lovable</span>
                       <span className="text-[10px] text-white/40">Full-stack app builder promptit</span>
@@ -1156,7 +1154,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     onClick={() => setPromptType("gemini")}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "gemini" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
-                    <span className="text-lg">✨</span>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Gemini</span>
                       <span className="text-[10px] text-white/40">Multimodal & reasoning</span>
@@ -1166,7 +1163,6 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     onClick={() => setPromptType("image")}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "image" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
-                    <span className="text-lg">🎨</span>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Image AI</span>
                       <span className="text-[10px] text-white/40">Midjourney, DALL-E, Flux</span>
