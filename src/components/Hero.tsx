@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 const Hero = memo(function Hero() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { openAuthDialog } = useAuthDialog();
+  const { prefetchRoute } = usePrefetchRoute();
 
   const handleFlowClick = useCallback(() => {
     if (user) {
