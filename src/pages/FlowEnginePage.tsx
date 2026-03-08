@@ -211,7 +211,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
 
 
   const tabs = [
-    { id: "projects" as const, label: "Projects", icon: FolderOpen },
     { id: "color-codes" as const, label: "Color Codes", icon: Palette },
     { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
   ];
