@@ -444,7 +444,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => { sessionStorage.removeItem('beymflow.editing-project-id'); navigate("/flow/color-codes"); }}
-                className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
+                className="relative z-10 px-8 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-white/20 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
               </motion.button>
@@ -518,7 +518,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
                 onClick={() => navigate("/flow/prompt-generator")}
-                className="relative z-10 px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-200 transition-all duration-200 shadow-2xl"
+                className="relative z-10 px-8 py-3.5 bg-white/10 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-white/20 transition-all duration-200 shadow-2xl"
               >
                 Open Workspace
               </motion.button>
