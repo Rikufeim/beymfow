@@ -14,9 +14,10 @@ const Hero = memo(function Hero() {
   const handleFlowClick = useCallback(() => {
     if (user) {
       navigate("/flow");
-    } else {
-      navigate("/auth?redirect=/flow");
+      return;
     }
+
+    window.location.assign("/auth?redirect=/flow");
   }, [user, navigate]);
 
   const handleGoogleLogin = useCallback(async () => {
