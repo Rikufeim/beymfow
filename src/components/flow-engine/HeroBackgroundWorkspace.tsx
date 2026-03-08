@@ -198,15 +198,13 @@ interface HeroBackgroundWorkspaceProps {
   onSave?: (project: HeroBackgroundProject) => void;
 }
 
-type TabId = "shape" | "animated" | "layout" | "style" | "motion" | "components" | "export";
+type TabId = "shape" | "animated" | "motion" | "components";
 
 const FLOW_TABS: Array<{ id: TabId; label: string }> = [
   { id: "shape", label: "Backgrounds" },
   { id: "animated", label: "Animated" },
-  { id: "style", label: "Style" },
   { id: "motion", label: "Motion" },
   { id: "components", label: "Components" },
-  { id: "export", label: "Export" },
 ];
 
 // Layout categories for grouping gradient styles
