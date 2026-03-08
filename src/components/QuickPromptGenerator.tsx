@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromptBridge";
-import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, FileText, FileCode } from "lucide-react";
+import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, FileText, FileCode, Wrench, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
