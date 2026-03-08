@@ -386,6 +386,23 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
             </AnimatePresence>
           </div>
 
+          {/* Persistent center button — stays in place across tab switches */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+            <button
+              onClick={() => {
+                if (selectionTab === "color-codes") {
+                  sessionStorage.removeItem('beymflow.editing-project-id');
+                  navigate("/flow/color-codes");
+                } else {
+                  navigate("/flow/prompt-generator");
+                }
+              }}
+              className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
+            >
+              Open Workspace
+            </button>
+          </div>
+
           <AnimatePresence mode="wait">
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
@@ -414,18 +431,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 </motion.div>
               </div>
 
-              {/* Center button - always fixed in center */}
-              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
-                  onClick={() => { sessionStorage.removeItem('beymflow.editing-project-id'); navigate("/flow/color-codes"); }}
-                  className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
-                >
-                  Open Workspace
-                </motion.button>
-              </div>
+
+
 
               {/* Saved Color Projects at bottom */}
               {savedProjects.length > 0 && (
@@ -522,18 +529,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 </motion.div>
               </div>
 
-              {/* Center button - always fixed in center */}
-              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
-                  onClick={() => navigate("/flow/prompt-generator")}
-                  className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
-                >
-                  Open Workspace
-                </motion.button>
-              </div>
 
               {/* Saved Prompts at bottom */}
               {savedPrompts.length > 0 && (
