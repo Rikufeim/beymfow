@@ -1629,6 +1629,10 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       if (animatedBg.shaderType === "mesh-gradient") lines.push(`Swirl: ${animatedBg.swirl}.`);
       if (animatedBg.shaderType === "neuro-noise") lines.push(`Noise scale: ${animatedBg.noiseScale}.`);
       if (animatedBg.shaderType === "god-rays") lines.push(`Intensity: ${animatedBg.intensity}.`);
+      lines.push(`Use a dark base background (#030308) with subtle purple radial gradient overlays behind the shader.`);
+      lines.push(`Apply CSS filter: brightness(${(settings.brightness * (settings.exposure ?? 1)).toFixed(2)}), contrast(${((settings.contrast ?? 1) * (settings.gamma ?? 1)).toFixed(2)}), saturate(${settings.saturation ?? 1}).`);
+      if (settings.grainEnabled) lines.push(`Enable a subtle grain/noise overlay at intensity ${settings.grainIntensity.toFixed(2)}.`);
+      if ((settings.vignette ?? 0) > 0) lines.push(`Add a vignette effect at opacity ${settings.vignette}.`);
     } else {
       lines.push(`Create a full-screen hero background with a "${settings.gradientStyle}" gradient style.`);
       lines.push(`Colors: ${settings.color1}, ${settings.color2}, ${settings.color3}, ${settings.color4}.`);
