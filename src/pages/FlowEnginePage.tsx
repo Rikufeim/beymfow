@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NeuroNoise } from "@paper-design/shaders-react";
+
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy } from "lucide-react";
 import { toast } from "@/lib/notifications";
@@ -357,33 +357,24 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
 
-          {/* Shared persistent background — never unmounts */}
+          {/* Shared persistent background — lightweight CSS replacement for NeuroNoise */}
           <div className="fixed inset-0 z-30 overflow-hidden pointer-events-none">
-            <NeuroNoise
-              style={{ width: "100%", height: "100%" }}
-              colorFront="#000000"
-              colorBack={selectionTab === "color-codes" ? "#6366f1" : "#7c3aed"}
-              speed={0.5}
-              scale={1}
-              brightness={1.2}
+            {/* Base black */}
+            <div className="absolute inset-0 bg-black" />
+            {/* Subtle animated glow that shifts with tab */}
+            <div
+              className="absolute inset-0 transition-all duration-700 ease-in-out"
+              style={{
+                background: selectionTab === "color-codes"
+                  ? "radial-gradient(ellipse 80% 60% at 30% 20%, rgba(99,102,241,0.18) 0%, transparent 65%), radial-gradient(ellipse 50% 45% at 75% 70%, rgba(99,102,241,0.08) 0%, transparent 55%)"
+                  : "radial-gradient(ellipse 80% 60% at 70% 25%, rgba(124,58,237,0.18) 0%, transparent 65%), radial-gradient(ellipse 50% 45% at 25% 75%, rgba(124,58,237,0.08) 0%, transparent 55%)",
+              }}
             />
-            {/* Color accent overlay that fades between tabs */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectionTab}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0"
-                style={{
-                  background: selectionTab === "color-codes"
-                    ? "radial-gradient(ellipse 70% 55% at 35% 25%, rgba(99,102,241,0.25) 0%, transparent 70%)"
-                    : "radial-gradient(ellipse 70% 55% at 65% 35%, rgba(124,58,237,0.25) 0%, transparent 70%)",
-                  mixBlendMode: "screen",
-                }}
-              />
-            </AnimatePresence>
+            {/* Static noise grain */}
+            <div className="absolute inset-0 opacity-[0.04]" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+              backgroundSize: "128px 128px",
+            }} />
           </div>
 
           {/* Persistent center button — stays in place across tab switches */}
