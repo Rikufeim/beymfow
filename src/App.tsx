@@ -125,7 +125,10 @@ const CRITICAL_IMAGES: string[] = [
 ];
 
 const GlobalImagePreloader = () => {
-  useImagePreloader({ images: CRITICAL_IMAGES });
+  const { pathname } = useLocation();
+  const shouldPreload = pathname === "/" || pathname.startsWith("/landing-pages");
+
+  useImagePreloader({ images: shouldPreload ? CRITICAL_IMAGES : [] });
   return null;
 };
 
