@@ -59,10 +59,11 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     }
   }, [initialWorkspace, editingProjectId]);
 
-  // Load saved projects
+  // Load saved projects & prompts
   useEffect(() => {
     setSavedProjects(loadLocalProjects());
-  }, [activeWorkspace]);
+    setSavedPrompts(loadPromptProjects());
+  }, [activeWorkspace, selectionTab]);
 
   const handleDeleteProject = (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
