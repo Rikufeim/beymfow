@@ -12,12 +12,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validate authentication
-  const { user, error: authError } = await validateAuth(req);
-  if (authError || !user) {
-    console.log("Unauthorized request to quick-prompt");
-    return createUnauthorizedResponse(corsHeaders, authError || "Authentication required");
-  }
+  // Try to authenticate, but allow guest access
+  const { user } = await validateAuth(req);
+  // user may be null for guest users – that's OK
 
   try {
     const body = await req.json();
