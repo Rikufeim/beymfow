@@ -559,6 +559,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
             </motion.div>
           )}
           </AnimatePresence>
+        </div>
       </div>
     </div>
   );
