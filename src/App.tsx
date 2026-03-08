@@ -3,15 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, Suspense, lazy } from "react";
 import { useAuth } from "./contexts/AuthContext";
-import Header from "./components/Header";
 import Layout from "./components/Layout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import CookieBanner from "./components/CookieBanner";
 import Auth from "./pages/Auth";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -27,6 +24,8 @@ const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
 const Premium = lazy(() => import("./pages/Premium"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const Header = lazy(() => import("./components/Header"));
+const CookieBanner = lazy(() => import("./components/CookieBanner"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +132,30 @@ const GlobalImagePreloader = () => {
   return null;
 };
 
+const AppShell = () => {
+  const { pathname } = useLocation();
+  const isAuthRoute = pathname === "/auth" || pathname.startsWith("/auth/");
+
+  if (isAuthRoute) {
+    return (
+      <>
+        <ScrollToTop />
+        <Suspense fallback={null}><AppRoutes /></Suspense>
+      </>
+    );
+  }
+
+  return (
+    <AuthDialogProvider>
+      <GlobalImagePreloader />
+      <PersistentHeader />
+      <ScrollToTop />
+      <Suspense fallback={null}><AppRoutes /></Suspense>
+      <Suspense fallback={null}><CookieBanner /></Suspense>
+    </AuthDialogProvider>
+  );
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -140,13 +163,7 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <AuthProvider>
-              <AuthDialogProvider>
-                <GlobalImagePreloader />
-                <PersistentHeader />
-                <ScrollToTop />
-                <Suspense fallback={null}><AppRoutes /></Suspense>
-                <CookieBanner />
-              </AuthDialogProvider>
+              <AppShell />
             </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>
