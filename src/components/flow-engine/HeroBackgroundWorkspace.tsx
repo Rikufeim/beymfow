@@ -708,9 +708,8 @@ export default HeroBackground;
   // Build filter string matching the live preview exactly
   const effectiveBrightness = settings.brightness * (settings.exposure ?? 1);
   const effectiveContrast = (settings.contrast ?? 1) * (settings.gamma ?? 1);
-  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`];
-  if (effectiveContrast !== 1) filterParts.push(`contrast(${effectiveContrast.toFixed(2)})`);
-  if (settings.saturation !== 1 && settings.saturation !== undefined) filterParts.push(`saturate(${settings.saturation})`);
+  const effectiveSaturation = settings.saturation ?? 1;
+  const filterParts = [`brightness(${effectiveBrightness.toFixed(2)})`, `contrast(${effectiveContrast.toFixed(2)})`, `saturate(${effectiveSaturation})`];
   if (settings.blurPx && settings.blurPx > 0) filterParts.push(`blur(${settings.blurPx}px)`);
   const filterString = filterParts.join(" ");
 
