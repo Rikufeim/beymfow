@@ -75,8 +75,7 @@ const Index = () => {
 
   const handleUpgradeToPro = useCallback(async () => {
     if (!user || !session) {
-      sessionStorage.setItem('pending_checkout', 'true');
-      openAuthDialog();
+      navigate("/premium");
       return;
     }
     if (isPro) {
