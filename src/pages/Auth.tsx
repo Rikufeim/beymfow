@@ -5,10 +5,11 @@ import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Loader2, AlertCircle, Mail, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, Mail } from 'lucide-react';
 
 import SEOHead from '@/components/SEOHead';
+
+const LOGO_URL = "/images/beymflow-logo.png";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -121,21 +122,14 @@ const Auth = () => {
     return (
       <div className="min-h-screen bg-[#0a0a0f]">
         <div className="min-h-screen text-white flex items-center justify-center p-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-md text-center"
-          >
+          <div className="w-full max-w-md text-center">
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
                 <Mail className="h-8 w-8 text-green-400" />
               </div>
             </div>
             <h1 className="text-2xl font-bold text-white mb-3">Check your email</h1>
-            <p className="text-gray-400 mb-2">
-              We sent a confirmation link to
-            </p>
+            <p className="text-gray-400 mb-2">We sent a confirmation link to</p>
             <p className="text-white font-medium mb-6">{email}</p>
             <p className="text-sm text-gray-500 mb-8">
               Click the link in the email to activate your account. If you don't see it, check your spam folder.
@@ -163,7 +157,7 @@ const Auth = () => {
                 Back to sign in
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     );
@@ -173,13 +167,15 @@ const Auth = () => {
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <SEOHead pathname="/auth" />
       
-      {/* Logo bar */}
+      {/* Logo bar — same size as landing page header */}
       <div className="p-6 sm:p-8">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="inline-flex items-center">
           <img
-            src="/images/beymflow-logo.png"
+            src={LOGO_URL}
             alt="Beymflow"
-            className="h-12 sm:h-14 md:h-16 w-auto object-contain flex-shrink-0"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+            loading="eager"
+            decoding="async"
           />
         </Link>
       </div>
@@ -187,12 +183,7 @@ const Auth = () => {
       <div className="flex flex-1 min-h-[calc(100vh-88px)]">
         {/* Left — Auth Card */}
         <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8"
-          >
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8">
             <div className="text-center mb-5">
               <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
                 {isLogin ? 'Welcome back' : 'Create account'}
@@ -231,19 +222,12 @@ const Auth = () => {
             </div>
 
             {/* Form error */}
-            <AnimatePresence>
-              {formError && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="mb-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-2"
-                >
-                  <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-red-400">{formError}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {formError && (
+              <div className="mb-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-400">{formError}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3" noValidate>
               <div className="space-y-1">
@@ -326,7 +310,7 @@ const Auth = () => {
               {' & '}
               <Link to="#" className="text-gray-400 hover:text-white underline">Privacy</Link>
             </p>
-          </motion.div>
+          </div>
         </div>
 
         {/* Right — Video placeholder */}
