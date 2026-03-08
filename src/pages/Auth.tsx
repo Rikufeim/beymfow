@@ -179,7 +179,7 @@ const Auth = () => {
           <img
             src="/images/beymflow-logo.png"
             alt="Beymflow"
-            className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain flex-shrink-0"
           />
         </Link>
       </div>
