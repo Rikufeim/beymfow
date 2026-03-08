@@ -384,7 +384,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                       <button
                         key={project.id}
                         onClick={() => handleOpenProject(project)}
-                        className="group relative flex-shrink-0 w-40 rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
+                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
                       >
                         <div className="aspect-[16/9] w-full overflow-hidden">
                           {project.thumbnail ? (
