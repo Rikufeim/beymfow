@@ -1387,12 +1387,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   }, [animatePaletteTransition, settings]);
 
   const handleAnimatedBgChange = useCallback((newSettings: AnimatedBgSettings) => {
-    setAnimatedBg((prev) => {
-      if (activeTabRef.current !== "animated") {
-        return prev.enabled ? { ...prev, enabled: false } : prev;
-      }
-      return newSettings;
-    });
+    setAnimatedBg(newSettings);
   }, []);
 
   const handleImportSettings = useCallback((importedSettings: HeroBackgroundSettings) => {

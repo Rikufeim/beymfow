@@ -65,6 +65,7 @@ const ANIMATED_PRESETS: AnimatedPreset[] = [
   { id: "neuro-blood", name: "Bloodstream", shaderType: "neuro-noise", colors: ["#ef4444", "#7f1d1d", "#0a0a0a"], params: { brightness: 0.6, contrast: 0.6, speed: 0.4 } },
   { id: "neuro-ghost", name: "Ghost", shaderType: "neuro-noise", colors: ["#e2e8f0", "#94a3b8", "#0f172a"], params: { brightness: 0.4, contrast: 0.3, speed: 0.15 } },
   // God Rays
+  { id: "rays-lightning", name: "Lightning", shaderType: "god-rays", colors: ["#e0e7ff", "#a5b4fc", "#ffffff"], params: { intensity: 0.9, density: 0.8, speed: 0.6 } },
   { id: "rays-solar", name: "Solar Flare", shaderType: "god-rays", colors: ["#fbbf24", "#f97316", "#dc2626"], params: { intensity: 0.6, density: 0.5, speed: 0.2 } },
   { id: "rays-cosmic", name: "Cosmic", shaderType: "god-rays", colors: ["#8b5cf6", "#6366f1", "#3b82f6"], params: { intensity: 0.5, density: 0.4, speed: 0.15 } },
   // Smoke Ring
