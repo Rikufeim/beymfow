@@ -14,8 +14,8 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const Auth = lazy(() => import("./pages/Auth"));
 
 const About = lazy(() => import("./pages/About"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));

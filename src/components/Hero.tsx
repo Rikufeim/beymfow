@@ -37,6 +37,7 @@ const Hero = memo(function Hero() {
     const id = window.requestIdleCallback(() => prefetchRoute("/auth"), { timeout: 1200 });
     return () => window.cancelIdleCallback?.(id);
   }, [prefetchRoute]);
+  return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
         {/* Main Heading */}
@@ -54,7 +55,7 @@ const Hero = memo(function Hero() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mb-8 leading-relaxed">
-          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.     
+          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.
         </p>
 
         {/* CTA Buttons */}
@@ -70,7 +71,8 @@ const Hero = memo(function Hero() {
           </button>
         </div>
       </div>
-    </section>);
+    </section>
+  );
 
 });
 export default Hero;
