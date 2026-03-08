@@ -316,8 +316,9 @@ Return ONLY the optimized prompt.`;
       body: JSON.stringify({
         model: selectedModel,
         messages: messages,
-        ...(isFast ? { max_tokens: 500, temperature: 0.7 } : {}),
-        ...(isPremium ? { temperature: 0.8 } : {}),
+        ...(isFast ? { max_tokens: 600, temperature: 0.6 } : {}),
+        ...(isAdvanced ? { temperature: 0.7 } : {}),
+        ...(isPremium ? { max_tokens: 2000, temperature: 0.75 } : {}),
       }),
     });
 
