@@ -133,12 +133,12 @@ export interface HeroBackgroundSettings {
 }
 
 export const DEFAULT_SETTINGS: HeroBackgroundSettings = {
-  color1: "#000000",
-  color2: "#1a1a1a",
+  color1: "#0a0a1a",
+  color2: "#1b1b3a",
   color3: "#389cff",
   color4: "#8b5cf6",
   singleColorMode: false,
-  brightness: 1.2,
+  brightness: 1.4,
   contrast: 1,
   saturation: 1,
   blurPx: 0,

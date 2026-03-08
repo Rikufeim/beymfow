@@ -29,7 +29,7 @@ export const buildHeroGradient = (settings: HeroBackgroundSettings): string => {
 
   switch (gradientStyle) {
     case "halo":
-      background = `radial-gradient(ellipse 140% 100% at ${radialFocusX}% ${radialFocusY}%, ${color3}35 0%, ${color3}20 15%, ${color2}60 40%, ${color2}30 60%, ${color1} 100%)`;
+      background = `radial-gradient(ellipse 140% 100% at ${radialFocusX}% ${radialFocusY}%, ${color3}60 0%, ${color3}40 15%, ${color2}80 40%, ${color2}50 60%, ${color1} 100%)`;
       break;
     case "soft-sweep":
       if (gradientType === "conic") {
