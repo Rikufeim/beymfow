@@ -1828,8 +1828,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
         {/* Fullscreen Preview */}
         <div
           ref={previewContainerRef}
-          className="absolute inset-0 z-[1]"
-          style={animatedBg.enabled ? {} : gradientStyle}
+          className={`absolute inset-0 ${animatedBg.enabled ? "z-[1] pointer-events-auto" : "z-[1]"}`}
+          style={animatedBg.enabled ? { background: 'transparent' } : gradientStyle}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
