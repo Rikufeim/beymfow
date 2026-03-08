@@ -40,7 +40,6 @@ const SECTIONS: Section[] = [
   {
     id: "ui-components",
     title: "UI Components",
-    viewAllHref: "#",
     cards: [
       { id: "ui-1", title: "Audio Player" },
       { id: "ui-2", title: "Code Generator" },
