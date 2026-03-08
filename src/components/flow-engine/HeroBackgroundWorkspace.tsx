@@ -962,9 +962,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Live code and JSON
-  const liveCode = useMemo(() => generateLiveCode(settings), [settings]);
+  const liveCode = useMemo(() => generateLiveCode(settings, animatedBg), [settings, animatedBg]);
   const liveJSON = useMemo(() => generateSettingsJSON(settings, flowState), [settings, flowState]);
-  const projectCode = useMemo(() => generateProjectCode(settings), [settings]);
+  const projectCode = useMemo(() => generateProjectCode(settings, animatedBg), [settings, animatedBg]);
   const filteredBackgrounds = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     return BACKGROUND_LIBRARY.filter((entry) => {
