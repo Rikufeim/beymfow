@@ -165,14 +165,7 @@ const Premium = () => {
                       )}
                   </ul>
                   <button
-                    onClick={() => {
-                      if (user) {
-                        navigate("/flow");
-                      } else {
-                        sessionStorage.setItem('auth_redirect_after', '/flow');
-                        openAuthDialog(() => navigate("/flow"));
-                      }
-                    }}
+                    onClick={() => navigate("/flow")}
                     className="w-full rounded-lg px-4 py-3 text-sm border border-white/20 bg-white/10 text-white font-medium transition-all hover:bg-white/20 hover:border-white/30">
 
                     Start Free
