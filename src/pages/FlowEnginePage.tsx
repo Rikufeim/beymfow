@@ -358,11 +358,14 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
 
-          {/* Shared persistent background — GrainGradient shader */}
+          {/* Shared persistent background — GrainGradient shader with smooth color transition */}
           <div className="fixed inset-0 z-30 overflow-hidden pointer-events-none">
             <GrainGradient
-              style={{ width: "100%", height: "100%" }}
-              colors={["#000000", "#6366f1", "#000000", "#7c3aed"]}
+              style={{ width: "100%", height: "100%", transition: "filter 0.8s ease" }}
+              colors={selectionTab === "prompt-generator"
+                ? ["#000000", "#0d9488", "#000000", "#06b6d4"]
+                : ["#000000", "#6366f1", "#000000", "#7c3aed"]
+              }
               speed={0.8}
             />
           </div>
