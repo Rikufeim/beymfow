@@ -129,14 +129,13 @@ Vaiheittainen menettely:
 2. Muodosta moniosainen promptirakenne: konteksti ja taustatiedot → päätehtävä ja ominaisuudet → rajoitukset ja tekniset vaatimukset.
 3. Rooli: olet kokenut UI/UX-suunnittelija ja full-stack-arkkitehti.
 
-${isFast ? `FAST MODE – Luo tiivis mutta täydellinen prompti, joka kattaa:
-- Sovelluksen tyyppi, sivut ja navigaatiorakenne
-- Ydintoiminnot ja käyttäjäpolut
-- Visuaalinen tyyli: värit (hex-koodit), typografia, dark/light-mode
-- Keskeiset UI-komponentit ja layout
-- Responsiivisuusvaatimukset
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI tiivis Lovable-prompti. Mene suoraan asiaan:
+- Sovelluksen tyyppi ja pääsivu
+- 2-3 ydintoimintoa
+- Väripaletti (hex) ja visuaalinen tyyli
+- Layout-rakenne
 
-Kirjoita YHTENÄ virtaavana kappaleena. Ole tarkka värien, toimintojen ja layoutin suhteen. Sisällytä kaikki tarvittava ilman jatkokysymyksiä.` : `COMPREHENSIVE MODE – Luo kattava prompti, joka sisältää:
+YKSI tiivis kappale, max 4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo kattava prompti, joka sisältää:
 
 1. TUOTEMÄÄRITTELY: Sovelluksen tyyppi, arvoväittämä, käyttäjäpersoona
 2. SIVUT & REITITYS: Kaikki sivut tarkoituksineen, navigaatiorakenne, suojatut reitit
