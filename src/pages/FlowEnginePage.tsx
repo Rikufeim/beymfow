@@ -5,7 +5,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy } from "lucide-react";
+import { toast } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
@@ -29,6 +30,7 @@ import {
 
 // Prompt Generator Workspace - simplified view
 import { QuickPromptGenerator } from "@/components/QuickPromptGenerator";
+import { loadPromptProjects, deletePromptProject, type PromptProject } from "@/lib/promptProjectStore";
 
 type WorkspaceType = "selection" | "prompt-generator" | "color-codes";
 
@@ -43,6 +45,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
   const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
+  const [savedPrompts, setSavedPrompts] = useState<PromptProject[]>([]);
 
   // Resolve editing project from sessionStorage
   const editingProjectId = initialWorkspace === "color-codes"
@@ -57,15 +60,22 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     }
   }, [initialWorkspace, editingProjectId]);
 
-  // Load saved projects
+  // Load saved projects & prompts
   useEffect(() => {
     setSavedProjects(loadLocalProjects());
-  }, [activeWorkspace]);
+    setSavedPrompts(loadPromptProjects());
+  }, [activeWorkspace, selectionTab]);
 
   const handleDeleteProject = (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation();
     deleteHeroProject(projectId);
     setSavedProjects(loadLocalProjects());
+  };
+
+  const handleDeletePromptProject = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deletePromptProject(id);
+    setSavedPrompts(loadPromptProjects());
   };
 
   const handleOpenProject = (project: HeroBackgroundProject) => {
@@ -409,9 +419,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
 
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
-            <div
-              className="fixed inset-0 z-40 flex items-center justify-center"
-            >
+            <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ background: "linear-gradient(135deg, #080808 0%, #121214 25%, #0a2a2a 50%, #121214 75%, #080808 100%)", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
                 <motion.div
@@ -429,6 +437,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   <div className="w-[80%] max-w-4xl h-32 rounded-xl bg-white/5 border border-white/10" />
                 </motion.div>
               </div>
+
+              {/* Center content */}
               <motion.button
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -438,14 +448,50 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               >
                 Open Workspace
               </motion.button>
+
+              {/* Saved Color Projects at bottom */}
+              {savedProjects.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="relative z-10 mt-10 w-full max-w-3xl px-6"
+                >
+                  <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Projects</p>
+                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {savedProjects.slice(0, 8).map((project) => (
+                      <button
+                        key={project.id}
+                        onClick={() => handleOpenProject(project)}
+                        className="group relative flex-shrink-0 w-40 rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
+                      >
+                        <div className="aspect-[16/9] w-full overflow-hidden">
+                          {project.thumbnail ? (
+                            <img src={project.thumbnail} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${project.settings.color1}, ${project.settings.color2})` }} />
+                          )}
+                        </div>
+                        <div className="p-2 flex items-center justify-between">
+                          <span className="text-[11px] text-white/70 truncate">{project.name}</span>
+                          <button
+                            onClick={(e) => handleDeleteProject(e, project.id)}
+                            className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
+                          >
+                            <Trash2 size={10} className="text-neutral-500 hover:text-red-400" />
+                          </button>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
           )}
 
           {/* Prompt Generator Tab */}
           {selectionTab === "prompt-generator" && (
-            <div
-              className="fixed inset-0 z-40 flex items-center justify-center"
-            >
+            <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ background: "radial-gradient(at 40% 20%, #3e18fb40 0px, transparent 55%), radial-gradient(at 80% 60%, #1a0a3a 0px, transparent 55%), #0a0a0f", filter: "blur(8px) brightness(0.4)", transform: "scale(1.05)" }} />
                 <motion.div
@@ -465,6 +511,8 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   <div className="w-[80%] max-w-3xl h-64 rounded-xl bg-white/5 border border-white/10" />
                 </motion.div>
               </div>
+
+              {/* Center content */}
               <motion.button
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -474,6 +522,47 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               >
                 Open Workspace
               </motion.button>
+
+              {/* Saved Prompts at bottom */}
+              {savedPrompts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="relative z-10 mt-10 w-full max-w-3xl px-6"
+                >
+                  <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Prompts</p>
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-hide">
+                    {savedPrompts.slice(0, 6).map((sp) => (
+                      <div
+                        key={sp.id}
+                        className="group flex items-center gap-3 px-4 py-3 rounded-xl border border-white/5 hover:border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all"
+                      >
+                        <FileText size={14} className="text-purple-400/60 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-white/80 truncate">{sp.name}</p>
+                          <p className="text-[10px] text-neutral-500 truncate">{sp.prompt.slice(0, 80)}...</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            navigator.clipboard.writeText(sp.prompt);
+                            toast.success("Copied!");
+                          }}
+                          className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
+                        >
+                          <Copy size={12} className="text-neutral-400" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeletePromptProject(e, sp.id)}
+                          className="p-1.5 rounded opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
+                        >
+                          <Trash2 size={12} className="text-neutral-500 hover:text-red-400" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
           )}
 

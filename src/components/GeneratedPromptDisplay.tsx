@@ -1,8 +1,9 @@
 import { GlassButton } from "@/components/ui/glass-button";
-import { Sparkles, Copy, Check, X } from "lucide-react";
+import { Sparkles, Copy, Check, X, Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/notifications";
+import { createPromptProject, savePromptProject } from "@/lib/promptProjectStore";
 
 interface GeneratedPromptDisplayProps {
   prompt: string;
@@ -10,6 +11,7 @@ interface GeneratedPromptDisplayProps {
   selectedCategory: "all" | "creativity" | "personal" | "business" | "crypto";
   onPromptUpdate: (newPrompt: string) => void;
   onClear: () => void;
+  userInput?: string;
 }
 
 export const GeneratedPromptDisplay = ({
@@ -18,9 +20,11 @@ export const GeneratedPromptDisplay = ({
   selectedCategory,
   onPromptUpdate,
   onClear,
+  userInput = "",
 }: GeneratedPromptDisplayProps) => {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [displayedPrompt, setDisplayedPrompt] = useState("");
 
   useEffect(() => {
@@ -36,12 +40,16 @@ export const GeneratedPromptDisplay = ({
         setDisplayedPrompt(prompt);
         return;
       }
-      // Faster typing: 5 chars per 10ms
       const chunk = 5;
       setDisplayedPrompt(prompt.substring(0, currentIndex + chunk));
       currentIndex += chunk;
     }, 10);
     return () => clearInterval(interval);
+  }, [prompt]);
+
+  // Reset saved state when prompt changes
+  useEffect(() => {
+    setSaved(false);
   }, [prompt]);
 
   const handleEnhancePrompt = async () => {
@@ -89,6 +97,14 @@ export const GeneratedPromptDisplay = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSave = () => {
+    const project = createPromptProject(prompt, userInput, selectedModel, selectedCategory);
+    savePromptProject(project);
+    setSaved(true);
+    toast.success("Prompt saved!");
+    setTimeout(() => setSaved(false), 2000);
+  };
+
   return (
     <div className="mt-8 min-h-[200px]">
       {!prompt ? (
@@ -110,6 +126,14 @@ export const GeneratedPromptDisplay = ({
                   <Sparkles className="w-3 h-3" />
                 )}
                 Enhance
+              </GlassButton>
+              <GlassButton
+                size="sm"
+                onClick={handleSave}
+                contentClassName="flex items-center gap-2"
+              >
+                {saved ? <Check className="w-3 h-3" /> : <Save className="w-3 h-3" />}
+                {saved ? "Saved" : "Save"}
               </GlassButton>
               <GlassButton
                 size="sm"

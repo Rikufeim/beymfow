@@ -807,6 +807,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               selectedCategory={selectedCategory}
               onPromptUpdate={setGeneratedPrompt}
               onClear={clearPrompt}
+              userInput={input}
             />
           </div>
         )}
