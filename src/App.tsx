@@ -14,16 +14,15 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import About from "./pages/About";
-import FlowEnginePage from "./pages/FlowEnginePage";
-import ImageGenerator from "./pages/ImageGenerator";
-import PlanningSystem from "./pages/PlanningSystem";
-import Multiagentpage from "./pages/Multiagentpage";
-import Community from "./pages/Community";
-import LandingPageLibrary from "./pages/LandingPageLibrary";
-import Premium from "./pages/Premium";
-import SettingsBilling from "./pages/SettingsBilling";
-import PaymentSuccess from "./pages/PaymentSuccess";
+const About = lazy(() => import("./pages/About"));
+const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
+const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
+const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
+const Community = lazy(() => import("./pages/Community"));
+const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
+const Premium = lazy(() => import("./pages/Premium"));
+const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
