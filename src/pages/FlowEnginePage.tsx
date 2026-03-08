@@ -324,23 +324,29 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
             </div>
             <div className="border-t border-white/10" />
             <div className="px-3 py-2 space-y-0.5">
-              <DropdownMenuItem className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <Users size={16} className="mr-2.5 text-neutral-500" />
-                Team Settings
+              <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
+                <Link to="/flow/team-settings" className="flex items-center">
+                  <Users size={16} className="mr-2.5 text-neutral-500" />
+                  Team Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <Link to="/settings/billing" className="flex items-center">
+                <Link to="/flow/account-settings" className="flex items-center">
                   <Settings size={16} className="mr-2.5 text-neutral-500" />
                   Account Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <BookOpen size={16} className="mr-2.5 text-neutral-500" />
-                Documentation
+              <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
+                <Link to="/flow/documentation" className="flex items-center">
+                  <BookOpen size={16} className="mr-2.5 text-neutral-500" />
+                  Documentation
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <MessageSquare size={16} className="mr-2.5 text-neutral-500" />
-                Give Feedback
+              <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
+                <Link to="/flow/feedback" className="flex items-center">
+                  <MessageSquare size={16} className="mr-2.5 text-neutral-500" />
+                  Give Feedback
+                </Link>
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>

@@ -10,6 +10,10 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
+const TeamSettings = lazy(() => import("./pages/flow/TeamSettings"));
+const AccountSettingsPage = lazy(() => import("./pages/flow/AccountSettings"));
+const DocumentationPage = lazy(() => import("./pages/flow/Documentation"));
+const GiveFeedbackPage = lazy(() => import("./pages/flow/GiveFeedback"));
 const About = lazy(() => import("./pages/About"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
@@ -60,6 +64,10 @@ const AppRoutes = () => {
       <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
       <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
       <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
+      <Route path="/flow/team-settings" element={<ErrorBoundary><TeamSettings /></ErrorBoundary>} />
+      <Route path="/flow/account-settings" element={<ErrorBoundary><AccountSettingsPage /></ErrorBoundary>} />
+      <Route path="/flow/documentation" element={<ErrorBoundary><DocumentationPage /></ErrorBoundary>} />
+      <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={<Layout><About /></Layout>} />
       <Route path="/premium" element={<Layout><Premium /></Layout>} />
