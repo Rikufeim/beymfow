@@ -44,7 +44,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const isPro = false;
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
-  const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
+  const [selectionTab, setSelectionTab] = useState<"color-codes" | "prompt-generator">("color-codes");
   const [savedPrompts, setSavedPrompts] = useState<PromptProject[]>([]);
 
   // Resolve editing project from sessionStorage
@@ -211,7 +211,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
 
 
   const tabs = [
-    { id: "projects" as const, label: "Projects", icon: FolderOpen },
     { id: "color-codes" as const, label: "Color Codes", icon: Palette },
     { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
   ];
@@ -338,84 +337,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       {/* Tab Content */}
       <div className="flex-1 px-4 sm:px-8 py-8">
         <div className="max-w-5xl mx-auto">
-
-          {/* Projects Tab */}
-          {selectionTab === "projects" && (
-            <motion.div
-              key="projects"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-white">My Projects</h2>
-                <span className="text-sm text-neutral-500">{savedProjects.length} project{savedProjects.length !== 1 ? 's' : ''}</span>
-              </div>
-
-              {savedProjects.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  {savedProjects.map((project, index) => (
-                    <motion.button
-                      key={project.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      onClick={() => handleOpenProject(project)}
-                      className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 overflow-hidden text-left"
-                    >
-                      <div className="aspect-[16/9] w-full bg-black/40 overflow-hidden">
-                        {project.thumbnail ? (
-                          <img
-                            src={project.thumbnail}
-                            alt={project.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div
-                            className="w-full h-full"
-                            style={{
-                              background: `linear-gradient(135deg, ${project.settings.color1}, ${project.settings.color2}, ${project.settings.color3 || project.settings.color1})`,
-                            }}
-                          />
-                        )}
-                      </div>
-                      <div className="p-3 flex items-center justify-between">
-                        <p className="text-sm font-medium text-white truncate">{project.name}</p>
-                        <button
-                          onClick={(e) => handleDeleteProject(e, project.id)}
-                          className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all flex-shrink-0"
-                          title="Delete project"
-                        >
-                          <Trash2 size={14} className="text-neutral-500 hover:text-red-400 transition-colors" />
-                        </button>
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
-                  <FolderOpen size={40} className="mx-auto text-neutral-600 mb-4" />
-                  <p className="text-neutral-400 text-lg mb-2">No projects yet</p>
-                  <p className="text-neutral-500 text-sm mb-6">Start creating with Color Codes or Prompt Generator</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <button
-                      onClick={() => setSelectionTab("color-codes")}
-                      className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 rounded-lg text-sm text-white transition-colors"
-                    >
-                      Color Codes
-                    </button>
-                    <button
-                      onClick={() => setSelectionTab("prompt-generator")}
-                      className="px-4 py-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 rounded-lg text-sm text-white transition-colors"
-                    >
-                      Prompt Generator
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
 
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
