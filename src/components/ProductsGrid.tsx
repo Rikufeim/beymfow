@@ -19,13 +19,6 @@ const products = [
     buttonText: "Try Now >",
     link: "/flow-engine",
   },
-  {
-    icon: FlaskConical,
-    title: "Prompt Lab",
-    description: "Generate, optimize, and refine AI prompts instantly.",
-    buttonText: "Open Lab >",
-    link: "/prompt-lab-page",
-  },
 ];
 
 const ProductsGrid = memo(function ProductsGrid() {

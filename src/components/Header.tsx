@@ -16,7 +16,7 @@ const Header = () => {
   const { prefetchRoute } = usePrefetchRoute();
   const [logoLoaded, setLogoLoaded] = useState(logoCacheLoaded);
 
-  const isHeroBackgroundMode = location.pathname.startsWith("/flow") || location.pathname === "/" || location.pathname === "/about" || location.pathname === "/premium";
+  const isHeroBackgroundMode = location.pathname.startsWith("/flow") || location.pathname === "/" || location.pathname === "/about";
 
   useEffect(() => {
     if (logoCacheLoaded) {
