@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useRef, useEffect } from "react";
 import { MeshGradient, NeuroNoise, GodRays, SmokeRing, GrainGradient, Swirl } from "@paper-design/shaders-react";
 import { motion } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
