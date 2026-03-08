@@ -15,7 +15,7 @@ interface CardItem {
 interface Section {
   id: string;
   title: string;
-  viewAllHref?: string;
+  
   cards: CardItem[];
   /** Optional featured block instead of carousel */
   featured?: {
