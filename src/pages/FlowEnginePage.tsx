@@ -450,7 +450,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
-                  className="relative z-10 mt-10 w-full max-w-3xl px-6"
+                  className="relative z-10 mt-10 w-full px-6"
                 >
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Prompts</p>
                   <div className="flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-hide">
