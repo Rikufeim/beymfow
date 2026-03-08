@@ -1,6 +1,6 @@
 import { CheckCircle, Check, Plus, Minus, ArrowRight, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
+
 import { useState, useEffect, useRef } from "react";
 import BackgroundShader from "@/components/ui/background-shader";
 import { useAuth } from "@/contexts/AuthContext";
