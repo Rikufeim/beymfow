@@ -18,7 +18,7 @@ const About = lazy(() => import("./pages/About"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
-const Community = lazy(() => import("./pages/Community"));
+
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Header = lazy(() => import("./components/Header"));
@@ -68,7 +68,7 @@ const AppRoutes = () => {
       <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={<Layout><About /></Layout>} />
-      <Route path="/community" element={<Layout><Community /></Layout>} />
+      
       <Route path="/image-generator" element={<ImageGenerator />} />
       <Route path="/planningsystem" element={<PlanningSystem />} />
       <Route path="/multiagentpage" element={<Multiagentpage />} />

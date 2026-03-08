@@ -1,7 +1,7 @@
 import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { GlassButton } from "@/components/ui/glass-button";
-import { BookOpen, Workflow, FlaskConical, Package } from "lucide-react";
+import { BookOpen, Workflow } from "lucide-react";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 
 const products = [
@@ -18,20 +18,6 @@ const products = [
     description: "Build complex AI workflows with our visual flow editor.",
     buttonText: "Try Now >",
     link: "/flow-engine",
-  },
-  {
-    icon: FlaskConical,
-    title: "Prompt Lab",
-    description: "Generate, optimize, and refine AI prompts instantly.",
-    buttonText: "Open Lab >",
-    link: "/prompt-lab-page",
-  },
-  {
-    icon: Package,
-    title: "Community",
-    description: "Supercharge your workflow with ultimate AI resources.",
-    buttonText: "Join Now >",
-    link: "/community",
   },
 ];
 
