@@ -413,7 +413,7 @@ export default function AnimatedBackgroundsTab({ settings, onChange }: AnimatedB
                   <div className="flex-1">
                     <HexColorPicker
                       color={settings.colors[editingColorIdx]}
-                      onChange={(c) => updateColor(editingColorIdx, c)}
+                      onChange={(c) => updateColorThrottled(editingColorIdx, c)}
                       style={{ width: "100%", height: 80 }}
                     />
                   </div>
