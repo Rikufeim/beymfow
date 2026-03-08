@@ -80,11 +80,6 @@ const Premium = () => {
   };
 
   const handleUpgrade = async () => {
-    if (!user || !session) {
-      sessionStorage.setItem('pending_checkout', 'true');
-      openAuthDialog();
-      return;
-    }
     handleCheckoutFlow();
   };
 
