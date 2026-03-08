@@ -15,7 +15,7 @@ interface CardItem {
 interface Section {
   id: string;
   title: string;
-  viewAllHref?: string;
+  
   cards: CardItem[];
   /** Optional featured block instead of carousel */
   featured?: {
@@ -30,7 +30,6 @@ const SECTIONS: Section[] = [
   {
     id: "landing-pages",
     title: "Landing Pages",
-    viewAllHref: "#",
     cards: [
       { id: "lp-1", title: "SaaS Landing" },
       { id: "lp-2", title: "Startup Hero" },
@@ -41,7 +40,6 @@ const SECTIONS: Section[] = [
   {
     id: "ui-components",
     title: "UI Components",
-    viewAllHref: "#",
     cards: [
       { id: "ui-1", title: "Audio Player" },
       { id: "ui-2", title: "Code Generator" },
@@ -69,7 +67,7 @@ const SECTIONS: Section[] = [
   {
     id: "templates",
     title: "Agent Templates",
-    viewAllHref: "#",
+    
     cards: [
       { id: "tmpl-1", title: "Chat Bot" },
       { id: "tmpl-2", title: "Terminal Agent" },
@@ -187,14 +185,6 @@ const LandingPageLibrary = memo(function LandingPageLibrary() {
               <h2 className="text-sm font-semibold text-foreground tracking-wide">
                 {section.title}
               </h2>
-              {section.viewAllHref && (
-                <a
-                  href={section.viewAllHref}
-                  className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-                >
-                  View all <ChevronRight size={14} />
-                </a>
-              )}
             </div>
 
             {/* Content */}
