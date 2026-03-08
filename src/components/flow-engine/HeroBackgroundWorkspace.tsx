@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 import { HexColorPicker } from "react-colorful";
 import { toPng, toJpeg } from "html-to-image";
-import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, Eye, EyeOff, Sun, Cloudy, Layers, Save, Check, ChevronUp, ChevronDown, Code, FileJson, FileText, Pencil, Palette, GripVertical, GripHorizontal, Download, Upload, ImageIcon, X, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { setColorPromptPayload, buildColorSummary } from "@/lib/colorPromptBridge";
 import { Slider } from "@/components/ui/slider";
@@ -955,6 +955,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [copiedProjectCode, setCopiedProjectCode] = useState(false);
   const [copiedCss, setCopiedCss] = useState(false);
   const [copiedTailwind, setCopiedTailwind] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
 
   // Download state
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
@@ -1491,6 +1492,37 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     }
   }, [generateTailwindExport]);
 
+  const generatePromptExport = useCallback((): string => {
+    const lines: string[] = [];
+    if (animatedBg.enabled) {
+      lines.push(`Create a full-screen animated background using the "${animatedBg.shaderType}" shader from @paper-design/shaders-react.`);
+      lines.push(`Colors: ${animatedBg.colors.join(", ")}.`);
+      lines.push(`Speed: ${animatedBg.speed}, Distortion: ${animatedBg.distortion}, Brightness: ${animatedBg.brightness}.`);
+      if (animatedBg.shaderType === "mesh-gradient") lines.push(`Swirl: ${animatedBg.swirl}.`);
+      if (animatedBg.shaderType === "neuro-noise") lines.push(`Noise scale: ${animatedBg.noiseScale}.`);
+      if (animatedBg.shaderType === "god-rays") lines.push(`Intensity: ${animatedBg.intensity}.`);
+    } else {
+      lines.push(`Create a full-screen hero background with a "${settings.gradientStyle}" gradient style.`);
+      lines.push(`Colors: ${settings.color1}, ${settings.color2}, ${settings.color3}, ${settings.color4}.`);
+      lines.push(`Brightness: ${settings.brightness.toFixed(2)}, Contrast: ${(settings.contrast ?? 1).toFixed(2)}, Saturation: ${(settings.saturation ?? 1).toFixed(2)}.`);
+      if (settings.grainEnabled) lines.push(`Enable a subtle grain/noise overlay at intensity ${settings.grainIntensity.toFixed(2)}.`);
+      if ((settings.vignette ?? 0) > 0) lines.push(`Add a vignette effect at opacity ${settings.vignette}.`);
+      if (settings.blendMode !== "normal") lines.push(`Use "${settings.blendMode}" blend mode.`);
+    }
+    lines.push(`\nThe background should be responsive (w-full, min-h-screen) and accept children as content overlay.`);
+    lines.push(`Wrap it as a reusable React component called HeroBackground.`);
+    return lines.join("\n");
+  }, [settings, animatedBg]);
+
+  const handleCopyPrompt = useCallback(async () => {
+    const success = await robustCopyToClipboard(generatePromptExport());
+    if (success) {
+      setCopiedPrompt(true);
+      toast.success("Prompt copied!");
+      setTimeout(() => setCopiedPrompt(false), 2500);
+    }
+  }, [generatePromptExport]);
+
   // Handle project name editing
   const handleStartEditName = useCallback(() => {
     setIsEditingName(true);
@@ -1672,7 +1704,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
           right: 0,
           zIndex: 9999,
           width: '100%',
-          background: 'transparent',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 60%, transparent 100%)',
         }}
       >
         {/* Back button (left) */}
@@ -2526,6 +2558,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
                             <button onClick={handleCopyCss} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedCss ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedCss ? <Check size={12} /> : <Code size={12} />}{copiedCss ? "Copied!" : "CSS"}</button>
                             <button onClick={handleCopyTailwind} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedTailwind ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedTailwind ? <Check size={12} /> : <Code size={12} />}{copiedTailwind ? "Copied!" : "Tailwind"}</button>
                             <button onClick={handleCopyJSON} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedJSON ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20"}`}>{copiedJSON ? <Check size={12} /> : <FileJson size={12} />}{copiedJSON ? "Copied!" : "JSON"}</button>
+                            <button onClick={handleCopyPrompt} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium transition-all ${copiedPrompt ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-purple-500/15 border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:border-purple-500/40"}`}>{copiedPrompt ? <Check size={12} /> : <FileText size={12} />}{copiedPrompt ? "Copied!" : "Prompt"}</button>
                             <div className="w-px h-5 bg-white/10" />
                             <button onClick={handleDownloadImage} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-medium bg-neutral-900 border-white/10 text-white/70 hover:bg-neutral-800 hover:border-white/20 transition-all"><Download size={12} /> PNG {downloadScale > 1 ? `${Math.round(1920*downloadScale)}×${Math.round(1080*downloadScale)}` : '1920×1080'}</button>
                             <select value={downloadScale} onChange={(e) => setDownloadScale(parseFloat(e.target.value))} className="px-2 py-1.5 rounded-lg border text-[10px] bg-neutral-900 border-white/10 text-white/70 focus:outline-none">
