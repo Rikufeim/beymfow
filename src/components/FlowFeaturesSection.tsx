@@ -133,15 +133,12 @@ export const FlowFeaturesSection = memo(function FlowFeaturesSection({
                 <p className="text-base sm:text-lg text-white/80 mb-6 lg:mb-8 max-w-lg relative z-10 leading-relaxed">Growing landing page library for every need
 
                 </p>
-                <div className="text-sm font-semibold relative z-10 cursor-default inline-flex items-center gap-2" style={{
-                  color: '#ffffff',
-                  letterSpacing: '0.01em',
-                  WebkitFontSmoothing: 'antialiased',
-                  MozOsxFontSmoothing: 'grayscale',
-                  textRendering: 'optimizeLegibility'
-                }}>
-                  <span className="text-white/60">Coming soon</span>
-                </div>
+                <button
+                  onClick={() => handleNavigate("/landing-pages")}
+                  className="relative z-10 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+                >
+                  Explore Library
+                </button>
               </div>
             </div>
           </div>
