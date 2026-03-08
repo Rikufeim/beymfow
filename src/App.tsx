@@ -24,6 +24,8 @@ const LandingPageLibrary = lazy(() => import("./pages/LandingPageLibrary"));
 const Premium = lazy(() => import("./pages/Premium"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const Header = lazy(() => import("./components/Header"));
+const CookieBanner = lazy(() => import("./components/CookieBanner"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
