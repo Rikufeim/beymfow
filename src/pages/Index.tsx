@@ -102,7 +102,7 @@ const Index = () => {
     } finally {
       setCheckoutLoading(false);
     }
-  }, [user, session, isPro, navigate, openAuthDialog, toast]);
+  }, [user, session, isPro, navigate, toast]);
 
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
