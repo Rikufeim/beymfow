@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Cover } from "./ui/cover";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
+import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { lovable } from "@/integrations/lovable/index";
 
 const Hero = memo(function Hero() {
