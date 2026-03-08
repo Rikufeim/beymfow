@@ -1,174 +1,213 @@
-import { memo, useState } from "react";
+import { memo, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Download, Star, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
 
-interface LandingPageTemplate {
-    id: string;
-    name: string;
-    description: string;
-    category: "free" | "premium";
-    price?: number;
-    rating: number;
-    downloads: number;
-    previewUrl: string;
-    tags: string[];
-    features: string[];
+/* ── Section data ── */
+
+interface CardItem {
+  id: string;
+  title: string;
+  thumbnail?: string;
 }
 
-const TEMPLATES: LandingPageTemplate[] = [
-    {
-        id: "modern-saas",
-        name: "Modern SaaS",
-        description: "Clean and professional SaaS landing page with gradient hero section and feature showcases",
-        category: "free",
-        rating: 4.8,
-        downloads: 1247,
-        previewUrl: "#",
-        tags: ["SaaS", "Modern", "Gradient"],
-        features: ["Responsive", "Dark Mode", "Animated"]
+interface Section {
+  id: string;
+  title: string;
+  viewAllHref?: string;
+  cards: CardItem[];
+  /** Optional featured block instead of carousel */
+  featured?: {
+    heading: string;
+    description: string;
+    cta: string;
+    badges: { icon: string; label: string; sub: string }[];
+  };
+}
+
+const SECTIONS: Section[] = [
+  {
+    id: "landing-pages",
+    title: "Landing Pages",
+    viewAllHref: "#",
+    cards: [
+      { id: "lp-1", title: "SaaS Landing" },
+      { id: "lp-2", title: "Startup Hero" },
+      { id: "lp-3", title: "Portfolio Minimal" },
+      { id: "lp-4", title: "E-commerce Elite" },
+    ],
+  },
+  {
+    id: "ui-components",
+    title: "UI Components",
+    viewAllHref: "#",
+    cards: [
+      { id: "ui-1", title: "Audio Player" },
+      { id: "ui-2", title: "Code Generator" },
+      { id: "ui-3", title: "Chat Widget" },
+      { id: "ui-4", title: "Gradient Card" },
+    ],
+  },
+  {
+    id: "agents-sdk",
+    title: "Agents SDK",
+    featured: {
+      heading: "The fastest way to ship AI agents",
+      description:
+        "Built-in UI, chat history, spend limits, sandbox execution, and observability. Works with Claude and OpenAI.",
+      cta: "Get started",
+      badges: [
+        { icon: "○", label: "E2B Sandboxes", sub: "Isolated VM per session" },
+        { icon: "⚡", label: "Streaming", sub: "Token-by-token via SSE" },
+        { icon: "$", label: "Auth & Limits", sub: "Tokens, rate limits, spend caps" },
+        { icon: "◎", label: "Observability", sub: "Session replay & traces" },
+      ],
     },
-    {
-        id: "startup-pro",
-        name: "Startup Pro",
-        description: "Bold and energetic startup landing page with dynamic animations and CTAs",
-        category: "premium",
-        price: 49,
-        rating: 4.9,
-        downloads: 892,
-        previewUrl: "#",
-        tags: ["Startup", "Bold", "Animated"],
-        features: ["Premium Design", "Source Code", "24/7 Support"]
-    },
-    {
-        id: "minimal-portfolio",
-        name: "Minimal Portfolio",
-        description: "Elegant minimalist portfolio template perfect for creatives and designers",
-        category: "free",
-        rating: 4.7,
-        downloads: 2103,
-        previewUrl: "#",
-        tags: ["Portfolio", "Minimal", "Creative"],
-        features: ["Gallery", "About Section", "Contact Form"]
-    },
-    {
-        id: "ecommerce-elite",
-        name: "E-commerce Elite",
-        description: "Premium e-commerce landing page with product showcases and checkout integration",
-        category: "premium",
-        price: 79,
-        rating: 5.0,
-        downloads: 543,
-        previewUrl: "#",
-        tags: ["E-commerce", "Premium", "Conversion"],
-        features: ["Product Grid", "Cart Integration", "Payment Ready"]
-    },
-    {
-        id: "agency-modern",
-        name: "Agency Modern",
-        description: "Professional agency landing page with team showcase and project portfolio",
-        category: "free",
-        rating: 4.6,
-        downloads: 1678,
-        previewUrl: "#",
-        tags: ["Agency", "Professional", "Team"],
-        features: ["Team Section", "Portfolio", "Services"]
-    },
-    {
-        id: "crypto-dashboard",
-        name: "Crypto Dashboard",
-        description: "Advanced crypto landing page with real-time charts and trading features",
-        category: "premium",
-        price: 99,
-        rating: 4.9,
-        downloads: 721,
-        previewUrl: "#",
-        tags: ["Crypto", "Dashboard", "Charts"],
-        features: ["Live Charts", "Trading UI", "Wallet Integration"]
-    }
+    cards: [],
+  },
+  {
+    id: "templates",
+    title: "Agent Templates",
+    viewAllHref: "#",
+    cards: [
+      { id: "tmpl-1", title: "Chat Bot" },
+      { id: "tmpl-2", title: "Terminal Agent" },
+      { id: "tmpl-3", title: "Email Agent" },
+      { id: "tmpl-4", title: "Doc Agent" },
+    ],
+  },
 ];
 
-const LandingPageLibrary = memo(function LandingPageLibrary() {
-    const navigate = useNavigate();
-    const [filter, setFilter] = useState<"all" | "free" | "premium">("all");
+/* ── Horizontal carousel ── */
 
-    const filteredTemplates = TEMPLATES.filter(template =>
-        filter === "all" ? true : template.category === filter
-    );
+function Carousel({ cards }: { cards: CardItem[] }) {
+  const ref = useRef<HTMLDivElement>(null);
 
-    return (
-        <div className="min-h-screen bg-black text-white">
-            <SEOHead pathname="/landing-pages" schemas={[buildBreadcrumbSchema([{ name: "Beymflow", url: `${SITE_URL}/` }, { name: "Landing Pages", url: `${SITE_URL}/landing-pages` }])]} />
-            {/* Header */}
-            <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
-                    <button
-                        onClick={() => navigate("/")}
-                        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft size={20} />
-                        <span className="text-sm font-medium">Back to Home</span>
-                    </button>
-                </div>
-            </header>
+  const scroll = (dir: number) => {
+    ref.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  };
 
-            {/* Hero Section */}
-            <section className="relative py-12 px-6 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-purple-500/10 to-pink-500/10" />
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center max-w-3xl mx-auto"
-                    >
-                        {/* Filter Tabs */}
-                        <div className="flex items-center justify-center gap-2 p-1 bg-white/5 border border-white/10 rounded-full max-w-md mx-auto">
-                            {(["all", "free", "premium"] as const).map((filterOption) => (
-                                <button
-                                    key={filterOption}
-                                    onClick={() => setFilter(filterOption)}
-                                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${filter === filterOption
-                                        ? "bg-white text-black"
-                                        : "text-white/60 hover:text-white"
-                                        }`}
-                                >
-                                    {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-                                </button>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
+  return (
+    <div className="relative group">
+      {/* Left arrow */}
+      <button
+        onClick={() => scroll(-1)}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-foreground/10 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <ChevronLeft size={20} className="text-foreground" />
+      </button>
 
-            {/* Templates Grid */}
-            <section className="max-w-7xl mx-auto px-6 pb-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredTemplates.map((template, index) => (
-                        <motion.div
-                            key={template.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300"
-                        >
-                            {/* Empty Template Container */}
-                            <div className="relative aspect-video bg-gradient-to-br from-neutral-800 to-neutral-900 overflow-hidden flex items-center justify-center">
-                                <div className="text-white/30 text-sm font-medium tracking-wider uppercase">Coming Soon</div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+      <div
+        ref={ref}
+        className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-1"
+      >
+        {cards.map((card) => (
+          <motion.div
+            key={card.id}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="snap-start flex-shrink-0 w-[300px] aspect-video rounded-xl border border-border bg-card overflow-hidden flex items-center justify-center cursor-pointer hover:border-primary/40 transition-colors"
+          >
+            <span className="text-muted-foreground text-sm tracking-wider uppercase">
+              Coming Soon
+            </span>
+          </motion.div>
+        ))}
+      </div>
 
-                {filteredTemplates.length === 0 && (
-                    <div className="text-center py-20">
-                        <p className="text-white/40">No templates found</p>
-                    </div>
-                )}
-            </section>
+      {/* Right arrow */}
+      <button
+        onClick={() => scroll(1)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-foreground/10 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <ChevronRight size={20} className="text-foreground" />
+      </button>
+    </div>
+  );
+}
+
+/* ── Featured block (Agents SDK style) ── */
+
+function FeaturedBlock({ data }: { data: NonNullable<Section["featured"]> }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-8 flex flex-col lg:flex-row gap-8 items-start">
+      <div className="flex-1 space-y-4">
+        <h3 className="text-lg font-bold text-foreground">{data.heading}</h3>
+        <p className="text-muted-foreground text-sm leading-relaxed max-w-lg">
+          {data.description}
+        </p>
+        <div className="flex gap-3 pt-2">
+          <button className="px-5 py-2 rounded-lg bg-foreground text-background text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
+            {data.cta} <ArrowRight size={14} />
+          </button>
+          <button className="px-5 py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-accent transition-colors">
+            Documentation
+          </button>
         </div>
-    );
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 flex-shrink-0">
+        {data.badges.map((b) => (
+          <div
+            key={b.label}
+            className="rounded-xl border border-border px-5 py-4 min-w-[180px]"
+          >
+            <span className="text-muted-foreground text-xs">{b.icon}</span>
+            <p className="text-foreground text-sm font-semibold mt-1">{b.label}</p>
+            <p className="text-muted-foreground text-xs">{b.sub}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Page ── */
+
+const LandingPageLibrary = memo(function LandingPageLibrary() {
+  return (
+    <div className="min-h-screen bg-background text-foreground pt-8 pb-20">
+      <SEOHead
+        pathname="/landing-pages"
+        schemas={[
+          buildBreadcrumbSchema([
+            { name: "Beymflow", url: `${SITE_URL}/` },
+            { name: "Landing Pages", url: `${SITE_URL}/landing-pages` },
+          ]),
+        ]}
+      />
+
+      <div className="max-w-[1400px] mx-auto px-6 space-y-12">
+        {SECTIONS.map((section) => (
+          <section key={section.id} className="space-y-5">
+            {/* Section header */}
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h2 className="text-sm font-semibold text-foreground tracking-wide">
+                {section.title}
+              </h2>
+              {section.viewAllHref && (
+                <a
+                  href={section.viewAllHref}
+                  className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                >
+                  View all <ChevronRight size={14} />
+                </a>
+              )}
+            </div>
+
+            {/* Content */}
+            {section.featured ? (
+              <FeaturedBlock data={section.featured} />
+            ) : (
+              <Carousel cards={section.cards} />
+            )}
+          </section>
+        ))}
+      </div>
+    </div>
+  );
 });
 
 export default LandingPageLibrary;

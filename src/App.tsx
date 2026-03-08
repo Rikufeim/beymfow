@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/landing-pages", "/auth"];
+const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/auth"];
 
 const RedirectLoggedInToFlow = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
