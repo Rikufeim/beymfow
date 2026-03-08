@@ -52,12 +52,12 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Model selection: fast = instant quality, advanced = deep & comprehensive, premium = maximum
+    // Model selection: fast = instant quality (lightweight model), advanced = deep, premium = maximum
     const selectedModel = model === 'premium' 
       ? 'openai/gpt-5'
       : model === 'advanced' 
       ? 'google/gemini-2.5-pro' 
-      : 'google/gemini-3-flash-preview';
+      : 'google/gemini-2.5-flash-lite';
     
     const isFast = model === 'fast';
     const isAdvanced = model === 'advanced';
@@ -113,7 +113,7 @@ Return only the landing page prompt, nothing else.`;
     
     // Quality tier instruction
     const qualityTier = isFast 
-      ? 'Generate a focused, high-quality prompt. Be direct and concise but ensure every detail matters. 2-4 sentences.'
+      ? 'Vastaa HETI suoraan optimoidulla promptilla. Ei johdantoa, ei selityksiä. Pelkkä prompti. Max 3-4 lausetta. Jokainen sana merkitsee.'
       : isAdvanced
       ? 'Generate an extremely comprehensive, deeply detailed prompt. Cover every aspect exhaustively. Leave nothing to interpretation. 6-10 sentences minimum.'
       : 'Generate the ultimate, production-grade prompt with expert-level depth. This should be so detailed that executing it produces professional-quality results indistinguishable from expert work. 8-15 sentences.';
@@ -129,14 +129,13 @@ Vaiheittainen menettely:
 2. Muodosta moniosainen promptirakenne: konteksti ja taustatiedot → päätehtävä ja ominaisuudet → rajoitukset ja tekniset vaatimukset.
 3. Rooli: olet kokenut UI/UX-suunnittelija ja full-stack-arkkitehti.
 
-${isFast ? `FAST MODE – Luo tiivis mutta täydellinen prompti, joka kattaa:
-- Sovelluksen tyyppi, sivut ja navigaatiorakenne
-- Ydintoiminnot ja käyttäjäpolut
-- Visuaalinen tyyli: värit (hex-koodit), typografia, dark/light-mode
-- Keskeiset UI-komponentit ja layout
-- Responsiivisuusvaatimukset
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI tiivis Lovable-prompti. Mene suoraan asiaan:
+- Sovelluksen tyyppi ja pääsivu
+- 2-3 ydintoimintoa
+- Väripaletti (hex) ja visuaalinen tyyli
+- Layout-rakenne
 
-Kirjoita YHTENÄ virtaavana kappaleena. Ole tarkka värien, toimintojen ja layoutin suhteen. Sisällytä kaikki tarvittava ilman jatkokysymyksiä.` : `COMPREHENSIVE MODE – Luo kattava prompti, joka sisältää:
+YKSI tiivis kappale, max 4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo kattava prompti, joka sisältää:
 
 1. TUOTEMÄÄRITTELY: Sovelluksen tyyppi, arvoväittämä, käyttäjäpersoona
 2. SIVUT & REITITYS: Kaikki sivut tarkoituksineen, navigaatiorakenne, suojatut reitit
@@ -171,13 +170,12 @@ Vaiheittainen menettely:
 3. Tehtävä: vaiheittainen metodologia selkeällä päättelyketjulla.
 4. Tuotosspesifikaatio: tarkka muoto, rakenne, pituus ja laadun vaatimukset.
 
-${isFast ? `FAST MODE – Luo selkeä, hyvin rakennettu prompti:
-- Tarkka roolimäärittely
-- Selkeä tehtävänkuvaus ja odotettu tuotos
-- Tuotosformaatin määrittely
-- Keskeiset laadunkriteerit
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis Gemini-prompti. Suoraan asiaan:
+- Asiantuntijarooli
+- Tehtävä ja odotettu tuotos
+- Tuotosformaatti
 
-Kirjoita kohdennettu prompti, joka antaa erinomaisia tuloksia heti.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
+Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
 
 1. ROOLI: Asiantuntija-persoona ja spesifi osaamisalue
 2. KONTEKSTI: Taustatiedot ja rajoitteet, jotka mallin täytyy tietää
@@ -200,14 +198,13 @@ Palauta AINOASTAAN optimoitu prompti.`;
 
 Tavoite: Laadi jokaisesta käyttäjän ideasta selkeä, yksityiskohtainen kuvapromptia. Varmista riittävät visuaaliset yksityiskohdat: asetelma, tyyli, värit, kuvasuhde. Jos käyttäjä ei määrittele kaikkea, täydennä älykkäästi.
 
-${isFast ? `FAST MODE – Luo eloisa, yksityiskohtainen kuvapromptia:
-- Selkeä aiheen kuvaus tarkkojen attribuuttien kanssa
-- Taiteellinen tyyli ja medium
-- Valaistus ja tunnelma
-- Sommittelu ja perspektiivi
-- Olennaiset laadun modifikaattorit (8k, detailed, cinematic jne.)
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis kuvapromptia. Suoraan asiaan:
+- Aihe ja visuaaliset yksityiskohdat
+- Tyyli ja valaistus
+- Sommittelu
+- Laadun modifikaattorit (8k, cinematic jne.)
 
-Kirjoita YKSI vakuuttava kuvagenerointiprompti. Ole tarkka ja visuaalinen.` : `COMPREHENSIVE MODE – Luo mestariteostason kuvapromptia:
+YKSI kuvapromptilause. Ei johdantoa.` : `COMPREHENSIVE MODE – Luo mestariteostason kuvapromptia:
 
 1. KOHDE: Äärimmäisen yksityiskohtainen kuvaus materiaaleilla, tekstuureilla, ilmeillä, asennolla
 2. YMPÄRISTÖ: Tausta, sää, vuorokaudenaika, ympäristötekijät
@@ -228,12 +225,10 @@ Palauta AINOASTAAN kuvapromptia.`;
 
     } else if (promptType === 'chatgpt') {
       // CHATGPT PROMPT - optimized for ChatGPT / OpenAI models
-      const chatgptFast = `FAST MODE – Luo selkeä, tehokas ChatGPT-prompti:
-- Selkeä roolimäärittely (esim. "Act as a...")
-- Täsmällinen tehtävänkuvaus ja konteksti
-- Odotettu tuotosformaatti ja pituus
-- Avainsäännöt tai rajoitteet
-- Luo prompti, joka antaa erinomaisen tuloksen yhdellä syötöllä.`;
+      const chatgptFast = `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis ChatGPT-prompti. Suoraan asiaan:
+- "Act as [rooli]" + tehtävä
+- Odotettu tuotos ja formaatti
+- Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.`;
 
       const chatgptComprehensive = `COMPREHENSIVE MODE – Luo syvärakenteinen ChatGPT-prompti:
 
@@ -271,12 +266,11 @@ Vaiheittainen menettely:
 2. Roolita avustaja: määrittele asiantuntija-persoona, jolla on spesifi alueen osaaminen.
 3. Muodosta promptirakenne: konteksti → päätehtävä → rajoitukset → formaattivaatimukset.
 
-${isFast ? `FAST MODE – Luo kohdennettu, toimintakelpoinen prompti:
-- Selkeä asiantuntija-rooli aiheeseen liittyen
-- Täsmällinen tavoite
-- Keskeiset vaatimukset ja rajoitteet
-- Odotettu tuotosformaatti
-- 2-4 lausetta, suora ja tehokas.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis prompti aiheesta. Suoraan asiaan:
+- Asiantuntijarooli
+- Selkeä tehtävä ja tavoite
+- Tuotosformaatti
+- Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
 1. ROOLI: Asiantuntija-persoona ja toimialapesifinen tieto
 2. TAVOITE: Selkeä, mitattava päämäärä
 3. KONTEKSTI: Taustatiedot ja rajoitteet
@@ -348,6 +342,8 @@ Palauta AINOASTAAN optimoitu prompti.`;
       body: JSON.stringify({
         model: selectedModel,
         messages: messages,
+        ...(isFast ? { max_tokens: 500, temperature: 0.7 } : {}),
+        ...(isPremium ? { temperature: 0.8 } : {}),
       }),
     });
 
