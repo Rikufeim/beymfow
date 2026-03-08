@@ -493,8 +493,6 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               className="fixed inset-0 z-40 flex flex-col"
             >
               <div className="absolute inset-0 overflow-hidden">
-                {/* Darkening overlay for prompt tab */}
-                <div className="absolute inset-0 bg-black/50 z-[1]" />
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 0.3 }}
