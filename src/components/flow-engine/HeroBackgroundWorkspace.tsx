@@ -952,7 +952,8 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
   const [copiedProjectCode, setCopiedProjectCode] = useState(false);
   const [copiedCss, setCopiedCss] = useState(false);
   const [copiedTailwind, setCopiedTailwind] = useState(false);
-  const [copiedPrompt, setCopiedPrompt] = useState(false);
+   const [copiedPrompt, setCopiedPrompt] = useState(false);
+   const [copiedComponentCode, setCopiedComponentCode] = useState(false);
 
   // Download state
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpg">("png");
