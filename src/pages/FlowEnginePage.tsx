@@ -25,6 +25,7 @@ import {
   loadLocalProjects,
   getProject as getHeroProject,
   deleteProject as deleteHeroProject,
+  saveProject as saveHeroProject,
   type HeroBackgroundProject
 } from "@/lib/heroProjectStore";
 
