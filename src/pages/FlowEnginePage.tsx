@@ -351,10 +351,17 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
 
+          <AnimatePresence mode="wait">
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
-            <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
-              <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              key="color-codes"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="fixed inset-0 z-40 flex flex-col items-center justify-center"
+            >
                 <NeuroNoise
                   style={{ width: "100%", height: "100%" }}
                   colorFront="#000000"
