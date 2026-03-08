@@ -187,7 +187,12 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   // Render Prompt Generator Workspace
   if (activeWorkspace === "prompt-generator") {
     return (
-      <div className="relative min-h-screen bg-transparent text-white">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative min-h-screen bg-transparent text-white"
+      >
         <SEOHead
           pathname="/flow/prompt-generator"
           schemas={[
@@ -223,7 +228,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-12">
           <QuickPromptGenerator />
         </div>
-      </div>
+      </motion.div>
     );
   }
 
