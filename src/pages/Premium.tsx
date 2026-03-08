@@ -36,7 +36,6 @@ const Premium = () => {
   const navigate = useNavigate();
   const { user, session, usageInfo } = useAuth();
   const { toast } = useToast();
-  const { openAuthDialog } = useAuthDialog();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
