@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Cover } from "./ui/cover";
@@ -33,6 +33,10 @@ const Hero = memo(function Hero() {
   }, [user, navigate]);
   const handlePrefetchAuth = useCallback(() => prefetchRoute("/auth"), [prefetchRoute]);
 
+  useEffect(() => {
+    const id = window.requestIdleCallback(() => prefetchRoute("/auth"), { timeout: 1200 });
+    return () => window.cancelIdleCallback?.(id);
+  }, [prefetchRoute]);
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
@@ -51,12 +55,12 @@ const Hero = memo(function Hero() {
         </h1>
 
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mb-8 leading-relaxed">
-          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.     
+          Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap gap-4">
-          <button onClick={handleFlowClick} onMouseEnter={handlePrefetchAuth} onFocus={handlePrefetchAuth} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
+          <button onClick={handleFlowClick} onMouseEnter={handlePrefetchAuth} onFocus={handlePrefetchAuth} onTouchStart={handlePrefetchAuth} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-black text-white text-sm font-medium border border-white/20 transition-all duration-200 hover:border-white active:scale-95">
             Go to Flow
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -67,7 +71,8 @@ const Hero = memo(function Hero() {
           </button>
         </div>
       </div>
-    </section>);
+    </section>
+  );
 
 });
 export default Hero;

@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { AuthDialog } from '@/components/AuthDialog';
+import React, { createContext, useContext, useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthDialogContextType {
@@ -8,6 +7,7 @@ interface AuthDialogContextType {
 }
 
 const AuthDialogContext = createContext<AuthDialogContextType | undefined>(undefined);
+const LazyAuthDialog = lazy(() => import('@/components/AuthDialog').then((module) => ({ default: module.AuthDialog })));
 
 export const AuthDialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [open, setOpen] = useState(false);
@@ -36,7 +36,11 @@ export const AuthDialogProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <AuthDialogContext.Provider value={{ openAuthDialog, closeAuthDialog }}>
       {children}
-      <AuthDialog open={open} onOpenChange={setOpen} onSuccess={onSuccessCallback} />
+      {open ? (
+        <Suspense fallback={null}>
+          <LazyAuthDialog open={open} onOpenChange={setOpen} onSuccess={onSuccessCallback} />
+        </Suspense>
+      ) : null}
     </AuthDialogContext.Provider>
   );
 };

@@ -12,10 +12,11 @@ import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const Auth = lazy(() => import("./pages/Auth"));
 
 const About = lazy(() => import("./pages/About"));
 const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
@@ -125,7 +126,10 @@ const CRITICAL_IMAGES: string[] = [
 ];
 
 const GlobalImagePreloader = () => {
-  useImagePreloader({ images: CRITICAL_IMAGES });
+  const { pathname } = useLocation();
+  const shouldPreload = pathname === "/" || pathname.startsWith("/landing-pages");
+
+  useImagePreloader({ images: shouldPreload ? CRITICAL_IMAGES : [] });
   return null;
 };
 
