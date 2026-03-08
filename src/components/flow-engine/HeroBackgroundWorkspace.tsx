@@ -678,7 +678,33 @@ const generateSettingsJSON = (settings: HeroBackgroundSettings, flowState: FlowS
 };
 
 // Generate full project code as a React component
-const generateProjectCode = (settings: HeroBackgroundSettings): string => {
+const generateProjectCode = (settings: HeroBackgroundSettings, animBg?: AnimatedBgSettings): string => {
+  // If animated background is enabled, generate shader-based code
+  if (animBg?.enabled) {
+    const { importLine, component } = generateAnimatedBgCode(animBg);
+    return `import React from 'react';
+${importLine}
+
+export const HeroBackground: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Animated shader background */}
+      <div className="absolute inset-0">
+        ${component}
+      </div>
+      {children && (
+        <div className="relative z-10 h-full">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HeroBackground;
+
+// Dependencies: npm install @paper-design/shaders-react`;
+  }
   const background = sanitizeGradient(buildHeroGradient(settings));
 
   // Build filter string matching the live preview exactly
