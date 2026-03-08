@@ -1210,8 +1210,15 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       cancelAnimationFrame(paletteAnimationRef.current);
     }
     const start = performance.now();
+    let lastUpdate = 0;
     const step = (now: number) => {
       const progress = clamp((now - start) / duration, 0, 1);
+      // Throttle to ~30fps during animation to reduce re-renders
+      if (now - lastUpdate < 33 && progress < 1) {
+        paletteAnimationRef.current = requestAnimationFrame(step);
+        return;
+      }
+      lastUpdate = now;
       const eased = progress * (2 - progress);
       const blended: FlowPalette = {
         ...to,
