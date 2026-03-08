@@ -1011,8 +1011,9 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
     return map;
   }, [filteredBackgrounds]);
 
-  // Pre-compute layout shape preview backgrounds
+  // Pre-compute layout shape preview backgrounds — only when shape tab is active
   const shapePreviewMap = useMemo(() => {
+    if (activeTab !== "shape") return new Map<string, string>();
     const map = new Map<string, string>();
     for (const shape of SHAPE_STYLES) {
       const previewSettings: HeroBackgroundSettings = {
@@ -1030,7 +1031,7 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
       map.set(shape.id, buildHeroGradient(previewSettings));
     }
     return map;
-  }, [settings.color1, settings.color2, settings.color3, settings.color4]);
+  }, [activeTab === "shape" ? settings.color1 : "", activeTab === "shape" ? settings.color2 : "", activeTab === "shape" ? settings.color3 : "", activeTab === "shape" ? settings.color4 : "", activeTab]);
 
   const triggerAutoSave = useCallback(async () => {
     const currentSettingsString = JSON.stringify(settings) + JSON.stringify(animatedBg);
