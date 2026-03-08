@@ -12,9 +12,10 @@ import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { useImagePreloader } from "./hooks/useImagePreloader";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
+import Auth from "./pages/Auth";
+
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-import Auth from "./pages/Auth";
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 
 const About = lazy(() => import("./pages/About"));
