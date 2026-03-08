@@ -1946,6 +1946,16 @@ export const HeroBackgroundWorkspace: React.FC<HeroBackgroundWorkspaceProps> = (
             }}
           />
 
+          {/* Subtle top-left fade so the logo is visible over bright backgrounds */}
+          <div
+            className="absolute top-0 left-0 pointer-events-none z-10"
+            style={{
+              width: '35%',
+              height: '25%',
+              background: 'radial-gradient(ellipse at 0% 0%, rgba(0,0,0,0.45) 0%, transparent 70%)',
+            }}
+          />
+
         </div>
 
         {/* Hints overlay */}
