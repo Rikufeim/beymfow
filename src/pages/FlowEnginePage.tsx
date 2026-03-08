@@ -44,6 +44,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
   const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
+  const [savedPrompts, setSavedPrompts] = useState<PromptProject[]>([]);
 
   // Resolve editing project from sessionStorage
   const editingProjectId = initialWorkspace === "color-codes"
