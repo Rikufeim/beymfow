@@ -5,13 +5,10 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, LogOut, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
-import PlanBadge from "@/components/PlanBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,9 +39,7 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
-  const { user, usageInfo, signOut } = useAuth();
-  const { openAuthDialog } = useAuthDialog();
-  const isPro = usageInfo?.subscriptionTier === 'premium';
+  const isPro = false;
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
   const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
@@ -211,9 +206,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
   ];
 
-  const userInitials = user?.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : "?";
+  const userInitials = "U";
 
   // Render Selection View
   return (
@@ -268,75 +261,49 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           ))}
         </nav>
 
-        {/* User Avatar */}
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-10 h-10 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
-                {userInitials}
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-10 h-10 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
+              {userInitials}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-white border-none rounded-xl shadow-2xl p-0 overflow-hidden">
+            <div className="px-5 pt-5 pb-3">
+              <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider mb-3">Workspace</p>
+              <div className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-800 font-medium">
+                <FolderOpen size={16} className="text-neutral-400" />
+                <span className="truncate flex-1">My Workspace</span>
+                <span className="text-purple-500">✓</span>
+              </div>
+              <button className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-700 hover:text-neutral-900 transition-colors w-full mt-1">
+                <Plus size={16} className="text-neutral-400" />
+                Create Workspace
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="w-72 bg-white border-none rounded-xl shadow-2xl p-0 overflow-hidden">
-              {/* Workspace section */}
-              <div className="px-5 pt-5 pb-3">
-                <p className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider mb-3">Workspace</p>
-                <div className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-800 font-medium">
-                  <FolderOpen size={16} className="text-neutral-400" />
-                  <span className="truncate flex-1">{user.email?.split('@')[0]}'s Works...</span>
-                  <span className="text-purple-500">✓</span>
-                </div>
-                <button className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-700 hover:text-neutral-900 transition-colors w-full mt-1">
-                  <Plus size={16} className="text-neutral-400" />
-                  Create Workspace
-                </button>
-              </div>
-
-              <div className="border-t border-neutral-200" />
-
-              {/* Menu items */}
-              <div className="px-3 py-2 space-y-0.5">
-                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
-                  <Users size={16} className="mr-2.5 text-neutral-400" />
-                  Team Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
-                  <Link to="/settings/billing" className="flex items-center">
-                    <Settings size={16} className="mr-2.5 text-neutral-400" />
-                    Account Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
-                  <BookOpen size={16} className="mr-2.5 text-neutral-400" />
-                  Documentation
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
-                  <MessageSquare size={16} className="mr-2.5 text-neutral-400" />
-                  Give Feedback
-                </DropdownMenuItem>
-              </div>
-
-              <div className="border-t border-neutral-200" />
-
-              {/* Sign out */}
-              <div className="px-3 py-3">
-                <DropdownMenuItem
-                  onClick={() => signOut()}
-                  className="text-red-500 hover:bg-red-50 cursor-pointer rounded-lg px-3 py-2.5 text-sm"
-                >
-                  <LogOut size={16} className="mr-2.5" />
-                  Log Out
-                </DropdownMenuItem>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <button
-            onClick={() => openAuthDialog()}
-            className="text-sm font-medium px-4 py-2 bg-white text-black rounded-full hover:bg-neutral-200 transition-colors"
-          >
-            Sign In
-          </button>
-        )}
+            </div>
+            <div className="border-t border-neutral-200" />
+            <div className="px-3 py-2 space-y-0.5">
+              <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                <Users size={16} className="mr-2.5 text-neutral-400" />
+                Team Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                <Link to="/settings/billing" className="flex items-center">
+                  <Settings size={16} className="mr-2.5 text-neutral-400" />
+                  Account Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                <BookOpen size={16} className="mr-2.5 text-neutral-400" />
+                Documentation
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-neutral-700 hover:bg-neutral-100 cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                <MessageSquare size={16} className="mr-2.5 text-neutral-400" />
+                Give Feedback
+              </DropdownMenuItem>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Tab Content */}
