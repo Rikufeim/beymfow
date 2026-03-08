@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthDialogContextType {
   openAuthDialog: (onSuccess?: () => void) => void;
