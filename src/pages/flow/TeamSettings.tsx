@@ -16,7 +16,7 @@ const TeamSettings = () => {
           <h1 className="text-sm font-semibold tracking-wide">Team Settings</h1>
         </header>
 
-        <main className="max-w-2xl mx-auto px-6 py-16 space-y-16">
+        <main className="max-w-2xl px-6 md:px-10 py-16 space-y-16">
           {/* Intro */}
           <section>
             <h2 className="text-2xl font-bold tracking-tight mb-3">Collaborate with your team</h2>
