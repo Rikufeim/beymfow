@@ -3,7 +3,7 @@
 // Each card opens its own workspace
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { NeuroNoise } from "@paper-design/shaders-react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy } from "lucide-react";
@@ -351,9 +351,17 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
 
+          <AnimatePresence mode="wait">
           {/* Color Codes Tab */}
           {selectionTab === "color-codes" && (
-            <div className="fixed inset-0 z-40 flex flex-col items-center justify-center">
+            <motion.div
+              key="color-codes"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="fixed inset-0 z-40 flex flex-col items-center justify-center"
+            >
               <div className="absolute inset-0 overflow-hidden">
                 <NeuroNoise
                   style={{ width: "100%", height: "100%" }}
@@ -453,12 +461,19 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   </div>
                 </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Prompt Generator Tab */}
           {selectionTab === "prompt-generator" && (
-            <div className="fixed inset-0 z-40 flex flex-col">
+            <motion.div
+              key="prompt-generator"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="fixed inset-0 z-40 flex flex-col"
+            >
               <div className="absolute inset-0 overflow-hidden">
                 <div className="w-full h-full" style={{ filter: "brightness(0.4)", transform: "scale(1.05)" }}>
                   <NeuroNoise
@@ -541,8 +556,9 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   </div>
                 </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
