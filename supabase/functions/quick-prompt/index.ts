@@ -170,13 +170,12 @@ Vaiheittainen menettely:
 3. Tehtävä: vaiheittainen metodologia selkeällä päättelyketjulla.
 4. Tuotosspesifikaatio: tarkka muoto, rakenne, pituus ja laadun vaatimukset.
 
-${isFast ? `FAST MODE – Luo selkeä, hyvin rakennettu prompti:
-- Tarkka roolimäärittely
-- Selkeä tehtävänkuvaus ja odotettu tuotos
-- Tuotosformaatin määrittely
-- Keskeiset laadunkriteerit
+${isFast ? `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis Gemini-prompti. Suoraan asiaan:
+- Asiantuntijarooli
+- Tehtävä ja odotettu tuotos
+- Tuotosformaatti
 
-Kirjoita kohdennettu prompti, joka antaa erinomaisia tuloksia heti.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
+Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.` : `COMPREHENSIVE MODE – Luo syvärakenteinen prompti:
 
 1. ROOLI: Asiantuntija-persoona ja spesifi osaamisalue
 2. KONTEKSTI: Taustatiedot ja rajoitteet, jotka mallin täytyy tietää
