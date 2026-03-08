@@ -225,12 +225,10 @@ Palauta AINOASTAAN kuvapromptia.`;
 
     } else if (promptType === 'chatgpt') {
       // CHATGPT PROMPT - optimized for ChatGPT / OpenAI models
-      const chatgptFast = `FAST MODE – Luo selkeä, tehokas ChatGPT-prompti:
-- Selkeä roolimäärittely (esim. "Act as a...")
-- Täsmällinen tehtävänkuvaus ja konteksti
-- Odotettu tuotosformaatti ja pituus
-- Avainsäännöt tai rajoitteet
-- Luo prompti, joka antaa erinomaisen tuloksen yhdellä syötöllä.`;
+      const chatgptFast = `FAST MODE – Kirjoita VÄLITTÖMÄSTI valmis ChatGPT-prompti. Suoraan asiaan:
+- "Act as [rooli]" + tehtävä
+- Odotettu tuotos ja formaatti
+- Max 3-4 lausetta. Ei johdantoa. Aloita heti promptilla.`;
 
       const chatgptComprehensive = `COMPREHENSIVE MODE – Luo syvärakenteinen ChatGPT-prompti:
 
