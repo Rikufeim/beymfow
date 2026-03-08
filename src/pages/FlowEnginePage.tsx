@@ -357,7 +357,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               <div className="absolute inset-0 overflow-hidden">
                 <NeuroNoise
                   style={{ width: "100%", height: "100%" }}
-                  colorFront="#22d3ee"
+                  colorFront="#000000"
                   colorBack="#6366f1"
                   speed={0.5}
                   scale={1}
