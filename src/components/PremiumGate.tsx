@@ -13,7 +13,7 @@ interface PremiumGateProps {
 export const PremiumGate = ({ children }: PremiumGateProps) => {
   const { user, usageInfo, loading } = useAuth();
   const navigate = useNavigate();
-  const { openAuthDialog } = useAuthDialog();
+  
   const [showGate, setShowGate] = useState(false);
 
   useEffect(() => {
