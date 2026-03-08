@@ -32,6 +32,11 @@ export const GeneratedPromptDisplay = ({
       setDisplayedPrompt("");
       return;
     }
+    // Fast model: show instantly, no typewriter
+    if (selectedModel === "fast") {
+      setDisplayedPrompt(prompt);
+      return;
+    }
     setDisplayedPrompt("");
     let currentIndex = 0;
     const interval = setInterval(() => {
@@ -45,7 +50,7 @@ export const GeneratedPromptDisplay = ({
       currentIndex += chunk;
     }, 10);
     return () => clearInterval(interval);
-  }, [prompt]);
+  }, [prompt, selectedModel]);
 
   // Reset saved state when prompt changes
   useEffect(() => {
