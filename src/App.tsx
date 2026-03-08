@@ -81,10 +81,12 @@ function App() {
       <TooltipProvider>
         <LanguageProvider>
           <BrowserRouter>
-            <PersistentHeader />
-            <ScrollToTop />
-            <Suspense fallback={null}><AppRoutes /></Suspense>
-            <Suspense fallback={null}><CookieBanner /></Suspense>
+            <AuthProvider>
+              <PersistentHeader />
+              <ScrollToTop />
+              <Suspense fallback={null}><AppRoutes /></Suspense>
+              <Suspense fallback={null}><CookieBanner /></Suspense>
+            </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>
       </TooltipProvider>
