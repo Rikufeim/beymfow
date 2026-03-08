@@ -376,15 +376,15 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
-                  className="relative z-10 mt-10 w-full max-w-3xl px-6"
+                  className="relative z-10 mt-10 w-full px-6"
                 >
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Projects</p>
-                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                    {savedProjects.slice(0, 8).map((project) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 pb-2">
+                    {savedProjects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleOpenProject(project)}
-                        className="group relative flex-shrink-0 w-40 rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
+                        className="group relative rounded-xl border border-white/5 hover:border-white/15 bg-white/[0.03] hover:bg-white/[0.06] transition-all overflow-hidden"
                       >
                         <div className="aspect-[16/9] w-full overflow-hidden">
                           {project.thumbnail ? (
@@ -450,7 +450,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
-                  className="relative z-10 mt-10 w-full max-w-3xl px-6"
+                  className="relative z-10 mt-10 w-full px-6"
                 >
                   <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3">Saved Prompts</p>
                   <div className="flex flex-col gap-2 max-h-48 overflow-y-auto scrollbar-hide">
