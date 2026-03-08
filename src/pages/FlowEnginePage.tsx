@@ -39,9 +39,7 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
-  const { user, usageInfo, signOut } = useAuth();
-  const { openAuthDialog } = useAuthDialog();
-  const isPro = usageInfo?.subscriptionTier === 'premium';
+  const isPro = false;
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
   const [selectionTab, setSelectionTab] = useState<"projects" | "color-codes" | "prompt-generator">("projects");
