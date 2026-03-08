@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
 import { buildOrganizationSchema, buildBreadcrumbSchema, SITE_URL } from "@/lib/seo";
