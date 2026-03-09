@@ -39,7 +39,7 @@ const Settings = () => {
 
   const getPlanLabel = () => {
     if (!usageInfo) return "Free";
-    if (usageInfo.plan === "pro" && usageInfo.status === "active") return "Pro";
+    if (usageInfo.plan === "pro" && usageInfo.subscriptionStatus === "active") return "Pro";
     return "Free";
   };
 
