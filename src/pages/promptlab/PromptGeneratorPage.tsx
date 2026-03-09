@@ -177,7 +177,7 @@ const PromptGeneratorPage = () => {
     }
     if (selectedModel === "premium" && usageInfo?.subscriptionTier !== "premium") {
       toast.error("Premium model requires Beymflow Premium subscription");
-      navigate("/premium");
+      navigate("/settings/billing");
       return;
     }
 
