@@ -240,11 +240,6 @@ const Auth = () => {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-muted-foreground">Password</label>
-                {isLogin ? (
-                  <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground">
-                    Forgot?
-                  </Link>
-                ) : null}
               </div>
 
               <div className="relative">
