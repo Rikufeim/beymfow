@@ -285,19 +285,19 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       </div>
 
       {/* Top Nav Bar - ShortSync style */}
-      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
+      <header className="sticky top-0 z-50 w-full px-3 sm:px-8 py-3 sm:py-4 flex items-center justify-between relative">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <img
             src="/images/beymflow-logo.png"
             alt="Beymflow"
-            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+            className="h-8 sm:h-14 md:h-16 w-auto object-contain"
             loading="eager"
           />
         </div>
 
-        {/* Center Tabs */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
+        {/* Center Tabs - hidden on very small, shown as pills */}
+        <nav className="hidden xs:flex absolute left-1/2 -translate-x-1/2 items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -305,7 +305,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 setSelectionTab(tab.id as typeof selectionTab);
               }}
               className={cn(
-                "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                "px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap",
                 selectionTab === tab.id
                   ? "bg-white/[0.15] text-white shadow-sm"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
