@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { saveProject } from "@/lib/workspaceStore";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = {
   getSnapshot: () => any; // funktio, joka palauttaa tallennettava state
@@ -9,7 +9,8 @@ type Props = {
 };
 
 export default function PromptLabTopbar({ getSnapshot, onSaved }: Props) {
-  const { loading, loggedIn, user } = useAuth();
+  const { loading, user } = useAuth();
+  const loggedIn = !!user;
   const [name, setName] = useState("Untitled Project");
   const [saving, setSaving] = useState(false);
   const [savedTick, setSavedTick] = useState(0);
@@ -50,7 +51,7 @@ export default function PromptLabTopbar({ getSnapshot, onSaved }: Props) {
           <span className="opacity-60">Checking sign-in…</span>
         ) : loggedIn ? (
           <>
-            <span className="opacity-70">{user?.name || user?.email || "Signed in"}</span>
+            <span className="opacity-70">{user?.user_metadata?.full_name || user?.email || "Signed in"}</span>
             <button
               onClick={handleSave}
               disabled={!canSave}
