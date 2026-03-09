@@ -1,10 +1,20 @@
 "use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, User, LogOut, Settings, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const LOGO_URL = "/images/beymflow-logo.png";
 
@@ -15,6 +25,8 @@ const Header = () => {
   const navigate = useNavigate();
   const { prefetchRoute } = usePrefetchRoute();
   const [logoLoaded, setLogoLoaded] = useState(logoCacheLoaded);
+  const { user, signOut, loading } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   const isHeroBackgroundMode = location.pathname.startsWith("/flow") || location.pathname === "/" || location.pathname === "/about";
 
@@ -31,9 +43,13 @@ const Header = () => {
     };
   }, []);
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <header
-      className={`z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 transition-all duration-500 ${isHeroBackgroundMode ? "absolute top-0 left-0 bg-transparent" : "relative bg-black"}`}
+      className={`z-[999] h-[80px] w-full flex items-center justify-between px-6 md:px-10 transition-all duration-500 ${isHeroBackgroundMode ? "absolute top-0 left-0 bg-transparent" : "relative bg-background"}`}
     >
       <div className="flex justify-start flex-1">
         <Link to="/" className="flex items-center gap-0 transition-opacity hover:opacity-90 -ml-2 md:-ml-4">
@@ -44,44 +60,120 @@ const Header = () => {
             loading="eager"
             decoding="async"
           />
-          <span className="relative text-base font-semibold tracking-[0.28em] text-white hidden sm:block -ml-1">
+          <span className="relative text-base font-semibold tracking-[0.28em] text-foreground hidden sm:block -ml-1">
             Beymflow
           </span>
         </Link>
       </div>
 
-      <div className="flex items-center justify-end flex-1 gap-8">
+      <div className="flex items-center justify-end flex-1 gap-4 md:gap-8">
         <nav className="hidden md:flex items-center gap-8 font-medium">
           <Link
             to="/flow"
             onMouseEnter={() => prefetchRoute("/flow")}
-            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
+            className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm"
           >
             Flow
           </Link>
           <Link
             to="/about"
             onMouseEnter={() => prefetchRoute("/about")}
-            className="text-gray-400 hover:text-white transition-colors duration-300 text-sm"
+            className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm"
           >
             About Us
           </Link>
         </nav>
 
+        {/* Auth UI */}
+        {!loading && (
+          <>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 text-foreground hover:bg-muted"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline text-sm">Account</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                  <DropdownMenuItem
+                    onClick={() => navigate("/flow")}
+                    className="cursor-pointer"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Workspace
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/settings/billing")}
+                    className="cursor-pointer"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Billing
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openAuthDialog()}
+                className="border-border text-foreground hover:bg-muted"
+              >
+                Sign in
+              </Button>
+            )}
+          </>
+        )}
+
         <Sheet>
           <SheetTrigger asChild>
-            <button className="md:hidden text-white hover:bg-white/10 p-2 rounded-lg">
+            <button className="md:hidden text-foreground hover:bg-muted p-2 rounded-lg">
               <Menu className="h-6 w-6" />
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="bg-black border-white/10 w-[300px] z-[1000]">
+          <SheetContent side="right" className="bg-background border-border w-[300px] z-[1000]">
             <div className="flex flex-col gap-6 mt-8">
-              <Link to="/flow" className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4">
+              <Link to="/flow" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
                 Flow
               </Link>
-              <Link to="/about" className="text-gray-300 hover:text-white transition-colors text-lg font-medium px-4">
+              <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
                 About Us
               </Link>
+              {!loading && (
+                <>
+                  {user ? (
+                    <>
+                      <Link to="/settings/billing" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
+                        Billing
+                      </Link>
+                      <button
+                        onClick={handleSignOut}
+                        className="text-destructive hover:text-destructive/80 transition-colors text-lg font-medium px-4 text-left"
+                      >
+                        Sign out
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => openAuthDialog()}
+                      className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4 text-left"
+                    >
+                      Sign in
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>

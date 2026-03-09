@@ -127,14 +127,14 @@ export const PAGE_SEO: Record<string, SEOMeta> = {
         keywords:
             "color palette generator, color codes, HEX color, RGB color, HSL color, gradient generator, UI design colors",
     },
-    "/premium": {
+    "/settings/billing": {
         title: "Beymflow Pricing — Free & Pro Plans",
         description:
             "Upgrade to Beymflow Pro for unlimited AI prompt generation, full color code access, premium templates, and advanced background styles. Starting at €9.99/mo.",
-        canonical: `${SITE_URL}/premium`,
+        canonical: `${SITE_URL}/settings/billing`,
         ogImage: DEFAULT_OG_IMAGE,
         ogType: "website",
-        robots: "index, follow",
+        robots: "noindex, nofollow",
         keywords:
             "Beymflow pricing, pro plan, prompt generator subscription, creative tools pricing",
     },
@@ -162,14 +162,6 @@ export const PAGE_SEO: Record<string, SEOMeta> = {
         title: "Payment Successful — Beymflow",
         description: "Your Beymflow Pro subscription is now active. Start creating unlimited AI prompts and accessing premium features.",
         canonical: `${SITE_URL}/payment-success`,
-        ogImage: DEFAULT_OG_IMAGE,
-        ogType: "website",
-        robots: "noindex, nofollow",
-    },
-    "/settings/billing": {
-        title: "Billing & Subscription — Beymflow",
-        description: "Manage your Beymflow subscription, billing details, and plan settings.",
-        canonical: `${SITE_URL}/settings/billing`,
         ogImage: DEFAULT_OG_IMAGE,
         ogType: "website",
         robots: "noindex, nofollow",

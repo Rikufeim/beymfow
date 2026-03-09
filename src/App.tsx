@@ -5,10 +5,12 @@ import { useEffect, Suspense, lazy } from "react";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazy(() => import("./pages/Auth"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const TeamSettings = lazy(() => import("./pages/flow/TeamSettings"));
 const AccountSettingsPage = lazy(() => import("./pages/flow/AccountSettings"));
@@ -59,6 +61,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<ErrorBoundary><Index /></ErrorBoundary>} />
+      <Route path="/auth" element={<ErrorBoundary><Auth /></ErrorBoundary>} />
       <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
       <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
       <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
@@ -87,10 +90,12 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <AuthProvider>
-              <PersistentHeader />
-              <ScrollToTop />
-              <Suspense fallback={null}><AppRoutes /></Suspense>
-              <Suspense fallback={null}><CookieBanner /></Suspense>
+              <AuthDialogProvider>
+                <PersistentHeader />
+                <ScrollToTop />
+                <Suspense fallback={null}><AppRoutes /></Suspense>
+                <Suspense fallback={null}><CookieBanner /></Suspense>
+              </AuthDialogProvider>
             </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>

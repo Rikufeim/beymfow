@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromptBridge";
 import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, FileText, FileCode, Wrench, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/lib/notifications";
 import {
@@ -25,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const PROMPT_ENGINEER_SYSTEM_PROMPT = `
 You are an expert-level prompt engineer and AI workflow designer.
@@ -61,8 +63,10 @@ Infer. Design. Decide. Execute.
 `;
 
 export const QuickPromptGenerator = () => {
-  const { user, usageInfo } = useAuth();
+  const { user, session, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const navigate = useNavigate();
+  const { toast: uiToast } = useToast();
   const isPro = usageInfo?.subscriptionTier === "premium";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
@@ -70,6 +74,7 @@ export const QuickPromptGenerator = () => {
     import.meta.env.VITE_SUPABASE_ANON_KEY;
   const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
   const analyzeEndpoint = supabaseUrl ? `${supabaseUrl}/functions/v1/analyze-image-for-prompt` : null;
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const [input, setInput] = useState("");
   const [colorPaletteAttachment, setColorPaletteAttachment] = useState<{ colors: { color1: string; color2: string; color3: string; color4: string }; gradientStyle: string; summary: string } | null>(null);
@@ -281,6 +286,38 @@ export const QuickPromptGenerator = () => {
       setGeneratedPrompt("");
     }
   }, [input, uploadedImages, contextText]);
+
+  // Handle upgrade to pro
+  const handleUpgradeToPro = useCallback(async () => {
+    if (!user || !session) {
+      sessionStorage.setItem('pending_checkout', 'true');
+      setShowPremiumGate(false);
+      openAuthDialog();
+      return;
+    }
+    
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier: "pro" },
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      uiToast({
+        title: "Error",
+        description: err.message || "Failed to start checkout",
+        variant: "destructive"
+      });
+    } finally {
+      setCheckoutLoading(false);
+      setShowPremiumGate(false);
+    }
+  }, [user, session, openAuthDialog, uiToast]);
 
   // Format byte size for display
   const formatByteSize = (bytes: number): string => {
@@ -786,13 +823,11 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               Not Now
             </Button>
             <AlertDialogAction
-              onClick={() => {
-                setShowPremiumGate(false);
-                navigate('/premium');
-              }}
-              className="bg-white text-black border-2 border-white/30 hover:bg-white/90 font-bold px-8 py-6 text-lg"
+              onClick={handleUpgradeToPro}
+              disabled={checkoutLoading}
+              className="bg-foreground text-background border-2 border-border hover:bg-foreground/90 font-bold px-8 py-6 text-lg"
             >
-              Upgrade to Pro — €9.90/month
+              {checkoutLoading ? "Loading..." : "Upgrade to Pro — €9.90/month"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

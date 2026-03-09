@@ -10,6 +10,7 @@ import { GlassButton } from "@/components/ui/glass-button";
 import { cn } from "@/lib/utils";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema,
 const Index = () => {
   const navigate = useNavigate();
   const { user, session, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   
   const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -75,7 +77,9 @@ const Index = () => {
 
   const handleUpgradeToPro = useCallback(async () => {
     if (!user || !session) {
-      navigate("/premium");
+      // Set pending checkout flag and open auth dialog
+      sessionStorage.setItem('pending_checkout', 'true');
+      openAuthDialog();
       return;
     }
     if (isPro) {
@@ -102,7 +106,7 @@ const Index = () => {
     } finally {
       setCheckoutLoading(false);
     }
-  }, [user, session, isPro, navigate, toast]);
+  }, [user, session, isPro, navigate, toast, openAuthDialog]);
 
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
