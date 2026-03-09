@@ -59,7 +59,7 @@ const Hero = memo(function Hero() {
           <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent">The world </span>
           <span className="text-white opacity-90">wants</span>
           <br />
-          <Cover className="w-full block -mt-1.5 md:-mt-2">
+          <Cover className="w-full block -mt-1 sm:-mt-1.5 md:-mt-2">
             <span className="text-white my-0 mb-0 whitespace-nowrap opacity-90">
               to see your vision
             </span>
