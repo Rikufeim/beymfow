@@ -63,8 +63,10 @@ Infer. Design. Decide. Execute.
 `;
 
 export const QuickPromptGenerator = () => {
-  const { user, usageInfo } = useAuth();
+  const { user, session, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   const navigate = useNavigate();
+  const { toast: uiToast } = useToast();
   const isPro = usageInfo?.subscriptionTier === "premium";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey =
@@ -72,6 +74,7 @@ export const QuickPromptGenerator = () => {
     import.meta.env.VITE_SUPABASE_ANON_KEY;
   const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
   const analyzeEndpoint = supabaseUrl ? `${supabaseUrl}/functions/v1/analyze-image-for-prompt` : null;
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const [input, setInput] = useState("");
   const [colorPaletteAttachment, setColorPaletteAttachment] = useState<{ colors: { color1: string; color2: string; color3: string; color4: string }; gradientStyle: string; summary: string } | null>(null);
