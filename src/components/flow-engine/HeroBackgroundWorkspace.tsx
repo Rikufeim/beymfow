@@ -2298,7 +2298,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                     key={key}
                                     onClick={() => handleColorPickerOpen(key)}
                                     className={cn(
-                                      "flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all",
+                                      "flex items-center gap-1.5 px-2.5 py-2 sm:py-1 rounded-lg transition-all",
                                       activeColorPicker === key
                                         ? "bg-white/10 ring-1 ring-white/20"
                                         : "hover:bg-white/5"
@@ -2306,12 +2306,12 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                   >
                                     <span
                                       className={cn(
-                                        "w-5 h-5 rounded-full border-2 transition-all flex-shrink-0",
+                                        "w-6 h-6 sm:w-5 sm:h-5 rounded-full border-2 transition-all flex-shrink-0",
                                         activeColorPicker === key ? "border-white scale-110" : "border-white/30"
                                       )}
                                       style={{ backgroundColor: value }}
                                     />
-                                    <span className="text-[9px] text-white/50">{label}</span>
+                                    <span className="text-[10px] sm:text-[9px] text-white/50">{label}</span>
                                   </button>
                                 ))}
                               </div>
