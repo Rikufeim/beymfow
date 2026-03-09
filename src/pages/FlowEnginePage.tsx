@@ -393,7 +393,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           </div>
 
           {/* Persistent center button — stays in place across tab switches */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none px-4">
             <button
               onClick={() => {
                 if (selectionTab === "color-codes") {
@@ -403,7 +403,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   navigate("/flow/prompt-generator");
                 }
               }}
-              className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
+              className="pointer-events-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl text-sm sm:text-base"
             >
               {selectionTab === "color-codes" ? "Open Color Codes" : "Open Prompt Generator"}
             </button>
