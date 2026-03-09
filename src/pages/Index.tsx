@@ -77,7 +77,9 @@ const Index = () => {
 
   const handleUpgradeToPro = useCallback(async () => {
     if (!user || !session) {
-      navigate("/premium");
+      // Set pending checkout flag and open auth dialog
+      sessionStorage.setItem('pending_checkout', 'true');
+      openAuthDialog();
       return;
     }
     if (isPro) {
@@ -104,7 +106,7 @@ const Index = () => {
     } finally {
       setCheckoutLoading(false);
     }
-  }, [user, session, isPro, navigate, toast]);
+  }, [user, session, isPro, navigate, toast, openAuthDialog]);
 
   // Preload all homepage images for instant loading
   // Memoize to prevent re-creation on every render
