@@ -323,31 +323,12 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
               {userInitials}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8} className="w-72 border-none rounded-xl shadow-2xl p-0 overflow-hidden bg-neutral-900 border border-white/10">
-            <div className="px-5 pt-5 pb-3">
-              <p className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider mb-3">Workspace</p>
-              <div className="flex items-center gap-2.5 py-1.5 text-sm text-white font-medium">
-                <FolderOpen size={16} className="text-neutral-500" />
-                <span className="truncate flex-1">My Workspace</span>
-                <span className="text-purple-400">✓</span>
-              </div>
-              <button className="flex items-center gap-2.5 py-1.5 text-sm text-neutral-400 hover:text-white transition-colors w-full mt-1">
-                <Plus size={16} className="text-neutral-500" />
-                Create Workspace
-              </button>
-            </div>
-            <div className="border-t border-white/10" />
+          <DropdownMenuContent align="end" sideOffset={8} className="w-56 border-none rounded-xl shadow-2xl p-0 overflow-hidden bg-neutral-900 border border-white/10">
             <div className="px-3 py-2 space-y-0.5">
               <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <Link to="/flow/team-settings" className="flex items-center">
-                  <Users size={16} className="mr-2.5 text-neutral-500" />
-                  Team Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
-                <Link to="/flow/account-settings" className="flex items-center">
+                <Link to="/settings" className="flex items-center">
                   <Settings size={16} className="mr-2.5 text-neutral-500" />
-                  Account Settings
+                  Settings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-neutral-300 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-white">
@@ -362,16 +343,14 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   Give Feedback
                 </Link>
               </DropdownMenuItem>
-              <div className="border-t border-white/10" />
-              <div className="px-3 py-2">
-                <DropdownMenuItem
-                  onClick={() => signOut()}
-                  className="text-red-400 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-red-300"
-                >
-                  <LogOut size={16} className="mr-2.5 text-red-500" />
-                  Sign out
-                </DropdownMenuItem>
-              </div>
+              <div className="border-t border-white/10 my-1" />
+              <DropdownMenuItem
+                onClick={() => signOut()}
+                className="text-red-400 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-red-300"
+              >
+                <LogOut size={16} className="mr-2.5 text-red-500" />
+                Sign out
+              </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
