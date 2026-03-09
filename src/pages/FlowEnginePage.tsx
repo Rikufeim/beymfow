@@ -45,6 +45,7 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const isPro = false;
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
