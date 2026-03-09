@@ -40,7 +40,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/settings"];
+const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/settings", "/invite"];
 
 const PersistentHeader = () => {
   const { pathname } = useLocation();
