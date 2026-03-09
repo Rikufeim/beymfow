@@ -1118,33 +1118,35 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-8">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-6 sm:mt-8">
               <GlassButton
                 size="sm"
                 onClick={() => setSelectedModel("fast")}
                 contentClassName="flex items-center gap-1.5"
                 isSelected={selectedModel === "fast"}
+                className="min-h-[40px] sm:min-h-0 px-4 sm:px-3"
               >
-                <Zap className="w-3 h-3" />
-                Fast Model
+                <Zap className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                <span className="text-xs sm:text-[13px]">Fast</span>
               </GlassButton>
               <GlassButton
                 size="sm"
                 onClick={() => setSelectedModel("advanced")}
                 contentClassName="flex items-center gap-1.5"
                 isSelected={selectedModel === "advanced"}
+                className="min-h-[40px] sm:min-h-0 px-4 sm:px-3"
               >
-                <Settings className="w-3 h-3" />
-                Advanced Model
+                <Settings className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                <span className="text-xs sm:text-[13px]">Advanced</span>
               </GlassButton>
               <GlassButton
                 size="sm"
                 onClick={() => setSelectedModel("premium")}
                 contentClassName="flex items-center gap-1.5"
                 isSelected={selectedModel === "premium"}
-                className={selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}
+                className={`min-h-[40px] sm:min-h-0 px-4 sm:px-3 ${selectedModel === "premium" ? "ring-2 ring-yellow-500/60" : ""}`}
               >
-                Premium Model
+                <span className="text-xs sm:text-[13px]">Premium</span>
               </GlassButton>
 
               <div className="w-px h-6 bg-white/20 mx-1 hidden sm:block" />
@@ -1156,9 +1158,10 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                       size="sm"
                       contentClassName="flex items-center gap-1.5"
                       isSelected={promptType !== "chatgpt"}
+                      className="min-h-[40px] sm:min-h-0 px-4 sm:px-3"
                     >
-                      <Wrench className="w-3 h-3" />
-                      {promptType === "lovable" ? "Lovable" : promptType === "gemini" ? "Gemini" : promptType === "image" ? "Image AI" : "Tools"}
+                      <Wrench className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
+                      <span className="text-xs sm:text-[13px]">{promptType === "lovable" ? "Lovable" : promptType === "gemini" ? "Gemini" : promptType === "image" ? "Image AI" : "Tools"}</span>
                       <ChevronDown className="w-3 h-3 opacity-60" />
                     </GlassButton>
                   </div>
@@ -1169,7 +1172,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                 >
                   <DropdownMenuItem
                     onClick={() => setPromptType("chatgpt")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "chatgpt" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                    className={`flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "chatgpt" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">ChatGPT</span>
@@ -1178,7 +1181,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setPromptType("lovable")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "lovable" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                    className={`flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "lovable" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Lovable</span>
@@ -1187,7 +1190,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setPromptType("gemini")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "gemini" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                    className={`flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "gemini" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Gemini</span>
@@ -1196,7 +1199,7 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setPromptType("image")}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "image" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
+                    className={`flex items-center gap-3 px-3 py-3 sm:py-2.5 rounded-lg cursor-pointer transition-colors ${promptType === "image" ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
                   >
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Image AI</span>
