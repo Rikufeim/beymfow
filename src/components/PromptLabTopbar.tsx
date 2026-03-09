@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { saveProject } from "@/lib/workspaceStore";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = {
   getSnapshot: () => any; // funktio, joka palauttaa tallennettava state
