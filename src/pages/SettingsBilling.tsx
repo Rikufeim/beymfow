@@ -181,10 +181,10 @@ const SettingsBilling = () => {
               </ul>
             </div>
           )}
+          </main>
         </div>
-      </div>
-    </Layout>
-  );
+      </>
+    );
 };
 
 export default SettingsBilling;
