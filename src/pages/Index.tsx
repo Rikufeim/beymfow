@@ -229,7 +229,7 @@ const Index = () => {
               </div>
 
               {/* 3 Cards */}
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 items-stretch">
                 {/* Free */}
                 <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/80 backdrop-blur-sm p-6 sm:p-8">
                   <h3 className="text-xl font-semibold text-white mb-4">Free</h3>

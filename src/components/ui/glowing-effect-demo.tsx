@@ -36,19 +36,19 @@ const GridItem = ({
   title,
   description
 }: GridItemProps) => {
-  return <li className="min-h-[11rem] list-none">
-    <div className={cn("relative h-full rounded-2xl border border-white/10 p-[1px]")}>
+  return <li className="min-h-[8rem] sm:min-h-[11rem] list-none">
+    <div className={cn("relative h-full rounded-xl sm:rounded-2xl border border-white/10 p-[1px]")}>
       <GlowingEffect spread={40} glow disabled={false} proximity={64} inactiveZone={0.01} borderWidth={2} className="opacity-70" />
-      <div className="relative flex h-full flex-col justify-between gap-4 rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-5">
-        <div className="flex flex-col gap-3">
-          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-2">
+      <div className="relative flex h-full flex-col justify-between gap-2 sm:gap-4 rounded-[0.7rem] sm:rounded-[1.05rem] bg-gradient-to-br from-[#000000] via-[#050505] to-[#000000] p-3 sm:p-5">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <div className="w-fit rounded-lg border border-white/10 bg-white/5 p-1.5 sm:p-2">
             {icon}
           </div>
-          <div className="space-y-2">
-            <h3 className="text-lg md:text-xl font-semibold tracking-tight text-white">
+          <div className="space-y-1 sm:space-y-2">
+            <h3 className="text-sm sm:text-lg md:text-xl font-semibold tracking-tight text-white">
               {title}
             </h3>
-            <p className="text-xs leading-relaxed text-white/70 md:text-lg">
+            <p className="text-[11px] sm:text-xs leading-relaxed text-white/70 md:text-lg">
               {description}
             </p>
           </div>
