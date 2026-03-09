@@ -22,6 +22,8 @@ const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 
 const Settings = lazy(() => import("./pages/Settings"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
+const SettingsTeam = lazy(() => import("./pages/SettingsTeam"));
+const InviteAccept = lazy(() => import("./pages/InviteAccept"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Header = lazy(() => import("./components/Header"));
 const CookieBanner = lazy(() => import("./components/CookieBanner"));
@@ -38,7 +40,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/settings"];
+const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/settings", "/invite"];
 
 const PersistentHeader = () => {
   const { pathname } = useLocation();
@@ -78,6 +80,10 @@ const AppRoutes = () => {
       {/* Settings routes */}
       <Route path="/settings" element={<Settings />} />
       <Route path="/settings/billing" element={<SettingsBilling />} />
+      <Route path="/settings/team" element={<SettingsTeam />} />
+      
+      {/* Invite route */}
+      <Route path="/invite/:token" element={<InviteAccept />} />
       
       <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
       <Route path="*" element={<Layout><NotFound /></Layout>} />
