@@ -356,6 +356,26 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         </DropdownMenu>
       </header>
 
+      {/* Mobile tab bar - visible only on very small screens */}
+      <div className="xs:hidden flex items-center justify-center px-3 pb-2">
+        <nav className="flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectionTab(tab.id as typeof selectionTab)}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                selectionTab === tab.id
+                  ? "bg-white/[0.15] text-white shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       {/* Tab Content */}
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
