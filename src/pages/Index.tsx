@@ -143,7 +143,7 @@ const Index = () => {
         <div className="relative">
 
           {/* Creative Tools Section */}
-          <section className="py-24 sm:py-32 px-6 md:px-10 lg:px-16 w-full">
+          <section className="py-16 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 lg:px-16 w-full">
             <div className="w-full">
               <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-12 tracking-tight max-w-[90vw]">
                 Creative tools for <span className="text-white/60">modern developers</span>
