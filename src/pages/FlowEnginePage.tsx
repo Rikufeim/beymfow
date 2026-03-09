@@ -285,19 +285,19 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
       </div>
 
       {/* Top Nav Bar - ShortSync style */}
-      <header className="sticky top-0 z-50 w-full px-4 sm:px-8 py-4 flex items-center justify-between relative">
+      <header className="sticky top-0 z-50 w-full px-3 sm:px-8 py-3 sm:py-4 flex items-center justify-between relative">
         {/* Logo */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <img
             src="/images/beymflow-logo.png"
             alt="Beymflow"
-            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+            className="h-8 sm:h-14 md:h-16 w-auto object-contain"
             loading="eager"
           />
         </div>
 
-        {/* Center Tabs */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
+        {/* Center Tabs - hidden on very small, shown as pills */}
+        <nav className="hidden xs:flex absolute left-1/2 -translate-x-1/2 items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -305,7 +305,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                 setSelectionTab(tab.id as typeof selectionTab);
               }}
               className={cn(
-                "px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                "px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap",
                 selectionTab === tab.id
                   ? "bg-white/[0.15] text-white shadow-sm"
                   : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
@@ -319,7 +319,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/80 backdrop-blur-md transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
+            <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/70 hover:bg-black/80 backdrop-blur-md transition-colors flex items-center justify-center text-xs sm:text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20 flex-shrink-0">
               {userInitials}
             </button>
           </DropdownMenuTrigger>
@@ -356,6 +356,26 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         </DropdownMenu>
       </header>
 
+      {/* Mobile tab bar - visible only on very small screens */}
+      <div className="xs:hidden flex items-center justify-center px-3 pb-2">
+        <nav className="flex items-center bg-black/60 backdrop-blur-md border border-white/[0.1] rounded-full p-0.5 gap-0.5">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectionTab(tab.id as typeof selectionTab)}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap",
+                selectionTab === tab.id
+                  ? "bg-white/[0.15] text-white shadow-sm"
+                  : "text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       {/* Tab Content */}
       <div className="flex-1 px-4 sm:px-6 py-8">
         <div className="w-full">
@@ -373,7 +393,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
           </div>
 
           {/* Persistent center button — stays in place across tab switches */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none px-4">
             <button
               onClick={() => {
                 if (selectionTab === "color-codes") {
@@ -383,7 +403,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   navigate("/flow/prompt-generator");
                 }
               }}
-              className="pointer-events-auto px-8 py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl"
+              className="pointer-events-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-black/70 backdrop-blur-md text-white font-semibold rounded-xl border border-white/15 hover:bg-black/80 transition-all duration-200 shadow-2xl text-sm sm:text-base"
             >
               {selectionTab === "color-codes" ? "Open Color Codes" : "Open Prompt Generator"}
             </button>

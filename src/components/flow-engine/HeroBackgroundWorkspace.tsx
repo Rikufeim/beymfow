@@ -2159,8 +2159,8 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
             </div>
 
             {/* Tabs + Minimize button */}
-            <div className="flex items-center justify-between px-2 sm:px-4 py-2">
-              <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
                 {FLOW_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -2169,7 +2169,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
-                      "px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md whitespace-nowrap flex-shrink-0",
+                      "px-3 sm:px-3.5 py-2 sm:py-1.5 text-xs sm:text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md whitespace-nowrap flex-shrink-0",
                       activeTab === tab.id
                         ? "text-white bg-white/10"
                         : "text-white/40 hover:text-white/70 hover:bg-white/5"
@@ -2183,7 +2183,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
               {/* Minimize button */}
               <button
                 onClick={() => setMinimizedBar(!minimizedBar)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs flex-shrink-0 ml-1"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-2.5 py-2 sm:py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs flex-shrink-0 ml-1"
               >
                 {minimizedBar ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 <span className="text-[10px] font-medium hidden sm:inline">{minimizedBar ? "Expand" : "Minimize"}</span>
@@ -2212,15 +2212,15 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                         >
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-shrink-0 mb-3">
 
-                            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto [&::-webkit-scrollbar]:hidden w-full sm:w-auto" style={{ scrollbarWidth: "none" }}>
+                            <div className="flex items-center gap-1 sm:gap-1 flex-wrap overflow-x-auto [&::-webkit-scrollbar]:hidden w-full sm:w-auto" style={{ scrollbarWidth: "none" }}>
                               {CATEGORY_LABELS.map((cat) => (
                                 <button
                                   key={cat}
                                   onClick={() => setActiveCategory(cat)}
                                   className={cn(
-                                    "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] font-medium transition-all duration-300 ease-out whitespace-nowrap flex-shrink-0",
+                                    "px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 text-xs sm:text-[11px] font-medium transition-all duration-300 ease-out whitespace-nowrap flex-shrink-0 rounded-md",
                                     activeCategory === cat
-                                      ? "text-white opacity-100"
+                                      ? "text-white opacity-100 bg-white/10"
                                       : "text-white/40 opacity-60 hover:opacity-100 hover:text-white/70"
                                   )}
                                 >
@@ -2228,7 +2228,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                 </button>
                               ))}
                             </div>
-                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="sm:ml-auto w-full sm:w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="sm:ml-auto w-full sm:w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 sm:py-1.5 text-xs sm:text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
                           </div>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
@@ -2298,7 +2298,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                     key={key}
                                     onClick={() => handleColorPickerOpen(key)}
                                     className={cn(
-                                      "flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all",
+                                      "flex items-center gap-1.5 px-2.5 py-2 sm:py-1 rounded-lg transition-all",
                                       activeColorPicker === key
                                         ? "bg-white/10 ring-1 ring-white/20"
                                         : "hover:bg-white/5"
@@ -2306,12 +2306,12 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                   >
                                     <span
                                       className={cn(
-                                        "w-5 h-5 rounded-full border-2 transition-all flex-shrink-0",
+                                        "w-6 h-6 sm:w-5 sm:h-5 rounded-full border-2 transition-all flex-shrink-0",
                                         activeColorPicker === key ? "border-white scale-110" : "border-white/30"
                                       )}
                                       style={{ backgroundColor: value }}
                                     />
-                                    <span className="text-[9px] text-white/50">{label}</span>
+                                    <span className="text-[10px] sm:text-[9px] text-white/50">{label}</span>
                                   </button>
                                 ))}
                               </div>
@@ -2367,7 +2367,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                     key={cat.label}
                                     onClick={() => setActiveLayoutCategory(idx)}
                                     className={cn(
-                                      "px-2 py-1 text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
+                                      "px-2.5 py-1.5 text-xs sm:text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
                                       activeLayoutCategory === idx
                                         ? "text-white bg-white/10"
                                         : "text-white/40 hover:text-white/70 hover:bg-white/5"
@@ -2377,7 +2377,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                   </button>
                                 ))}
                               </div>
-                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2">
                                 {SHAPE_STYLES
                                   .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
                                   .map((shape) => {

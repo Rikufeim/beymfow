@@ -143,12 +143,12 @@ const Index = () => {
         <div className="relative">
 
           {/* Creative Tools Section */}
-          <section className="py-24 sm:py-32 px-6 md:px-10 lg:px-16 w-full">
+          <section className="py-16 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 lg:px-16 w-full">
             <div className="w-full">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-12 tracking-tight max-w-[90vw]">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 sm:mb-12 tracking-tight">
                 Creative tools for <span className="text-white/60">modern developers</span>
               </h2>
-              <div className="grid md:grid-cols-2 gap-10 lg:gap-20 text-lg sm:text-xl text-white/70 leading-relaxed">
+              <div className="grid md:grid-cols-2 gap-6 sm:gap-10 lg:gap-20 text-base sm:text-lg md:text-xl text-white/70 leading-relaxed">
                 <p>
                   Beymflow is a modern creative platform built for developers, vibe coders, and digital creators who design websites, apps, and interactive experiences. The platform combines a powerful prompt generator for AI tools, advanced color code generation (HEX, RGB, gradients), and tools for creating visually striking website backgrounds and UI elements.
                 </p>
@@ -157,18 +157,18 @@ const Index = () => {
                 </p>
               </div>
               {/* Start Building showcase */}
-              <div className="mt-16 sm:mt-20 md:mt-24 grid gap-10 md:grid-cols-2 items-center max-w-6xl">
-                <div className="space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
+              <div className="mt-10 sm:mt-16 md:mt-24 grid gap-6 sm:gap-10 md:grid-cols-2 items-center max-w-6xl">
+                <div className="space-y-4 sm:space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10">
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
                     Start Building
                   </h2>
-                  <p className="text-white/65 max-w-xl">
+                  <p className="text-white/65 max-w-xl text-sm sm:text-base">
                     Create impressive backgrounds for websites, apps, or anything — quickly.
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <button
                       onClick={handleStartFree}
-                      className="rounded-full px-5 py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40">
+                      className="rounded-full px-5 py-2.5 sm:py-2 border border-white/10 bg-white/[0.03] text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 text-sm">
                       Start your flow
                     </button>
                   </div>
@@ -176,7 +176,7 @@ const Index = () => {
 
                 <div className="relative">
                   <div
-                    className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
+                    className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl opacity-45 z-0"
                     style={{
                       backgroundImage:
                         "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
@@ -185,7 +185,7 @@ const Index = () => {
                       backgroundPosition: "0 0, 0 0"
                     }} />
                   <div className="relative z-10">
-                    <ColorWorkspaceDemo className="min-h-[280px]" />
+                    <ColorWorkspaceDemo className="min-h-[220px] sm:min-h-[280px]" />
                   </div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ const Index = () => {
               </div>
 
               {/* 3 Cards */}
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 items-stretch">
                 {/* Free */}
                 <div className="relative flex flex-col rounded-2xl border border-white/10 bg-black/80 backdrop-blur-sm p-6 sm:p-8">
                   <h3 className="text-xl font-semibold text-white mb-4">Free</h3>

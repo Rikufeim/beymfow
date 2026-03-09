@@ -51,31 +51,31 @@ const Hero = memo(function Hero() {
   }, [navigate, user]);
 
   return (
-    <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
+    <section className="relative w-full min-h-[100svh] flex flex-col items-center justify-center px-4 sm:px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-normal" style={{
+        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight tracking-normal" style={{
           fontFamily: "Rubik, sans-serif"
         }}>
           <span className="bg-gradient-to-r from-teal-400 to-purple-600 bg-clip-text text-transparent">The world </span>
           <span className="text-white opacity-90">wants</span>
           <br />
-          <Cover className="w-full block -mt-1.5 md:-mt-2">
+          <Cover className="w-full block -mt-1 sm:-mt-1.5 md:-mt-2">
             <span className="text-white my-0 mb-0 whitespace-nowrap opacity-90">
               to see your vision
             </span>
           </Cover>
         </h1>
 
-        <p className="text-lg md:text-xl text-white/70 max-w-2xl mb-8 leading-relaxed">
+        <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-2xl mb-6 sm:mb-8 leading-relaxed">
           Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           {/* Primary CTA - Go to Flow (requires login) */}
           <button 
             onClick={handleFlowClick}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-6 py-3 sm:px-5 sm:py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95 disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -94,7 +94,7 @@ const Hero = memo(function Hero() {
           <button 
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-black/50 text-white text-sm font-medium border border-white/20 backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:border-white/40 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-5 sm:py-2.5 rounded-full bg-black/50 text-white text-sm font-medium border border-white/20 backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:border-white/40 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <>
