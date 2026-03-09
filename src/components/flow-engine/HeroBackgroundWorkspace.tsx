@@ -2367,7 +2367,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                     key={cat.label}
                                     onClick={() => setActiveLayoutCategory(idx)}
                                     className={cn(
-                                      "px-2 py-1 text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
+                                      "px-2.5 py-1.5 text-xs sm:text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 rounded-md",
                                       activeLayoutCategory === idx
                                         ? "text-white bg-white/10"
                                         : "text-white/40 hover:text-white/70 hover:bg-white/5"
@@ -2377,7 +2377,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                   </button>
                                 ))}
                               </div>
-                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-2">
                                 {SHAPE_STYLES
                                   .filter((s) => LAYOUT_CATEGORIES[activeLayoutCategory].filter(s.id))
                                   .map((shape) => {
