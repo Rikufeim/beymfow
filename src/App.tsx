@@ -13,7 +13,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const TeamSettings = lazy(() => import("./pages/flow/TeamSettings"));
-const AccountSettingsPage = lazy(() => import("./pages/flow/AccountSettings"));
 const DocumentationPage = lazy(() => import("./pages/flow/Documentation"));
 const GiveFeedbackPage = lazy(() => import("./pages/flow/GiveFeedback"));
 const About = lazy(() => import("./pages/About"));
@@ -21,6 +20,7 @@ const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
 const PlanningSystem = lazy(() => import("./pages/PlanningSystem"));
 const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 
+const Settings = lazy(() => import("./pages/Settings"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Header = lazy(() => import("./components/Header"));
@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage"];
+const HIDDEN_HEADER_PREFIXES = ["/flow", "/image-generator", "/planningsystem", "/multiagentpage", "/settings"];
 
 const PersistentHeader = () => {
   const { pathname } = useLocation();
@@ -66,7 +66,6 @@ const AppRoutes = () => {
       <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
       <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
       <Route path="/flow/team-settings" element={<ErrorBoundary><TeamSettings /></ErrorBoundary>} />
-      <Route path="/flow/account-settings" element={<ErrorBoundary><AccountSettingsPage /></ErrorBoundary>} />
       <Route path="/flow/documentation" element={<ErrorBoundary><DocumentationPage /></ErrorBoundary>} />
       <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
       <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
@@ -76,7 +75,10 @@ const AppRoutes = () => {
       <Route path="/planningsystem" element={<PlanningSystem />} />
       <Route path="/multiagentpage" element={<Multiagentpage />} />
       
+      {/* Settings routes */}
+      <Route path="/settings" element={<Settings />} />
       <Route path="/settings/billing" element={<SettingsBilling />} />
+      
       <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
       <Route path="*" element={<Layout><NotFound /></Layout>} />
     </Routes>

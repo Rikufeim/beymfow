@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, User, LogOut, Settings, Sparkles } from "lucide-react";
+import { Menu, User, LogOut, Settings, FileText, MessageSquare } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePrefetchRoute } from "@/hooks/usePrefetchRoute";
 import { useEffect, useState } from "react";
@@ -100,18 +100,25 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-card border-border">
                   <DropdownMenuItem
-                    onClick={() => navigate("/flow")}
-                    className="cursor-pointer"
-                  >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Workspace
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/settings/billing")}
+                    onClick={() => navigate("/settings")}
                     className="cursor-pointer"
                   >
                     <Settings className="mr-2 h-4 w-4" />
-                    Billing
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/flow/documentation")}
+                    className="cursor-pointer"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Documentation
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/flow/feedback")}
+                    className="cursor-pointer"
+                  >
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Give Feedback
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -154,8 +161,14 @@ const Header = () => {
                 <>
                   {user ? (
                     <>
-                      <Link to="/settings/billing" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
-                        Billing
+                      <Link to="/settings" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
+                        Settings
+                      </Link>
+                      <Link to="/flow/documentation" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
+                        Documentation
+                      </Link>
+                      <Link to="/flow/feedback" className="text-muted-foreground hover:text-foreground transition-colors text-lg font-medium px-4">
+                        Give Feedback
                       </Link>
                       <button
                         onClick={handleSignOut}
