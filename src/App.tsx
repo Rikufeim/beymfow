@@ -80,6 +80,10 @@ const AppRoutes = () => {
       {/* Settings routes */}
       <Route path="/settings" element={<Settings />} />
       <Route path="/settings/billing" element={<SettingsBilling />} />
+      <Route path="/settings/team" element={<SettingsTeam />} />
+      
+      {/* Invite route */}
+      <Route path="/invite/:token" element={<InviteAccept />} />
       
       <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
       <Route path="*" element={<Layout><NotFound /></Layout>} />

@@ -56,3 +56,9 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.team-invite]
+verify_jwt = false
+
+[functions.accept-invite]
+verify_jwt = false
