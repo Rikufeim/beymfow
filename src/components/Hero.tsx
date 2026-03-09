@@ -16,12 +16,19 @@ const GoogleIcon = () => (
 
 const Hero = memo(function Hero() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleFlowClick = useCallback(() => {
-    navigate("/flow");
-  }, [navigate]);
+    if (user) {
+      // User is logged in, go directly to Flow
+      navigate("/flow");
+    } else {
+      // User is not logged in, redirect to auth with intended destination
+      sessionStorage.setItem('auth_redirect_after', '/flow');
+      navigate("/auth");
+    }
+  }, [navigate, user]);
 
   const handleGoogleSignIn = useCallback(async () => {
     // If already logged in, go directly to flow
@@ -64,19 +71,29 @@ const Hero = memo(function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          {/* Primary CTA - Go to Flow (Guest exploration) */}
+          {/* Primary CTA - Go to Flow (requires login) */}
           <button 
-            onClick={handleFlowClick} 
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95"
+            onClick={handleFlowClick}
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95 disabled:opacity-60"
           >
-            Go to Flow
-            <ArrowRight className="w-4 h-4" />
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                Go to Flow
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
 
           {/* Secondary CTA - Google Sign In (Account-based onboarding) */}
           <button 
             onClick={handleGoogleSignIn}
-            disabled={googleLoading}
+            disabled={googleLoading || loading}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-black/50 text-white text-sm font-medium border border-white/20 backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:border-white/40 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {googleLoading ? (

@@ -7,6 +7,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthDialogProvider } from "./contexts/AuthDialogContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -62,30 +63,33 @@ const ScrollToTop = () => {
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<ErrorBoundary><Index /></ErrorBoundary>} />
       <Route path="/auth" element={<ErrorBoundary><Auth /></ErrorBoundary>} />
-      <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
-      <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
-      <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
-      <Route path="/flow/team-settings" element={<ErrorBoundary><TeamSettings /></ErrorBoundary>} />
-      <Route path="/flow/documentation" element={<ErrorBoundary><DocumentationPage /></ErrorBoundary>} />
-      <Route path="/flow/feedback" element={<ErrorBoundary><GiveFeedbackPage /></ErrorBoundary>} />
-      <Route path="/flow-engine" element={<ErrorBoundary><FlowEnginePage /></ErrorBoundary>} />
       <Route path="/about" element={<Layout><About /></Layout>} />
       
-      <Route path="/image-generator" element={<ImageGenerator />} />
-      <Route path="/planningsystem" element={<PlanningSystem />} />
-      <Route path="/multiagentpage" element={<Multiagentpage />} />
+      {/* Protected routes - require authentication */}
+      <Route path="/flow" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/prompt-generator" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/color-codes" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/team-settings" element={<ProtectedRoute><ErrorBoundary><TeamSettings /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/documentation" element={<ProtectedRoute><ErrorBoundary><DocumentationPage /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow/feedback" element={<ProtectedRoute><ErrorBoundary><GiveFeedbackPage /></ErrorBoundary></ProtectedRoute>} />
+      <Route path="/flow-engine" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage /></ErrorBoundary></ProtectedRoute>} />
       
-      {/* Settings routes */}
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/settings/billing" element={<SettingsBilling />} />
-      <Route path="/settings/team" element={<SettingsTeam />} />
+      <Route path="/image-generator" element={<ProtectedRoute><ImageGenerator /></ProtectedRoute>} />
+      <Route path="/planningsystem" element={<ProtectedRoute><PlanningSystem /></ProtectedRoute>} />
+      <Route path="/multiagentpage" element={<ProtectedRoute><Multiagentpage /></ProtectedRoute>} />
       
-      {/* Invite route */}
-      <Route path="/invite/:token" element={<InviteAccept />} />
+      {/* Settings routes - protected */}
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/settings/billing" element={<ProtectedRoute><SettingsBilling /></ProtectedRoute>} />
+      <Route path="/settings/team" element={<ProtectedRoute><SettingsTeam /></ProtectedRoute>} />
       
-      <Route path="/payment-success" element={<Layout><PaymentSuccess /></Layout>} />
+      {/* Invite route - protected */}
+      <Route path="/invite/:token" element={<ProtectedRoute><InviteAccept /></ProtectedRoute>} />
+      
+      <Route path="/payment-success" element={<ProtectedRoute><Layout><PaymentSuccess /></Layout></ProtectedRoute>} />
       <Route path="*" element={<Layout><NotFound /></Layout>} />
     </Routes>
   );
