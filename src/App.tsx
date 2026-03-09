@@ -1,6 +1,6 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, Suspense, lazy } from "react";
 import Layout from "./components/Layout";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -13,7 +13,6 @@ const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
-const TeamSettings = lazy(() => import("./pages/flow/TeamSettings"));
 const DocumentationPage = lazy(() => import("./pages/flow/Documentation"));
 const GiveFeedbackPage = lazy(() => import("./pages/flow/GiveFeedback"));
 const About = lazy(() => import("./pages/About"));
@@ -72,10 +71,13 @@ const AppRoutes = () => {
       <Route path="/flow" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/flow/prompt-generator" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/flow/color-codes" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary></ProtectedRoute>} />
-      <Route path="/flow/team-settings" element={<ProtectedRoute><ErrorBoundary><TeamSettings /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/flow/documentation" element={<ProtectedRoute><ErrorBoundary><DocumentationPage /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/flow/feedback" element={<ProtectedRoute><ErrorBoundary><GiveFeedbackPage /></ErrorBoundary></ProtectedRoute>} />
       <Route path="/flow-engine" element={<ProtectedRoute><ErrorBoundary><FlowEnginePage /></ErrorBoundary></ProtectedRoute>} />
+      
+      {/* Redirects for old routes */}
+      <Route path="/flow/team-settings" element={<Navigate to="/settings/team" replace />} />
+      <Route path="/flow/account-settings" element={<Navigate to="/settings" replace />} />
       
       <Route path="/image-generator" element={<ProtectedRoute><ImageGenerator /></ProtectedRoute>} />
       <Route path="/planningsystem" element={<ProtectedRoute><PlanningSystem /></ProtectedRoute>} />
