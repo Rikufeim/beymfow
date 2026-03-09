@@ -22,6 +22,8 @@ const Multiagentpage = lazy(() => import("./pages/Multiagentpage"));
 
 const Settings = lazy(() => import("./pages/Settings"));
 const SettingsBilling = lazy(() => import("./pages/SettingsBilling"));
+const SettingsTeam = lazy(() => import("./pages/SettingsTeam"));
+const InviteAccept = lazy(() => import("./pages/InviteAccept"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Header = lazy(() => import("./components/Header"));
 const CookieBanner = lazy(() => import("./components/CookieBanner"));
