@@ -319,7 +319,7 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/80 backdrop-blur-md transition-colors flex items-center justify-center text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20">
+            <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/70 hover:bg-black/80 backdrop-blur-md transition-colors flex items-center justify-center text-xs sm:text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-white/20 flex-shrink-0">
               {userInitials}
             </button>
           </DropdownMenuTrigger>
