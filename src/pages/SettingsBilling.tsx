@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { CreditCard, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import Layout from '@/components/Layout';
+import SEOHead from '@/components/SEOHead';
 import SEOHead from '@/components/SEOHead';
 
 const SettingsBilling = () => {
