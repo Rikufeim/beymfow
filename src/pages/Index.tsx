@@ -145,7 +145,7 @@ const Index = () => {
           {/* Creative Tools Section */}
           <section className="py-16 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 lg:px-16 w-full">
             <div className="w-full">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-12 tracking-tight max-w-[90vw]">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 sm:mb-12 tracking-tight">
                 Creative tools for <span className="text-white/60">modern developers</span>
               </h2>
               <div className="grid md:grid-cols-2 gap-10 lg:gap-20 text-lg sm:text-xl text-white/70 leading-relaxed">
