@@ -51,7 +51,7 @@ export default function PromptLabTopbar({ getSnapshot, onSaved }: Props) {
           <span className="opacity-60">Checking sign-in…</span>
         ) : loggedIn ? (
           <>
-            <span className="opacity-70">{user?.name || user?.email || "Signed in"}</span>
+            <span className="opacity-70">{user?.user_metadata?.full_name || user?.email || "Signed in"}</span>
             <button
               onClick={handleSave}
               disabled={!canSave}
