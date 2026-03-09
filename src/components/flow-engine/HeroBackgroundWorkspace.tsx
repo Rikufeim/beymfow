@@ -2159,8 +2159,8 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
             </div>
 
             {/* Tabs + Minimize button */}
-            <div className="flex items-center justify-between px-2 sm:px-4 py-2">
-              <div className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden flex-1 min-w-0" style={{ scrollbarWidth: "none" }}>
                 {FLOW_TABS.map((tab) => (
                   <button
                     key={tab.id}
@@ -2169,7 +2169,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                       if (minimizedBar) setMinimizedBar(false);
                     }}
                     className={cn(
-                      "px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md whitespace-nowrap flex-shrink-0",
+                      "px-3 sm:px-3.5 py-2 sm:py-1.5 text-xs sm:text-[11px] font-medium transition-all capitalize cursor-pointer rounded-md whitespace-nowrap flex-shrink-0",
                       activeTab === tab.id
                         ? "text-white bg-white/10"
                         : "text-white/40 hover:text-white/70 hover:bg-white/5"
@@ -2183,7 +2183,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
               {/* Minimize button */}
               <button
                 onClick={() => setMinimizedBar(!minimizedBar)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs flex-shrink-0 ml-1"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-2.5 py-2 sm:py-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] text-white/40 hover:bg-white/[0.06] hover:text-white/70 transition-all text-xs flex-shrink-0 ml-1"
               >
                 {minimizedBar ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 <span className="text-[10px] font-medium hidden sm:inline">{minimizedBar ? "Expand" : "Minimize"}</span>
