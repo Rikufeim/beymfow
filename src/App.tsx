@@ -10,6 +10,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazy(() => import("./pages/Auth"));
 const FlowEnginePage = lazy(() => import("./pages/FlowEnginePage"));
 const TeamSettings = lazy(() => import("./pages/flow/TeamSettings"));
 const AccountSettingsPage = lazy(() => import("./pages/flow/AccountSettings"));
