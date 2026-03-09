@@ -9,7 +9,8 @@ type Props = {
 };
 
 export default function PromptLabTopbar({ getSnapshot, onSaved }: Props) {
-  const { loading, loggedIn, user } = useAuth();
+  const { loading, user } = useAuth();
+  const loggedIn = !!user;
   const [name, setName] = useState("Untitled Project");
   const [saving, setSaving] = useState(false);
   const [savedTick, setSavedTick] = useState(0);
