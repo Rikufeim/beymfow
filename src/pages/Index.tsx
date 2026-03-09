@@ -157,8 +157,8 @@ const Index = () => {
                 </p>
               </div>
               {/* Start Building showcase */}
-              <div className="mt-16 sm:mt-20 md:mt-24 grid gap-10 md:grid-cols-2 items-center max-w-6xl">
-                <div className="space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
+              <div className="mt-10 sm:mt-16 md:mt-24 grid gap-6 sm:gap-10 md:grid-cols-2 items-center max-w-6xl">
+                <div className="space-y-4 sm:space-y-6 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10">
                   <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
                     Start Building
                   </h2>
