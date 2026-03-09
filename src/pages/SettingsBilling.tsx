@@ -98,6 +98,7 @@ const SettingsBilling = () => {
             <h1 className="text-sm font-semibold tracking-wide">Billing</h1>
           </header>
 
+          <main className="max-w-lg mx-auto px-6 md:px-10 py-12 space-y-8">
           {/* Plan Card */}
           <div className="rounded-xl border border-border bg-card p-6 space-y-5">
             <div className="flex items-center justify-between">
