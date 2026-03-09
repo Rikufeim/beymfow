@@ -1101,16 +1101,16 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     )}
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-1 sm:pt-2">
                     <button
                       onClick={handleGenerate}
                       disabled={isLoading || (!input.trim() && uploadedImages.length === 0)}
-                      className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 flex items-center justify-center p-0"
+                      className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed h-10 w-10 sm:h-8 sm:w-8 flex items-center justify-center p-0"
                     >
                       {isLoading ? (
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 sm:w-4 sm:h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       ) : (
-                        <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Send className="w-5 h-5 sm:w-4 sm:h-4" />
                       )}
                     </button>
                   </div>
