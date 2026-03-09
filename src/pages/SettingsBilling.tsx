@@ -7,7 +7,6 @@ import { CreditCard, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import SEOHead from '@/components/SEOHead';
-import SEOHead from '@/components/SEOHead';
 
 const SettingsBilling = () => {
   const { usageInfo, session, user } = useAuth();
