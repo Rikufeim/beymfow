@@ -162,7 +162,7 @@ const Index = () => {
                   <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight">
                     Start Building
                   </h2>
-                  <p className="text-white/65 max-w-xl">
+                  <p className="text-white/65 max-w-xl text-sm sm:text-base">
                     Create impressive backgrounds for websites, apps, or anything — quickly.
                   </p>
                   <div className="flex flex-wrap gap-3">
