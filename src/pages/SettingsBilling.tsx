@@ -85,17 +85,18 @@ const SettingsBilling = () => {
     );
   }
 
-  return (
-    <Layout>
-      <SEOHead pathname="/settings/billing" />
-      <div className="min-h-screen bg-background text-foreground px-4 py-12">
-        <div className="max-w-lg mx-auto space-y-8">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft size={20} />
+    return (
+      <>
+        <SEOHead pathname="/settings/billing" />
+        <div className="min-h-screen bg-neutral-950 text-white">
+          {/* Header */}
+          <header className="sticky top-0 z-50 flex items-center gap-4 px-6 md:px-10 h-16 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl">
+            <Link to="/settings" className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors text-sm">
+              <ArrowLeft size={16} />
+              Back to Settings
             </Link>
-            <h1 className="text-2xl font-bold">Billing</h1>
-          </div>
+            <h1 className="text-sm font-semibold tracking-wide">Billing</h1>
+          </header>
 
           {/* Plan Card */}
           <div className="rounded-xl border border-border bg-card p-6 space-y-5">
