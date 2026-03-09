@@ -28,6 +28,7 @@ import { buildOrganizationSchema, buildWebSiteSchema, buildWebApplicationSchema,
 const Index = () => {
   const navigate = useNavigate();
   const { user, session, usageInfo } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
   
   const { toast } = useToast();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
