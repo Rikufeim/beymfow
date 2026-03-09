@@ -94,7 +94,7 @@ const Hero = memo(function Hero() {
           <button 
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-black/50 text-white text-sm font-medium border border-white/20 backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:border-white/40 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-5 sm:py-2.5 rounded-full bg-black/50 text-white text-sm font-medium border border-white/20 backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:border-white/40 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
               <>
