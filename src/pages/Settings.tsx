@@ -168,6 +168,29 @@ const Settings = () => {
             </div>
           </section>
 
+          {/* Team Section */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <Users size={16} className="text-purple-400" />
+              </div>
+              <h2 className="text-lg font-semibold">Team</h2>
+            </div>
+
+            <Link
+              to="/settings/team"
+              className="flex items-center justify-between bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 rounded-xl p-4 transition-colors group"
+            >
+              <div>
+                <p className="text-neutral-200">Team members</p>
+                <p className="text-sm text-neutral-400 mt-0.5">
+                  Invite teammates to collaborate (max 4 members)
+                </p>
+              </div>
+              <ChevronRight size={16} className="text-neutral-500 group-hover:text-neutral-300 transition-colors" />
+            </Link>
+          </section>
+
           {/* Billing Section */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
