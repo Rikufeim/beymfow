@@ -51,7 +51,7 @@ const Hero = memo(function Hero() {
   }, [navigate, user]);
 
   return (
-    <section className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 md:px-10 overflow-hidden">
+    <section className="relative w-full min-h-[100svh] flex flex-col items-center justify-center px-4 sm:px-6 md:px-10 overflow-hidden">
       <div className="relative z-10 max-w-4xl mr-auto w-full text-left flex flex-col items-start">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-normal" style={{
           fontFamily: "Rubik, sans-serif"
