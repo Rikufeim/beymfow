@@ -823,13 +823,11 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
               Not Now
             </Button>
             <AlertDialogAction
-              onClick={() => {
-                setShowPremiumGate(false);
-                navigate('/premium');
-              }}
-              className="bg-white text-black border-2 border-white/30 hover:bg-white/90 font-bold px-8 py-6 text-lg"
+              onClick={handleUpgradeToPro}
+              disabled={checkoutLoading}
+              className="bg-foreground text-background border-2 border-border hover:bg-foreground/90 font-bold px-8 py-6 text-lg"
             >
-              Upgrade to Pro — €9.90/month
+              {checkoutLoading ? "Loading..." : "Upgrade to Pro — €9.90/month"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
