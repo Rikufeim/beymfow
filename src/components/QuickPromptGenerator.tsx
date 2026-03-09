@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { getColorPromptPayload, clearColorPromptPayload } from "@/lib/colorPromptBridge";
 import { Zap, Settings, Send, Plus, X, Image as ImageIcon, Loader2, FileText, FileCode, Wrench, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/lib/notifications";
 import {
@@ -25,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const PROMPT_ENGINEER_SYSTEM_PROMPT = `
 You are an expert-level prompt engineer and AI workflow designer.
