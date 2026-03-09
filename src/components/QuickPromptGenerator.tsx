@@ -1004,8 +1004,8 @@ ${promptType === 'image' ? "Midjourney / DALL-E 3 optimized prompt string." : "C
                     />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-8 w-8 flex items-center justify-center p-0">
-                          <Plus className="w-4 h-4" />
+                        <button className="flex-shrink-0 rounded-full bg-white/5 backdrop-blur-md border border-white/20 text-white/70 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300 h-10 w-10 sm:h-8 sm:w-8 flex items-center justify-center p-0">
+                          <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-black/90 backdrop-blur-md border-white/10 z-50 w-52">
