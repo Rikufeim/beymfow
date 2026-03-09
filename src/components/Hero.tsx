@@ -75,7 +75,7 @@ const Hero = memo(function Hero() {
           <button 
             onClick={handleFlowClick}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 px-6 py-3 sm:px-5 sm:py-2.5 rounded-full bg-white text-black text-sm font-medium transition-all duration-200 hover:bg-white/90 active:scale-95 disabled:opacity-60"
           >
             {loading ? (
               <>
