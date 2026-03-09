@@ -88,10 +88,12 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <AuthProvider>
-              <PersistentHeader />
-              <ScrollToTop />
-              <Suspense fallback={null}><AppRoutes /></Suspense>
-              <Suspense fallback={null}><CookieBanner /></Suspense>
+              <AuthDialogProvider>
+                <PersistentHeader />
+                <ScrollToTop />
+                <Suspense fallback={null}><AppRoutes /></Suspense>
+                <Suspense fallback={null}><CookieBanner /></Suspense>
+              </AuthDialogProvider>
             </AuthProvider>
           </BrowserRouter>
         </LanguageProvider>
