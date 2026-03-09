@@ -287,6 +287,38 @@ export const QuickPromptGenerator = () => {
     }
   }, [input, uploadedImages, contextText]);
 
+  // Handle upgrade to pro
+  const handleUpgradeToPro = useCallback(async () => {
+    if (!user || !session) {
+      sessionStorage.setItem('pending_checkout', 'true');
+      setShowPremiumGate(false);
+      openAuthDialog();
+      return;
+    }
+    
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { tier: "pro" },
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      uiToast({
+        title: "Error",
+        description: err.message || "Failed to start checkout",
+        variant: "destructive"
+      });
+    } finally {
+      setCheckoutLoading(false);
+      setShowPremiumGate(false);
+    }
+  }, [user, session, openAuthDialog, uiToast]);
+
   // Format byte size for display
   const formatByteSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
