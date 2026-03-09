@@ -185,7 +185,7 @@ const Index = () => {
                       backgroundPosition: "0 0, 0 0"
                     }} />
                   <div className="relative z-10">
-                    <ColorWorkspaceDemo className="min-h-[280px]" />
+                    <ColorWorkspaceDemo className="min-h-[220px] sm:min-h-[280px]" />
                   </div>
                 </div>
               </div>
