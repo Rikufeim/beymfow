@@ -76,11 +76,9 @@ const SettingsBilling = () => {
 
   if (!user) {
     return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Please sign in to view billing settings.</p>
-        </div>
-      </Layout>
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <p className="text-neutral-400">Please sign in to view billing settings.</p>
+      </div>
     );
   }
 
