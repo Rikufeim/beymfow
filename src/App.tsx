@@ -61,6 +61,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<ErrorBoundary><Index /></ErrorBoundary>} />
+      <Route path="/auth" element={<ErrorBoundary><Auth /></ErrorBoundary>} />
       <Route path="/flow" element={<ErrorBoundary><FlowEnginePage key="selection" /></ErrorBoundary>} />
       <Route path="/flow/prompt-generator" element={<ErrorBoundary><FlowEnginePage key="prompt-generator" initialWorkspace="prompt-generator" /></ErrorBoundary>} />
       <Route path="/flow/color-codes" element={<ErrorBoundary><FlowEnginePage key="color-codes" initialWorkspace="color-codes" /></ErrorBoundary>} />
