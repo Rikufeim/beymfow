@@ -93,7 +93,7 @@ export const PricingCarousel = memo(function PricingCarousel() {
                     </div>
 
                     <div className="relative mt-8 w-fit">
-                      <Link to="/premium">
+                      <Link to="/settings/billing">
                         <GlassButton
                           size="sm"
                           contentClassName="flex items-center gap-1.5"

@@ -64,7 +64,7 @@ export const PromptCategoriesSection = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigate("/premium")}
+                  onClick={() => navigate("/settings/billing")}
                   className="inline-flex items-center justify-center px-6 sm:px-7 py-3 text-base font-semibold rounded-full border border-white/20 text-white hover:bg-white/10 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60"
                 >
                   Unlock Full Bundle

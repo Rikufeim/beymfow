@@ -162,8 +162,8 @@ export default function ProfilePage() {
                     <div className="text-sm text-zinc-400 mb-2">Upgrade Beymflow plan</div>
                     <p className="text-sm text-zinc-500 mb-4">Upgrade plan for unlimited prompts and features.</p>
                     <a 
-                      href="/premium" 
-                      className="inline-block px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+                      href="/settings/billing" 
+                      className="inline-block px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors"
                     >
                       View plans
                     </a>
