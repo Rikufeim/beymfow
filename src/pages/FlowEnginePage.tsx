@@ -362,6 +362,16 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   Give Feedback
                 </Link>
               </DropdownMenuItem>
+              <div className="border-t border-white/10" />
+              <div className="px-3 py-2">
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  className="text-red-400 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-red-300"
+                >
+                  <LogOut size={16} className="mr-2.5 text-red-500" />
+                  Sign out
+                </DropdownMenuItem>
+              </div>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
