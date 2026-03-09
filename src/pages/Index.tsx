@@ -176,7 +176,7 @@ const Index = () => {
 
                 <div className="relative">
                   <div
-                    className="pointer-events-none absolute inset-0 rounded-3xl opacity-45 z-0"
+                    className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl opacity-45 z-0"
                     style={{
                       backgroundImage:
                         "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
