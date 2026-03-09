@@ -70,7 +70,7 @@ const Hero = memo(function Hero() {
           Create prompts in seconds, generate perfect color codes, and build stunning backgrounds and visual elements for websites, apps, and projects.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           {/* Primary CTA - Go to Flow (requires login) */}
           <button 
             onClick={handleFlowClick}
