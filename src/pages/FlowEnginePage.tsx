@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GrainGradient } from "@paper-design/shaders-react";
 
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy } from "lucide-react";
+import { Sparkles, Palette, ArrowLeft, FolderOpen, Trash2, Settings, Plus, Users, BookOpen, MessageSquare, FileText, Copy, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
@@ -44,6 +45,7 @@ interface FlowEngineProps {
 
 const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selection" }) => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const isPro = false;
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceType>(initialWorkspace);
   const [savedProjects, setSavedProjects] = useState<HeroBackgroundProject[]>([]);
@@ -238,7 +240,9 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
     { id: "prompt-generator" as const, label: "Prompt Generator", icon: Sparkles },
   ];
 
-  const userInitials = "U";
+  const userInitials = user?.user_metadata?.name
+    ? user.user_metadata.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : user?.email?.[0]?.toUpperCase() || "U";
 
   // Render Selection View
   return (
@@ -358,6 +362,16 @@ const FlowEnginePage: React.FC<FlowEngineProps> = ({ initialWorkspace = "selecti
                   Give Feedback
                 </Link>
               </DropdownMenuItem>
+              <div className="border-t border-white/10" />
+              <div className="px-3 py-2">
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  className="text-red-400 hover:bg-white/10 cursor-pointer rounded-lg px-3 py-2.5 text-sm focus:bg-white/10 focus:text-red-300"
+                >
+                  <LogOut size={16} className="mr-2.5 text-red-500" />
+                  Sign out
+                </DropdownMenuItem>
+              </div>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
