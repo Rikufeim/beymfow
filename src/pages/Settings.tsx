@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Lock, CreditCard, Palette, LogOut, ChevronRight, Check } from "lucide-react";
+import { ArrowLeft, User, Lock, CreditCard, Palette, LogOut, ChevronRight, Check, Users } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
