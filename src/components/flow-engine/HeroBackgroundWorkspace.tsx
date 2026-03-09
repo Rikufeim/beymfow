@@ -2212,15 +2212,15 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                         >
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-shrink-0 mb-3">
 
-                            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto [&::-webkit-scrollbar]:hidden w-full sm:w-auto" style={{ scrollbarWidth: "none" }}>
+                            <div className="flex items-center gap-1 sm:gap-1 flex-wrap overflow-x-auto [&::-webkit-scrollbar]:hidden w-full sm:w-auto" style={{ scrollbarWidth: "none" }}>
                               {CATEGORY_LABELS.map((cat) => (
                                 <button
                                   key={cat}
                                   onClick={() => setActiveCategory(cat)}
                                   className={cn(
-                                    "px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] font-medium transition-all duration-300 ease-out whitespace-nowrap flex-shrink-0",
+                                    "px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 text-xs sm:text-[11px] font-medium transition-all duration-300 ease-out whitespace-nowrap flex-shrink-0 rounded-md",
                                     activeCategory === cat
-                                      ? "text-white opacity-100"
+                                      ? "text-white opacity-100 bg-white/10"
                                       : "text-white/40 opacity-60 hover:opacity-100 hover:text-white/70"
                                   )}
                                 >
@@ -2228,7 +2228,7 @@ export const Button: React.FC<ButtonProps> = ({ children, onClick, className }) 
                                 </button>
                               ))}
                             </div>
-                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="sm:ml-auto w-full sm:w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search…" className="sm:ml-auto w-full sm:w-32 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 sm:py-1.5 text-xs sm:text-[11px] text-white/70 placeholder:text-white/30 focus:outline-none focus:border-white/20" />
                           </div>
                           <div className="flex-1 overflow-y-auto min-h-0 pr-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
