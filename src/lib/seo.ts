@@ -166,14 +166,6 @@ export const PAGE_SEO: Record<string, SEOMeta> = {
         ogType: "website",
         robots: "noindex, nofollow",
     },
-    "/settings/billing": {
-        title: "Billing & Subscription — Beymflow",
-        description: "Manage your Beymflow subscription, billing details, and plan settings.",
-        canonical: `${SITE_URL}/settings/billing`,
-        ogImage: DEFAULT_OG_IMAGE,
-        ogType: "website",
-        robots: "noindex, nofollow",
-    },
     "/image-generator": {
         title: "AI Image Generator — Beymflow",
         description:
