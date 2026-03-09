@@ -5,12 +5,12 @@ import { Box, Layers, Target, Zap } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 export function GlowingEffectDemo() {
-  return <section className="grid gap-8 md:grid-cols-12 md:items-stretch">
-    <div className="md:col-span-5 flex flex-col justify-center space-y-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10">
+  return <section className="grid gap-6 sm:gap-8 md:grid-cols-12 md:items-stretch">
+    <div className="md:col-span-5 flex flex-col justify-center space-y-3 sm:space-y-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10">
       <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">
         Beymflow Lab
       </span>
-      <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">Engineered for Pure Flow</h2>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-white">Engineered for Pure Flow</h2>
       <p className="text-sm text-white/70 max-w-md md:text-lg">
         Where creativity flows without limits.
         <br />
@@ -18,7 +18,7 @@ export function GlowingEffectDemo() {
       </p>
     </div>
 
-    <ul className="md:col-span-7 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <ul className="md:col-span-7 grid grid-cols-2 gap-3 sm:gap-4">
       <GridItem icon={<Box className="h-4 w-4 text-cyan-300" />} title="Effortless" description="Creativity should be limitless. Beymflow removes the barriers so your ideas can move out fast." />
       <GridItem icon={<Zap className="h-4 w-4 text-cyan-300" />} title="Fast" description="Idea, execution, and sharing — in seconds." />
       <GridItem icon={<Layers className="h-4 w-4 text-purple-300" />} title="Scalable" description="From a single idea to complete systems. Beymflow grows with your vision." />
