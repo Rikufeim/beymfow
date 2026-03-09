@@ -148,7 +148,7 @@ const Index = () => {
               <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 sm:mb-12 tracking-tight">
                 Creative tools for <span className="text-white/60">modern developers</span>
               </h2>
-              <div className="grid md:grid-cols-2 gap-10 lg:gap-20 text-lg sm:text-xl text-white/70 leading-relaxed">
+              <div className="grid md:grid-cols-2 gap-6 sm:gap-10 lg:gap-20 text-base sm:text-lg md:text-xl text-white/70 leading-relaxed">
                 <p>
                   Beymflow is a modern creative platform built for developers, vibe coders, and digital creators who design websites, apps, and interactive experiences. The platform combines a powerful prompt generator for AI tools, advanced color code generation (HEX, RGB, gradients), and tools for creating visually striking website backgrounds and UI elements.
                 </p>
